@@ -26,7 +26,7 @@ Sem isso o carro aparece como uma caixa.
 | E / Q | sobe / desce marcha (manual; abaixo da 1ª vem a ré, como no jogo) |
 | R | desvirar o carro |
 | T | voltar para o início |
-| C | trocar câmera (atrás, longe, capô, piloto) |
+| C | trocar câmera (perto, longe, capô, para-choque, piloto) |
 | F | girar o modelo 180° (se ele parecer andar de ré) |
 | Esc | sair |
 
@@ -37,12 +37,19 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
 - Chão: relevo e textura da pista RX01 (tiles do STREAMT)
 - Carro: modelo extraído do jogo
 - Física: os XMLs do próprio jogo em `data/vehicles` (`buggy_base.xml` é a
-  base da classe e `renegade.xml` o veículo). Massa, molas, amortecedores, curva
+  base da classe e `renegade.xml` o veículo (15154 = BUGGY_10). Os arquivos
+  seguem a ordem da lista do jogo: 15145 é a base e também o 1º buggy (Mosquito),
+  15146 o 2º, e assim até 15156 (Storm). Ex.: Sphinx = 15148). Massa, molas, amortecedores, curva
   de torque, marchas, embreagem, elipse de atrito, subesterço, derrapagem e
   gravidade no ar saem de lá
 - Código de física portado do executável (SCES_546.88): pneus e derrapagem
   (parte 1), motor, embreagem, câmbio e roda patinando (parte 3), suspensão,
   anti-pitch e controles no ar (parte 4), arrasto do ar e atrito interno
+- Câmera: `data/cameras.xml` (o 14880 do unpacked, CameraSet `BuggyCamSet_10`)
+  com o código da câmera do exe portado em `game_camera.gd`: órbita que segue
+  a direção da velocidade, distância e zoom por velocidade, amortecimento de
+  altura, subida em descida, altura mínima do chão. Só a câmera "piloto" é
+  inventada
 
 ## O que ainda é provisório
 
@@ -50,3 +57,4 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
   (`data/vehicles/renegade_points.bin`, o arquivo 21712 do unpacked)
 - Atrito por tipo de chão (o jogo muda a aderência na terra, lama, água...)
 - Roda travando no freio (função 0x210908 do jogo, ainda não portada)
+- Tremida da câmera (jitter e batida) ainda não portada
