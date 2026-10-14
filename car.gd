@@ -876,8 +876,20 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			else:
 				nr += 1
 
-	# ---- 0x20e8d8: tração (só rodas motrizes)
-	var n_drive := nr if REAR_DRIVE else nf + nr
+	# O jogo divide as forças pelo número FIXO de rodas de cada eixo (0x3a0,
+	# 0x3a4, 0x3a8), não pelas que estão no chão. Tração e freio só vão pras
+	# rodas no chão (a parte da roda no ar some); a força da derrapagem vai pras
+	# 4 rodas sempre, no chão ou não.
+	var nf_s := 0
+	var nr_s := 0
+	for w in wheels:
+		if w.front:
+			nf_s += 1
+		else:
+			nr_s += 1
+
+	# ---- 0x20e8d8: tração (só rodas motrizes no chão)
+	var n_drive := nr_s if REAR_DRIVE else nf_s + nr_s
 	if n_drive > 0:
 		for w in wheels:
 			if w.hit and (not w.front or not REAR_DRIVE):
@@ -896,9 +908,9 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			if not w.hit:
 				continue
 			if w.front:
-				w.fz += mass * dec_front / nf
-			elif nr > 0:
-				w.fz += mass * (dec - dec_front) / nr
+				w.fz += mass * dec_front / nf_s
+			else:
+				w.fz += mass * (dec - dec_front) / nr_s
 
 	# ---- 0x20efa0: derrapagem
 	var f_cent: float = mass * v_p * v_p * kappa          # força centrípeta pedida
@@ -996,24 +1008,18 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 	var span := a_f - b_r
 	if v_f < 0.0:
 		f_fwd = 0.0
-	var n_all := nf + nr
+	var n_all := nf_s + nr_s
 	for w in wheels:
-		if not w.hit:
-			continue
 		if w.front:
-			w.fx += (-b_r / span) * (f_lat + torque / -b_r) / nf
+			w.fx += (-b_r / span) * (f_lat + torque / -b_r) / nf_s
 		else:
-			w.fx += (a_f / span) * (f_lat - torque / a_f) / nr
+			w.fx += (a_f / span) * (f_lat - torque / a_f) / nr_s
 		w.fz += f_fwd / n_all
 
 	# ---- 0x2101e0: elipse de atrito por roda
 	var lat_dem := 0.0
 	var lat_got := 0.0
 	for w in wheels:
-		if not w.hit:
-			w.grip = 1.0
-			w.sat = false
-			continue
 		var e: Dictionary = P.ell_FrontWheels if w.front else P.ell_RearWheels
 		var W: float = w.grip * VehicleData.triple(e.w, mu) * P.width_scale * 1000.0
 		var H: float = w.grip * VehicleData.triple(e.h, mu) * P.height_scale * 1000.0
