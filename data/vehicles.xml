@@ -1,0 +1,482 @@
+<Root FileVersion="1.0000000">
+   <Vehicle Name="ATV_01" LongName="1. 250cc 4 Stroke - Amateur" FEOrder="1" Class="ATV" Level="Amateur">
+      <Setup ComponentMap="ATVCompMap_Generic" Traits="ATV_Generic" Cameras="ATVCamSet_Generic" LOD="ATV_Generic" HUD="ATV_Generic" Sound="ATV_01" Driver="ATV" Tricks="ATV" AIRoute="ATV" AIControl="ATV" DataDirectory="ATV"/>
+      <DefaultConfig ComponentSet="ATV" Chassis="CHASSIS_ATV_02" Fairing="FAIRING_ATV_01" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Alloy="WHEEL_Douglas_Alloy_04" NerfBar="NERFBAR_ATV_NEW_01" Bumper="NOT_INSTALLED" Lighting="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" IntakeKit="IntakeKit_Level0" Suspension="Suspension_Level0" Brake="Brake_Level0" GearboxLevel="GearboxLevel_Level0" Clutch="Clutch_Level0" BodyMass="BodyMass_Level0" GearboxType="GearboxType_Auto" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="trinity" FRONT2="trinity" REAR1="trinity" REAR2="trinity" REAR3="trinity" NOSE1="trinity" HEADSET1="trinity" BACK1="trinity"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="ATV_02" LongName="2. 250cc 2 Stroke - Amateur" FEOrder="2" Class="ATV" Level="Amateur" Cost="15000">
+      <Setup ComponentMap="ATVCompMap_Generic" Traits="ATV_Generic" Cameras="ATVCamSet_Generic" LOD="ATV_Generic" HUD="ATV_Generic" Sound="ATV_02" Driver="ATV" Tricks="ATV" AIRoute="ATV" AIControl="ATV" DataDirectory="ATV"/>
+      <DefaultConfig ComponentSet="ATV" Chassis="CHASSIS_ATV_01" Fairing="FAIRING_ATV_02" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Alloy="WHEEL_Douglas_Alloy_04" Exhaust="Exhaust_Level0" NerfBar="NERFBAR_ATV_NEW_01" Bumper="NOT_INSTALLED" Lighting="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="ATV_03" LongName="3. 350cc 4 Stroke - Amateur" FEOrder="3" Class="ATV" Level="Amateur" Cost="25000">
+      <Setup ComponentMap="ATVCompMap_Generic" Traits="ATV_Generic" Cameras="ATVCamSet_Generic" LOD="ATV_Generic" HUD="ATV_Generic" Sound="ATV_03" Driver="ATV" Tricks="ATV" AIRoute="ATV" AIControl="ATV" DataDirectory="ATV"/>
+      <DefaultConfig ComponentSet="ATV" Chassis="CHASSIS_ATV_02" Fairing="FAIRING_ATV_03" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Alloy="WHEEL_Douglas_Alloy_04" Exhaust="Exhaust_Level0" NerfBar="NERFBAR_ATV_NEW_01" Bumper="NOT_INSTALLED" Lighting="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_04" FRONT_02="RPM" FRONT_03="Alpinestars_04" REAR_01="Azonic_04" REAR_02="AXO_04" REAR_03="Thor_04" NOSE="Alpinestars_03"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="ATV_04" LongName="4. 350cc 2 Stroke - Amateur" FEOrder="4" Class="ATV" Level="Amateur" Cost="20000">
+      <Setup ComponentMap="ATVCompMap_Generic" Traits="ATV_Generic" Cameras="ATVCamSet_Generic" LOD="ATV_Generic" HUD="ATV_Generic" Sound="ATV_04" Driver="ATV" Tricks="ATV" AIRoute="ATV" AIControl="ATV" DataDirectory="ATV"/>
+      <DefaultConfig ComponentSet="ATV" Chassis="CHASSIS_ATV_01" Fairing="FAIRING_ATV_04" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Alloy="WHEEL_Douglas_Alloy_04" Exhaust="Exhaust_Level0" NerfBar="NERFBAR_ATV_NEW_01" Bumper="NOT_INSTALLED" Lighting="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_04" FRONT_02="RPM" FRONT_03="Alpinestars_04" REAR_01="Azonic_04" REAR_02="AXO_04" REAR_03="Thor_04" NOSE="Alpinestars_03"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="ATV_05" LongName="5. 450cc 4 Stroke - Pro" FEOrder="5" Class="ATV" Level="Pro" Cost="50000">
+      <Setup ComponentMap="ATVCompMap_Generic" Traits="ATV_Generic" Cameras="ATVCamSet_Generic" LOD="ATV_Generic" HUD="ATV_Generic" Sound="ATV_05" Driver="ATV" Tricks="ATV" AIRoute="ATV" AIControl="ATV" DataDirectory="ATV"/>
+      <DefaultConfig ComponentSet="ATV" Chassis="CHASSIS_ATV_02" Fairing="FAIRING_ATV_05" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Alloy="WHEEL_Douglas_Alloy_04" Exhaust="Exhaust_Level0" NerfBar="NERFBAR_ATV_NEW_01" Bumper="NOT_INSTALLED" Lighting="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="ELF 1" FRONT2="SCOTT 1" REAR1="ELF 1" REAR2="SCOTT 1" NOSE1="ELF 2" SIDE1="LAEGERS" BACK1="AGV SPORT"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="ATV_06" LongName="6. 450cc 4 Stroke - Pro" FEOrder="6" Class="ATV" Level="Pro" Cost="55000" P2PStoryMode="TRUE">
+      <Setup ComponentMap="ATVCompMap_Generic" Traits="ATV_Generic" Cameras="ATVCamSet_Generic" LOD="ATV_Generic" HUD="ATV_Generic" Sound="ATV_06" Driver="ATV" Tricks="ATV" AIRoute="ATV" AIControl="ATV" DataDirectory="ATV"/>
+      <DefaultConfig ComponentSet="ATV" Chassis="CHASSIS_ATV_02" Fairing="FAIRING_ATV_06" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Alloy="WHEEL_Douglas_Alloy_04" Exhaust="Exhaust_Level0" NerfBar="NERFBAR_ATV_NEW_01" Bumper="NOT_INSTALLED" Lighting="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="THOR 1" FRONT2="TORQ" REAR1="ONE INDUSTRIES" REAR2="AGV SPORT" REAR3="THOR 2"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="ATV_07" LongName="7. 500cc 4 Stroke - Pro" FEOrder="7" Class="ATV" Level="Pro" Cost="60000">
+      <Setup ComponentMap="ATVCompMap_Generic" Traits="ATV_Generic" Cameras="ATVCamSet_Generic" LOD="ATV_Generic" HUD="ATV_Generic" Sound="ATV_07" Driver="ATV" Tricks="ATV" AIRoute="ATV" AIControl="ATV" DataDirectory="ATV"/>
+      <DefaultConfig ComponentSet="ATV" Chassis="CHASSIS_ATV_02" Fairing="FAIRING_ATV_07" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Alloy="WHEEL_Douglas_Alloy_04" Exhaust="Exhaust_Level0" NerfBar="NERFBAR_ATV_NEW_01" Bumper="NOT_INSTALLED" Lighting="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="FTM ENTERPRISES 2" FRONT2="DIVISION 4" FRONT3="ATTACK GRAPHICS" REAR1="BELL HELMETS" REAR2="ATTACK GRAPHICS" REAR3="DIVISION 4" SIDE1="FTM ENTERPRISES 2"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="ATV_08" LongName="8. 650cc 4 Stroke - Pro" FEOrder="8" Class="ATV" Level="Pro" Cost="65000" P2PStoryMode="TRUE">
+      <Setup ComponentMap="ATVCompMap_A" Traits="ATV_Generic" Cameras="ATVCamSet_Generic" LOD="ATV_Generic" HUD="ATV_Generic" Sound="ATV_08" Driver="ATV" Tricks="ATV" AIRoute="ATV" AIControl="ATV" DataDirectory="ATV"/>
+      <DefaultConfig ComponentSet="ATV" Chassis="CHASSIS_ATV_02" Fairing="FAIRING_ATV_08" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Alloy="WHEEL_Douglas_Alloy_04" Exhaust="Exhaust_Level0" NerfBar="NERFBAR_ATV_NEW_01" Bumper="NOT_INSTALLED" Lighting="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="AZONIC" FRONT2="ALPINESTARS 2" FRONT3="RENTHAL" REAR1="SINISALO" REAR2="ITP" REAR3="ALPINESTARS 2" NOSE1="SINISALO" SIDE1="ALPINESTARS 2"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="ATV_09" LongName="9. Bonus - Pro" FEOrder="9" Class="ATV" Level="Pro">
+      <Setup ComponentMap="ATVCompMap_Generic" Traits="ATV_Generic" Cameras="ATVCamSet_Generic" LOD="ATV_Generic" HUD="ATV_Generic" Sound="ATV_09" Driver="ATV" Tricks="ATV" AIRoute="ATV" AIControl="ATV" DataDirectory="ATV"/>
+      <DefaultConfig ComponentSet="ATV" Chassis="CHASSIS_ATV_02" Fairing="FAIRING_ATV_09" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Alloy="WHEEL_Douglas_Alloy_04" Exhaust="Exhaust_Level0" NerfBar="NERFBAR_ATV_NEW_01" Bumper="NOT_INSTALLED" Lighting="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="FTM ENTERPRISES 2" FRONT2="SIDI" FRONT3="FLY RACING 1" SIDE1="ALPINESTARS 2" SIDE2="SIDI" REAR1="FTM ENTERPRISES 1" REAR2="BELL HELMETS" REAR3="FLY RACING 2" BACK1="ALPINESTARS 1"/>
+      <UnlockableData DefaultState="LOCKED"/>
+   </Vehicle>
+   <Vehicle Name="ATV_10" LongName="10. Bonus - Pro" FEOrder="10" Class="ATV" Level="Pro" NotForAI="1">
+      <Setup ComponentMap="ATVCompMap_Generic" Traits="ATV_Generic" Cameras="ATVCamSet_Generic" LOD="ATV_Generic" HUD="ATV_Generic" Sound="ATV_10" Driver="ATV" Tricks="ATV" AIRoute="ATV" AIControl="ATV" DataDirectory="ATV"/>
+      <DefaultConfig ComponentSet="ATV" Chassis="CHASSIS_ATV_02" Fairing="FAIRING_ATV_10" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Alloy="WHEEL_Douglas_Alloy_04" Exhaust="Exhaust_Level3a" NerfBar="NERFBAR_ATV_NEW_01" Bumper="NOT_INSTALLED" Lighting="NOT_INSTALLED" EngineInternals="EngineInternals_Level2" EngineManagement="EngineManagement_Level2" EngineHeader="EngineHeader_Level2" IntakeKit="IntakeKit_Level3" GearboxType="GearboxType_Auto" Suspension="Suspension_Level2" Brake="Brake_Level2" BodyMass="BodyMass_Level2" Clutch="Clutch_Level2" GearboxLevel="GearboxLevel_Level2" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="DG PERFORMANCE 1" FRONT2="SCOTT 2" FRONT3="ELF 2" FRONT4="AGV SPORT" REAR1="DG PERFORMANCE 1" REAR2="ELF 1" REAR3="DOUGLAS WHEELS" REAR4="AGV SPORT" SIDE1="ELF 2" SIDE2="SCOTT 1"/>
+      <UnlockableData DefaultState="LOCKED" VehicleTriggerFilter="ATV"/>
+   </Vehicle>
+   <Vehicle Name="ATV_GHOST" LongName="ATV GHOST VEHICLE" Class="ATV" Level="Amateur" NotForPlayer="1" NotForAI="1">
+      <Setup ComponentMap="ATVCompMap_GHOST" Traits="ATV_Generic" Cameras="ATVCamSet_Generic" LOD="ATV_Generic" HUD="ATV_Generic" Sound="ATV_01" Driver="ATV" Tricks="ATV" AIRoute="ATV" AIControl="ATV" DataDirectory="ATV"/>
+      <DefaultConfig ComponentSet="ATV" Chassis="CHASSIS_ATV_01_GHOST" Fairing="FAIRING_ATV_04_GHOST" Wheel="Wheel_Generic_GHOST" Tire="DIRT_BUDGET" Alloy="WHEEL_Douglas_Alloy_04" Exhaust="Exhaust_Level0" NerfBar="NERFBAR_ATV_NEW_01" Bumper="NOT_INSTALLED" Lighting="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_04" FRONT_02="RPM" FRONT_03="Alpinestars_04" REAR_01="Azonic_04" REAR_02="AXO_04" REAR_03="Thor_04" NOSE="Alpinestars_03"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BIKE_01" LongName="1. 125cc 2 Stroke - Amateur" FEOrder="1" Class="Bike" Level="Amateur">
+      <Setup ComponentMap="BikeCompMap_Generic" Traits="Bike_Generic" Cameras="BikeCamSet_Generic" LOD="Bike_Generic" HUD="Bike_Generic" Sound="BIKE_01" Driver="Bike" Tricks="Bike" AIRoute="Bike" AIControl="Bike" DataDirectory="Bike"/>
+      <DefaultConfig ComponentSet="Bike" Chassis="CHASSIS_Bike_2Stroke" Fairing="FAIRING_Bike_01" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" HandGuard="NOT_INSTALLED" SkidPlate="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard" Alloy="Wheel_MX_01">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BIKE_02" LongName="2. 250cc 2 Stroke - Amateur" FEOrder="2" Class="Bike" Level="Amateur" Cost="20000">
+      <Setup ComponentMap="BikeCompMap_Generic" Traits="Bike_Generic" Cameras="BikeCamSet_Generic" LOD="Bike_Generic" HUD="Bike_Generic" Sound="BIKE_02" Driver="Bike" Tricks="Bike" AIRoute="Bike" AIControl="Bike" DataDirectory="Bike"/>
+      <DefaultConfig ComponentSet="Bike" Chassis="CHASSIS_Bike_2Stroke" Fairing="FAIRING_Bike_02" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" HandGuard="NOT_INSTALLED" SkidPlate="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard" Alloy="Wheel_MX_01">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BIKE_03" LongName="3. 250cc 4 Stroke - Amateur" FEOrder="3" Class="Bike" Level="Amateur" Cost="15000">
+      <Setup ComponentMap="BikeCompMap_Generic" Traits="Bike_Generic" Cameras="BikeCamSet_Generic" LOD="Bike_Generic" HUD="Bike_Generic" Sound="BIKE_03" Driver="Bike" Tricks="Bike" AIRoute="Bike" AIControl="Bike" DataDirectory="Bike"/>
+      <DefaultConfig ComponentSet="Bike" Chassis="CHASSIS_Bike_4Stroke" Fairing="FAIRING_Bike_03" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" HandGuard="NOT_INSTALLED" SkidPlate="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard" Alloy="Wheel_MX_01">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BIKE_04" LongName="4. 300cc 4 Stroke - Amateur" FEOrder="4" Class="Bike" Level="Amateur" Cost="25000">
+      <Setup ComponentMap="BikeCompMap_Generic" Traits="Bike_Generic" Cameras="BikeCamSet_Generic" LOD="Bike_Generic" HUD="Bike_Generic" Sound="BIKE_04" Driver="Bike" Tricks="Bike" AIRoute="Bike" AIControl="Bike" DataDirectory="Bike"/>
+      <DefaultConfig ComponentSet="Bike" Chassis="CHASSIS_Bike_4Stroke" Fairing="FAIRING_Bike_04" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" HandGuard="NOT_INSTALLED" SkidPlate="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard" Alloy="Wheel_MX_01">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BIKE_05" LongName="5. 450cc 4 Stroke - Pro" FEOrder="5" Class="Bike" Level="Pro" Cost="55000" P2PStoryMode="TRUE">
+      <Setup ComponentMap="BikeCompMap_Generic" Traits="Bike_Generic" Cameras="BikeCamSet_Generic" LOD="Bike_Generic" HUD="Bike_Generic" Sound="BIKE_05" Driver="Bike" Tricks="Bike" AIRoute="Bike" AIControl="Bike" DataDirectory="Bike"/>
+      <DefaultConfig ComponentSet="Bike" Chassis="CHASSIS_Bike_4Stroke" Fairing="FAIRING_Bike_05" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" HandGuard="NOT_INSTALLED" SkidPlate="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard" Alloy="Wheel_MX_01">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="DIVISION 4" FRONT2="AGV SPORT" FRONT3="ITP" FRONT4="DG PERFORMANCE 1" REAR1="BELL HELMETS" REAR2="ELF 2" REAR3="DG PERFORMANCE 2" SIDE1="ELF 1" REARMUDGUARD1="BELL HELMETS" REARMUDGUARD2="DG PERFORMANCE 1"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BIKE_06" LongName="6. 450cc 4 Stroke - Pro" FEOrder="6" Class="Bike" Level="Pro" Cost="60000">
+      <Setup ComponentMap="BikeCompMap_Generic" Traits="Bike_Generic" Cameras="BikeCamSet_Generic" LOD="Bike_Generic" HUD="Bike_Generic" Sound="BIKE_06" Driver="Bike" Tricks="Bike" AIRoute="Bike" AIControl="Bike" DataDirectory="Bike"/>
+      <DefaultConfig ComponentSet="Bike" Chassis="CHASSIS_Bike_4Stroke" Fairing="FAIRING_Bike_06" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" HandGuard="NOT_INSTALLED" SkidPlate="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard" Alloy="Wheel_MX_01">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="GAERNE 1" FRONT2="ITP" REAR1="FLY RACING 1" REAR2="SIDI" REARMUDGUARD1="FLY RACING 1" FRONTMUDGUARD1="ELF 1"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BIKE_07" LongName="7. 450cc 4 Stroke - Pro" FEOrder="7" Class="Bike" Level="Pro" Cost="50000" P2PStoryMode="TRUE">
+      <Setup ComponentMap="BikeCompMap_Generic" Traits="Bike_Generic" Cameras="BikeCamSet_Generic" LOD="Bike_Generic" HUD="Bike_Generic" Sound="BIKE_07" Driver="Bike" Tricks="Bike" AIRoute="Bike" AIControl="Bike" DataDirectory="Bike"/>
+      <DefaultConfig ComponentSet="Bike" Chassis="CHASSIS_Bike_4Stroke" Fairing="FAIRING_Bike_07" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" HandGuard="NOT_INSTALLED" SkidPlate="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard" Alloy="Wheel_MX_01">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="BELL HELMETS" FRONT2="DG PERFORMANCE 2" FRONT3="FLY RACING 2" REAR1="COMETIC GASKET" REARMUDGUARD1="BELL HELMETS" REARMUDGUARD2="ELF 1" FRONTMUDGUARD1="DG PERFORMANCE 1" FORKS1="SIDI" FORKS2="ATTACK GRAPHICS" FORKS3="DG PERFORMANCE 1"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BIKE_08" LongName="8. 650cc 4 Stroke - Pro" FEOrder="8" Class="Bike" Level="Pro" Cost="65000">
+      <Setup ComponentMap="BikeCompMap_A" Traits="Bike_Generic" Cameras="BikeCamSet_Generic" LOD="Bike_Generic" HUD="Bike_Generic" Sound="BIKE_08" Driver="Bike" Tricks="Bike" AIRoute="Bike" AIControl="Bike" DataDirectory="Bike"/>
+      <DefaultConfig ComponentSet="Bike" Chassis="CHASSIS_Bike_08" Fairing="FAIRING_Bike_08" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" HandGuard="NOT_INSTALLED" SkidPlate="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard" IntakeKit="IntakeKit_Level0" Alloy="Wheel_MX_01">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="K&amp;K" FRONT2="AGV SPORT" FRONT3="FLY RACING 1" REAR1="SIDI" REAR2="WISECO" FORKS1="SUNSTAR"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BIKE_09" LongName="9. 650cc 4 Stroke - Pro" FEOrder="9" Class="Bike" Level="Pro">
+      <Setup ComponentMap="BikeCompMap_Generic" Traits="Bike_Generic" Cameras="BikeCamSet_Generic" LOD="Bike_Generic" HUD="Bike_Generic" Sound="BIKE_09" Driver="Bike" Tricks="Bike" AIRoute="Bike" AIControl="Bike" DataDirectory="Bike"/>
+      <DefaultConfig ComponentSet="Bike" Chassis="CHASSIS_Bike_4Stroke" Fairing="FAIRING_Bike_09" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" HandGuard="NOT_INSTALLED" SkidPlate="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard" IntakeKit="IntakeKit_Level0" Alloy="Wheel_MX_01">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="DG PERFORMANCE 1" FRONT2="FTM ENTERPRISES 2" FRONT3="SINISALO" REAR1="MOOSE 2" REAR2="TITAN" REARMUDGUARD1="DG PERFORMANCE 1" FRONTMUDGUARD1="DG PERFORMANCE 1"/>
+      <UnlockableData DefaultState="LOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BIKE_10" LongName="10. 650cc 4 Stroke - Pro" FEOrder="10" Class="Bike" Level="Pro" NotForAI="1">
+      <Setup ComponentMap="BikeCompMap_Generic" Traits="Bike_Generic" Cameras="BikeCamSet_Generic" LOD="Bike_Generic" HUD="Bike_Generic" Sound="BIKE_10" Driver="Bike" Tricks="Bike" AIRoute="Bike" AIControl="Bike" DataDirectory="Bike"/>
+      <DefaultConfig ComponentSet="Bike" Chassis="CHASSIS_Bike_4Stroke" Fairing="FAIRING_Bike_10" Wheel="Wheel_Generic" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" HandGuard="NOT_INSTALLED" SkidPlate="NOT_INSTALLED" EngineInternals="EngineInternals_Level2" EngineManagement="EngineManagement_Level2" EngineHeader="EngineHeader_Level2" Exhaust="Exhaust_Level3a" IntakeKit="IntakeKit_Level3" GearboxType="GearboxType_Auto" Suspension="Suspension_Level2" Brake="Brake_Level2" BodyMass="BodyMass_Level2" Clutch="Clutch_Level2" GearboxLevel="GearboxLevel_Level2" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard" ElectricCover="ElectricCover_01" Alloy="Wheel_MX_01">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT1="ELF 1" FRONT2="FTM ENTERPRISES 2" FRONT3="FLY RACING 2" REAR1="DG PERFORMANCE 2" REAR2="FLY RACING 1" REARMUDGUARD1="DG PERFORMANCE 2" REARMUDGUARD2="ELF 1" FRONTMUDGUARD1="SKIN" FORKS1="SKIN" FORKS2="FLY RACING 2" FORKS3="DG PERFORMANCE 2"/>
+      <UnlockableData DefaultState="LOCKED" VehicleTriggerFilter="Bike"/>
+   </Vehicle>
+   <Vehicle Name="BIKE_GHOST" LongName="BIKE GHOST VEHICLE" Class="Bike" Level="Amateur" NotForPlayer="1" NotForAI="1">
+      <Setup ComponentMap="BikeCompMap_GHOST" Traits="Bike_Generic" Cameras="BikeCamSet_Generic" LOD="Bike_Generic" HUD="Bike_Generic" Sound="BIKE_01" Driver="Bike" Tricks="Bike" AIRoute="Bike" AIControl="Bike" DataDirectory="Bike"/>
+      <DefaultConfig ComponentSet="Bike" Chassis="CHASSIS_Bike_4Stroke_GHOST" Fairing="FAIRING_Bike_04_GHOST" Wheel="Wheel_Generic_GHOST" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" HandGuard="NOT_INSTALLED" SkidPlate="NOT_INSTALLED" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" FinalDriveRatio="FinalDriveRatio_Standard" Alloy="Wheel_MX_01">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.5"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_01" LongName="1. Manx - Amateur" FEOrder="1" Class="Buggy" Level="Amateur" TireSize="Medium" LightRigCategory="Small">
+      <Setup ComponentMap="BuggyCompMap_C1" Traits="Buggy_Generic" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_01" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy" Cameras="BuggyCamSet_01"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="CHASSIS_Buggy_01" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" IntakeKit="IntakeKit_Level0" Suspension="Suspension_Level0" Brake="Brake_Level0" GearboxLevel="GearboxLevel_Level0" Clutch="Clutch_Level0" BodyMass="BodyMass_Level0" GearboxType="GearboxType_Auto" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="ELF LUBRICANTS 1" HOOD2="SCOTT 2" WING1="TITAN" WING2="SCOTT 1" SIDE1="CORTECH" SIDE2="ATTACK GRAPHICS" PILLAR1="ELF LUBRICANTS 1" BACK1="SCOTT 1"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_02" LongName="2. Inferno - Amateur" FEOrder="2" Class="Buggy" Level="Amateur" Cost="30000" TireSize="Sandcar" LightRigCategory="Small">
+      <Setup ComponentMap="BuggyCompMap_B" Traits="Buggy_Generic" Cameras="BuggyCamSet_02" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_02" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="CHASSIS_Buggy_02" Wheel="TYRE_GENERIC_SANDCAR" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals NOSE1="MICKEY THOMPSON TIRES" ROOF1="FTM" ROOF2="FOX RACING 1" BACK1="HJC" REARWING1="FOX RACING 1" SIDE1="FTM" SIDE2="BELL" SIDE3="OUTERWEARS" SIDE4="ITP"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_03" LongName="3. Snake - Amateur" FEOrder="3" Class="Buggy" Level="Amateur" Cost="25000" TireSize="Sandcar" LightRigCategory="Large">
+      <Setup ComponentMap="BuggyCompMap_A" Traits="Buggy_Generic" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_03" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy" Cameras="BuggyCamSet_03"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="CHASSIS_Buggy_03" Wheel="TYRE_GENERIC_SANDCAR" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_04" LongName="4. Pre Runner - Amateur" FEOrder="4" Class="Buggy" Level="Amateur" Cost="20000" TireSize="Medium" LightRigCategory="Small">
+      <Setup ComponentMap="BuggyCompMap_B" Traits="Buggy_Generic" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_04" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy" Cameras="BuggyCamSet_04"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="CHASSIS_Buggy_04" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" Exhaust="Exhaust_Level0" IntakeKit="IntakeKit_Level0" Suspension="Suspension_Level0" Brake="Brake_Level0" Clutch="Clutch_Level0" BodyMass="BodyMass_Level0" GearboxType="GearboxType_Auto" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_05" LongName="5. Carlos - Pro" FEOrder="5" Class="Buggy" Level="Pro" Cost="65000" TireSize="Small" LightRigCategory="Small">
+      <Setup ComponentMap="BuggyCompMap_A1" Traits="Buggy_Generic" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_05" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy" Cameras="BuggyCamSet_05"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="CHASSIS_Buggy_05" Wheel="TYRE_GENERIC_SMALL" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"><!--The FinalDrive value should match that specified for GearboxLevel_Level1's FinalDriveRatio for this vehicle class in VehicleTuning.xml--></GearRatioTuning>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="G AND R RACING" HOOD2="FOX RACING 1" HOOD3="LAEGERS" ROOF1="CORTECH" ROOF2="G AND R RACING" SIDE1="LAEGERS" SIDE2="FOX RACING 1" SIDE3="CORTECH" SIDE4="RENTHAL 1" SIDE5="G AND R RACING"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_06" LongName="6. Baja Challenge - Pro" FEOrder="6" Class="Buggy" Level="Pro" Cost="60000" TireSize="Medium" LightRigCategory="Small">
+      <Setup ComponentMap="BuggyCompMap_B1" Traits="Buggy_Generic" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_06" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy" Cameras="BuggyCamSet_06"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="CHASSIS_Buggy_06" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="RENTHAL 1" HOOD2="HIPER" HOOD3="BELL" ROOF1="ROLL" ROOF2="SCOTT 1" ROOF3="SCOTT 2" INTAKE1="FOX RACING 1" SIDE1="ALBA" SIDE2="G AND R RACING" SIDE3="RENTHAL 1"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_07" LongName="7. Unlimited V8 - Pro" FEOrder="7" Class="Buggy" Level="Pro" Cost="70000" TireSize="Large" LightRigCategory="Large">
+      <Setup ComponentMap="BuggyCompMap_A1" Traits="Buggy_Generic" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_07" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy" Cameras="BuggyCamSet_07"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="CHASSIS_Buggy_07" Wheel="TYRE_GENERIC_LARGE" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="BELL" HOOD2="BEARD SEATS" HOOD3="ITP" ROOF1="G AND R RACING" ROOF2="ITP" FRONT1="RPM" SIDE1="BALDWIN" SIDE2="O'NEAL" SIDE3="BELL"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_08" LongName="8. McKenzies - Pro" FEOrder="8" Class="Buggy" Level="Pro" Cost="75000" P2PStoryMode="TRUE" TireSize="Large" LightRigCategory="Small">
+      <Setup ComponentMap="BuggyCompMap_A1" Traits="Buggy_Generic" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_08" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy" Cameras="BuggyCamSet_08"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="CHASSIS_Buggy_08" Wheel="TYRE_GENERIC_LARGE" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="SCOTT 2" HOOD2="LAEGERS" ROOF1="SCOTT 1" ROOF2="BEARD SEATS" SIDE1="SCOTT 2" SIDE2="LAEGERS" SIDE3="SCOTT 1" SIDE4="BEARD SEATS"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_09" LongName="9. Higman - Pro" FEOrder="9" Class="Buggy" Level="Pro" P2PStoryMode="TRUE" TireSize="Medium" LightRigCategory="Small">
+      <Setup ComponentMap="BuggyCompMap_B1" Traits="Buggy_Generic" Cameras="BuggyCamSet_09" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_09" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="CHASSIS_Buggy_09" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="ELF LUBRICANTS 2" HOOD2="BELL" ROOF1="ELF LUBRICANTS 1" SIDE1="BELL" SIDE2="SKIN INDUSTRIES"/>
+      <UnlockableData DefaultState="LOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_10" LongName="10. Caddy - Pro" FEOrder="10" Class="Buggy" Level="Pro" NotForAI="1" TireSize="Medium" LightRigCategory="Large">
+      <Setup ComponentMap="BuggyCompMap_B" Traits="Buggy_Generic" Cameras="BuggyCamSet_10" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_10" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="CHASSIS_Buggy_10" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level3" EngineManagement="EngineManagement_Level2" EngineHeader="EngineHeader_Level2" IntakeKit="IntakeKit_Level3" GearboxType="GearboxType_Auto" Suspension="Suspension_Level3" Brake="Brake_Level2" BodyMass="BodyMass_Level2" Clutch="Clutch_Level2" Exhaust="Exhaust_Level3" GearboxLevel="GearboxLevel_Level3" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="ITP" HOOD2="CORTECH" ROOF1="ITP" ROOF2="ATTACK GRAPHICS" SIDE1="ELF LUBRICANTS 1" SIDE2="ATTACK GRAPHICS" SIDE3="ITP" SIDE4="OUTERWEARS"/>
+      <UnlockableData DefaultState="LOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_11" LongName="11. Bruck - Pro" FEOrder="11" Class="Buggy" Level="Pro" NotForAI="1" TireSize="Medium" LightRigCategory="Small">
+      <Setup ComponentMap="BuggyCompMap_B1" Traits="Buggy_Generic" Cameras="BuggyCamSet_11" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_11" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="CHASSIS_Buggy_11" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level3" EngineManagement="EngineManagement_Level2" EngineHeader="EngineHeader_Level2" IntakeKit="IntakeKit_Level3" GearboxType="GearboxType_Auto" Suspension="Suspension_Level3" Brake="Brake_Level2" BodyMass="BodyMass_Level2" Clutch="Clutch_Level2" Exhaust="Exhaust_Level3" GearboxLevel="GearboxLevel_Level3" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="ELF LUBRICANTS 1" HOOD2="SCOTT 2" ROOF1="SCOTT 1" REARWING1="CORTECH" SIDE1="OUTERWEARS" SIDE2="CORTECH"/>
+      <UnlockableData DefaultState="LOCKED" VehicleTriggerFilter="Buggy"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_12" LongName="12. Lancia - Pro" FEOrder="12" Class="Buggy" Level="Pro" NotForAI="1" TireSize="Rally" LightRigCategory="Large">
+      <Setup ComponentMap="RallyCompMap" Traits="Buggy_Generic" Cameras="LanciaCam" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_12" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="Lancia" Wheel="Wheel_Rally" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level3" EngineManagement="EngineManagement_Level2" EngineHeader="EngineHeader_Level2" IntakeKit="IntakeKit_Level3" GearboxType="GearboxType_Auto" Suspension="Suspension_Level3" Brake="Brake_Level2" BodyMass="BodyMass_Level2" Clutch="Clutch_Level2" Exhaust="Exhaust_Level3" GearboxLevel="GearboxLevel_Level3" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="ELF LUBRICANTS 2" FRONT1="OUTERWEARS" BACK1="LAEGERS" SIDE1="ELF LUBRICANTS 1" SIDE2="OUTERWEARS" SIDE3="ITP" SIDE4="FOX RACING 1"/>
+      <UnlockableData DefaultState="LOCKED"/>
+   </Vehicle>
+   <Vehicle Name="BUGGY_GHOST" LongName="Buggy GHOST Vehicle" Class="Buggy" Level="Pro" NotForPlayer="1" NotForAI="1">
+      <Setup ComponentMap="BuggyCompMap_GHOST" Traits="Buggy_Generic" Cameras="BuggyCamSet_01" LOD="Buggy_Generic" HUD="Buggy_Generic" Sound="BUGGY_01" Driver="Seated" Tricks="Buggy" AIRoute="Buggy" AIControl="Buggy" DataDirectory="Buggy"/>
+      <DefaultConfig ComponentSet="Buggy" Chassis="CHASSIS_Buggy_05_GHOST" Wheel="Wheel_Generic_GHOST" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"><!--The FinalDrive value should match that specified for GearboxLevel_Level1's FinalDriveRatio for this vehicle class in VehicleTuning.xml--></GearRatioTuning>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_01" LongName="1. Willy's Jeep - Amateur" FEOrder="1" Class="Truck" Level="Amateur" TireSize="Small" LightRigCategory="Large">
+      <Setup ComponentMap="TruckCompMap_B1" Traits="Truck_Generic" Cameras="TruckCamSet_01" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_01" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="CHASSIS_Truck_01" Wheel="TYRE_GENERIC_SMALL" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_02" LongName="2. Desert Jeep - Amateur" FEOrder="2" Class="Truck" Level="Amateur" Cost="20000" TireSize="Medium" LightRigCategory="Large">
+      <Setup ComponentMap="TruckCompMap_B1" Traits="Truck_Generic" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_02" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck" Cameras="TruckCamSet_02"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="CHASSIS_Truck_02" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_03" LongName="3. Stock Truck - Amateur" FEOrder="3" Class="Truck" Level="Amateur" Cost="25000" TireSize="Medium" LightRigCategory="Large">
+      <Setup ComponentMap="TruckCompMap_B2" Traits="Truck_Generic" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_03" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck" Cameras="TruckCamSet_03"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="CHASSIS_Truck_03" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_04" LongName="4. Pre Runner - Amateur" FEOrder="4" Class="Truck" Level="Amateur" Cost="30000" TireSize="Medium" LightRigCategory="Large">
+      <Setup ComponentMap="TruckCompMap_B1" Traits="Truck_Generic" Cameras="TruckCamSet_11" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_04" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="CHASSIS_Truck_11" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_05" LongName="5. Trophy Truck 1 - Pro" FEOrder="5" Class="Truck" Level="Pro" Cost="65000" TireSize="Medium" LightRigCategory="Large">
+      <Setup ComponentMap="TruckCompMap_A2" Traits="Truck_Generic" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_05" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck" Cameras="TruckCamSet_05"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="CHASSIS_Truck_05" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="HOWE" HOOD2="ELF LUBRICANTS 2" SIDE1="ELF LUBRICANTS 1" SIDE2="ARC RACING" SIDE3="ROLL" SIDE4="LAEGERS" REARWINDOW1="DOUGLAS WHEELS" ROOF1="ARC RACING" WINDSCREEN1="LAEGERS"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_06" LongName="6. Truggy 1 - Pro" FEOrder="6" Class="Truck" Level="Pro" Cost="75000" TireSize="Large" LightRigCategory="Large">
+      <Setup ComponentMap="BuggyCompMap_A1" Traits="Truck_Generic" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_06" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck" Cameras="TruckCamSet_06"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="CHASSIS_Truck_06" Wheel="TYRE_GENERIC_LARGE" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="MICKEY THOMPSON TIRES" HOOD2="MCKENZIES" SIDE1="ATTACK GRAPHICS" SIDE2="ARC RACING" SIDE3="SINISALO" SIDE4="SKIN INDUSTRIES" ROOF1="SKIN INDUSTRIES" ROOF2="MICKEY THOMPSON TIRES"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_07" LongName="7. Truggy 2 - Pro" FEOrder="7" Class="Truck" Level="Pro" Cost="70000" P2PStoryMode="TRUE" TireSize="Large" LightRigCategory="Large">
+      <Setup ComponentMap="TruckCompMap_B1" Traits="Truck_Generic" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_07" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck" Cameras="TruckCamSet_07"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="CHASSIS_Truck_07" Wheel="TYRE_GENERIC_LARGE" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="HERBST 1" SIDE1="SCOTT 1" SIDE2="HERBST 1" SIDE3="ELF LUBRICANTS 1" SIDE4="HERBST 2" INTAKE1="SCOTT 2" ROOF1="SCOTT 1" ROOF2="ELF LUBRICANTS 1"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_08" LongName="8. Trophy Truck 2 - Pro" FEOrder="8" Class="Truck" Level="Pro" Cost="60000" P2PStoryMode="TRUE" TireSize="Medium" LightRigCategory="Large">
+      <Setup ComponentMap="TruckCompMap_B2" Traits="Truck_Generic" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_08" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck" Cameras="TruckCamSet_08"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="CHASSIS_Truck_08" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="HERBST 1" HOOD2="RENTHAL 1" SIDE1="HERBST 1" SIDE2="DOUGLAS WHEELS" SIDE3="RENTHAL 1" SIDE4="HERBST 2" ROOF1="HERBST 2" ROOF2="DOUGLAS WHEELS" REARWING1="RENTHAL 1"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_09" LongName="9. Trophy Truck 3 - Pro" FEOrder="9" Class="Truck" Level="Pro" TireSize="Medium" LightRigCategory="Large">
+      <Setup ComponentMap="TruckCompMap_B1" Traits="Truck_Generic" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_09" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck" Cameras="TruckCamSet_09"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="CHASSIS_Truck_09" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level2" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="ALPINESTARS 2" HOOD2="G AND R RACING" SIDE1="DOUGLAS WHEELS" SIDE2="ATTACK GRAPHICS" SIDE3="ROLL" SIDE4="ALPINESTARS 1" BACK1="ELF LUBRICANTS 1" REARWING1="G AND R RACING" REARWING2="ALPINESTARS 2" ROOF1="ALPINESTARS 1" ROOF2="DOUGLAS WHEELS"/>
+      <UnlockableData DefaultState="LOCKED"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_10" LongName="10. F100 - Pro" FEOrder="10" Class="Truck" Level="Pro" NotForAI="1" TireSize="Medium" LightRigCategory="Small">
+      <Setup ComponentMap="TruckCompMap_B1" Traits="Truck_Generic" Cameras="TruckCamSet_10" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_10" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="CHASSIS_Truck_10" Wheel="TYRE_GENERIC_MEDIUM" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level3" EngineManagement="EngineManagement_Level2" EngineHeader="EngineHeader_Level2" IntakeKit="IntakeKit_Level3" GearboxType="GearboxType_Auto" Suspension="Suspension_Level3" Brake="Brake_Level2" BodyMass="BodyMass_Level2" Clutch="Clutch_Level2" Exhaust="Exhaust_Level3" GearboxLevel="GearboxLevel_Level3" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="ROLL" HOOD2="HOWE" HOOD3="ELF LUBRICANTS 1" ROOF1="ARC RACING" ROOF2="ELF LUBRICANTS 1" BACK1="ROLL" SIDE1="SCOTT 1" SIDE2="BEL-RAY" SIDE3="ELF LUBRICANTS 2" SIDE4="SCOTT 2" FRONTWING1="ELF LUBRICANTS 2" FRONTWING2="ARC RACING"/>
+      <UnlockableData DefaultState="LOCKED"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_11" LongName="11. Trophy Truck 4 - Pro" FEOrder="11" Class="Truck" Level="Pro" NotForAI="1" TireSize="Large" LightRigCategory="Large">
+      <Setup ComponentMap="TruckCompMap_B2" Traits="Truck_Generic" Cameras="TruckCamSet_11" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_11" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="CHASSIS_Truck_12" Wheel="TYRE_GENERIC_LARGE" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level3" EngineManagement="EngineManagement_Level2" EngineHeader="EngineHeader_Level2" IntakeKit="IntakeKit_Level3" GearboxType="GearboxType_Auto" Suspension="Suspension_Level3" Brake="Brake_Level2" BodyMass="BodyMass_Level2" Clutch="Clutch_Level2" Exhaust="Exhaust_Level3" GearboxLevel="GearboxLevel_Level3" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="FOX SHOX 1" SIDE1="OUTERWEARS CO" SIDE2="ALPINESTARS 1" SIDE3="MCKENZIES" SIDE4="HOWE" ROOF1="ALPINESTARS 1" ROOF2="OUTERWEARS CO" REARWING1="ALPINESTARS 2" REARWING2="FOX SHOX 1" SPOILER1="ALPINESTARS 1"/>
+      <UnlockableData DefaultState="LOCKED" VehicleTriggerFilter="Truck"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_12" LongName="12. Dakar - Pro" FEOrder="12" Class="Truck" Level="Pro" NotForAI="1" TireSize="Small" LightRigCategory="Large">
+      <Setup ComponentMap="RallyCompMap" Traits="Truck_Generic" Cameras="TruckCamSet_12" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_12" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="Dakar" Wheel="TYRE_GENERIC_SMALL" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level3" EngineManagement="EngineManagement_Level2" EngineHeader="EngineHeader_Level2" IntakeKit="IntakeKit_Level3" GearboxType="GearboxType_Auto" Suspension="Suspension_Level3" Brake="Brake_Level2" BodyMass="BodyMass_Level2" Clutch="Clutch_Level2" Exhaust="Exhaust_Level3" GearboxLevel="GearboxLevel_Level3" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals HOOD1="MICKEY THOMPSON TIRES" HOOD2="HIPER" SIDE1="MICKEY THOMPSON TIRES" SIDE2="SIDI BOOTS" SIDE3="SCOTT 2" INTAKE1="MCKENZIES" ROOF1="HIPER" ROOF2="MICKEY THOMPSON TIRES" ROOF3="SCOTT 2" SPOILER1="SCOTT 1"/>
+      <UnlockableData DefaultState="LOCKED"/>
+   </Vehicle>
+   <Vehicle Name="TRUCK_GHOST" LongName="TRUCK GHOST VEHICLE" Class="Truck" Level="Pro" NotForPlayer="1" NotForAI="1">
+      <Setup ComponentMap="TruckCompMap_GHOST" Traits="Truck_Generic" Cameras="TruckCamSet_01" LOD="Truck_Generic" HUD="Truck_Generic" Sound="TRUCK_01" Driver="Seated" Tricks="Truck" AIRoute="Truck" AIControl="Truck" DataDirectory="Truck"/>
+      <DefaultConfig ComponentSet="Truck" Chassis="CHASSIS_Truck_05_GHOST" Wheel="Wheel_Generic_GHOST" Tire="DIRT_BUDGET" Lighting="NOT_INSTALLED" Bumper="NOT_INSTALLED" Alloy="WHEEL_01" EngineInternals="EngineInternals_Level0" EngineManagement="EngineManagement_Level0" EngineHeader="EngineHeader_Level0" IntakeKit="IntakeKit_Level0" GearboxType="GearboxType_Auto" Suspension="Suspension_Level0" Brake="Brake_Level0" BodyMass="BodyMass_Level0" Clutch="Clutch_Level0" Exhaust="Exhaust_Level0" GearboxLevel="GearboxLevel_Level0" Shocks="Shocks_Medium" GearRatios="GearRatios_Default" BrakeBalanceController="BrakeBalanceController_Default">
+         <CustomTunings FrontBrakeBias="0.5">
+            <GearRatioTuning Gear1="0.5" Gear2="0.5" Gear3="0.5" Gear4="0.5" Gear5="0.5" FinalDrive="0.61"/>
+         </CustomTunings>
+      </DefaultConfig>
+      <DefaultDecals FRONT_01="FTM_02" FRONT_02="RPM" FRONT_03="Alpinestars_02" REAR_01="Azonic_02" REAR_02="AXO_04" REAR_03="Thor_02" NOSE="Alpinestars_01"/>
+      <UnlockableData DefaultState="UNLOCKED"/>
+   </Vehicle>
+</Root>

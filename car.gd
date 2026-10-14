@@ -29,28 +29,29 @@ var points_file := "res://data/vehicles/renegade_points.bin"
 var vehicle_name := "Renegade (Buggy)"
 
 # peças de fábrica (DefaultConfig do jogo). Cada número diz quanto o valor
-# anda de _non_tuned até _fully_tuned (tabela de efeitos das peças)
-# Configuração de fábrica dos buggies escondidos (BUGGY_10/11/12 no XML de
-# veículos; o Renegade é um deles). Conferido com o vídeo do jogo: trocas a
-# 63/97/129 km/h só batem com a relação final custom (0.61), freio forte com
-# Brake_Level2 e troca de ~0.3 s com Clutch_Level2.
-const TUNE_ENGINE := 0.81     # Internals L3 (0.3) + Management L2 (0.15) + Header L2 (0.08) + Intake L3 (0.18) + Exhaust L3 (0.1)
-const TUNE_BRAKE := 0.9       # Brake_Level2
-const TUNE_SUSP := 1.0        # Suspension_Level3: curso máximo
-const TUNE_UNDERSTEER := 1.0  # Suspension_Level3
-const TUNE_FINAL := 0.61      # GearboxLevel_Level3 = relação final custom (CustomTunings FinalDrive)
-const TUNE_SHIFT := 1.0       # Clutch_Level2
-const TUNE_MASS := 1.0        # BodyMass_Level2
-const TUNE_SPRING := 0.5      # Shocks_Medium
-const TUNE_DAMPING := 0.91    # Shocks_Medium
-const TUNE_GEARS := 0.5       # DefaultConfig/CustomTunings/GearRatioTuning (0.5 em todas)
+# anda de _non_tuned até _fully_tuned. Vêm de data/vehicles.xml (DefaultConfig
+# do veículo) + data/upgrades.xml (efeito de cada peça), ver
+# VehicleData.factory_tuning. Os valores abaixo são os do Renegade (BUGGY_10),
+# conferidos no save state: torque 0.81, final 0.61, massa e embreagem no máximo.
+var vehicle_id := "BUGGY_10"
+var tune_override := {}       # ex.: {"engine": 0.3} pra simular peças compradas
+var TUNE_ENGINE := 0.81       # Internals L3 + Management L2 + Header L2 + Intake L3 + Exhaust L3
+var TUNE_BRAKE := 0.9         # Brake_Level2
+var TUNE_SUSP := 1.0          # Suspension_Level3: curso máximo
+var TUNE_UNDERSTEER := 1.0    # Suspension_Level3
+var TUNE_FINAL := 0.61        # GearboxLevel_Level3 = relação final custom (CustomTunings FinalDrive)
+var TUNE_SHIFT := 1.0         # Clutch_Level2
+var TUNE_MASS := 1.0          # BodyMass_Level2
+var TUNE_SPRING := 0.5        # Shocks_Medium
+var TUNE_DAMPING := 0.91      # Shocks_Medium
+var TUNE_GEARS := [0.5, 0.5, 0.5, 0.5, 0.5]   # CustomTunings/GearRatioTuning
 const REAR_DRIVE := true      # tração só atrás (o XML não diz; buggy de motor traseiro)
 
 # aderência do chão (TireBehaviour do jogo, nota 0-10): terra com pneu de fábrica
 # (DIRT_BUDGET) = 8. Os XMLs trazem cada valor pra atrito máximo (1.0) e mínimo
 # (0.1); o jogo interpola entre os dois conforme o chão.
 var SURFACE_MU := 0.8          # pneu DIRT_BUDGET na terra (4 estrelas). DIRT_PREMIUM = 1.0
-const TUNE_FRONT_BIAS := 0.5  # DefaultConfig/CustomTunings FrontBrakeBias
+var TUNE_FRONT_BIAS := 0.5    # DefaultConfig/CustomTunings FrontBrakeBias
 
 # geometria medida no modelo (o XML não traz a posição das rodas)
 # posição das rodas no chute, só se faltar o arquivo de pontos do modelo
@@ -62,7 +63,8 @@ const WHEEL_Y := 0.45         # altura do cubo com o carro parado
 const SW_CENTER := Vector3(-0.434, 1.351, 0.396)
 const SW_AXIS := Vector3(0.0, 0.684, -0.729)
 const SW_TURNS := 2.6
-const DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)
+var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
+const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
 const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
 
 var model_root: Node3D
@@ -139,7 +141,27 @@ func _ready() -> void:
 
 
 # ------------------------------------------------------------------ dados
+func _load_tuning() -> void:
+	if not FileAccess.file_exists("res://data/vehicles.xml"):
+		return
+	var t := VehicleData.factory_tuning("res://data/vehicles.xml", "res://data/upgrades.xml", vehicle_id)
+	TUNE_ENGINE = t.engine
+	TUNE_BRAKE = t.brake
+	TUNE_SUSP = t.susp
+	TUNE_UNDERSTEER = t.understeer
+	TUNE_FINAL = t.final
+	TUNE_SHIFT = t.shift
+	TUNE_MASS = t.mass
+	TUNE_SPRING = t.spring
+	TUNE_DAMPING = t.damping
+	TUNE_GEARS = t.gears
+	TUNE_FRONT_BIAS = t.front_bias
+	for k in tune_override:
+		set("TUNE_" + String(k).to_upper(), tune_override[k])
+
+
 func _load_physics() -> void:
+	_load_tuning()
 	var d = VehicleData.new()
 	d.load_files(data_files)
 
@@ -187,7 +209,7 @@ func _load_physics() -> void:
 	var n := int(d.f("Gearbox", "Number_of_forward_gears", 5))
 	gears.resize(n + 1)
 	for g in range(1, n + 1):
-		gears[g] = d.tuned("Gearbox/Ratios", "Gear_%d" % g, TUNE_GEARS)
+		gears[g] = d.tuned("Gearbox/Ratios", "Gear_%d" % g, TUNE_GEARS[g - 1])
 	P.gear_r = d.f("Gearbox/Ratios", "Gear_R", -15.0)
 	P.final = d.tuned("Gearbox/Ratios", "Final_drive", TUNE_FINAL)
 	P.up_rpm = d.f("Gearbox/AutoManual", "Change_up_rpm", 7000.0)
@@ -200,7 +222,9 @@ func _load_physics() -> void:
 	P.clutch_eng_rate = d.f("Gearbox/AutoManual", "Clutch_engagement_rate", 2.0)
 	P.clutch_thr_mod = d.f("Gearbox/AutoManual", "Clutch_rate_throttle_modifier", 1.0)
 	P.clutch_dis_rpm = d.f("Gearbox/AutoManual", "Clutch_disengagement_rpm", 1050.0)
-	P.clutch_max = d.tuned("Gearbox/AutoManual", "Maximum_clutch_torque", TUNE_SHIFT) * 1000.0
+	# ClutchTorque vem das peças de motor (mesma soma do torque), não do Clutch_Level:
+	# no save state do Renegade a embreagem vale 0.6127 = lerp(0.445, 0.652, 0.81)
+	P.clutch_max = d.tuned("Gearbox/AutoManual", "Maximum_clutch_torque", TUNE_ENGINE) * 1000.0
 	P.clutch_rpm_lo = d.f("Gearbox/AutoManual", "Clutch_engagement_rpm_no_throttle", 1000.0)
 	P.clutch_rpm_hi = d.f("Gearbox/AutoManual", "Clutch_engagement_rpm_full_throttle", 1000.0)
 	P.clutch_lock_diff = d.f("Gearbox/AutoManual", "Clutch_lock_rpm_difference", 100.0)
@@ -329,6 +353,8 @@ func _load_physics() -> void:
 	# aparece no -X do Godot; a física só precisa saber de que lado cada roda fica.
 	wheels.clear()
 	var pts := _load_points(points_file)
+	if pts.has("ARSE"):
+		DRIVER_EYE = pts["ARSE"] + EYE_FROM_ARSE
 	var wpos := {}
 	for k in ["FRONT_LEFT", "FRONT_RIGHT", "REAR_LEFT", "REAR_RIGHT"]:
 		if pts.has("WHEEL_" + k):

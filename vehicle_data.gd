@@ -172,3 +172,87 @@ static func fcurve_eval(c: Dictionary, mu: float, x: float) -> float:
 		return sample(c.max, x)
 	var lo := sample(c.min, x)
 	return lo + (mu - c.lmin) / (c.lmax - c.lmin) * (sample(c.max, x) - lo)
+
+
+## Peças de fábrica do veículo -> quanto cada grupo de valores anda de
+## _non_tuned até _fully_tuned (0..1). Lê a DefaultConfig do veículo
+## (vehicles.xml, 14887) e os efeitos de cada peça (upgrades.xml, 14889).
+## Conferido no save state do Renegade: torque 1.7626 = 0.81, massa e
+## embreagem no fully_tuned, final 1.1636 = 0.61.
+static func factory_tuning(veh_xml: String, upg_xml: String, veh_name: String) -> Dictionary:
+	var cfg := {}
+	var gears := {}
+	var bias := 0.5
+	var cls := "Buggy"
+	var x := XMLParser.new()
+	if x.open(veh_xml) == OK:
+		var inside := false
+		while x.read() == OK:
+			if x.get_node_type() == XMLParser.NODE_ELEMENT:
+				var n := x.get_node_name()
+				if n == "Vehicle":
+					inside = x.get_named_attribute_value_safe("Name") == veh_name
+					if inside:
+						cls = x.get_named_attribute_value_safe("Class")
+				elif inside and n == "DefaultConfig":
+					for i in x.get_attribute_count():
+						cfg[x.get_attribute_name(i)] = x.get_attribute_value(i)
+				elif inside and n == "CustomTunings":
+					bias = x.get_named_attribute_value_safe("FrontBrakeBias").to_float()
+				elif inside and n == "GearRatioTuning":
+					for i in x.get_attribute_count():
+						gears[x.get_attribute_name(i)] = x.get_attribute_value(i).to_float()
+			elif x.get_node_type() == XMLParser.NODE_ELEMENT_END and x.get_node_name() == "Vehicle":
+				if inside:
+					break
+	# efeitos por peça, só da classe do veículo
+	var fx := {}
+	if x.open(upg_xml) == OK:
+		var in_cls := false
+		var comp := ""
+		while x.read() == OK:
+			var t := x.get_node_type()
+			if t == XMLParser.NODE_ELEMENT:
+				var n := x.get_node_name()
+				if n == cls:
+					in_cls = true
+				elif in_cls and n == "Effect" and comp != "":
+					fx[comp][x.get_named_attribute_value_safe("Type")] = x.get_named_attribute_value_safe("Value").to_float()
+				elif in_cls and not x.is_empty():
+					comp = n
+					fx[comp] = {}
+			elif t == XMLParser.NODE_ELEMENT_END and x.get_node_name() == cls:
+				in_cls = false
+	var sum := func(effect: String) -> float:
+		var s := 0.0
+		for slot in cfg:
+			var c: String = cfg[slot]
+			if fx.has(c) and fx[c].has(effect):
+				s += fx[c][effect]
+		return s
+	var pick := func(effect: String, def: float) -> float:
+		for slot in cfg:
+			var c: String = cfg[slot]
+			if fx.has(c) and fx[c].has(effect):
+				return fx[c][effect]
+		return def
+	var g := []
+	for i in range(1, 6):
+		g.append(gears.get("Gear%d" % i, 0.5))
+	return {
+		"engine": sum.call("EngineDriveTorque"),
+		"brake": pick.call("BrakeDeceleration", 0.0),
+		"susp": pick.call("FrontSuspMaxCompression", 1.0),
+		"understeer": pick.call("UndersteerCoefficient", 0.0),
+		# relação final = a custom (GearRatioTuning FinalDrive). O FinalDriveRatio
+		# do GearboxLevel_Level0/1 (0.45/0.53) não é aplicado: no speedrun o Sphinx
+		# de fábrica troca a 38/57/75 mph, o que só bate com 0.61
+		"final": gears.get("FinalDrive", 0.5),
+		"shift": pick.call("AutoGearChangeTime", 0.0),
+		"mass": pick.call("Mass", 0.0),
+		"spring": pick.call("FrontSuspSpringRate", 0.5),
+		"damping": pick.call("FrontSuspDamping", 0.91),
+		"gears": g,
+		"front_bias": bias,
+		"config": cfg,
+	}

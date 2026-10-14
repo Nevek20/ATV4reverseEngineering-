@@ -8,6 +8,12 @@ Copie **todos** os arquivos da pasta `renegade` (o `.obj`, o `.mtl` e os PNGs
 que o `pingu2obj.py --copy-tex` gerou) para `assets/renegade/`.
 Sem isso o carro aparece como uma caixa.
 
+Pro Sphinx, gere o modelo do mesmo jeito e copie pra `assets/sphinx/`:
+
+```
+python pingu2obj.py unpacked\other\21531_bloco.bin --out sphinx --copy-tex
+```
+
 ## Rodar
 
 1. Abra o Godot, clique em **Importar** e escolha o `project.godot`
@@ -27,6 +33,7 @@ Sem isso o carro aparece como uma caixa.
 | R | desvirar o carro |
 | T | voltar para o início |
 | C | trocar câmera (perto, longe, capô, para-choque, piloto) |
+| V | trocar de carro (Renegade, Sphinx de fábrica, Sphinx do speedrun) |
 | F | girar o modelo 180° (se ele parecer andar de ré) |
 | Esc | sair |
 
@@ -42,6 +49,8 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
   15146 o 2º, e assim até 15156 (Storm). Ex.: Sphinx = 15148). Massa, molas, amortecedores, curva
   de torque, marchas, embreagem, elipse de atrito, subesterço, derrapagem e
   gravidade no ar saem de lá
+- Peças de fábrica de cada carro: `data/vehicles.xml` (DefaultConfig, 14887) +
+  `data/upgrades.xml` (efeito de cada peça, 14889). Conferido no save state
 - Código de física portado do executável (SCES_546.88): pneus e derrapagem
   (parte 1), motor, embreagem, câmbio e roda patinando (parte 3), suspensão,
   anti-pitch e controles no ar (parte 4), arrasto do ar e atrito interno

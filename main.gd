@@ -2,7 +2,23 @@ extends Node3D
 ## Cena principal do protótipo: monta mundo, chão, carro, câmera e HUD
 ## tudo por código, pra ficar fácil de ler e mexer.
 
-const CAR_MODEL := "res://assets/renegade/21711_bloco.obj"
+# veículos do jogo: modelo, física (base + veículo), pontos e câmera.
+# "id" é o nome no vehicles.xml (posição na lista do jogo, contando do 1).
+const VEHICLES := [
+	{"name": "Renegade", "id": "BUGGY_10", "cams": "BuggyCamSet_10",
+		"model": "res://assets/renegade/21711_bloco.obj",
+		"data": "res://data/vehicles/renegade.xml", "points": "res://data/vehicles/renegade_points.bin"},
+	{"name": "Sphinx", "id": "BUGGY_04", "cams": "BuggyCamSet_04",
+		"model": "res://assets/sphinx/21531_bloco.obj",
+		"data": "res://data/vehicles/sphinx.xml", "points": "res://data/vehicles/sphinx_points.bin"},
+	# o Sphinx do speedrun tem peças compradas: com motor 0.81, BodyMass L2 e
+	# Clutch L2 as trocas (38/57/75 mph) caem no mesmo tempo do vídeo
+	{"name": "Sphinx speedrun", "id": "BUGGY_04", "cams": "BuggyCamSet_04",
+		"model": "res://assets/sphinx/21531_bloco.obj",
+		"data": "res://data/vehicles/sphinx.xml", "points": "res://data/vehicles/sphinx_points.bin",
+		"tune": {"engine": 0.81, "mass": 1.0, "shift": 1.0}},
+]
+var veh_idx := 0
 const SPAWN_XZ := Vector2(400.0, 340.0)   # em cima da reta de cima da pista
 
 const Car := preload("res://car.gd")
@@ -20,10 +36,7 @@ func _ready() -> void:
 	terrain = Terrain.new()
 	add_child(terrain)
 
-	car = Car.new()
-	car.model_path = CAR_MODEL
-	add_child(car)
-	car.reset_to(spawn_point(), deg_to_rad(90.0))
+	spawn_vehicle(0, spawn_point(), deg_to_rad(90.0))
 
 	cam = Camera3D.new()
 	cam.far = 4000.0
@@ -43,6 +56,27 @@ func _ready() -> void:
 	hud.add_theme_color_override("font_outline_color", Color.BLACK)
 	hud.add_theme_constant_override("outline_size", 6)
 	layer.add_child(hud)
+
+
+func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
+	var manual := false
+	if car != null:
+		manual = car.manual
+		car.queue_free()
+	veh_idx = i
+	var v: Dictionary = VEHICLES[i]
+	car = Car.new()
+	car.model_path = v.model
+	car.data_files = ["res://data/vehicles/buggy_base.xml", v.data]
+	car.points_file = v.points
+	car.vehicle_id = v.id
+	car.tune_override = v.get("tune", {})
+	car.vehicle_name = "%s (%s)" % [v.name, v.id]
+	add_child(car)
+	car.manual = manual
+	car.reset_to(pos, yaw)
+	gcams.clear()
+	cam_ready = false
 
 
 func _make_environment() -> void:
@@ -92,6 +126,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_T:
 				car.reset_to(spawn_point(), deg_to_rad(90.0))
 				reset_camera()
+			KEY_V:
+				var p: Vector3 = car.global_position
+				spawn_vehicle((veh_idx + 1) % VEHICLES.size(),
+					Vector3(p.x, terrain.height_at(p.x, p.z) + 1.5, p.z), car.global_rotation.y)
 			KEY_F:
 				car.flip_model()
 			KEY_ESCAPE:
@@ -103,24 +141,24 @@ func _process(delta: float) -> void:
 		return
 	_update_camera(delta)
 	var kmh: float = car.linear_velocity.length() * 3.6
-	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço: powerslide (freio de mão)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC: câmera (%s)   F: girar o modelo   Esc: sair" % [
+	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço: powerslide (freio de mão)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC: câmera (%s)   V: trocar carro   F: girar o modelo   Esc: sair" % [
 		int(kmh), int(kmh / 1.609), car.gear_label(), int(car.rpm), "MANUAL" if car.manual else "AUTO", car.vehicle_name, ("pneus portados do jogo" if car.use_ported else "pneus antigos") + (", lateral do jogo" if car.lateral_game else ", lateral remendo"), CAM_NAMES[cam_mode]]
 
 
 const GameCamera := preload("res://game_camera.gd")
 const CAM_XML := "res://data/cameras.xml"
-const CAM_SET := "BuggyCamSet_10"         # Renegade (BUGGY_10)
 const CAM_NAMES := ["perto", "longe", "capô", "para-choque", "piloto"]
 var gcams := []                           # câmeras do jogo, uma por modo (0..3)
 var cam_ready := false
 
 
 func _make_cameras() -> void:
+	var cs: String = VEHICLES[veh_idx].cams
 	gcams = [
-		GameCamera.load_set(CAM_XML, CAM_SET, "FollowOrbitNear"),
-		GameCamera.load_set(CAM_XML, CAM_SET, "FollowOrbitFar"),
-		GameCamera.load_set(CAM_XML, CAM_SET, "MountOnHood"),
-		GameCamera.load_set(CAM_XML, CAM_SET, "MountOnFront"),
+		GameCamera.load_set(CAM_XML, cs, "FollowOrbitNear"),
+		GameCamera.load_set(CAM_XML, cs, "FollowOrbitFar"),
+		GameCamera.load_set(CAM_XML, cs, "MountOnHood"),
+		GameCamera.load_set(CAM_XML, cs, "MountOnFront"),
 	]
 
 

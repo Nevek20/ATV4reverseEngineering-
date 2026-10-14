@@ -1,0 +1,1085 @@
+<Root FileVersion="1.0000000">
+	<ATV>
+		<EngineInternals>
+			<EngineInternals_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</EngineInternals_Level0>
+			<EngineInternals_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</EngineInternals_Level1>
+			<EngineInternals_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.3"/>
+				<Effect Type="EngineFrictionTorque" Value="0.3"/>
+				<Effect Type="EngineInertia" Value="0.3"/>
+				<Effect Type="ClutchTorque" Value="0.3"/>
+			</EngineInternals_Level2>
+			<EngineInternals_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.35"/>
+				<Effect Type="EngineFrictionTorque" Value="0.35"/>
+				<Effect Type="EngineInertia" Value="0.35"/>
+				<Effect Type="ClutchTorque" Value="0.35"/>
+			</EngineInternals_Prototype>
+		</EngineInternals>
+		<EngineManagement>
+			<EngineManagement_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</EngineManagement_Level0>
+			<EngineManagement_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.05"/>
+				<Effect Type="EngineFrictionTorque" Value="0.05"/>
+				<Effect Type="EngineInertia" Value="0.05"/>
+				<Effect Type="ClutchTorque" Value="0.05"/>
+			</EngineManagement_Level1>
+			<EngineManagement_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.15"/>
+				<Effect Type="EngineFrictionTorque" Value="0.15"/>
+				<Effect Type="EngineInertia" Value="0.15"/>
+				<Effect Type="ClutchTorque" Value="0.15"/>
+			</EngineManagement_Level2>
+			<EngineManagement_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.2"/>
+				<Effect Type="EngineFrictionTorque" Value="0.2"/>
+				<Effect Type="EngineInertia" Value="0.2"/>
+				<Effect Type="ClutchTorque" Value="0.2"/>
+			</EngineManagement_Prototype>
+		</EngineManagement>
+		<EngineHeader>
+			<EngineHeader_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</EngineHeader_Level0>
+			<EngineHeader_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.04"/>
+				<Effect Type="EngineFrictionTorque" Value="0.04"/>
+				<Effect Type="EngineInertia" Value="0.04"/>
+				<Effect Type="ClutchTorque" Value="0.04"/>
+			</EngineHeader_Level1>
+			<EngineHeader_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</EngineHeader_Level2>
+		</EngineHeader>
+		<Exhaust>
+			<Exhaust_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</Exhaust_Level0>
+			<Exhaust_Level1a>
+				<Effect Type="EngineDriveTorque" Value="0.02"/>
+				<Effect Type="EngineFrictionTorque" Value="0.02"/>
+				<Effect Type="EngineInertia" Value="0.02"/>
+				<Effect Type="ClutchTorque" Value="0.02"/>
+			</Exhaust_Level1a>
+			<Exhaust_Level1b>
+				<Effect Type="EngineDriveTorque" Value="0.02"/>
+				<Effect Type="EngineFrictionTorque" Value="0.02"/>
+				<Effect Type="EngineInertia" Value="0.02"/>
+				<Effect Type="ClutchTorque" Value="0.02"/>
+			</Exhaust_Level1b>
+			<Exhaust_Level2a>
+				<Effect Type="EngineDriveTorque" Value="0.04"/>
+				<Effect Type="EngineFrictionTorque" Value="0.04"/>
+				<Effect Type="EngineInertia" Value="0.04"/>
+				<Effect Type="ClutchTorque" Value="0.04"/>
+			</Exhaust_Level2a>
+			<Exhaust_Level2b>
+				<Effect Type="EngineDriveTorque" Value="0.04"/>
+				<Effect Type="EngineFrictionTorque" Value="0.04"/>
+				<Effect Type="EngineInertia" Value="0.04"/>
+				<Effect Type="ClutchTorque" Value="0.04"/>
+			</Exhaust_Level2b>
+			<Exhaust_Level3a>
+				<Effect Type="EngineDriveTorque" Value="0.08"/>
+				<Effect Type="EngineFrictionTorque" Value="0.08"/>
+				<Effect Type="EngineInertia" Value="0.08"/>
+				<Effect Type="ClutchTorque" Value="0.08"/>
+			</Exhaust_Level3a>
+			<Exhaust_Level3b>
+				<Effect Type="EngineDriveTorque" Value="0.08"/>
+				<Effect Type="EngineFrictionTorque" Value="0.08"/>
+				<Effect Type="EngineInertia" Value="0.08"/>
+				<Effect Type="ClutchTorque" Value="0.08"/>
+			</Exhaust_Level3b>
+			<Exhaust_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</Exhaust_Prototype>
+		</Exhaust>
+		<IntakeKit>
+			<IntakeKit_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</IntakeKit_Level0>
+			<IntakeKit_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.04"/>
+				<Effect Type="EngineFrictionTorque" Value="0.04"/>
+				<Effect Type="EngineInertia" Value="0.04"/>
+				<Effect Type="ClutchTorque" Value="0.04"/>
+			</IntakeKit_Level1>
+			<IntakeKit_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</IntakeKit_Level2>
+			<IntakeKit_Level3>
+				<Effect Type="EngineDriveTorque" Value="0.18"/>
+				<Effect Type="EngineFrictionTorque" Value="0.18"/>
+				<Effect Type="EngineInertia" Value="0.18"/>
+				<Effect Type="ClutchTorque" Value="0.18"/>
+			</IntakeKit_Level3>
+			<IntakeKit_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.2"/>
+				<Effect Type="EngineFrictionTorque" Value="0.2"/>
+				<Effect Type="EngineInertia" Value="0.2"/>
+				<Effect Type="ClutchTorque" Value="0.2"/>
+			</IntakeKit_Prototype>
+		</IntakeKit>
+		<Suspension>
+			<Suspension_Level0>
+				<Effect Type="FrontSuspMaxCompression" Value="0.8"/>
+				<Effect Type="RearSuspMaxCompression" Value="0.8"/>
+				<Effect Type="UndersteerCoefficient" Value="0"/>
+			</Suspension_Level0>
+			<Suspension_Level1>
+				<Effect Type="FrontSuspMaxCompression" Value="0.9"/>
+				<Effect Type="RearSuspMaxCompression" Value="0.9"/>
+				<Effect Type="UndersteerCoefficient" Value="0.5"/>
+			</Suspension_Level1>
+			<Suspension_Level2>
+				<Effect Type="FrontSuspMaxCompression" Value="1"/>
+				<Effect Type="RearSuspMaxCompression" Value="1"/>
+				<Effect Type="UndersteerCoefficient" Value="1"/>
+			</Suspension_Level2>
+		</Suspension>
+		<Brake>
+			<Brake_Level0>
+				<Effect Type="BrakeDeceleration" Value="0.7"/>
+			</Brake_Level0>
+			<Brake_Level1>
+				<Effect Type="BrakeDeceleration" Value="0.8"/>
+			</Brake_Level1>
+			<Brake_Level2>
+				<Effect Type="BrakeDeceleration" Value="0.9"/>
+			</Brake_Level2>
+			<Brake_Prototype>
+				<Effect Type="BrakeDeceleration" Value="1.0"/>
+			</Brake_Prototype>
+		</Brake>
+		<GearboxLevel>
+			<GearboxLevel_Level0>
+				<Effect Type="None"/>
+			</GearboxLevel_Level0>
+			<GearboxLevel_Level1>
+				<Effect Type="None"/>
+			</GearboxLevel_Level1>
+			<GearboxLevel_Level2>
+				<Effect Type="None"/>
+			</GearboxLevel_Level2>
+			<GearboxLevel_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.05"/>
+				<Effect Type="EngineFrictionTorque" Value="0.05"/>
+				<Effect Type="EngineInertia" Value="0.05"/>
+				<Effect Type="ClutchTorque" Value="0.05"/>
+			</GearboxLevel_Prototype>
+		</GearboxLevel>
+		<Clutch>
+			<Clutch_Level0>
+				<Effect Type="AutoGearChangeTime" Value="0"/>
+				<Effect Type="ManualGearChangeTime" Value="0"/>
+			</Clutch_Level0>
+			<Clutch_Level1>
+				<Effect Type="AutoGearChangeTime" Value="0.5"/>
+				<Effect Type="ManualGearChangeTime" Value="0.5"/>
+			</Clutch_Level1>
+			<Clutch_Level2>
+				<Effect Type="AutoGearChangeTime" Value="1"/>
+				<Effect Type="ManualGearChangeTime" Value="1"/>
+			</Clutch_Level2>
+		</Clutch>
+		<BodyMass>
+			<BodyMass_Level0>
+				<Effect Type="Mass" Value="0"/>
+			</BodyMass_Level0>
+			<BodyMass_Level1>
+				<Effect Type="Mass" Value="0.35"/>
+			</BodyMass_Level1>
+			<BodyMass_Level2>
+				<Effect Type="Mass" Value="1.0"/>
+			</BodyMass_Level2>
+		</BodyMass>
+		<GearboxType>
+			<GearboxType_Auto>
+				<Effect Type="GearboxTypeManual" Value="0"/>
+			</GearboxType_Auto>
+			<GearboxType_Manual>
+				<Effect Type="GearboxTypeManual" Value="1.0"/>
+			</GearboxType_Manual>
+		</GearboxType>
+		<Shocks>
+			<Shocks_Soft>
+				<Effect Type="FrontSuspSpringRate" Value="0"/>
+				<Effect Type="RearSuspSpringRate" Value="0"/>
+				<Effect Type="FrontSuspDamping" Value="0.82"/>
+				<Effect Type="RearSuspDamping" Value="0.82"/>
+			</Shocks_Soft>
+			<Shocks_Medium>
+				<Effect Type="FrontSuspSpringRate" Value="0.5"/>
+				<Effect Type="RearSuspSpringRate" Value="0.5"/>
+				<Effect Type="FrontSuspDamping" Value="0.91"/>
+				<Effect Type="RearSuspDamping" Value="0.91"/>
+			</Shocks_Medium>
+			<Shocks_Hard>
+				<Effect Type="FrontSuspSpringRate" Value="1.0"/>
+				<Effect Type="RearSuspSpringRate" Value="1.0"/>
+				<Effect Type="FrontSuspDamping" Value="1.0"/>
+				<Effect Type="RearSuspDamping" Value="1.0"/>
+			</Shocks_Hard>
+		</Shocks>
+		<FinalDriveRatio>
+			<FinalDriveRatio_TunedSX>
+				<Effect Type="FinalDriveRatio" Value="1"/>
+			</FinalDriveRatio_TunedSX>
+			<FinalDriveRatio_SX>
+				<Effect Type="FinalDriveRatio" Value="0.75"/>
+			</FinalDriveRatio_SX>
+			<FinalDriveRatio_Standard>
+				<Effect Type="FinalDriveRatio" Value="0.5"/>
+			</FinalDriveRatio_Standard>
+			<FinalDriveRatio_GP>
+				<Effect Type="FinalDriveRatio" Value="0.25"/>
+			</FinalDriveRatio_GP>
+			<FinalDriveRatio_TunedGP>
+				<Effect Type="FinalDriveRatio" Value="0"/>
+			</FinalDriveRatio_TunedGP>
+		</FinalDriveRatio>
+	</ATV>
+	<Bike>
+		<Suspension>
+			<Suspension_Level0>
+				<Effect Type="FrontSuspMaxCompression" Value="0.8"/>
+				<Effect Type="RearSuspMaxCompression" Value="0.8"/>
+				<Effect Type="UndersteerCoefficient" Value="0"/>
+			</Suspension_Level0>
+			<Suspension_Level1>
+				<Effect Type="FrontSuspMaxCompression" Value="0.9"/>
+				<Effect Type="RearSuspMaxCompression" Value="0.9"/>
+				<Effect Type="UndersteerCoefficient" Value="0.5"/>
+			</Suspension_Level1>
+			<Suspension_Level2>
+				<Effect Type="FrontSuspMaxCompression" Value="1"/>
+				<Effect Type="RearSuspMaxCompression" Value="1"/>
+				<Effect Type="UndersteerCoefficient" Value="1"/>
+			</Suspension_Level2>
+		</Suspension>
+		<Brake>
+			<Brake_Level0>
+				<Effect Type="BrakeDeceleration" Value="0.7"/>
+			</Brake_Level0>
+			<Brake_Level1>
+				<Effect Type="BrakeDeceleration" Value="0.8"/>
+			</Brake_Level1>
+			<Brake_Level2>
+				<Effect Type="BrakeDeceleration" Value="0.9"/>
+			</Brake_Level2>
+			<Brake_Prototype>
+				<Effect Type="BrakeDeceleration" Value="1.0"/>
+			</Brake_Prototype>
+		</Brake>
+		<GearboxLevel>
+			<GearboxLevel_Level0>
+				<Effect Type="None"/>
+			</GearboxLevel_Level0>
+			<GearboxLevel_Level1>
+				<Effect Type="None"/>
+			</GearboxLevel_Level1>
+			<GearboxLevel_Level2>
+				<Effect Type="None"/>
+			</GearboxLevel_Level2>
+			<GearboxLevel_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.05"/>
+				<Effect Type="EngineFrictionTorque" Value="0.05"/>
+				<Effect Type="EngineInertia" Value="0.05"/>
+				<Effect Type="ClutchTorque" Value="0.05"/>
+			</GearboxLevel_Prototype>
+		</GearboxLevel>
+		<Clutch>
+			<Clutch_Level0>
+				<Effect Type="AutoGearChangeTime" Value="0"/>
+				<Effect Type="ManualGearChangeTime" Value="0"/>
+			</Clutch_Level0>
+			<Clutch_Level1>
+				<Effect Type="AutoGearChangeTime" Value="0.5"/>
+				<Effect Type="ManualGearChangeTime" Value="0.5"/>
+			</Clutch_Level1>
+			<Clutch_Level2>
+				<Effect Type="AutoGearChangeTime" Value="1"/>
+				<Effect Type="ManualGearChangeTime" Value="1"/>
+			</Clutch_Level2>
+		</Clutch>
+		<BodyMass>
+			<BodyMass_Level0>
+				<Effect Type="Mass" Value="0"/>
+			</BodyMass_Level0>
+			<BodyMass_Level1>
+				<Effect Type="Mass" Value="0.35"/>
+			</BodyMass_Level1>
+			<BodyMass_Level2>
+				<Effect Type="Mass" Value="1.0"/>
+			</BodyMass_Level2>
+		</BodyMass>
+		<GearboxType>
+			<GearboxType_Auto>
+				<Effect Type="GearboxTypeManual" Value="0"/>
+			</GearboxType_Auto>
+			<GearboxType_Manual>
+				<Effect Type="GearboxTypeManual" Value="1.0"/>
+			</GearboxType_Manual>
+		</GearboxType>
+		<Shocks>
+			<Shocks_Soft>
+				<Effect Type="FrontSuspSpringRate" Value="0"/>
+				<Effect Type="RearSuspSpringRate" Value="0"/>
+				<Effect Type="FrontSuspDamping" Value="0.82"/>
+				<Effect Type="RearSuspDamping" Value="0.82"/>
+			</Shocks_Soft>
+			<Shocks_Medium>
+				<Effect Type="FrontSuspSpringRate" Value="0.5"/>
+				<Effect Type="RearSuspSpringRate" Value="0.5"/>
+				<Effect Type="FrontSuspDamping" Value="0.91"/>
+				<Effect Type="RearSuspDamping" Value="0.91"/>
+			</Shocks_Medium>
+			<Shocks_Hard>
+				<Effect Type="FrontSuspSpringRate" Value="1.0"/>
+				<Effect Type="RearSuspSpringRate" Value="1.0"/>
+				<Effect Type="FrontSuspDamping" Value="1.0"/>
+				<Effect Type="RearSuspDamping" Value="1.0"/>
+			</Shocks_Hard>
+		</Shocks>
+		<FinalDriveRatio>
+			<FinalDriveRatio_TunedSX>
+				<Effect Type="FinalDriveRatio" Value="1"/>
+			</FinalDriveRatio_TunedSX>
+			<FinalDriveRatio_SX>
+				<Effect Type="FinalDriveRatio" Value="0.75"/>
+			</FinalDriveRatio_SX>
+			<FinalDriveRatio_Standard>
+				<Effect Type="FinalDriveRatio" Value="0.5"/>
+			</FinalDriveRatio_Standard>
+			<FinalDriveRatio_GP>
+				<Effect Type="FinalDriveRatio" Value="0.25"/>
+			</FinalDriveRatio_GP>
+			<FinalDriveRatio_TunedGP>
+				<Effect Type="FinalDriveRatio" Value="0"/>
+			</FinalDriveRatio_TunedGP>
+		</FinalDriveRatio>
+		<EngineInternals>
+			<EngineInternals_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</EngineInternals_Level0>
+			<EngineInternals_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</EngineInternals_Level1>
+			<EngineInternals_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.3"/>
+				<Effect Type="EngineFrictionTorque" Value="0.3"/>
+				<Effect Type="EngineInertia" Value="0.3"/>
+				<Effect Type="ClutchTorque" Value="0.3"/>
+			</EngineInternals_Level2>
+			<EngineInternals_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.35"/>
+				<Effect Type="EngineFrictionTorque" Value="0.35"/>
+				<Effect Type="EngineInertia" Value="0.35"/>
+				<Effect Type="ClutchTorque" Value="0.35"/>
+			</EngineInternals_Prototype>
+		</EngineInternals>
+		<EngineManagement>
+			<EngineManagement_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</EngineManagement_Level0>
+			<EngineManagement_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.05"/>
+				<Effect Type="EngineFrictionTorque" Value="0.05"/>
+				<Effect Type="EngineInertia" Value="0.05"/>
+				<Effect Type="ClutchTorque" Value="0.05"/>
+			</EngineManagement_Level1>
+			<EngineManagement_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.15"/>
+				<Effect Type="EngineFrictionTorque" Value="0.15"/>
+				<Effect Type="EngineInertia" Value="0.15"/>
+				<Effect Type="ClutchTorque" Value="0.15"/>
+			</EngineManagement_Level2>
+			<EngineManagement_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.2"/>
+				<Effect Type="EngineFrictionTorque" Value="0.2"/>
+				<Effect Type="EngineInertia" Value="0.2"/>
+				<Effect Type="ClutchTorque" Value="0.2"/>
+			</EngineManagement_Prototype>
+		</EngineManagement>
+		<EngineHeader>
+			<EngineHeader_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</EngineHeader_Level0>
+			<EngineHeader_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.04"/>
+				<Effect Type="EngineFrictionTorque" Value="0.04"/>
+				<Effect Type="EngineInertia" Value="0.04"/>
+				<Effect Type="ClutchTorque" Value="0.04"/>
+			</EngineHeader_Level1>
+			<EngineHeader_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</EngineHeader_Level2>
+		</EngineHeader>
+		<Exhaust>
+			<Exhaust_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</Exhaust_Level0>
+			<Exhaust_Level1a>
+				<Effect Type="EngineDriveTorque" Value="0.02"/>
+				<Effect Type="EngineFrictionTorque" Value="0.02"/>
+				<Effect Type="EngineInertia" Value="0.02"/>
+				<Effect Type="ClutchTorque" Value="0.02"/>
+			</Exhaust_Level1a>
+			<Exhaust_Level1b>
+				<Effect Type="EngineDriveTorque" Value="0.02"/>
+				<Effect Type="EngineFrictionTorque" Value="0.02"/>
+				<Effect Type="EngineInertia" Value="0.02"/>
+				<Effect Type="ClutchTorque" Value="0.02"/>
+			</Exhaust_Level1b>
+			<Exhaust_Level2a>
+				<Effect Type="EngineDriveTorque" Value="0.04"/>
+				<Effect Type="EngineFrictionTorque" Value="0.04"/>
+				<Effect Type="EngineInertia" Value="0.04"/>
+				<Effect Type="ClutchTorque" Value="0.04"/>
+			</Exhaust_Level2a>
+			<Exhaust_Level2b>
+				<Effect Type="EngineDriveTorque" Value="0.04"/>
+				<Effect Type="EngineFrictionTorque" Value="0.04"/>
+				<Effect Type="EngineInertia" Value="0.04"/>
+				<Effect Type="ClutchTorque" Value="0.04"/>
+			</Exhaust_Level2b>
+			<Exhaust_Level3a>
+				<Effect Type="EngineDriveTorque" Value="0.08"/>
+				<Effect Type="EngineFrictionTorque" Value="0.08"/>
+				<Effect Type="EngineInertia" Value="0.08"/>
+				<Effect Type="ClutchTorque" Value="0.08"/>
+			</Exhaust_Level3a>
+			<Exhaust_Level3b>
+				<Effect Type="EngineDriveTorque" Value="0.08"/>
+				<Effect Type="EngineFrictionTorque" Value="0.08"/>
+				<Effect Type="EngineInertia" Value="0.08"/>
+				<Effect Type="ClutchTorque" Value="0.08"/>
+			</Exhaust_Level3b>
+			<Exhaust_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</Exhaust_Prototype>
+		</Exhaust>
+		<IntakeKit>
+			<IntakeKit_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</IntakeKit_Level0>
+			<IntakeKit_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.04"/>
+				<Effect Type="EngineFrictionTorque" Value="0.04"/>
+				<Effect Type="EngineInertia" Value="0.04"/>
+				<Effect Type="ClutchTorque" Value="0.04"/>
+			</IntakeKit_Level1>
+			<IntakeKit_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</IntakeKit_Level2>
+			<IntakeKit_Level3>
+				<Effect Type="EngineDriveTorque" Value="0.18"/>
+				<Effect Type="EngineFrictionTorque" Value="0.18"/>
+				<Effect Type="EngineInertia" Value="0.18"/>
+				<Effect Type="ClutchTorque" Value="0.18"/>
+			</IntakeKit_Level3>
+			<IntakeKit_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.2"/>
+				<Effect Type="EngineFrictionTorque" Value="0.2"/>
+				<Effect Type="EngineInertia" Value="0.2"/>
+				<Effect Type="ClutchTorque" Value="0.2"/>
+			</IntakeKit_Prototype>
+		</IntakeKit>
+	</Bike>
+	<Buggy>
+		<EngineInternals>
+			<EngineInternals_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</EngineInternals_Level0>
+			<EngineInternals_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.05"/>
+				<Effect Type="EngineFrictionTorque" Value="0.05"/>
+				<Effect Type="EngineInertia" Value="0.05"/>
+				<Effect Type="ClutchTorque" Value="0.05"/>
+			</EngineInternals_Level1>
+			<EngineInternals_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.15"/>
+				<Effect Type="EngineFrictionTorque" Value="0.15"/>
+				<Effect Type="EngineInertia" Value="0.15"/>
+				<Effect Type="ClutchTorque" Value="0.15"/>
+			</EngineInternals_Level2>
+			<EngineInternals_Level3>
+				<Effect Type="EngineDriveTorque" Value="0.3"/>
+				<Effect Type="EngineFrictionTorque" Value="0.3"/>
+				<Effect Type="EngineInertia" Value="0.3"/>
+				<Effect Type="ClutchTorque" Value="0.3"/>
+			</EngineInternals_Level3>
+			<EngineInternals_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.35"/>
+				<Effect Type="EngineFrictionTorque" Value="0.35"/>
+				<Effect Type="EngineInertia" Value="0.35"/>
+				<Effect Type="ClutchTorque" Value="0.35"/>
+			</EngineInternals_Prototype>
+		</EngineInternals>
+		<EngineManagement>
+			<EngineManagement_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</EngineManagement_Level0>
+			<EngineManagement_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.05"/>
+				<Effect Type="EngineFrictionTorque" Value="0.05"/>
+				<Effect Type="EngineInertia" Value="0.05"/>
+				<Effect Type="ClutchTorque" Value="0.05"/>
+			</EngineManagement_Level1>
+			<EngineManagement_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.15"/>
+				<Effect Type="EngineFrictionTorque" Value="0.15"/>
+				<Effect Type="EngineInertia" Value="0.15"/>
+				<Effect Type="ClutchTorque" Value="0.15"/>
+			</EngineManagement_Level2>
+			<EngineManagement_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.2"/>
+				<Effect Type="EngineFrictionTorque" Value="0.2"/>
+				<Effect Type="EngineInertia" Value="0.2"/>
+				<Effect Type="ClutchTorque" Value="0.2"/>
+			</EngineManagement_Prototype>
+		</EngineManagement>
+		<EngineHeader>
+			<EngineHeader_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</EngineHeader_Level0>
+			<EngineHeader_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.03"/>
+				<Effect Type="EngineFrictionTorque" Value="0.03"/>
+				<Effect Type="EngineInertia" Value="0.03"/>
+				<Effect Type="ClutchTorque" Value="0.03"/>
+			</EngineHeader_Level1>
+			<EngineHeader_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.08"/>
+				<Effect Type="EngineFrictionTorque" Value="0.08"/>
+				<Effect Type="EngineInertia" Value="0.08"/>
+				<Effect Type="ClutchTorque" Value="0.08"/>
+			</EngineHeader_Level2>
+			<EngineHeader_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</EngineHeader_Prototype>
+		</EngineHeader>
+		<Exhaust>
+			<Exhaust_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</Exhaust_Level0>
+			<Exhaust_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.02"/>
+				<Effect Type="EngineFrictionTorque" Value="0.02"/>
+				<Effect Type="EngineInertia" Value="0.02"/>
+				<Effect Type="ClutchTorque" Value="0.02"/>
+			</Exhaust_Level1>
+			<Exhaust_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.05"/>
+				<Effect Type="EngineFrictionTorque" Value="0.05"/>
+				<Effect Type="EngineInertia" Value="0.05"/>
+				<Effect Type="ClutchTorque" Value="0.05"/>
+			</Exhaust_Level2>
+			<Exhaust_Level3>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</Exhaust_Level3>
+		</Exhaust>
+		<IntakeKit>
+			<IntakeKit_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</IntakeKit_Level0>
+			<IntakeKit_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.04"/>
+				<Effect Type="EngineFrictionTorque" Value="0.04"/>
+				<Effect Type="EngineInertia" Value="0.04"/>
+				<Effect Type="ClutchTorque" Value="0.04"/>
+			</IntakeKit_Level1>
+			<IntakeKit_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</IntakeKit_Level2>
+			<IntakeKit_Level3>
+				<Effect Type="EngineDriveTorque" Value="0.18"/>
+				<Effect Type="EngineFrictionTorque" Value="0.18"/>
+				<Effect Type="EngineInertia" Value="0.18"/>
+				<Effect Type="ClutchTorque" Value="0.18"/>
+			</IntakeKit_Level3>
+			<IntakeKit_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.2"/>
+				<Effect Type="EngineFrictionTorque" Value="0.2"/>
+				<Effect Type="EngineInertia" Value="0.2"/>
+				<Effect Type="ClutchTorque" Value="0.2"/>
+			</IntakeKit_Prototype>
+		</IntakeKit>
+		<Brake>
+			<Brake_Level0>
+				<Effect Type="BrakeDeceleration" Value="0.7"/>
+			</Brake_Level0>
+			<Brake_Level1>
+				<Effect Type="BrakeDeceleration" Value="0.8"/>
+			</Brake_Level1>
+			<Brake_Level2>
+				<Effect Type="BrakeDeceleration" Value="0.9"/>
+			</Brake_Level2>
+			<Brake_Prototype>
+				<Effect Type="BrakeDeceleration" Value="1.0"/>
+			</Brake_Prototype>
+		</Brake>
+		<Suspension>
+			<Suspension_Level0>
+				<Effect Type="FrontSuspMaxCompression" Value="0.8"/>
+				<Effect Type="RearSuspMaxCompression" Value="0.8"/>
+				<Effect Type="UndersteerCoefficient" Value="0"/>
+			</Suspension_Level0>
+			<Suspension_Level1>
+				<Effect Type="FrontSuspMaxCompression" Value="0.86"/>
+				<Effect Type="RearSuspMaxCompression" Value="0.86"/>
+				<Effect Type="UndersteerCoefficient" Value="0.33"/>
+			</Suspension_Level1>
+			<Suspension_Level2>
+				<Effect Type="FrontSuspMaxCompression" Value="0.93"/>
+				<Effect Type="RearSuspMaxCompression" Value="0.93"/>
+				<Effect Type="UndersteerCoefficient" Value="0.66"/>
+			</Suspension_Level2>
+			<Suspension_Level3>
+				<Effect Type="FrontSuspMaxCompression" Value="1.0"/>
+				<Effect Type="RearSuspMaxCompression" Value="1.0"/>
+				<Effect Type="UndersteerCoefficient" Value="1"/>
+			</Suspension_Level3>
+		</Suspension>
+		<GearboxLevel>
+			<GearboxLevel_Level0>
+				<Effect Type="FinalDriveRatio" Value="0.45"/>
+			</GearboxLevel_Level0>
+			<GearboxLevel_Level1>
+				<Effect Type="FinalDriveRatio" Value="0.53"/>
+			</GearboxLevel_Level1>
+			<GearboxLevel_Level2>
+				<Effect Type="CustomFinalDriveRatio"/>
+			</GearboxLevel_Level2>
+			<GearboxLevel_Level3>
+				<Effect Type="CustomFinalDriveRatio"/>
+			</GearboxLevel_Level3>
+			<GearboxLevel_Prototype>
+				<Effect Type="CustomFinalDriveRatio"/>
+				<Effect Type="EngineDriveTorque" Value="0.05"/>
+				<Effect Type="EngineFrictionTorque" Value="0.05"/>
+				<Effect Type="EngineInertia" Value="0.05"/>
+				<Effect Type="ClutchTorque" Value="0.05"/>
+			</GearboxLevel_Prototype>
+		</GearboxLevel>
+		<Clutch>
+			<Clutch_Level0>
+				<Effect Type="AutoGearChangeTime" Value="0"/>
+				<Effect Type="ManualGearChangeTime" Value="0"/>
+			</Clutch_Level0>
+			<Clutch_Level1>
+				<Effect Type="AutoGearChangeTime" Value="0.5"/>
+				<Effect Type="ManualGearChangeTime" Value="0.5"/>
+			</Clutch_Level1>
+			<Clutch_Level2>
+				<Effect Type="AutoGearChangeTime" Value="1"/>
+				<Effect Type="ManualGearChangeTime" Value="1"/>
+			</Clutch_Level2>
+		</Clutch>
+		<BodyMass>
+			<BodyMass_Level0>
+				<Effect Type="Mass" Value="0"/>
+			</BodyMass_Level0>
+			<BodyMass_Level1>
+				<Effect Type="Mass" Value="0.35"/>
+			</BodyMass_Level1>
+			<BodyMass_Level2>
+				<Effect Type="Mass" Value="1.0"/>
+			</BodyMass_Level2>
+		</BodyMass>
+		<GearboxType>
+			<GearboxType_Auto>
+				<Effect Type="GearboxTypeManual" Value="0"/>
+			</GearboxType_Auto>
+			<GearboxType_Manual>
+				<Effect Type="GearboxTypeManual" Value="1.0"/>
+			</GearboxType_Manual>
+		</GearboxType>
+		<Shocks>
+			<Shocks_Soft>
+				<Effect Type="FrontSuspSpringRate" Value="0"/>
+				<Effect Type="RearSuspSpringRate" Value="0"/>
+				<Effect Type="FrontSuspDamping" Value="0.82"/>
+				<Effect Type="RearSuspDamping" Value="0.82"/>
+			</Shocks_Soft>
+			<Shocks_Medium>
+				<Effect Type="FrontSuspSpringRate" Value="0.5"/>
+				<Effect Type="RearSuspSpringRate" Value="0.5"/>
+				<Effect Type="FrontSuspDamping" Value="0.91"/>
+				<Effect Type="RearSuspDamping" Value="0.91"/>
+			</Shocks_Medium>
+			<Shocks_Hard>
+				<Effect Type="FrontSuspSpringRate" Value="1.0"/>
+				<Effect Type="RearSuspSpringRate" Value="1.0"/>
+				<Effect Type="FrontSuspDamping" Value="1.0"/>
+				<Effect Type="RearSuspDamping" Value="1.0"/>
+			</Shocks_Hard>
+		</Shocks>
+		<GearRatios>
+			<GearRatios_Default>
+				<Effect Type="None"/>
+			</GearRatios_Default>
+			<GearRatios_Custom>
+				<Effect Type="CustomGearRatios"/>
+			</GearRatios_Custom>
+		</GearRatios>
+		<BrakeBalanceController>
+			<BrakeBalanceController_Default>
+				<Effect Type="FrontBrakeBias"/>
+			</BrakeBalanceController_Default>
+			<BrakeBalanceController_Custom>
+				<Effect Type="FrontBrakeBias"/>
+			</BrakeBalanceController_Custom>
+		</BrakeBalanceController>
+	</Buggy>
+	<Truck>
+		<Suspension>
+			<Suspension_Level0>
+				<Effect Type="FrontSuspMaxCompression" Value="0.8"/>
+				<Effect Type="RearSuspMaxCompression" Value="0.8"/>
+				<Effect Type="UndersteerCoefficient" Value="0"/>
+			</Suspension_Level0>
+			<Suspension_Level1>
+				<Effect Type="FrontSuspMaxCompression" Value="0.86"/>
+				<Effect Type="RearSuspMaxCompression" Value="0.86"/>
+				<Effect Type="UndersteerCoefficient" Value="0.33"/>
+			</Suspension_Level1>
+			<Suspension_Level2>
+				<Effect Type="FrontSuspMaxCompression" Value="0.93"/>
+				<Effect Type="RearSuspMaxCompression" Value="0.93"/>
+				<Effect Type="UndersteerCoefficient" Value="0.66"/>
+			</Suspension_Level2>
+			<Suspension_Level3>
+				<Effect Type="FrontSuspMaxCompression" Value="1.0"/>
+				<Effect Type="RearSuspMaxCompression" Value="1.0"/>
+				<Effect Type="UndersteerCoefficient" Value="1"/>
+			</Suspension_Level3>
+		</Suspension>
+		<GearboxLevel>
+			<GearboxLevel_Level0>
+				<Effect Type="FinalDriveRatio" Value="0.45"/>
+			</GearboxLevel_Level0>
+			<GearboxLevel_Level1>
+				<Effect Type="FinalDriveRatio" Value="0.53"/>
+			</GearboxLevel_Level1>
+			<GearboxLevel_Level2>
+				<Effect Type="CustomFinalDriveRatio"/>
+			</GearboxLevel_Level2>
+			<GearboxLevel_Level3>
+				<Effect Type="CustomFinalDriveRatio"/>
+			</GearboxLevel_Level3>
+			<GearboxLevel_Prototype>
+				<Effect Type="CustomFinalDriveRatio"/>
+				<Effect Type="EngineDriveTorque" Value="0.05"/>
+				<Effect Type="EngineFrictionTorque" Value="0.05"/>
+				<Effect Type="EngineInertia" Value="0.05"/>
+				<Effect Type="ClutchTorque" Value="0.05"/>
+			</GearboxLevel_Prototype>
+		</GearboxLevel>
+		<Brake>
+			<Brake_Level0>
+				<Effect Type="BrakeDeceleration" Value="0.7"/>
+			</Brake_Level0>
+			<Brake_Level1>
+				<Effect Type="BrakeDeceleration" Value="0.8"/>
+			</Brake_Level1>
+			<Brake_Level2>
+				<Effect Type="BrakeDeceleration" Value="0.9"/>
+			</Brake_Level2>
+			<Brake_Prototype>
+				<Effect Type="BrakeDeceleration" Value="1.0"/>
+			</Brake_Prototype>
+		</Brake>
+		<Clutch>
+			<Clutch_Level0>
+				<Effect Type="AutoGearChangeTime" Value="0"/>
+				<Effect Type="ManualGearChangeTime" Value="0"/>
+			</Clutch_Level0>
+			<Clutch_Level1>
+				<Effect Type="AutoGearChangeTime" Value="0.5"/>
+				<Effect Type="ManualGearChangeTime" Value="0.5"/>
+			</Clutch_Level1>
+			<Clutch_Level2>
+				<Effect Type="AutoGearChangeTime" Value="1"/>
+				<Effect Type="ManualGearChangeTime" Value="1"/>
+			</Clutch_Level2>
+		</Clutch>
+		<BodyMass>
+			<BodyMass_Level0>
+				<Effect Type="Mass" Value="0"/>
+			</BodyMass_Level0>
+			<BodyMass_Level1>
+				<Effect Type="Mass" Value="0.35"/>
+			</BodyMass_Level1>
+			<BodyMass_Level2>
+				<Effect Type="Mass" Value="1.0"/>
+			</BodyMass_Level2>
+		</BodyMass>
+		<GearboxType>
+			<GearboxType_Auto>
+				<Effect Type="GearboxTypeManual" Value="0"/>
+			</GearboxType_Auto>
+			<GearboxType_Manual>
+				<Effect Type="GearboxTypeManual" Value="1.0"/>
+			</GearboxType_Manual>
+		</GearboxType>
+		<Shocks>
+			<Shocks_Soft>
+				<Effect Type="FrontSuspSpringRate" Value="0"/>
+				<Effect Type="RearSuspSpringRate" Value="0"/>
+				<Effect Type="FrontSuspDamping" Value="0.82"/>
+				<Effect Type="RearSuspDamping" Value="0.82"/>
+			</Shocks_Soft>
+			<Shocks_Medium>
+				<Effect Type="FrontSuspSpringRate" Value="0.5"/>
+				<Effect Type="RearSuspSpringRate" Value="0.5"/>
+				<Effect Type="FrontSuspDamping" Value="0.91"/>
+				<Effect Type="RearSuspDamping" Value="0.91"/>
+			</Shocks_Medium>
+			<Shocks_Hard>
+				<Effect Type="FrontSuspSpringRate" Value="1.0"/>
+				<Effect Type="RearSuspSpringRate" Value="1.0"/>
+				<Effect Type="FrontSuspDamping" Value="1.0"/>
+				<Effect Type="RearSuspDamping" Value="1.0"/>
+			</Shocks_Hard>
+		</Shocks>
+		<GearRatios>
+			<GearRatios_Default>
+				<Effect Type="None"/>
+			</GearRatios_Default>
+			<GearRatios_Custom>
+				<Effect Type="CustomGearRatios"/>
+			</GearRatios_Custom>
+		</GearRatios>
+		<BrakeBalanceController>
+			<BrakeBalanceController_Default>
+				<Effect Type="FrontBrakeBias"/>
+			</BrakeBalanceController_Default>
+			<BrakeBalanceController_Custom>
+				<Effect Type="FrontBrakeBias"/>
+			</BrakeBalanceController_Custom>
+		</BrakeBalanceController>
+		<EngineInternals>
+			<EngineInternals_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</EngineInternals_Level0>
+			<EngineInternals_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.05"/>
+				<Effect Type="EngineFrictionTorque" Value="0.05"/>
+				<Effect Type="EngineInertia" Value="0.05"/>
+				<Effect Type="ClutchTorque" Value="0.05"/>
+			</EngineInternals_Level1>
+			<EngineInternals_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.15"/>
+				<Effect Type="EngineFrictionTorque" Value="0.15"/>
+				<Effect Type="EngineInertia" Value="0.15"/>
+				<Effect Type="ClutchTorque" Value="0.15"/>
+			</EngineInternals_Level2>
+			<EngineInternals_Level3>
+				<Effect Type="EngineDriveTorque" Value="0.3"/>
+				<Effect Type="EngineFrictionTorque" Value="0.3"/>
+				<Effect Type="EngineInertia" Value="0.3"/>
+				<Effect Type="ClutchTorque" Value="0.3"/>
+			</EngineInternals_Level3>
+			<EngineInternals_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.35"/>
+				<Effect Type="EngineFrictionTorque" Value="0.35"/>
+				<Effect Type="EngineInertia" Value="0.35"/>
+				<Effect Type="ClutchTorque" Value="0.35"/>
+			</EngineInternals_Prototype>
+		</EngineInternals><EngineManagement>
+			<EngineManagement_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</EngineManagement_Level0>
+			<EngineManagement_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.05"/>
+				<Effect Type="EngineFrictionTorque" Value="0.05"/>
+				<Effect Type="EngineInertia" Value="0.05"/>
+				<Effect Type="ClutchTorque" Value="0.05"/>
+			</EngineManagement_Level1>
+			<EngineManagement_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.15"/>
+				<Effect Type="EngineFrictionTorque" Value="0.15"/>
+				<Effect Type="EngineInertia" Value="0.15"/>
+				<Effect Type="ClutchTorque" Value="0.15"/>
+			</EngineManagement_Level2>
+			<EngineManagement_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.2"/>
+				<Effect Type="EngineFrictionTorque" Value="0.2"/>
+				<Effect Type="EngineInertia" Value="0.2"/>
+				<Effect Type="ClutchTorque" Value="0.2"/>
+			</EngineManagement_Prototype>
+		</EngineManagement><EngineHeader>
+			<EngineHeader_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</EngineHeader_Level0>
+			<EngineHeader_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.03"/>
+				<Effect Type="EngineFrictionTorque" Value="0.03"/>
+				<Effect Type="EngineInertia" Value="0.03"/>
+				<Effect Type="ClutchTorque" Value="0.03"/>
+			</EngineHeader_Level1>
+			<EngineHeader_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.08"/>
+				<Effect Type="EngineFrictionTorque" Value="0.08"/>
+				<Effect Type="EngineInertia" Value="0.08"/>
+				<Effect Type="ClutchTorque" Value="0.08"/>
+			</EngineHeader_Level2>
+			<EngineHeader_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</EngineHeader_Prototype>
+		</EngineHeader><Exhaust>
+			<Exhaust_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</Exhaust_Level0>
+			<Exhaust_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.02"/>
+				<Effect Type="EngineFrictionTorque" Value="0.02"/>
+				<Effect Type="EngineInertia" Value="0.02"/>
+				<Effect Type="ClutchTorque" Value="0.02"/>
+			</Exhaust_Level1>
+			<Exhaust_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.05"/>
+				<Effect Type="EngineFrictionTorque" Value="0.05"/>
+				<Effect Type="EngineInertia" Value="0.05"/>
+				<Effect Type="ClutchTorque" Value="0.05"/>
+			</Exhaust_Level2>
+			<Exhaust_Level3>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</Exhaust_Level3>
+		</Exhaust><IntakeKit>
+			<IntakeKit_Level0>
+				<Effect Type="EngineDriveTorque" Value="0"/>
+				<Effect Type="EngineFrictionTorque" Value="0"/>
+				<Effect Type="EngineInertia" Value="0"/>
+				<Effect Type="ClutchTorque" Value="0"/>
+			</IntakeKit_Level0>
+			<IntakeKit_Level1>
+				<Effect Type="EngineDriveTorque" Value="0.04"/>
+				<Effect Type="EngineFrictionTorque" Value="0.04"/>
+				<Effect Type="EngineInertia" Value="0.04"/>
+				<Effect Type="ClutchTorque" Value="0.04"/>
+			</IntakeKit_Level1>
+			<IntakeKit_Level2>
+				<Effect Type="EngineDriveTorque" Value="0.1"/>
+				<Effect Type="EngineFrictionTorque" Value="0.1"/>
+				<Effect Type="EngineInertia" Value="0.1"/>
+				<Effect Type="ClutchTorque" Value="0.1"/>
+			</IntakeKit_Level2>
+			<IntakeKit_Level3>
+				<Effect Type="EngineDriveTorque" Value="0.18"/>
+				<Effect Type="EngineFrictionTorque" Value="0.18"/>
+				<Effect Type="EngineInertia" Value="0.18"/>
+				<Effect Type="ClutchTorque" Value="0.18"/>
+			</IntakeKit_Level3>
+			<IntakeKit_Prototype>
+				<Effect Type="EngineDriveTorque" Value="0.2"/>
+				<Effect Type="EngineFrictionTorque" Value="0.2"/>
+				<Effect Type="EngineInertia" Value="0.2"/>
+				<Effect Type="ClutchTorque" Value="0.2"/>
+			</IntakeKit_Prototype>
+		</IntakeKit></Truck>
+</Root>
