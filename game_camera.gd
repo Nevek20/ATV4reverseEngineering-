@@ -59,7 +59,10 @@ var ra_held := Vector3.ZERO
 
 # pra interpolar entre passos de 1/60 quando a tela roda em outra taxa
 var acc := 0.0
-var _pp := Vector3.ZERO
+# A interpolação é feita no frame do carro (offset câmera - carro), assim a
+# câmera nunca "escorrega" em relação ao carro desenhado (era o fantasma).
+var _po := Vector3.ZERO         # offset do passo anterior
+var _co := Vector3.ZERO         # offset do passo atual
 var _pd := Vector3.FORWARD
 var _pz := 0.5
 
@@ -138,7 +141,8 @@ func reset(s: Dictionary, terrain) -> void:
 	while t < 0.5:
 		t += STEP
 		_step(STEP, s, terrain)
-	_pp = pos
+	_co = pos - tp
+	_po = _co
 	_pd = dir
 	_pz = zoom
 	acc = 0.0
@@ -148,15 +152,16 @@ func update(delta: float, s: Dictionary, terrain) -> void:
 	acc += minf(delta, 0.25)
 	while acc >= STEP:
 		acc -= STEP
-		_pp = pos
+		_po = _co
 		_pd = dir
 		_pz = zoom
 		_step(STEP, s, terrain)
+		_co = pos - s.tp
 
 
-func apply(cam: Camera3D) -> void:
+func apply(cam: Camera3D, tp: Vector3) -> void:
 	var a := acc / STEP
-	var ps := _pp.lerp(pos, a)
+	var ps := tp + _po.lerp(_co, a)
 	var d := _pd.lerp(dir, a)
 	if d.length() < 1e-4:
 		d = dir

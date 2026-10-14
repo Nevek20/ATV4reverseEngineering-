@@ -534,7 +534,7 @@ func _load_steering_wheel() -> void:
 
 
 func driver_eye() -> Vector3:
-	return model_root.global_transform * (model_offset + DRIVER_EYE)
+	return model_root.get_global_transform_interpolated() * (model_offset + DRIVER_EYE)
 
 
 func flip_model() -> void:
@@ -549,6 +549,7 @@ func reset_to(pos: Vector3, yaw: float) -> void:
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
 	global_transform = Transform3D(Basis(Vector3.UP, yaw), pos)
+	reset_physics_interpolation()   # teleporte: não interpolar do lugar antigo
 	reset_drivetrain()
 
 

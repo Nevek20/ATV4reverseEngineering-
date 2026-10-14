@@ -31,6 +31,8 @@ func _ready() -> void:
 	cam.fov = 70.0
 	add_child(cam)
 	cam.current = true
+	# a câmera é posta no _process a partir do carro interpolado
+	cam.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	cam.global_position = spawn_point() + Vector3(-8, 4, 0)
 
 	var layer := CanvasLayer.new()
@@ -123,7 +125,8 @@ func _make_cameras() -> void:
 
 
 func cam_state() -> Dictionary:
-	var xf: Transform3D = car.global_transform
+	# transform interpolado: é o que aparece na tela (física roda a 120 Hz)
+	var xf: Transform3D = car.get_global_transform_interpolated()
 	var b := xf.basis.orthonormalized()
 	var tp: Vector3 = xf * car.model_offset
 	var v: Vector3 = car.linear_velocity
@@ -158,14 +161,18 @@ func _update_camera(delta: float) -> void:
 	for i in 2:
 		gcams[i].update(delta, s, terrain)
 
+	# MountOnFront fica dentro da carroceria (no ATV também: Z -0.2), então o
+	# jogo não desenha o veículo nela. As rodas continuam.
+	car.model_root.visible = cam_mode != 3
+
 	if cam_mode <= 1:
-		gcams[cam_mode].apply(cam)
+		gcams[cam_mode].apply(cam, s.tp)
 		return
 
 	if cam_mode == 4:
 		# primeira pessoa (não é do jogo): nos olhos do piloto
 		var eye: Vector3 = car.driver_eye()
-		var b: Basis = car.global_transform.basis
+		var b: Basis = car.get_global_transform_interpolated().basis
 		var turn: float = car.steer / car.MAX_STEER
 		var look_dir: Vector3 = (b.z + b.x * turn * 0.25 - b.y * 0.08).normalized()
 		cam.keep_aspect = Camera3D.KEEP_HEIGHT
@@ -176,8 +183,8 @@ func _update_camera(delta: float) -> void:
 
 	# MountOnHood / MountOnFront: presa no carro, PosOffset no frame do modelo,
 	# Orientation.X = inclinação em graus, FOV = zoom fixo
-	var g = gcams[cam_mode - 2]
-	var xf: Transform3D = car.global_transform
+	var g = gcams[cam_mode]
+	var xf: Transform3D = car.get_global_transform_interpolated()
 	var bb := xf.basis.orthonormalized()
 	var pos: Vector3 = xf * (car.model_offset + g.pos_off)
 	var o: Vector3 = g.p.get("orient", Vector3.ZERO)
