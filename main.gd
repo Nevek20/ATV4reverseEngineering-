@@ -11,7 +11,7 @@ const Terrain := preload("res://terrain.gd")
 var car  # instância de car.gd (sem tipo estático de propósito: métodos próprios do script)
 var cam: Camera3D
 var hud: Label
-var cam_mode := 0                        # 0 = atrás, 1 = longe, 2 = capô, 3 = piloto
+var cam_mode := 0                        # 0 perto, 1 longe, 2 capô, 3 para-choque, 4 piloto
 var terrain
 
 
@@ -82,12 +82,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.physical_keycode:
 			KEY_C:
-				cam_mode = (cam_mode + 1) % 4
+				cam_mode = (cam_mode + 1) % 5
 			KEY_R:
 				var p: Vector3 = car.global_position
 				car.reset_to(Vector3(p.x, terrain.height_at(p.x, p.z) + 1.5, p.z), car.global_rotation.y)
+				reset_camera()
 			KEY_T:
 				car.reset_to(spawn_point(), deg_to_rad(90.0))
+				reset_camera()
 			KEY_F:
 				car.flip_model()
 			KEY_ESCAPE:
@@ -99,79 +101,88 @@ func _process(delta: float) -> void:
 		return
 	_update_camera(delta)
 	var kmh: float = car.linear_velocity.length() * 3.6
-	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço: powerslide (freio de mão)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC: câmera (atrás/longe/capô/piloto)   F: girar o modelo   Esc: sair" % [
-		int(kmh), int(kmh / 1.609), car.gear_label(), int(car.rpm), "MANUAL" if car.manual else "AUTO", car.vehicle_name, ("pneus portados do jogo" if car.use_ported else "pneus antigos") + (", lateral do jogo" if car.lateral_game else ", lateral remendo")]
+	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço: powerslide (freio de mão)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC: câmera (%s)   F: girar o modelo   Esc: sair" % [
+		int(kmh), int(kmh / 1.609), car.gear_label(), int(car.rpm), "MANUAL" if car.manual else "AUTO", car.vehicle_name, ("pneus portados do jogo" if car.use_ported else "pneus antigos") + (", lateral do jogo" if car.lateral_game else ", lateral remendo"), CAM_NAMES[cam_mode]]
 
 
-var cam_dir := Vector3.FORWARD
-var cam_h := 0.0          # altura suavizada da câmera
-var cam_side := 0.0       # deslocamento lateral suavizado (balanço na curva)
+const GameCamera := preload("res://game_camera.gd")
+const CAM_XML := "res://data/cameras.xml"
+const CAM_SET := "BuggyCamSet_10"         # Renegade (BUGGY_10)
+const CAM_NAMES := ["perto", "longe", "capô", "para-choque", "piloto"]
+var gcams := []                           # câmeras do jogo, uma por modo (0..3)
 var cam_ready := false
 
 
+func _make_cameras() -> void:
+	gcams = [
+		GameCamera.load_set(CAM_XML, CAM_SET, "FollowOrbitNear"),
+		GameCamera.load_set(CAM_XML, CAM_SET, "FollowOrbitFar"),
+		GameCamera.load_set(CAM_XML, CAM_SET, "MountOnHood"),
+		GameCamera.load_set(CAM_XML, CAM_SET, "MountOnFront"),
+	]
+
+
+func cam_state() -> Dictionary:
+	var xf: Transform3D = car.global_transform
+	var b := xf.basis.orthonormalized()
+	var tp: Vector3 = xf * car.model_offset
+	var v: Vector3 = car.linear_velocity
+	return {
+		"tp": tp, "basis": b, "vel": v, "v_f": v.dot(b.z),
+		"air_time": car.air_time, "grounded": car.grounded,
+		"ground_n": ground_normal(tp.x, tp.z),
+	}
+
+
+func ground_normal(x: float, z: float) -> Vector3:
+	var e := 0.5
+	return Vector3(terrain.height_at(x - e, z) - terrain.height_at(x + e, z), 2.0 * e,
+		terrain.height_at(x, z - e) - terrain.height_at(x, z + e)).normalized()
+
+
+func reset_camera() -> void:
+	if gcams.is_empty():
+		_make_cameras()
+	var s := cam_state()
+	for g in gcams:
+		if not g.mount:
+			g.reset(s, terrain)
+	cam_ready = true
+
+
 func _update_camera(delta: float) -> void:
-	var cpos: Vector3 = car.global_position
-	var vel: Vector3 = car.linear_velocity
-	var fwd: Vector3 = car.forward()
-	fwd.y = 0.0
-	fwd = fwd.normalized() if fwd.length() > 0.01 else cam_dir
-	var flat_vel := Vector3(vel.x, 0.0, vel.z)
-	var speed := flat_vel.length()
-	var kmh := vel.length() * 3.6
-
 	if not cam_ready:
-		cam_dir = fwd
-		cam_h = cpos.y
-		cam_ready = true
+		reset_camera()
+	var s := cam_state()
+	# as câmeras de órbita rodam sempre (como no jogo, trocar não dá tranco)
+	for i in 2:
+		gcams[i].update(delta, s, terrain)
 
-	if cam_mode == 3:
-		# primeira pessoa: nos olhos do piloto, olhando um pouco pra dentro da curva
+	if cam_mode <= 1:
+		gcams[cam_mode].apply(cam)
+		return
+
+	if cam_mode == 4:
+		# primeira pessoa (não é do jogo): nos olhos do piloto
 		var eye: Vector3 = car.driver_eye()
 		var b: Basis = car.global_transform.basis
 		var turn: float = car.steer / car.MAX_STEER
 		var look_dir: Vector3 = (b.z + b.x * turn * 0.25 - b.y * 0.08).normalized()
+		cam.keep_aspect = Camera3D.KEEP_HEIGHT
 		cam.global_position = eye
 		cam.look_at(eye + look_dir * 10.0, b.y)
-		cam.fov = lerpf(cam.fov, 78.0, 1.0 - exp(-delta * 3.0))
+		cam.fov = 70.0
 		return
 
-	if cam_mode == 2:
-		# capô: preso no carro, só suaviza um pouco
-		var pos: Vector3 = cpos + car.global_transform.basis * Vector3(0, 1.45, 0.6)
-		cam.global_position = pos
-		cam.look_at(pos + car.forward() * 10.0, Vector3.UP)
-		cam.fov = lerpf(cam.fov, 72.0, 1.0 - exp(-delta * 3.0))
-		return
-
-	# a câmera mira pra onde o carro está INDO, misturado com pra onde ele aponta.
-	# Assim, derrapando, ela mostra a derrapagem em vez de grudar na traseira.
-	var want := fwd
-	if speed > 4.0:
-		want = fwd.lerp(flat_vel / speed, 0.35).normalized()
-	# atraso na rotação: o carro vira primeiro, a câmera vem depois
-	cam_dir = cam_dir.slerp(want, 1.0 - exp(-delta * 3.2)).normalized()
-
-	# balanço lateral: na curva a câmera escorrega um pouco pra fora
-	var right := cam_dir.cross(Vector3.UP).normalized()
-	var lat := flat_vel.dot(right)
-	cam_side = lerpf(cam_side, clampf(-lat * 0.12, -1.5, 1.5), 1.0 - exp(-delta * 2.5))
-
-	# altura: segue o carro com mola, sem tremer nas pancadas da suspensão
-	cam_h = lerpf(cam_h, cpos.y, 1.0 - exp(-delta * 5.0))
-
-	var dist := 7.0 if cam_mode == 0 else 15.0
-	var up := 2.4 if cam_mode == 0 else 6.5
-	dist += clampf(speed * 0.03, 0.0, 1.2)     # afasta um pouquinho em alta
-	var pos := Vector3(cpos.x, cam_h, cpos.z) - cam_dir * dist + Vector3.UP * up + right * cam_side
-	# nunca entra no chão (morro atrás do carro)
-	var ground: float = terrain.height_at(pos.x, pos.z) + 0.8
-	pos.y = max(pos.y, ground)
+	# MountOnHood / MountOnFront: presa no carro, PosOffset no frame do modelo,
+	# Orientation.X = inclinação em graus, FOV = zoom fixo
+	var g = gcams[cam_mode - 2]
+	var xf: Transform3D = car.global_transform
+	var bb := xf.basis.orthonormalized()
+	var pos: Vector3 = xf * (car.model_offset + g.pos_off)
+	var o: Vector3 = g.p.get("orient", Vector3.ZERO)
+	var fwd := bb.z.rotated(bb.x, deg_to_rad(-o.x))
+	cam.keep_aspect = Camera3D.KEEP_HEIGHT
 	cam.global_position = pos
-
-	# olha um pouco à frente do carro, na direção do movimento
-	var look := Vector3(cpos.x, cam_h, cpos.z) + Vector3.UP * 1.0 + cam_dir * clampf(speed * 0.12, 0.0, 4.0)
-	cam.look_at(look, Vector3.UP)
-
-	# sensação de velocidade: o FOV abre conforme acelera
-	var fov_target: float = lerpf(66.0, 82.0, clampf(kmh / 160.0, 0.0, 1.0))
-	cam.fov = lerpf(cam.fov, fov_target, 1.0 - exp(-delta * 3.0))
+	cam.look_at(pos + fwd * 10.0, bb.y)
+	cam.fov = g.fov_deg(g.p.FOV)
