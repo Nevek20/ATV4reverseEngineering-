@@ -12,14 +12,14 @@ const VEHICLES := [
 	{"name": "Sphinx", "id": "BUGGY_04", "cams": "BuggyCamSet_04",
 		"model": "res://assets/sphinx/21531_bloco.obj",
 		"data": "res://data/vehicles/sphinx.xml", "points": "res://data/vehicles/sphinx_points.bin",
-		"parts": "res://assets/sphinx", "parts_base": 21513, "brakes": 21533, "wheel_dx": 0.07},
+		"parts": "res://assets/sphinx", "parts_base": 21513, "brakes": 21533},
 	# o Sphinx do speedrun tem peças compradas: com motor 0.81, BodyMass L2 e
 	# Clutch L2 as trocas (38/57/75 mph) caem no mesmo tempo do vídeo
 	{"name": "Sphinx speedrun", "id": "BUGGY_04", "cams": "BuggyCamSet_04",
 		"model": "res://assets/sphinx/21531_bloco.obj",
 		"data": "res://data/vehicles/sphinx.xml", "points": "res://data/vehicles/sphinx_points.bin",
 		"parts": "res://assets/sphinx", "parts_base": 21513, "brakes": 21533,
-		"livery": "pintura_speedrun.png", "wheel_dx": 0.07,
+		"livery": "pintura_speedrun.png",
 		"tune": {"engine": 0.81, "mass": 1.0, "shift": 1.0}},
 ]
 var veh_idx := 0

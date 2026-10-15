@@ -40,10 +40,8 @@ var susp_vis    # suspension_visual.gd
 var wheel_front_file := "res://assets/rodas/21968_bloco.obj"
 var wheel_rear_file := "res://assets/rodas/21969_bloco.obj"
 const WHEEL_OUTBOARD := false
-# quanto a roda sai pra fora do ponto WHEEL_* (m). Estimado pela geometria
-# das peças: no Sphinx, com 0.07 o freio cabe dentro do aro e a balança
-# traseira não atravessa o disco do aro nas 4 rodas (docs/assets.md).
-# Falta confirmar com save state (matriz da roda na RAM).
+# deslocamento extra da roda pra fora do ponto WHEEL_* (m). O save state
+# mostrou que é 0: a roda fica no ponto e só segue o arco da balança
 var wheel_dx := 0.0
 var vehicle_name := "Renegade (Buggy)"
 

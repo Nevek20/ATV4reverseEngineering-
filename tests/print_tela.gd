@@ -58,6 +58,9 @@ func _process(_dt: float) -> bool:
 			q.exclude = [c.get_rid()]
 			var hit := space.intersect_ray(q)
 			var r: float = mi.get_aabb().size.y * 0.5
+			var lp: Vector3 = c.global_transform.affine_inverse() * p - c.model_offset
+			print("roda %s%s modelo (%.4f, %.4f, %.4f) curso %.4f" % ["F" if w.front else "T",
+				"E" if w.px > 0 else "D", lp.x, lp.y, lp.z, w.x])
 			if hit:
 				print("roda %s%s: centro %.3f m do chão, raio %.3f, folga %.3f" % [
 					"F" if w.front else "T", "E" if w.px > 0 else "D",

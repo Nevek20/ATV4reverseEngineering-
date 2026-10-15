@@ -7,8 +7,8 @@ extends Node3D
 ## As peças vêm modeladas no lugar (coordenadas do modelo) e o arquivo de
 ## pontos diz onde cada uma gira: A_FRAME_* (pivô da balança), A_FRAME_END_*
 ## (ponta, na roda), SHOCKS_TOP/BOTTOM_FRONT_*, SHOCK_CHAMBER/PISTON_R*.
-## A cada quadro a balança gira no pivô até a ponta subir o mesmo tanto que a
-## roda (curso x da física); o que é preso na balança acompanha, e os
+## A cada quadro a balança gira no pivô até o centro da roda subir o curso x
+## da física (como no jogo, ver _arm_angle); o que é preso nela acompanha, e os
 ## amortecedores apontam de um ponto ao outro.
 ##
 ## Blocos (unpacked/other), na ordem em que aparecem antes do modelo do carro:
@@ -64,10 +64,12 @@ func build(c, pts: Dictionary, dir: String, base: int, brakes: int) -> void:
 					k.bottom = pts[pi]
 					k.chamber = _part(dir, base + 5 + i_side)
 					k.piston = _part(dir, base + 9 + i_side)
-			# eixo da balança: horizontal e perpendicular ao braço
-			var d: Vector3 = k.end - k.pivot
-			var axis := Vector3.UP.cross(d)
-			k.axis = axis.normalized() if axis.length() > 1e-4 else Vector3.RIGHT
+			# eixo da balança, medido no save state (matriz de cada roda na RAM):
+			# a da frente gira no eixo comprido do carro, a de trás no eixo
+			# lateral. Com isso as 8 rodas (Renegade e Sphinx) ficam a menos
+			# de 2 cm da posição do jogo
+			k.axis = Vector3.BACK if front else Vector3.RIGHT
+			k.wheel_pt = Vector3(k.wheel.px, k.wheel.y0, k.wheel.pz) - off
 			corners.append(k)
 
 
@@ -91,8 +93,10 @@ func _part(dir: String, block: int) -> MeshInstance3D:
 
 
 ## ângulo que gira a ponta da balança até ela subir dy
+## ângulo da balança pro centro da roda subir dy (é o que o jogo faz: no
+## save state a roda sobe exatamente o curso da mola)
 func _arm_angle(k: Dictionary, dy: float) -> float:
-	var d: Vector3 = k.end - k.pivot
+	var d: Vector3 = k.wheel_pt - k.pivot
 	var ax: Vector3 = k.axis
 	var u := d - ax * d.dot(ax)          # parte que gira
 	var a := u.y
