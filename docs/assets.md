@@ -43,9 +43,15 @@ aparecem em nenhum arquivo; a posição no unpacked é que diz quem é quem.
   corrida (PCSX2), a balança da frente chega no centro da roda. Testei pôr o
   pneu todo pra fora do ponto (WHEEL_OUTBOARD em car.gd) por causa dos prints
   da garagem, mas na corrida as rodas ficam bem mais perto do carro; descartado.
-- Com a roda centrada, a placa da balança traseira do Sphinx (21515/21516)
-  sai pela frente do pneu, embaixo. Provavelmente acontece no jogo também:
-  esse ponto não aparece em nenhum print ou vídeo da corrida.
+- Sphinx: roda 7 cm pra fora do ponto (`wheel_dx` em main.gd). Estimado pela
+  geometria das peças: o aro tem um vão de 4,3 a 18 cm do centro pro lado de
+  dentro; com 0,064 a 0,071 m de deslocamento o disco de freio cabe nesse vão
+  e a ponta da balança traseira (21515/21516) fica atrás do disco do aro, nas
+  4 rodas. Bate com o "leve vão" entre roda e carro nos prints do jogo.
+- Renegade: fica no ponto (0). Os freios dele já ficam 9 a 16 cm pra dentro
+  do centro da roda, então essa regra não serve pra ele; ainda sem fonte.
+- Pra confirmar os dois: save state com o carro parado e achar na RAM a
+  matriz de cada roda em relação ao carro.
 - Raio do modelo (0,54) é maior que o Radius da física (0,50): o jogo usa o
   modelo como está.
 - Os grupos de ~100 KB com texturas UI_TYRE_* (21862 a 22146, 5 por tipo de

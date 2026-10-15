@@ -47,6 +47,21 @@ func _process(_dt: float) -> bool:
 		cam.global_position = t * off
 		cam.look_at(t * alvo, Vector3.UP)
 		cam.current = true
+	if frames == 94:
+		# folga de cada roda até o chão (raio do modelo, raycast do centro)
+		var c = main.car
+		var space: PhysicsDirectSpaceState3D = c.get_world_3d().direct_space_state
+		for w in c.wheels:
+			var mi: MeshInstance3D = w.spin_node.get_child(0)
+			var p: Vector3 = mi.global_position
+			var q := PhysicsRayQueryParameters3D.create(p, p + Vector3.DOWN * 3.0)
+			q.exclude = [c.get_rid()]
+			var hit := space.intersect_ray(q)
+			var r: float = mi.get_aabb().size.y * 0.5
+			if hit:
+				print("roda %s%s: centro %.3f m do chão, raio %.3f, folga %.3f" % [
+					"F" if w.front else "T", "E" if w.px > 0 else "D",
+					p.y - hit.position.y, r, p.y - hit.position.y - r])
 	if frames == 95:
 		root.get_viewport().get_texture().get_image().save_png(out)
 		print("print salvo em ", out)
