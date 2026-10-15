@@ -32,14 +32,13 @@ func _ready():
 	var vi := int(OS.get_environment("VEH")) if OS.get_environment("VEH") != "" else 0
 	var v: Dictionary = Main.VEHICLES[vi]
 	car = Car.new()
-	car.model_path = v.model
+	car.asset_dir = v.dir
 	car.data_files = ["res://data/vehicles/buggy_base.xml", v.data]
 	car.points_file = v.points
 	car.vehicle_id = v.id
 	car.vehicle_name = v.name
 	car.tune_override = v.get("tune", {})
-	car.parts_ids = []
-	car.brakes_base = -1
+	car.suspension = false
 	if OS.get_environment("TUNE") != "":
 		car.tune_override = JSON.parse_string(OS.get_environment("TUNE"))
 	if OS.get_environment("MU") != "":

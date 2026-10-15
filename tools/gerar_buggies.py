@@ -1,24 +1,28 @@
 """
 gerar_buggies.py
 =================
-Gera os assets dos 12 buggies de uma vez: carroceria, peças da suspensão,
-freios, rodas e pintura de fábrica. Também copia a física (15144+N) e o
-arquivo de pontos pra data/vehicles.
+Gera os assets dos 12 buggies como o jogo carrega na corrida: carroceria,
+peças da suspensão, freios, rodas e pintura de fábrica. Também copia a
+física (15144+N) e o arquivo de pontos pra data/vehicles.
 
-Os blocos de cada carro saem do manifest.json: cada carro ocupa um trecho
-do unpacked que termina na sombra dele (gob BUGGY_NN_shadow, LANCIA_shadow
-no 12º). Dentro do trecho:
-    11 peças (< 20 KB) antes do modelo: balança DE, DD, TE, TD, sombra,
-        corpo do amortecedor traseiro E/D, amortecedor dianteiro E/D,
-        haste traseira E/D (ordem do suspension_visual.gd)
-    modelo (o maior bloco), pontos (começa com "POINT"),
-    4 blocos depois dos pontos: freios DE, DD, TE, TD
-O Mosquito (BUGGY_01) não tem as 11 peças; só modelo, pontos e freios.
+Nada de adivinhar bloco pela posição: o jogo abre cada arquivo pelo caminho
+e data/arquivos.tsv (re/indice_archive.py) diz em que bloco do unpacked cada
+caminho está. Pra cada carro:
+    Chassis   = DefaultConfig Chassis (data/vehicles.xml), ex. CHASSIS_Buggy_10
+    Roda      = DefaultConfig Wheel, ex. TYRE_GENERIC_MEDIUM
+    Peças     = grupo "High" do ComponentMap do carro (unpacked/xml/14881)
+    Arquivo   = /Vehicles/Buggy/Models_4K/Chassis/<Chassis>/<Model>.pingu
+                /Vehicles/Buggy/Models_4K/Wheel/<Roda>/<FrontWheel|RearWheel>.pingu
+Se o arquivo 4K não tem bloco próprio (ficou cru dentro de um raw, ex. as
+hastes do Renegade), usa o mesmo caminho no Models_5K (mesma malha).
+
+Cada pasta ganha um pecas.json: Position do component map -> .obj. O
+car.gd / suspension_visual.gd leem esse arquivo.
 
 Uso (na pasta do projeto):
     python tools/gerar_buggies.py <unpacked> <texturas>
     python tools/gerar_buggies.py <unpacked> <texturas> --so 2,3
-    python tools/gerar_buggies.py <unpacked> <texturas> --tabela   (só lista os blocos)
+    python tools/gerar_buggies.py <unpacked> <texturas> --tabela   (só lista)
 <texturas> é a pasta que o gob_tex2png.py gerou.
 """
 
@@ -38,75 +42,93 @@ NOMES = ["Mosquito", "Inferno", "Trident", "Sphinx", "Bulldog", "Phantom",
          "Kraken V8", "McKenzies", "Viper", "Renegade", "Hurricane", "Storm"]
 # pasta em assets/ (Renegade e Sphinx mantêm as pastas antigas)
 PASTA = {4: "sphinx", 10: "renegade"}
-# volante separado (peça móvel), tiras medidas na malha
-SPLIT = {10: ["volante:44,53,54,234-242"]}
-# rodas de jogo (frente, trás), ver docs/assets.md
-RODAS = {
-    "TYRE_GENERIC_LARGE": (21963, 21964),
-    "TYRE_GENERIC_MEDIUM": (21968, 21969),
-    "TYRE_GENERIC_SANDCAR": (21973, 21974),
-    "TYRE_GENERIC_SMALL": (21978, 21979),
-    "Wheel_Rally": (21267, 21268),
-}
+# volante separado (peça móvel), tiras medidas na malha 4K do Renegade
+# (cubo 43,46,47 e aro 144[16-28],145-150; mesmo círculo do 5K)
+SPLIT = {10: ["volante:43,46,47,144[16-28],145-150"]}
+LOD = "Models_4K"
 
 
-def indice(e):
-    try:
-        return int(str(e["index"]).split("_")[-1])
-    except ValueError:
+def ler_arquivos():
+    """caminho em minúsculas -> (fonte, comprimido)"""
+    out = {}
+    for ln in open(os.path.join(PROJ, "data", "arquivos.tsv"), encoding="utf-8"):
+        if ln.startswith("#"):
+            continue
+        cam, _, _, cu, fonte = ln.rstrip("\n").split("\t")
+        out[cam.lower()] = (fonte, cu == "c")
+    return out
+
+
+def bloco(arqs, caminho):
+    """número do bloco do unpacked/other, ou None se não tem bloco próprio"""
+    f = arqs.get(caminho.lower())
+    if not f:
         return None
-
-
-def mapear(unpacked):
-    man = json.load(open(os.path.join(unpacked, "manifest.json")))
-    E = {}
-    for e in man:
-        k = indice(e)
-        if k is not None:
-            E[k] = e
-    sombras = []
-    for n in range(1, 13):
-        alvo = ("LANCIA_shadow" if n == 12 else
-                "BUGGY_01_shadow_new" if n == 1 else "BUGGY_%02d_shadow" % n)
-        sombras.append(min(k for k, e in E.items() if e.get("name") == alvo))
-
-    def is_points(k):
-        with open(os.path.join(unpacked, E[k]["file"]), "rb") as f:
-            return f.read(5) == b"POINT"
-
-    carros = []
-    for n, fim in enumerate(sombras, 1):
-        ini = sombras[n - 2] if n > 1 else fim - 40
-        outros = [k for k in range(ini + 1, fim) if k in E and E[k]["type"] == "other"]
-        modelo = max(outros, key=lambda k: E[k]["usize"])
-        pontos = next(k for k in outros if k > modelo and is_points(k))
-        depois = [k for k in outros if k > pontos and not is_points(k)]
-        antes = [k for k in outros if k < modelo and not is_points(k) and E[k]["usize"] < 20000]
-        carros.append({
-            "n": n, "id": "BUGGY_%02d" % n, "nome": NOMES[n - 1],
-            "modelo": modelo, "pontos": pontos,
-            "pecas": antes[:11] if len(antes) >= 11 else [],
-            "freios": depois[:4],
-        })
-    return carros
+    m = re.match(r"other/(\d+)_bloco\.bin$", f[0])
+    return int(m.group(1)) if m and f[1] else None
 
 
 def config_xml():
-    """roda e câmeras de cada buggy, do data/vehicles.xml"""
+    """chassis, roda, mapa e câmeras de cada buggy, do data/vehicles.xml"""
     s = open(os.path.join(PROJ, "data", "vehicles.xml"), encoding="latin-1").read()
     out = {}
     for m in re.finditer(r'<Vehicle Name="(BUGGY_\d\d)".*?</Vehicle>', s, re.S):
         blk = m.group(0)
         out[m.group(1)] = {
+            "chassis": re.search(r'DefaultConfig[^>]*Chassis="([^"]+)"', blk).group(1),
             "roda": re.search(r'DefaultConfig[^>]*Wheel="([^"]+)"', blk).group(1),
+            "mapa": re.search(r'ComponentMap="([^"]+)"', blk).group(1),
             "cams": re.search(r'Cameras="([^"]+)"', blk).group(1),
         }
     return out
 
 
-def pingu(unpacked, tex, bloco, out, split=()):
+def mapa_high(unpacked, nome):
+    """[(ComponentType, Model, Position, Mirror)] do grupo High do mapa"""
+    s = open(os.path.join(unpacked, "xml", "14881_ATVCompMap_Generic.xml"), encoding="latin-1").read()
+    s = re.sub(r"<!--.*?-->", "", s, flags=re.S)
+    i = s.index('"%s"' % nome)
+    j = s.index("</VehicleSet", i)
+    g = re.search(r'<Group Name="High">(.*?)</Group>', s[i:j], re.S).group(1)
+    out = []
+    for c in re.finditer(r"<Component ([^>]*)/>", g):
+        at = dict(re.findall(r'(\w+)="([^"]*)"', c.group(1)))
+        out.append((at.get("ComponentType"), at.get("Model"), at.get("Position"), at.get("Mirror") == "1"))
+    return out
+
+
+def mapear(unpacked):
+    arqs = ler_arquivos()
+    cfg = config_xml()
+    carros = []
+    for n in range(1, 13):
+        vid = "BUGGY_%02d" % n
+        c = dict(cfg[vid], n=n, id=vid, nome=NOMES[n - 1], pecas={}, rodas={}, faltando=[])
+        base = "Vehicles/Buggy/%s/Chassis/%s/" % (LOD, c["chassis"])
+        c["pontos"] = bloco(arqs, base + "Body.pts")
+        for tipo, model, pos, _ in mapa_high(unpacked, c["mapa"]):
+            if tipo == "Chassis":
+                b = bloco(arqs, base + model + ".pingu")
+                if b is None:
+                    b = bloco(arqs, base.replace(LOD, "Models_5K") + model + ".pingu")
+                if b is None:
+                    c["faltando"].append(model)
+                    continue
+                c["pecas"][pos] = b
+            elif tipo == "Wheel":
+                b = bloco(arqs, "Vehicles/Buggy/%s/Wheel/%s/%s.pingu" % (LOD, c["roda"], model))
+                if b is None:
+                    c["faltando"].append(model)
+                    continue
+                c["rodas"][model] = b
+                c.setdefault("posicoes_roda", []).append(pos)
+        carros.append(c)
+    return carros
+
+
+def pingu(unpacked, tex, bloco_, out, split=()):
     cmd = [sys.executable, os.path.join(AQUI, "pingu2obj.py"),
-           os.path.join(unpacked, "other", "%d_bloco.bin" % bloco),
+           os.path.join(unpacked, "other", "%d_bloco.bin" % bloco_),
            "--out", out, "--tex", tex, "--copy-tex"]
     for s in split:
         cmd += ["--split", s]
@@ -125,33 +147,43 @@ def main():
     a = ap.parse_args()
 
     carros = mapear(a.unpacked)
-    cfg = config_xml()
     so = {int(x) for x in a.so.split(",")} if a.so else None
     for c in carros:
-        c.update(cfg[c["id"]])
-        print("%2d %-10s modelo %d pontos %d peças %s freios %s roda %s" % (
-            c["n"], c["nome"], c["modelo"], c["pontos"],
-            c["pecas"][0] if c["pecas"] else "-", c["freios"], c["roda"]))
+        print("%2d %-10s %-17s %-15s corpo %s pontos %s rodas %s peças %d%s" % (
+            c["n"], c["nome"], c["chassis"], c["mapa"], c["pecas"].get("Body"), c["pontos"],
+            "/".join(str(c["rodas"].get(k)) for k in ("FrontWheel", "RearWheel")),
+            len(c["pecas"]) - 1, ("  faltando: " + ", ".join(c["faltando"])) if c["faltando"] else ""))
     if a.tabela:
         return
 
-    rodas = os.path.join(a.assets, "rodas")
-    for f, t in RODAS.values():
-        for b in (f, t):
-            pingu(a.unpacked, a.texturas, b, rodas)
-    print("[+] rodas em", rodas)
-
+    rodas_dir = os.path.join(a.assets, "rodas")
+    feitas = set()
     dados = os.path.join(PROJ, "data", "vehicles")
     for c in carros:
         if so and c["n"] not in so:
             continue
         n = c["n"]
         out = os.path.join(a.assets, PASTA.get(n, "buggy_%02d" % n))
-        pingu(a.unpacked, a.texturas, c["modelo"], out, SPLIT.get(n, ()))
-        for b in c["pecas"] + c["freios"]:
-            pingu(a.unpacked, a.texturas, b, out)
+        os.makedirs(out, exist_ok=True)
+        for pos, b in c["pecas"].items():
+            pingu(a.unpacked, a.texturas, b, out, SPLIT.get(n, ()) if pos == "Body" else ())
+        for b in c["rodas"].values():
+            if b not in feitas:
+                pingu(a.unpacked, a.texturas, b, rodas_dir)
+                feitas.add(b)
         subprocess.run([sys.executable, os.path.join(AQUI, "gerar_pintura.py"),
                         a.unpacked, c["id"], out])
+        pos_rodas = c.get("posicoes_roda", [])
+        info = {
+            "carro": c["nome"], "id": c["id"], "chassis": c["chassis"], "mapa": c["mapa"],
+            "roda": c["roda"], "lod": LOD,
+            "pecas": {pos: "%d_bloco.obj" % b for pos, b in c["pecas"].items()},
+            "rodas": {k: "../rodas/%d_bloco.obj" % b for k, b in c["rodas"].items()},
+            # RallyCompMap põe a roda em FrontLeftWheel (sem balança no meio)
+            "rally": any(p.endswith("Wheel") and "Frame" not in p for p in pos_rodas),
+            "estepe": [p for p in pos_rodas if p.startswith("SpareWheel")],
+        }
+        json.dump(info, open(os.path.join(out, "pecas.json"), "w"), indent=1)
         # física e pontos (dados pequenos, ficam no git)
         shutil.copy(os.path.join(a.unpacked, "xml", "%d_root.xml" % (15144 + n)),
                     os.path.join(dados, "buggy_%02d.xml" % n))

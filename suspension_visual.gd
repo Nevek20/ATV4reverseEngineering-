@@ -1,92 +1,100 @@
 extends Node3D
-## Suspensão visual com as peças do próprio jogo (BuggyCompMap_B):
-## balanças (Frames_*), amortecedores traseiros em duas peças (Shock_Chamber
-## preso no chassi + Shock_Piston preso na balança), amortecedores dianteiros
-## (Shock_Front_*) e discos/pinças de freio (Brake_*).
+## Peças da suspensão do jeito que o jogo põe. Cada peça do component map vira
+## uma classe cCompPlace_<Position> (fábricas 0x208d40..0x2097e8) que copia uma
+## matriz de pose recalculada a cada quadro (0x21dff8..0x221d58). Tudo no frame
+## do modelo e a partir do curso x de cada roda. Conferido contra as matrizes
+## das peças na RAM do Renegade e do Sphinx (tests/teste_pecas.gd).
 ##
-## As peças vêm modeladas no lugar (coordenadas do modelo) e o arquivo de
-## pontos diz onde cada uma gira: A_FRAME_* (pivô da balança), A_FRAME_END_*
-## (ponta, na roda), SHOCKS_TOP/BOTTOM_FRONT_*, SHOCK_CHAMBER/PISTON_R*.
-## A cada quadro a balança gira no pivô até o centro da roda subir o curso x
-## da física (como no jogo, ver _arm_angle); o que é preso nela acompanha, e os
-## amortecedores apontam de um ponto ao outro.
+## balança (0x21eec0): eixo u = linha 2 da matriz do ponto A_FRAME_* (vem do
+##   arquivo de pontos, muda por carro), d = A_FRAME_END - A_FRAME,
+##   r = |d.x*u.z + d.z*u.x|, ângulo = atan(x / r), gira em volta do A_FRAME.
+## roda (0x220110): centro = WHEEL girado com a balança; na frente o y vira
+##   WHEEL.y + x. A roda não herda a rotação da balança (só giro e direção).
+## freio (0x221748 / 0x221928): o da frente gira só com a direção em volta do
+##   WHEEL e vai junto com o centro da roda; o de trás só translada.
+## amortecedor dianteiro (0x21f590): peça rígida, gira em z em volta do
+##   SHOCKS_TOP até apontar pro SHOCKS_BOTTOM girado com a balança; ângulo
+##   negativo na esquerda.
+## traseiro (0x21fb68): câmara e haste com a mesma rotação em x; a haste é
+##   levada até o SHOCK_PISTON girado (com o x original).
+## rally (Storm, 0x220528 / 0x220cf0): roda = WHEEL + x, sem balança no meio.
+## estepe (0x221a88): fixo, matriz e posição do ponto SpareWheel01Centre.
 ##
-## Peças (blocos do unpacked/other, na ordem em que aparecem antes do modelo,
-## às vezes com uma textura no meio; tools/gerar_buggies.py acha elas):
-##   [0/1] balança dianteira E/D, [2/3] traseira E/D, [4] sombra (não usa),
-##   [5/6] corpo do amortecedor traseiro, [7/8] amortecedor dianteiro,
-##   [9/10] haste do amortecedor traseiro. Freios: brakes+0..3 = DE, DD, TE, TD.
-##   Lista vazia (Mosquito): só os freios.
-## "Esquerda" no jogo é x < 0 no modelo.
+## Convenção: o jogo usa vetor-linha (v' = v*R + t, linhas = eixos). No Godot
+## as colunas do Basis são as linhas do jogo: EixoAngulo(a, u) = Basis(u, a),
+## Rx/Ry/Rz = Basis(RIGHT/UP/BACK, a), t = p - B*p pra girar em volta de p.
+## "Esquerda" do jogo é x < 0 no modelo.
 
 var car                      # car.gd
 var off := Vector3.ZERO      # model_offset do carro
-var corners := []            # um por roda: {wheel, frame, end, brake, shocks...}
+var corners := []            # um por roda
+var rally := false
 
 
-func build(c, pts: Dictionary, dir: String, parts: Array, brakes: int) -> void:
+func build(c, pts: Dictionary, rot: Dictionary, dir: String, pecas: Dictionary,
+		is_rally: bool, spare: Array, spare_mesh: Mesh) -> void:
 	car = c
 	off = c.model_offset
+	rally = is_rally
 	for side in ["LEFT", "RIGHT"]:
 		for axle in ["FRONT", "REAR"]:
 			var left: bool = side == "LEFT"
 			var front: bool = axle == "FRONT"
-			var k := {}
+			var k := {"left": left, "front": front}
 			# roda da física do mesmo canto (car.gd chama de Left o lado x > 0)
 			for w in c.wheels:
 				if w.front == front and (w.px - off.x < 0.0) == left:
 					k.wheel = w
-			if not k.has("wheel"):
-				continue
-			var i_side := 0 if left else 1
-			var pivot_name := "A_FRAME_%s_%s" % [axle, side]
+			var piv_name := "A_FRAME_%s_%s" % [axle, side]
 			var end_name := "A_FRAME_END_%s_%s" % [axle, side]
-			if not (pts.has(pivot_name) and pts.has(end_name)):
+			var wheel_name := "WHEEL_%s_%s" % [axle, side]
+			if not (k.has("wheel") and pts.has(piv_name) and pts.has(end_name) and rot.has(piv_name)):
 				continue
-			k.pivot = pts[pivot_name]
+			k.pivot = pts[piv_name]
 			k.end = pts[end_name]
-			k.front = front
-			k.frame = _part(dir, _id(parts, (0 if front else 2) + i_side))
-			var bi := (0 if front else 2) + i_side
-			k.brake = _part(dir, brakes + bi) if brakes >= 0 else null
+			k.w0 = pts.get(wheel_name, Vector3(k.wheel.px, k.wheel.y0, k.wheel.pz) - off)
+			k.u = (rot[piv_name] as Basis).z          # linha 2 do jogo
+			var d: Vector3 = pts[end_name] - k.pivot
+			k.r = absf(d.x * k.u.z + d.z * k.u.x)
+			var pos := ("Front" if front else "Rear") + ("Left" if left else "Right")
+			k.frame = _part(dir, pecas.get(pos + "Frame", ""))
+			k.brake = _part(dir, pecas.get(pos + "FrameBrake", ""))
 			if front:
 				var t := "SHOCKS_TOP_FRONT_%s" % side
 				var b := "SHOCKS_BOTTOM_FRONT_%s" % side
-				if pts.has(t) and pts.has(b):
+				k.shock = _part(dir, pecas.get(pos + "Shocks", ""))
+				if k.shock and pts.has(t) and pts.has(b):
 					k.top = pts[t]
 					k.bottom = pts[b]
-					k.shock = _part(dir, _id(parts, 7 + i_side))
 			else:
 				var s := "L" if left else "R"
 				var ch := "SHOCK_CHAMBER_R%s" % s
 				var pi := "SHOCK_PISTON_R%s" % s
-				if pts.has(ch) and pts.has(pi):
+				k.chamber = _part(dir, pecas.get(pos + "ShockChamber", ""))
+				k.piston = _part(dir, pecas.get(pos + "ShockPiston", ""))
+				if (k.chamber or k.piston) and pts.has(ch) and pts.has(pi):
 					k.top = pts[ch]
 					k.bottom = pts[pi]
-					k.chamber = _part(dir, _id(parts, 5 + i_side))
-					k.piston = _part(dir, _id(parts, 9 + i_side))
-			# eixo da balança, medido no save state (matriz de cada roda na RAM):
-			# a da frente gira no eixo comprido do carro, a de trás no eixo
-			# lateral. Com isso as 8 rodas (Renegade e Sphinx) ficam a menos
-			# de 2 cm da posição do jogo
-			k.axis = Vector3.BACK if front else Vector3.RIGHT
-			k.wheel_pt = Vector3(k.wheel.px, k.wheel.y0, k.wheel.pz) - off
 			corners.append(k)
+	# estepe (BuggyCompMap_A1/B1/C1: RearWheel em SpareWheel01)
+	for s in spare:
+		var pn: String = s + "Centre"
+		if spare_mesh and pts.has(pn):
+			var mi := _mesh_instance(spare_mesh)
+			_place(mi, Transform3D(rot.get(pn, Basis()), pts[pn]))
 
 
-static func _id(parts: Array, i: int) -> int:
-	return int(parts[i]) if i < parts.size() else -1
-
-
-func _part(dir: String, block: int) -> MeshInstance3D:
-	if block < 0:
+func _part(dir: String, file: String) -> MeshInstance3D:
+	if file == "":
 		return null
-	var path := "%s/%d_bloco.obj" % [dir, block]
+	var path := dir.path_join(file)
 	if not ResourceLoader.exists(path):
 		return null
 	var mesh := load(path) as Mesh
-	if mesh == null:
-		return null
+	return _mesh_instance(mesh) if mesh else null
+
+
+func _mesh_instance(mesh: Mesh) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
 	for i in mesh.get_surface_count():
@@ -99,41 +107,9 @@ func _part(dir: String, block: int) -> MeshInstance3D:
 	return mi
 
 
-## ângulo que gira a ponta da balança até ela subir dy
-## ângulo da balança pro centro da roda subir dy (é o que o jogo faz: no
-## save state a roda sobe exatamente o curso da mola)
-func _arm_angle(k: Dictionary, dy: float) -> float:
-	var d: Vector3 = k.wheel_pt - k.pivot
-	var ax: Vector3 = k.axis
-	var u := d - ax * d.dot(ax)          # parte que gira
-	var a := u.y
-	var b := ax.cross(u).y
-	var r := sqrt(a * a + b * b)
-	if r < 1e-5:
-		return 0.0
-	var c := clampf((a + dy) / r, -1.0, 1.0)
-	var phi := atan2(b, a)
-	var t1 := phi + acos(c)
-	var t2 := phi - acos(c)
-	t1 = wrapf(t1, -PI, PI)
-	t2 = wrapf(t2, -PI, PI)
-	return t1 if absf(t1) < absf(t2) else t2
-
-
-## transform (no frame do modelo) que gira em torno de p
+## transform (no frame do modelo) que gira em volta de p
 static func _about(p: Vector3, b: Basis) -> Transform3D:
 	return Transform3D(b, p - b * p)
-
-
-## base que leva a direção a até a direção b (menor rotação)
-static func _aim(a: Vector3, b: Vector3) -> Basis:
-	a = a.normalized()
-	b = b.normalized()
-	var ax := a.cross(b)
-	var s := ax.length()
-	if s < 1e-6:
-		return Basis()
-	return Basis(ax / s, atan2(s, a.dot(b)))
 
 
 func _place(mi: MeshInstance3D, xf: Transform3D) -> void:
@@ -141,40 +117,52 @@ func _place(mi: MeshInstance3D, xf: Transform3D) -> void:
 		mi.transform = Transform3D(Basis(), off) * xf
 
 
+## matrizes de todas as peças pro curso x de cada canto (frame do modelo).
+## Separado do update pra o teste comparar com a RAM.
+func pose(k: Dictionary, x: float, steer: float) -> Dictionary:
+	var out := {}
+	var b := Basis(k.u, atan(x / k.r)) if k.r > 1e-6 else Basis()
+	var arm := _about(k.pivot, b)
+	out.frame = arm
+	var w0: Vector3 = k.w0
+	var h: Vector3 = arm * w0
+	if k.front:
+		h.y = w0.y + x
+	if rally:
+		h = w0 + Vector3(0.0, x, 0.0)
+	out.hub = h
+	var bb := Basis(Vector3.UP, steer) if k.front else Basis()
+	out.brake = Transform3D(bb, h - bb * w0)
+	if k.has("top"):
+		var top: Vector3 = k.top
+		var bot: Vector3 = k.bottom
+		if k.front:
+			var b2: Vector3 = arm * bot
+			var a := acos(clampf((bot - top).normalized().dot((b2 - top).normalized()), -1.0, 1.0))
+			if k.left:
+				a = -a
+			out.shock = _about(top, Basis(Vector3.BACK, a))
+		else:
+			var q: Vector3 = arm * bot
+			var p2 := Vector3(bot.x, q.y, q.z)
+			# atan (não atan2), igual ao jogo
+			var a := atan((top.y - bot.y) / (top.z - bot.z)) - atan((top.y - p2.y) / (top.z - p2.z))
+			var r := Basis(Vector3.RIGHT, a)
+			out.chamber = _about(top, r)
+			out.piston = Transform3D(r, p2 - r * bot)
+	return out
+
+
 func update(steer_angle: float) -> void:
 	for k in corners:
 		var w: Dictionary = k.wheel
-		var dy: float = clampf(w.x, w.min, w.max)
-		var th := _arm_angle(k, dy)
-		var arm := _about(k.pivot, Basis(k.axis, th))
-		_place(k.frame, arm)
-		# no jogo a roda é filha da balança (FrontLeftFrameWheel): o centro dela
-		# descreve o mesmo arco da ponta (só a posição; o contato da física
-		# continua reto)
-		var wp := Vector3(w.px, w.y0, w.pz) - off
-		w.pivot.position = off + arm * wp
-		if k.brake:
-			var bx := arm
-			if k.front and steer_angle != 0.0:
-				var c: Vector3 = arm * k.end
-				bx = _about(c, Basis(Vector3.UP, steer_angle)) * arm
-			_place(k.brake, bx)
-		if not k.has("top"):
-			continue
-		var top: Vector3 = k.top
-		var bot: Vector3 = k.bottom
-		var bot2: Vector3 = arm * bot           # ponto de baixo vai com a balança
-		var rot := _aim(bot - top, bot2 - top)
-		if k.has("shock"):
-			# peça única: gira no topo e encolhe/estica no próprio eixo
-			var axis := (bot - top).normalized()
-			var s := (bot2 - top).length() / maxf((bot - top).length(), 1e-4)
-			var sc := Basis(Vector3.RIGHT + axis * axis.x * (s - 1.0),
-				Vector3.UP + axis * axis.y * (s - 1.0),
-				Vector3.BACK + axis * axis.z * (s - 1.0))
-			_place(k.shock, _about(top, rot * sc))
-		else:
-			_place(k.chamber, _about(top, rot))
-			# a haste vai junto com o ponto de baixo e aponta pro topo
-			var rot2 := _aim(top - bot, top - bot2)
-			_place(k.piston, Transform3D(rot2, bot2 - rot2 * bot))
+		var x: float = clampf(w.x, w.min, w.max)
+		var p := pose(k, x, steer_angle)
+		_place(k.frame, p.frame)
+		w.pivot.position = off + p.hub
+		_place(k.brake, p.brake)
+		if p.has("shock"):
+			_place(k.shock, p.shock)
+		if p.has("chamber"):
+			_place(k.get("chamber"), p.chamber)
+			_place(k.get("piston"), p.piston)
