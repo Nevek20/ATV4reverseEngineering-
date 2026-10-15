@@ -7,6 +7,7 @@ var frames := 0
 var main
 var out := "print.png"
 var view := "lado"
+var veh := 0
 
 
 func _initialize() -> void:
@@ -15,14 +16,17 @@ func _initialize() -> void:
 		out = args[0]
 	if args.size() > 1:
 		view = args[1]
+	if args.size() > 2:
+		veh = int(args[2])
 	main = load("res://main.tscn").instantiate()
 	root.add_child(main)
-	if args.size() > 2:
-		main.spawn_vehicle(int(args[2]), main.spawn_point(), deg_to_rad(90.0))
 
 
 func _process(_dt: float) -> bool:
 	frames += 1
+	if frames == 2 and veh != main.veh_idx:
+		main.car.queue_free()
+		main.spawn_vehicle(veh, main.spawn_point(), deg_to_rad(90.0))
 	if frames == 90:
 		var car: Node3D = main.car
 		var t := car.global_transform
