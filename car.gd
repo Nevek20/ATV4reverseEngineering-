@@ -40,6 +40,11 @@ var susp_vis    # suspension_visual.gd
 var wheel_front_file := "res://assets/rodas/21968_bloco.obj"
 var wheel_rear_file := "res://assets/rodas/21969_bloco.obj"
 const WHEEL_OUTBOARD := false
+# quanto a roda sai pra fora do ponto WHEEL_* (m). Estimado pela geometria
+# das peças: no Sphinx, com 0.07 o freio cabe dentro do aro e a balança
+# traseira não atravessa o disco do aro nas 4 rodas (docs/assets.md).
+# Falta confirmar com save state (matriz da roda na RAM).
+var wheel_dx := 0.0
 var vehicle_name := "Renegade (Buggy)"
 
 # peças de fábrica (DefaultConfig do jogo). Cada número diz quanto o valor
@@ -525,6 +530,10 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 		# pneu todo pra fora do ponto; testado e descartado (docs/assets.md)
 		if WHEEL_OUTBOARD:
 			mi.position.x = signf(w.px) * mesh.get_aabb().size.x * 0.5
+		else:
+			mi.position.x = signf(w.px) * wheel_dx
+		if OS.has_environment("RODA_DX"):
+			mi.position.x = signf(w.px) * float(OS.get_environment("RODA_DX"))
 		spin.add_child(mi)
 		return
 	push_warning("Roda não encontrada em %s. Veja docs/assets.md (rodas)." % path)
