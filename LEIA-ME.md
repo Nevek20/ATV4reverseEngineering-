@@ -50,6 +50,12 @@ python gerar_pintura.py unpacked BUGGY_04 sphinx
 python gerar_pintura.py unpacked BUGGY_04 sphinx --nome pintura_speedrun.png --base 225,225,230 --primary 45,35,175 --secondary 215,85,20
 ```
 
+## Claude Code
+
+O `CLAUDE.md` tem o contexto do projeto (como trabalhamos, mapa do exe,
+referências pra conferir). `docs/` tem os detalhes e `tests/rodar_testes.py`
+roda a física sem tela. Comandos: `/teste` e `/entrega`.
+
 ## Rodar
 
 1. Abra o Godot, clique em **Importar** e escolha o `project.godot`

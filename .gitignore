@@ -1,1 +1,10 @@
 .godot/
+assets/renegade/
+assets/sphinx/
+re/decomp/
+*.p2s
+*.iso
+*.imp
+SCES_546.88
+unpacked/
+__pycache__/

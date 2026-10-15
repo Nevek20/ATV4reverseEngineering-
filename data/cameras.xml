@@ -1,0 +1,1041 @@
+<Root FileVersion="1.0000000">
+   <GenericCameraData>
+      <MountOnFront CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" JitterPerlinAmp="0.04" JitterPerlinFreq="0.25" CollisionSpeedForMaxJitter="44" CollisionSpeedForStartJitter="4" CollisionJitterDecayFraction="0.95" CollisionJitterMagMax="0.1" JitterSpeedMax="75" JitterSpeedStart="0"/>
+      <MountOnHandlebars JitterPerlinAmp="0.04" JitterPerlinFreq="0.25" JitterSpeedStart="0" JitterSpeedMax="75" CollisionJitterMagMax="0.1" CollisionJitterDecayFraction="0.95" CollisionSpeedForStartJitter="4" CollisionSpeedForMaxJitter="44" CollisionMassForMaxJitter="0.1" CollisionMassForStartJitter="0.01"/>
+      <MountOnBack JitterPerlinAmp="0.0" JitterPerlinFreq="0.0"/>
+      <MountOnWheel JitterPerlinAmp="0.0" JitterPerlinFreq="0.0"/>
+      <MountLowBehind JitterPerlinAmp="0.0" JitterPerlinFreq="0.0"/>
+      <FollowFar JitterPerlinAmp="0.0" JitterPerlinFreq="0.0"/>
+      <FollowNear JitterPerlinAmp="0.0" JitterPerlinFreq="0.0"/>
+      <FollowStadium JitterPerlinAmp="0.0" JitterPerlinFreq="0.0"/>
+      <RearView JitterPerlinAmp="0.03" JitterPerlinFreq="0.3" JitterSpeedStart="70" JitterSpeedMax="100" CollisionJitterMagMax="0.05" CollisionJitterDecayFraction="0.93" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForMaxJitter="44" CollisionSpeedForStartJitter="4"/>
+      <FollowBowling JitterPerlinAmp="0.0" JitterPerlinFreq="0.0"/>
+      <FollowOrbitNear CollisionSpeedForStartJitter="4" CollisionSpeedForMaxJitter="44" CollisionMassForMaxJitter="0.1" CollisionMassForStartJitter="0.01" CollisionJitterDecayFraction="0.93" CollisionJitterMagMax="0.05" JitterSpeedMax="100" JitterSpeedStart="70" JitterPerlinFreq="0.3" JitterPerlinAmp="0.03"/>
+      <FollowNearBouncy CollisionJitterMagMax="0.05" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForMaxJitter="44" CollisionSpeedForStartJitter="4" CollisionJitterDecayFraction="0.95" JitterSpeedMax="75" JitterSpeedStart="0" JitterPerlinFreq="0.25" JitterPerlinAmp="0.04"/>
+      <FollowNearBouncy2 JitterPerlinAmp="0.04" JitterPerlinFreq="0.25" JitterSpeedStart="0" JitterSpeedMax="75" CollisionJitterDecayFraction="0.95" CollisionSpeedForStartJitter="4" CollisionSpeedForMaxJitter="44" CollisionMassForMaxJitter="0.1" CollisionMassForStartJitter="0.01" CollisionJitterMagMax="0.05"/>
+      <FollowOrbitFar JitterPerlinAmp="0.03" JitterPerlinFreq="0.3" JitterSpeedStart="70" JitterSpeedMax="100" CollisionJitterMagMax="0.05" CollisionJitterDecayFraction="0.93" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForMaxJitter="44" CollisionSpeedForStartJitter="4"/>
+      <FollowPOV JitterPerlinAmp="0.0" JitterPerlinFreq="0.0"/>
+      <MountOnHood CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" JitterPerlinAmp="0.04" JitterPerlinFreq="0.25" CollisionSpeedForMaxJitter="44" CollisionSpeedForStartJitter="4" CollisionJitterDecayFraction="0.95" CollisionJitterMagMax="0.1" JitterSpeedMax="75" JitterSpeedStart="0"/>
+   </GenericCameraData>
+   <CameraSet Name="ATVCamSet_Generic" Type="Light">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1" Z="-0.2"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHandlebars JitterMag="0.002" FOV="0.5" NearClip="0.28" MaxSteerAngle="0.05" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.6" Z="-0.38"/>
+         <Orientation X="7.5" Y="0.0" Z="0.0"/>
+      </MountOnHandlebars>
+      <MountOnBack>
+         <PosOffset X="0.0000000" Y="1.000000" Z="-1.5000000"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnBack>
+      <MountOnWheel>
+         <PosOffset X="-0.6000000" Y="0.0000000" Z="-0.3000000"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnWheel>
+      <MountLowBehind>
+         <PosOffset X="-1.090000" Y="0.840000" Z="-2.010000"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountLowBehind>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowNear FOV="0.5" MaxYOffset="3.5" MaxYSpeedMin="1.0" MaxYSpeedMax="85.0" PosDampingXPlane="15.25" PosDampingYGoingUp="4.0" PosDampingYGoingDown="15.0" LookOffsetMinSpeed="0.0" LookOffsetMaxSpeed="150.0" FOVMinSpeed="40.0" FOVMaxSpeed="90.0" FOVMinZoom="0.46" FOVMaxZoom="0.50" XIncStiffnessSpeed="50" XIncStiffnessScale="5.0" PosDampingZPlane="15.25" ZIncStiffnessSpeed="50" ZIncStiffnessScale="5.0">
+         <POS_OFFSET X="0.0" Y="1.5" Z="-2.75"/>
+         <LOOK_OFFSET X="0.0" Y="0.8" Z="0.0"/>
+      </FollowNear>
+      <FollowStadium FOV="0.5" MaxYOffset="4.75" MaxYSpeedMin="1.0" MaxYSpeedMax="85" PosDampingXPlane="11.0" PosDampingYGoingUp="5.0" PosDampingYGoingDown="15.0" LookOffsetMinSpeed="0.0" LookOffsetMaxSpeed="150.0" FOVMinSpeed="40.0" FOVMaxSpeed="90.0" FOVMinZoom="0.46" FOVMaxZoom="0.50" XIncStiffnessSpeed="50" XIncStiffnessScale="5.0" PosDampingZPlane="11.0" ZIncStiffnessSpeed="50" ZIncStiffnessScale="5.0">
+         <POS_OFFSET X="0.0" Y="7.0" Z="-4.0"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="3.0"/>
+      </FollowStadium>
+      <RearView FOV="0.5" MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="100.0" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100.0" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" JitterSpeedStart="26" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.03" JitterMag="0.0008" JitterSpeedMax="49">
+         <POS_OFFSET X="0.0" Y="1.8" Z="3.5"/>
+         <LOOK_OFFSET X="0.0" Y="0.8" Z="0.0"/>
+      </RearView>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="5" POS_DAMPING_Y_GOING_DOWN="10" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.36" SlerpRate="6" SlerpMaxAngle="0.9" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="3" MinDistanceSpeed="20.0" MaxDistance="4.5" MaxDistanceSpeed="80">
+         <POS_OFFSET X="0.0" Y="1.6" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="1.1" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowNearBouncy MAX_Y_OFFSET="1.25" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="24.0" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="2.5" Y="1.25" Z="-2.2"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="1.8"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="2.86"/>
+         <LOOK_OFFSET X="0.5" Y="1.1" Z="1.4"/>
+      </FollowNearBouncy2>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="5" POS_DAMPING_Y_GOING_DOWN="10" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.36" SlerpRate="6" SlerpMaxAngle="0.9" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="4" MinDistanceSpeed="20.0" MaxDistance="5.5" MaxDistanceSpeed="80" JitterSpeedMax="49" JitterMag="0.0008" CollisionJitterMagMax="0.03" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" JitterSpeedStart="26">
+         <POS_OFFSET X="0.0" Y="2" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="1.1" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowPOV MAX_Y_OFFSET="1.25" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="24.0" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOVMAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="24.0" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="2.5" Y="1.25" Z="-2.2"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="1.8"/>
+      </FollowPOV>
+   </CameraSet>
+   <CameraSet Name="BikeCamSet_Generic" Type="Light">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1" Z="-0.1"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHandlebars JitterMag="0.002" FOV="0.5" NearClip="0.143" MaxSteerAngle="0.05" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.63" Z="-0.20"/>
+         <Orientation X="10.9" Y="0.0" Z="0.0"/>
+      </MountOnHandlebars>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="5" POS_DAMPING_Y_GOING_UP="5.0" PPOS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="18" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.4" Z="-3"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowStadium FOV="0.5" MaxYOffset="4.75" MaxYSpeedMin="1.0" MaxYSpeedMax="85" PosDampingXPlane="11.0" PosDampingYGoingUp="5.0" PosDampingYGoingDown="15.0" LookOffsetMinSpeed="0.0" LookOffsetMaxSpeed="150.0" FOVMinSpeed="40.0" FOVMaxSpeed="90.0" FOVMinZoom="0.46" FOVMaxZoom="0.50" XIncStiffnessSpeed="50" XIncStiffnessScale="5.0" PosDampingZPlane="11.0" ZIncStiffnessSpeed="50" ZIncStiffnessScale="5.0">
+         <POS_OFFSET X="0.0" Y="7.0" Z="-4.0"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="3.0"/>
+      </FollowStadium>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="100.0" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100.0" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" JitterSpeedStart="26" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49">
+         <POS_OFFSET X="0.0" Y="2" Z="3.75"/>
+         <LOOK_OFFSET X="0.0" Y="0.8" Z="0.0"/>
+      </RearView>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="5" POS_DAMPING_Y_GOING_DOWN="10" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.36" SlerpRate="4" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="4.2" MinDistanceSpeed="20.0" MaxDistance="5.8" MaxDistanceSpeed="80" JitterSpeedStart="26" JitterSpeedMax="49" JitterMag="0.0008" CollisionJitterMagMax="0.025" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <POS_OFFSET X="0.0" Y="2" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="1.1" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="5" POS_DAMPING_Y_GOING_DOWN="10" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.36" SlerpRate="4" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="3.2" MinDistanceSpeed="20.0" MaxDistance="4.8" MaxDistanceSpeed="80" JitterSpeedStart="26" JitterSpeedMax="49" JitterMag="0.0008" CollisionJitterMagMax="0.025" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <POS_OFFSET X="0.0" Y="1.6" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="1.1" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowPOV MAX_Y_OFFSET="1.25" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="24.0" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOVMAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="24.0" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="2.5" Y="1.25" Z="-2.2"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="1.8"/>
+      </FollowPOV>
+      <FollowNearBouncy MAX_Y_OFFSET="1.25" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="24.0" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="2.5" Y="1.25" Z="-2.2"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="1.8"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="2.86"/>
+         <LOOK_OFFSET X="0.5" Y="1.1" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="BuggyCamSet_01" Type="Heavy">
+      <MountOnFront FOV="0.45" JitterSpeedMax="49" JitterSpeedStart="1" JitterMag="0.002" CollisionJitterMagMax="0.08" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.65" Z="0.45"/>
+         <Orientation X="-1.8" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="6.1">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-5.5"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.4" Z="6"/>
+         <LOOK_OFFSET X="0.0" Y="1.9" Z="0.0"/>
+      </RearView>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.6" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="5.55" MinDistanceSpeed="20.0" MaxDistance="5.150" MaxDistanceSpeed="100" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31" CollisionJitterMagMax="0.025" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionJitterDecayFraction="0.92">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.95" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.5" MinDistanceSpeed="20.0" MaxDistance="6.45" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.75" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.3" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="BuggyCamSet_02" Type="Heavy">
+      <MountOnFront JitterMag="0.002" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterMagMax="0.08" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" FOV="0.45">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterMagMax="0.08" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" FOV="0.45">
+         <PosOffset X="0.0000000" Y="1.79" Z="0.37"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="6.3">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-5.75"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.9" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.45" MinDistanceSpeed="20.0" MaxDistance="6.035" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.7" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.2" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.4" MinDistanceSpeed="20.0" MaxDistance="7.456" MaxDistanceSpeed="100" JitterSpeedStart="31" JitterSpeedMax="49" JitterMag="0.0008" CollisionJitterMagMax="0.025" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <POS_OFFSET X="0.0" Y="3" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.5" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView JitterMag="0.0008" JitterSpeedStart="31" JitterSpeedMax="49" FOV="0.5" MAX_Y_OFFSET="2.7" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionJitterMagMax="0.025" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <POS_OFFSET X="0.0" Y="2.7" Z="6.61"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="BuggyCamSet_03" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.89" Z="0.42"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="6.3">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-5.75"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.9" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.386" MinDistanceSpeed="20.0" MaxDistance="5.94" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.7" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.2" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.276" MinDistanceSpeed="20.0" MaxDistance="7.29" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.5" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.7" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.7" Z="6.61"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="BuggyCamSet_04" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.8" Z="0.6"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="6.3">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-5.75"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.9" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.56" MinDistanceSpeed="20.0" MaxDistance="6.08" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.7" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.2" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.4" MinDistanceSpeed="20.0" MaxDistance="7.35" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.5" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.7" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.7" Z="6.61"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="BuggyCamSet_05" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.63" Z="0.47"/>
+         <Orientation X="-1" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5.7">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="5.24" MinDistanceSpeed="20.0" MaxDistance="4.81" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.3" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="1.9" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.8" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.06" MinDistanceSpeed="20.0" MaxDistance="6.1" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.6" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.1" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.3" Z="6.3"/>
+         <LOOK_OFFSET X="0.0" Y="1.85" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="BuggyCamSet_06" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.84" Z="0.33"/>
+         <Orientation X="-2.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="8">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-7"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.15" MinDistanceSpeed="20.0" MaxDistance="5.8" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.8" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.12" MinDistanceSpeed="20.0" MaxDistance="7.09" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.2" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.5" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.75" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.75" Z="6.2"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="BuggyCamSet_07" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.71" Z="0.5"/>
+         <Orientation X="-0.3" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="8">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-7"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.8" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.27" MinDistanceSpeed="20.0" MaxDistance="6.85" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.6" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.2" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="8.3" MinDistanceSpeed="20.0" MaxDistance="8.2" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.5" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.75" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.75" Z="7.5"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="BuggyCamSet_08" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.9" Z="0.3"/>
+         <Orientation X="-2.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="8">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-7"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.964" MinDistanceSpeed="20.0" MaxDistance="6.589" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.8" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.8" MinDistanceSpeed="20.0" MaxDistance="7.94" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.2" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.5" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.75" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.75" Z="7.25"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="BuggyCamSet_09" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.75" Z="0.83"/>
+         <Orientation X="-2.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="8">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-7"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.6" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.144" MinDistanceSpeed="20.0" MaxDistance="5.528" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.831" MinDistanceSpeed="20.0" MaxDistance="7.385" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.7" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.5" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.75" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.75" Z="7.25"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="BuggyCamSet_10" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.84" Z="1.05"/>
+         <Orientation X="-2.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="8">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-7"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.7" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.7" MinDistanceSpeed="20.0" MaxDistance="6.035" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.5" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.9" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.5" MinDistanceSpeed="20.0" MaxDistance="7.167" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.7" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.5" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.75" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.75" Z="7.25"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="BuggyCamSet_11" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.92" Z="0.95"/>
+         <Orientation X="-2.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="8">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-7"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.9" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.144" MinDistanceSpeed="20.0" MaxDistance="6.089" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.7" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.011" MinDistanceSpeed="20.0" MaxDistance="7.167" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.5" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.75" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.75" Z="7.25"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="LanciaCam" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.92" Z="0.86"/>
+         <Orientation X="-2.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="8">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-7"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.7" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="5.85" MinDistanceSpeed="20.0" MaxDistance="5.42" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.5" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.59" MinDistanceSpeed="20.0" MaxDistance="6.3" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.8" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.5" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.75" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.75" Z="7.25"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="TruckCamSet_01" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="2.02" Z="0.59"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="7.2">
+         <POS_OFFSET X="0.0" Y="3" Z="-6.2"/>
+         <LOOK_OFFSET X="0.0" Y="2.4" Z="0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <RearView FOV="0.5" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="7.83"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.9" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.14" MinDistanceSpeed="20.0" MaxDistance="5.55" MaxDistanceSpeed="100" POS_DAMPING_Y_GOING_DOWN="20" POS_DAMPING_Y_GOING_UP="10" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.7" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.7" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.2" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.07" MinDistanceSpeed="20.0" MaxDistance="6.65" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="3" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="TruckCamSet_02" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="2.5625000" Z="0.95"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="7.2">
+         <POS_OFFSET X="0.0" Y="3" Z="-6.2"/>
+         <LOOK_OFFSET X="0.0" Y="2.4" Z="0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <RearView FOV="0.5" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="7.83"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.72" MinDistanceSpeed="20.0" MaxDistance="6.4" MaxDistanceSpeed="100" POS_DAMPING_Y_GOING_DOWN="20" POS_DAMPING_Y_GOING_UP="10" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.3" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.7" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.8" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.56" MinDistanceSpeed="20.0" MaxDistance="7.62" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.6" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="3" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="TruckCamSet_03" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="0.9"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+         <PosOffset X="0.0000000" Y="2.15" Z="1.0000000"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="6.8">
+         <POS_OFFSET X="0.0" Y="2.7" Z="-6"/>
+         <LOOK_OFFSET X="0.0" Y="2.4" Z="0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.1" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.433" MinDistanceSpeed="20.0" MaxDistance="6.08" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.9" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.5" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.409" MinDistanceSpeed="20.0" MaxDistance="7.385" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.3" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.8" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.75" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.75" Z="7"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="TruckCamSet_04" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="2.5625000" Z="1.22"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="7.2">
+         <POS_OFFSET X="0.0" Y="3" Z="-6.2"/>
+         <LOOK_OFFSET X="0.0" Y="2.4" Z="0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <RearView FOV="0.5" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="7.83"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.67" MinDistanceSpeed="20.0" MaxDistance="7.22" MaxDistanceSpeed="100" POS_DAMPING_Y_GOING_DOWN="20" POS_DAMPING_Y_GOING_UP="10" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.2" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.7" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.8" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="8.6" MinDistanceSpeed="20.0" MaxDistance="8.6" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.6" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="3" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="TruckCamSet_05" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="2.5625000" Z="0.5199999"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="7.2">
+         <POS_OFFSET X="0.0" Y="3" Z="-6.2"/>
+         <LOOK_OFFSET X="0.0" Y="2.4" Z="0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <RearView FOV="0.5" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="7.83"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.831" MinDistanceSpeed="20.0" MaxDistance="6.48" MaxDistanceSpeed="100" POS_DAMPING_Y_GOING_DOWN="20" POS_DAMPING_Y_GOING_UP="10" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.2" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.7" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.8" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.76" MinDistanceSpeed="20.0" MaxDistance="7.76" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.6" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="3" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="TruckCamSet_06" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.87" Z="0.83"/>
+         <Orientation X="-1" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="2.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="8">
+         <POS_OFFSET X="0.0" Y="2.4" Z="-7"/>
+         <LOOK_OFFSET X="0.0" Y="2" Z="0.0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.58" MinDistanceSpeed="20.0" MaxDistance="7.253" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.8" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.3" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="8.56" MinDistanceSpeed="20.0" MaxDistance="8.60" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.3" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.6" Z="0.0"/>
+      </FollowOrbitFar>
+      <RearView FOV="0.5" MAX_Y_OFFSET="2.75" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.75" Z="7.7"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="TruckCamSet_07" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="2.3" Z="1.27"/>
+         <Orientation X="-1" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="7.2">
+         <POS_OFFSET X="0.0" Y="3" Z="-6.2"/>
+         <LOOK_OFFSET X="0.0" Y="2.4" Z="0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <RearView FOV="0.5" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="7.83"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.58" MinDistanceSpeed="20.0" MaxDistance="6.08" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.2" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.7" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.8" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.43" MinDistanceSpeed="20.0" MaxDistance="7.51" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.6" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="3" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="TruckCamSet_08" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="2.5625000" Z="0.5199999"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="7.2">
+         <POS_OFFSET X="0.0" Y="3" Z="-6.2"/>
+         <LOOK_OFFSET X="0.0" Y="2.4" Z="0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <RearView FOV="0.5" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="7.83"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.01" MinDistanceSpeed="20.0" MaxDistance="6.59" MaxDistanceSpeed="100" POS_DAMPING_Y_GOING_DOWN="20" POS_DAMPING_Y_GOING_UP="10" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.2" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.7" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.8" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.72" MinDistanceSpeed="20.0" MaxDistance="7.89" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.6" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="3" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="TruckCamSet_09" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="2.5625000" Z="0.5199999"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="7.2">
+         <POS_OFFSET X="0.0" Y="3" Z="-6.2"/>
+         <LOOK_OFFSET X="0.0" Y="2.4" Z="0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <RearView FOV="0.5" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="7.83"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.16" MinDistanceSpeed="20.0" MaxDistance="6.77" MaxDistanceSpeed="100" POS_DAMPING_Y_GOING_DOWN="20" POS_DAMPING_Y_GOING_UP="10" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.2" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.7" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.8" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.96" MinDistanceSpeed="20.0" MaxDistance="8.142" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.6" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="3" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="TruckCamSet_10" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="2.38" Z="0.55"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="7.2">
+         <POS_OFFSET X="0.0" Y="3" Z="-6.2"/>
+         <LOOK_OFFSET X="0.0" Y="2.4" Z="0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <RearView FOV="0.5" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="7.83"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.385" MinDistanceSpeed="20.0" MaxDistance="7.12" MaxDistanceSpeed="100" POS_DAMPING_Y_GOING_DOWN="20" POS_DAMPING_Y_GOING_UP="10" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.2" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.7" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.8" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="8.25" MinDistanceSpeed="20.0" MaxDistance="8.67" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.7" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="3" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="TruckCamSet_11" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="2.38" Z="0.83"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="7.2">
+         <POS_OFFSET X="0.0" Y="3" Z="-6.2"/>
+         <LOOK_OFFSET X="0.0" Y="2.4" Z="0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <RearView FOV="0.5" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="7.83"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.143" MinDistanceSpeed="20.0" MaxDistance="6.745" MaxDistanceSpeed="100" POS_DAMPING_Y_GOING_DOWN="20" POS_DAMPING_Y_GOING_UP="10" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.2" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.7" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.6" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.854" MinDistanceSpeed="20.0" MaxDistance="7.854" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.4" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="3" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+   </CameraSet>
+   <CameraSet Name="TruckCamSet_12" Type="Heavy">
+      <MountOnFront JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="1.2" Z="1.5"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnFront>
+      <MountOnHood JitterMag="0.002" FOV="0.45" CollisionJitterMagMax="0.08" JitterSpeedStart="1" JitterSpeedMax="49" CollisionJitterDecayFraction="0.92" CollisionSpeedForStartJitter="3" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1">
+         <PosOffset X="0.0000000" Y="2.11" Z="0.95"/>
+         <Orientation X="0.0" Y="0.0" Z="0.0"/>
+      </MountOnHood>
+      <FollowFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.5" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="7" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="100" FOV_MAX_SPEED="0" FOV_MIN_ZOOM="0.36" FOV_MAX_ZOOM="0.46" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="7.2">
+         <POS_OFFSET X="0.0" Y="3" Z="-6.2"/>
+         <LOOK_OFFSET X="0.0" Y="2.4" Z="0"/>
+      </FollowFar>
+      <FollowBowling UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="8" POS_DAMPING_Z_PLANE="18" POS_DAMPING_Y_GOING_UP="5.0" POS_DAMPING_Y_GOING_DOWN="12" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.46" FOV_MAX_ZOOM="0.36" X_INC_STIFFNESS_SPEED="0" X_INC_STIFFNESS_SCALE="0" Z_INC_STIFFNESS_SPEED="0" Z_INC_STIFFNESS_SCALE="0" ENFORCE_MAX_OFFSET="5">
+         <POS_OFFSET X="0.0" Y="1.8" Z="-2.7"/>
+         <LOOK_OFFSET X="0.0" Y="1.0" Z="0.0"/>
+      </FollowBowling>
+      <RearView FOV="0.5" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="85.0" POS_DAMPING_X_PLANE="50" POS_DAMPING_Y_GOING_UP="4.0" POS_DAMPING_Y_GOING_DOWN="15.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM=".5" FOV_MAX_ZOOM="0.5" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="50" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3" Z="7.83"/>
+         <LOOK_OFFSET X="0.0" Y="2.2" Z="0.0"/>
+      </RearView>
+      <FollowOrbitNear UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="6.457" MinDistanceSpeed="20.0" MaxDistance="5.817" MaxDistanceSpeed="100" POS_DAMPING_Y_GOING_DOWN="20" POS_DAMPING_Y_GOING_UP="10" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="2.7" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="2.7" Z="0.0"/>
+      </FollowOrbitNear>
+      <FollowOrbitFar UP_INCLINE_MULTIPLIER="0" DOWN_INCLINE_MULTIPLIER="4" DECAY_FRACTION="0.1" MAX_WHEELS_OFF_GROUND_TIME="0.1" MAX_EXTRA_HEIGHT_RATE="1.0" MAX_Y_OFFSET="3.4" MAX_Y_SPEED_MIN="1.0" MAX_Y_SPEED_MAX="100" POS_DAMPING_Y_GOING_UP="10" POS_DAMPING_Y_GOING_DOWN="20" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="150.0" FOV_MIN_SPEED="1" FOV_MAX_SPEED="100" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.4" SlerpRate="6" SlerpMaxAngle="1" NoCourseFollowSpeed="10.0" MaxCourseFollowSpeed="100" MaxCourseFollowAmount="1" UseTotalSpeed="true" MinDistance="7.34" MinDistanceSpeed="20.0" MaxDistance="7.058" MaxDistanceSpeed="100" CollisionSpeedForMaxJitter="45" CollisionMassForStartJitter="0.01" CollisionMassForMaxJitter="0.1" CollisionSpeedForStartJitter="3" CollisionJitterDecayFraction="0.92" CollisionJitterMagMax="0.025" JitterMag="0.0008" JitterSpeedMax="49" JitterSpeedStart="31">
+         <POS_OFFSET X="0.0" Y="3.1" Z="-5"/>
+         <LOOK_OFFSET X="0.0" Y="3" Z="0.0"/>
+      </FollowOrbitFar>
+      <FollowNearBouncy2 MAX_Y_OFFSET="3" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="100" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.50" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="6.98" Y="3" Z="4.45"/>
+         <LOOK_OFFSET X="-2.5" Y="0.9" Z="1.4"/>
+      </FollowNearBouncy2>
+      <FollowNearBouncy MAX_Y_OFFSET="1.8" MAX_Y_SPEED_MIN="1" MAX_Y_SPEED_MAX="85" POS_DAMPING_X_PLANE="15" POS_DAMPING_Y_GOING_UP="25.0" POS_DAMPING_Y_GOING_DOWN="32.0" LOOK_OFFSET_MIN_SPEED="0.0" LOOK_OFFSET_MAX_SPEED="0" FOV_MIN_SPEED="40.0" FOV_MAX_SPEED="90.0" FOV_MIN_ZOOM="0.5" FOV_MAX_ZOOM="0.6" X_INC_STIFFNESS_SPEED="50" X_INC_STIFFNESS_SCALE="5.0" POS_DAMPING_Z_PLANE="100" Z_INC_STIFFNESS_SPEED="50" Z_INC_STIFFNESS_SCALE="5.0" ENFORCE_MAX_OFFSET="60">
+         <POS_OFFSET X="3.28" Y="1.8" Z="-5.67"/>
+         <LOOK_OFFSET X="0.3" Y="1.0" Z="0.9"/>
+      </FollowNearBouncy>
+   </CameraSet>
+</Root>
