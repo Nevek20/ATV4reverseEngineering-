@@ -26,6 +26,13 @@ var model_path := ""
 var data_files := ["res://data/vehicles/buggy_base.xml", "res://data/vehicles/renegade.xml"]
 # arquivo de pontos do modelo (POINT 1.00): posição das rodas no modelo do jogo
 var points_file := "res://data/vehicles/renegade_points.bin"
+var points := {}              # pontos lidos do arquivo acima
+# peças da suspensão (blocos do unpacked convertidos com o pingu2obj):
+# pasta, primeiro bloco das peças e primeiro bloco dos freios (-1 = sem)
+var parts_dir := "res://assets/renegade"
+var parts_base := 21694
+var brakes_base := 21713
+var susp_vis    # suspension_visual.gd
 var vehicle_name := "Renegade (Buggy)"
 
 # peças de fábrica (DefaultConfig do jogo). Cada número diz quanto o valor
@@ -138,6 +145,10 @@ func _ready() -> void:
 	add_child(shape)
 	for w in wheels:
 		_make_wheel_mesh(w)
+	if parts_base >= 0 and not points.is_empty():
+		susp_vis = preload("res://suspension_visual.gd").new()
+		add_child(susp_vis)
+		susp_vis.build(self, points, parts_dir, parts_base, brakes_base)
 
 
 # ------------------------------------------------------------------ dados
@@ -353,6 +364,7 @@ func _load_physics() -> void:
 	# aparece no -X do Godot; a física só precisa saber de que lado cada roda fica.
 	wheels.clear()
 	var pts := _load_points(points_file)
+	points = pts
 	if pts.has("ARSE"):
 		DRIVER_EYE = pts["ARSE"] + EYE_FROM_ARSE
 	var wpos := {}
@@ -1502,3 +1514,5 @@ func _update_visuals(dt: float, v_f: float) -> void:
 		w.spin_node.rotation.x = w.spin
 	if sw_pivot:
 		sw_pivot.basis = Basis(SW_AXIS.normalized(), steer * SW_TURNS)
+	if susp_vis:
+		susp_vis.update(steer * P.vis_steer)

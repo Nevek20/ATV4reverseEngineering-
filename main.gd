@@ -7,15 +7,18 @@ extends Node3D
 const VEHICLES := [
 	{"name": "Renegade", "id": "BUGGY_10", "cams": "BuggyCamSet_10",
 		"model": "res://assets/renegade/21711_bloco.obj",
-		"data": "res://data/vehicles/renegade.xml", "points": "res://data/vehicles/renegade_points.bin"},
+		"data": "res://data/vehicles/renegade.xml", "points": "res://data/vehicles/renegade_points.bin",
+		"parts": "res://assets/renegade", "parts_base": 21694, "brakes": 21713},
 	{"name": "Sphinx", "id": "BUGGY_04", "cams": "BuggyCamSet_04",
 		"model": "res://assets/sphinx/21531_bloco.obj",
-		"data": "res://data/vehicles/sphinx.xml", "points": "res://data/vehicles/sphinx_points.bin"},
+		"data": "res://data/vehicles/sphinx.xml", "points": "res://data/vehicles/sphinx_points.bin",
+		"parts": "res://assets/sphinx", "parts_base": 21513, "brakes": 21533},
 	# o Sphinx do speedrun tem peças compradas: com motor 0.81, BodyMass L2 e
 	# Clutch L2 as trocas (38/57/75 mph) caem no mesmo tempo do vídeo
 	{"name": "Sphinx speedrun", "id": "BUGGY_04", "cams": "BuggyCamSet_04",
 		"model": "res://assets/sphinx/21531_bloco.obj",
 		"data": "res://data/vehicles/sphinx.xml", "points": "res://data/vehicles/sphinx_points.bin",
+		"parts": "res://assets/sphinx", "parts_base": 21513, "brakes": 21533,
 		"tune": {"engine": 0.81, "mass": 1.0, "shift": 1.0}},
 ]
 var veh_idx := 0
@@ -71,6 +74,9 @@ func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
 	car.points_file = v.points
 	car.vehicle_id = v.id
 	car.tune_override = v.get("tune", {})
+	car.parts_dir = v.get("parts", "")
+	car.parts_base = v.get("parts_base", -1)
+	car.brakes_base = v.get("brakes", -1)
 	car.vehicle_name = "%s (%s)" % [v.name, v.id]
 	add_child(car)
 	car.manual = manual
@@ -202,6 +208,8 @@ func _update_camera(delta: float) -> void:
 	# MountOnFront fica dentro da carroceria (no ATV também: Z -0.2), então o
 	# jogo não desenha o veículo nela. As rodas continuam.
 	car.model_root.visible = cam_mode != 3
+	if car.susp_vis:
+		car.susp_vis.visible = cam_mode != 3
 
 	if cam_mode <= 1:
 		gcams[cam_mode].apply(cam, s.tp)

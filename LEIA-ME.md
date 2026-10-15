@@ -14,6 +14,19 @@ Pro Sphinx, gere o modelo do mesmo jeito e copie pra `assets/sphinx/`:
 python pingu2obj.py unpacked\other\21531_bloco.bin --out sphinx --copy-tex
 ```
 
+### Peças da suspensão
+
+As balanças, amortecedores e freios são blocos separados. Gere com textura
+(no cmd, na pasta do `pingu2obj.py`) e copie o conteúdo de cada pasta pra
+`assets/renegade/` e `assets/sphinx/`:
+
+```
+for %b in (21694 21695 21696 21697 21699 21700 21701 21702 21703 21704 21713 21714 21715 21716) do python pingu2obj.py unpacked\other\%b_bloco.bin --out renegade --copy-tex
+for %b in (21513 21514 21515 21516 21518 21519 21520 21521 21522 21523 21533 21534 21535 21536) do python pingu2obj.py unpacked\other\%b_bloco.bin --out sphinx --copy-tex
+```
+
+Sem essas peças o carro roda normal, só sem a suspensão aparecendo.
+
 ## Rodar
 
 1. Abra o Godot, clique em **Importar** e escolha o `project.godot`
@@ -59,6 +72,10 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
   a direção da velocidade, distância e zoom por velocidade, amortecimento de
   altura, subida em descida, altura mínima do chão. Só a câmera "piloto" é
   inventada
+
+- Suspensão visual (`suspension_visual.gd`): balanças giram no pivô do jogo
+  (A_FRAME_*) até a ponta acompanhar o curso da roda, amortecedores apontam
+  de um ponto ao outro, freios e rodas vão presos na balança
 
 ## O que ainda é provisório
 
