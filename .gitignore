@@ -1,6 +1,7 @@
 .godot/
 assets/renegade/
 assets/sphinx/
+assets/rodas/
 re/decomp/
 *.p2s
 *.iso

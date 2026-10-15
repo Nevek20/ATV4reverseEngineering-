@@ -34,6 +34,11 @@ var parts_dir := "res://assets/renegade"
 var parts_base := 21694
 var brakes_base := 21713
 var susp_vis    # suspension_visual.gd
+# rodas do jogo (componente Wheel, TYRE_GENERIC_MEDIUM nos buggies de fábrica):
+# modelo da frente e de trás. Já vêm com o aro (ALLOY) e o pneu (TYRE), e as
+# texturas padrão são as das peças de fábrica (WHEEL_01 e DIRT_BUDGET)
+var wheel_front_file := "res://assets/rodas/21968_bloco.obj"
+var wheel_rear_file := "res://assets/rodas/21969_bloco.obj"
 var vehicle_name := "Renegade (Buggy)"
 
 # peças de fábrica (DefaultConfig do jogo). Cada número diz quanto o valor
@@ -493,6 +498,30 @@ func _solve_static(w: Dictionary, f_load: float) -> float:
 
 # ------------------------------------------------------------------ visual
 func _make_wheel_mesh(w: Dictionary) -> void:
+	var pivot := Node3D.new()
+	add_child(pivot)
+	var spin := Node3D.new()
+	pivot.add_child(spin)
+	w.pivot = pivot
+	w.spin_node = spin
+	var path: String = wheel_front_file if w.front else wheel_rear_file
+	if path != "" and ResourceLoader.exists(path):
+		var mesh: Mesh = load(path) as Mesh
+		var mi := MeshInstance3D.new()
+		mi.mesh = mesh
+		for i in mesh.get_surface_count():
+			var m := mesh.surface_get_material(i)
+			if m is StandardMaterial3D:
+				var m2: StandardMaterial3D = m.duplicate()
+				m2.cull_mode = MODEL_CULL
+				mi.set_surface_override_material(i, m2)
+		# component map (14881): Mirror="1" nas rodas da esquerda do jogo,
+		# que é o x < 0 do modelo (aqui o modelo não é espelhado)
+		if w.px < 0.0:
+			mi.scale.x = -1.0
+		spin.add_child(mi)
+		return
+	push_warning("Roda não encontrada em %s. Veja docs/assets.md (rodas)." % path)
 	var cyl := CylinderMesh.new()
 	cyl.top_radius = w.r
 	cyl.bottom_radius = w.r
@@ -502,13 +531,9 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 	mat.albedo_color = Color(0.08, 0.08, 0.08)
 	mat.roughness = 0.9
 	cyl.material = mat
-	var pivot := Node3D.new()
-	add_child(pivot)
 	var mi := MeshInstance3D.new()
 	mi.mesh = cyl
 	mi.rotation_degrees = Vector3(0, 0, 90)
-	var spin := Node3D.new()
-	pivot.add_child(spin)
 	spin.add_child(mi)
 	# um risco claro pra dar pra ver a roda girando
 	var mark := MeshInstance3D.new()
@@ -519,8 +544,6 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 	bm.material = mm
 	mark.mesh = bm
 	spin.add_child(mark)
-	w.pivot = pivot
-	w.spin_node = spin
 
 
 func _load_model() -> void:

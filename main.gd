@@ -79,6 +79,8 @@ func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
 	car.parts_dir = v.get("parts", "")
 	car.parts_base = v.get("parts_base", -1)
 	car.brakes_base = v.get("brakes", -1)
+	car.wheel_front_file = v.get("wheel_front", car.wheel_front_file)
+	car.wheel_rear_file = v.get("wheel_rear", car.wheel_rear_file)
 	car.vehicle_name = "%s (%s)" % [v.name, v.id]
 	add_child(car)
 	car.manual = manual
