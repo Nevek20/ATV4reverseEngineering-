@@ -50,9 +50,15 @@ python tests/rodar_testes.py accel --veh 1 --tune "{\"engine\":0.81}"
 :: save state do PCSX2 -> valores reais do jogo
 python tools/ler_savestate.py arquivo.p2s
 
+:: checar um script sem abrir o editor
+%GODOT% --headless --path . --check-only --script res://car.gd
+
 :: caçar coisas no exe
 python re/exe_util.py SCES_546.88 str NOME | jal 0xENDERECO | words 0xEND 32
 ```
+
+Na nuvem (Claude Code web) o `.claude/hooks/session-start.sh` instala o
+Godot 4.7.1 de Linux, Pillow e zstandard e já deixa `$GODOT` pronto.
 
 Ghidra headless (Ghidra 12.1.3 + extensão ghidra-emotionengine-reloaded):
 
