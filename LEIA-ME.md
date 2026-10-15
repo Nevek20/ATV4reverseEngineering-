@@ -4,56 +4,23 @@ Protótipo em Godot 4 usando assets extraídos do ATV Offroad Fury 4.
 
 ## Antes de abrir
 
-Copie **todos** os arquivos da pasta `renegade` (o `.obj`, o `.mtl` e os PNGs
-que o `pingu2obj.py --copy-tex` gerou) para `assets/renegade/`.
-Sem isso o carro aparece como uma caixa.
-
-Rodas (as mesmas nos dois buggies): gere com
-`python pingu2obj.py unpacked\other\21968_bloco.bin --out rodas --copy-tex`
-e o mesmo pro `21969`, depois copie a pasta pra `assets/rodas/`. Sem isso as
-rodas aparecem como cilindros.
-
-Pro Sphinx, gere o modelo do mesmo jeito e copie pra `assets/sphinx/`:
+Os assets do jogo não vão pro git. Gere todos de uma vez (12 buggies:
+carroceria, peças da suspensão, freios, rodas e pintura de fábrica), na
+pasta do projeto:
 
 ```
-python pingu2obj.py unpacked\other\21531_bloco.bin --out sphinx --copy-tex
+python tools\gerar_buggies.py <pasta>\unpacked <pasta>\texturas
+python tools\gerar_pintura.py <pasta>\unpacked BUGGY_04 assets\sphinx --nome pintura_speedrun.png --base 225,225,230 --primary 215,85,20 --secondary 45,35,175
 ```
 
-### Modelos (gere de novo sempre que o pingu2obj mudar)
+`texturas` é a saída do `gob_tex2png.py` (uns 6 min). Sai tudo em `assets\`
+(`renegade`, `sphinx`, `buggy_NN`, `rodas`). Abra o Godot uma vez pra
+importar. Sem os assets o carro aparece como caixa e as rodas como cilindros.
+Rode de novo sempre que o `pingu2obj.py` mudar.
 
-```
-python pingu2obj.py unpacked\other\21711_bloco.bin --out renegade --copy-tex --split volante:44,53,54,234-242
-python pingu2obj.py unpacked\other\21531_bloco.bin --out sphinx --copy-tex
-```
-
-O pingu2obj vira os triângulos pelas normais do jogo e o Godot descarta a
-face de trás (`MODEL_CULL` no car.gd). Modelos gerados com o pingu2obj
-antigo aparecem com buracos.
-
-### Peças da suspensão
-
-As balanças, amortecedores e freios são blocos separados. Gere com textura
-(no cmd, na pasta do `pingu2obj.py`) e copie o conteúdo de cada pasta pra
-`assets/renegade/` e `assets/sphinx/`:
-
-```
-for %b in (21694 21695 21696 21697 21699 21700 21701 21702 21703 21704 21713 21714 21715 21716) do python pingu2obj.py unpacked\other\%b_bloco.bin --out renegade --copy-tex
-for %b in (21513 21514 21515 21516 21518 21519 21520 21521 21522 21523 21533 21534 21535 21536) do python pingu2obj.py unpacked\other\%b_bloco.bin --out sphinx --copy-tex
-```
-
-Sem essas peças o carro roda normal, só sem a suspensão aparecendo.
-
-### Pintura
-
-A carroceria usa uma textura "white" que o jogo monta em tempo real
-(camadas Base/Primary/Secondary/Detail + cores do XML). O `gerar_pintura.py`
-faz a mesma coisa e salva `pintura.png` do lado do modelo:
-
-```
-python gerar_pintura.py unpacked BUGGY_10 renegade
-python gerar_pintura.py unpacked BUGGY_04 sphinx
-python gerar_pintura.py unpacked BUGGY_04 sphinx --nome pintura_speedrun.png --base 225,225,230 --primary 215,85,20 --secondary 45,35,175
-```
+`python tools\gerar_buggies.py <unpacked> <texturas> --tabela` só mostra os
+blocos de cada carro. O pingu2obj vira os triângulos pelas normais do jogo e o
+Godot descarta a face de trás (`MODEL_CULL` no car.gd).
 
 ## Claude Code
 
@@ -80,7 +47,8 @@ roda a física sem tela. Comandos: `/teste` e `/entrega`.
 | R | desvirar o carro |
 | T | voltar para o início |
 | C | trocar câmera (perto, longe, capô, para-choque, piloto) |
-| V | trocar de carro (Renegade, Sphinx de fábrica, Sphinx do speedrun) |
+| Tab | menu de carros (os 12 buggies + Sphinx do speedrun): clique ou Enter |
+| V | próximo carro da lista |
 | F | girar o modelo 180° (se ele parecer andar de ré) |
 | Esc | sair |
 
@@ -89,9 +57,9 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
 ## O que já é do jogo
 
 - Chão: relevo e textura da pista RX01 (tiles do STREAMT)
-- Carro: modelo extraído do jogo
+- Carros: os 12 buggies, modelo, suspensão, rodas e pintura de fábrica do jogo
 - Física: os XMLs do próprio jogo em `data/vehicles` (`buggy_base.xml` é a
-  base da classe e `renegade.xml` o veículo (15154 = BUGGY_10). Os arquivos
+  base da classe e `buggy_NN.xml` o veículo (Renegade = buggy_10 = 15154). Os arquivos
   seguem a ordem da lista do jogo: 15145 é a base e também o 1º buggy (Mosquito),
   15146 o 2º, e assim até 15156 (Storm). Ex.: Sphinx = 15148). Massa, molas, amortecedores, curva
   de torque, marchas, embreagem, elipse de atrito, subesterço, derrapagem e

@@ -23,16 +23,16 @@ const G := 9.81
 const RPM2RAD := TAU / 60.0
 
 var model_path := ""
-var data_files := ["res://data/vehicles/buggy_base.xml", "res://data/vehicles/renegade.xml"]
+var data_files := ["res://data/vehicles/buggy_base.xml", "res://data/vehicles/buggy_10.xml"]
 # arquivo de pontos do modelo (POINT 1.00): posição das rodas no modelo do jogo
-var points_file := "res://data/vehicles/renegade_points.bin"
+var points_file := "res://data/vehicles/buggy_10_points.bin"
 var points := {}              # pontos lidos do arquivo acima
 # peças da suspensão (blocos do unpacked convertidos com o pingu2obj):
-# pasta, primeiro bloco das peças e primeiro bloco dos freios (-1 = sem)
+# pasta, lista das peças e primeiro bloco dos freios (-1 = sem)
 var livery_file := "pintura.png"   # gerada pelo gerar_pintura.py, ao lado do modelo
 var parts_dir := "res://assets/renegade"
-var parts_base := 21694
-var brakes_base := 21713
+var parts_ids := []                 # 11 peças da suspensão (ver suspension_visual.gd)
+var brakes_base := -1
 var susp_vis    # suspension_visual.gd
 # rodas do jogo (componente Wheel, TYRE_GENERIC_MEDIUM nos buggies de fábrica):
 # modelo da frente e de trás. Já vêm com o aro (ALLOY) e o pneu (TYRE), e as
@@ -159,10 +159,10 @@ func _ready() -> void:
 	add_child(shape)
 	for w in wheels:
 		_make_wheel_mesh(w)
-	if parts_base >= 0 and not points.is_empty():
+	if (not parts_ids.is_empty() or brakes_base >= 0) and not points.is_empty():
 		susp_vis = preload("res://suspension_visual.gd").new()
 		add_child(susp_vis)
-		susp_vis.build(self, points, parts_dir, parts_base, brakes_base)
+		susp_vis.build(self, points, parts_dir, parts_ids, brakes_base)
 
 
 # ------------------------------------------------------------------ dados

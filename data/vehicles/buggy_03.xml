@@ -1,0 +1,30 @@
+<Root FileVersion="1.0000000">
+   <RigidBody Mass_non_tuned="1.1499999" Mass_fully_tuned="0.9489999" Inertia_dimensions_width="2.7990000" Inertia_dimensions_height="1.6000000" Inertia_dimensions_length="5.0000000"/>
+   <Engine Drive_torque_non_tuned="0.7819999" Drive_torque_fully_tuned="1.1080000" Friction_torque_non_tuned="0.0779999" Friction_torque_fully_tuned="0.1089999"/>
+   <Gearbox>
+      <Ratios Gear_R="-15.000000" Gear_1_non_tuned="20.399999" Gear_1_fully_tuned="25.399999" Gear_2_non_tuned="9.3999996" Gear_2_fully_tuned="17.399999" Gear_3_non_tuned="6.9000001" Gear_3_fully_tuned="12.899999" Gear_4_non_tuned="5.8999996" Gear_4_fully_tuned="9.8999996" Gear_5_non_tuned="5.5999999" Gear_5_fully_tuned="7.5999999"/>
+      <AutoManual Maximum_clutch_torque_non_tuned="0.2899999" Maximum_clutch_torque_fully_tuned="0.4079999"/>
+   </Gearbox>
+   <FrictionEllipse>
+      <FrontWheels>
+         <HalfWidth Maximum_friction_half_width="11.800000" Minimum_friction_half_width="11.800000" Special_friction_half_width="11.800000"/>
+         <HalfHeight Maximum_friction_half_height="4.4250002" Minimum_friction_half_height="4.4250002" Special_friction_half_height="4.4250002"/>
+      </FrontWheels>
+      <RearWheels>
+         <HalfWidth Maximum_friction_half_width="8.8000002" Minimum_friction_half_width="8.8000002" Special_friction_half_width="8.8000002"/>
+         <HalfHeight Maximum_friction_half_height="4.4250002" Minimum_friction_half_height="4.4250002" Special_friction_half_height="4.4250002"/>
+      </RearWheels>
+   </FrictionEllipse>
+   <BasicSteering Understeer_coefficient_non_tuned="24.000000" Understeer_coefficient_fully_tuned="20.000000"/>
+   <Stability>
+      <General>
+         <Centre_of_mass X="0.0000000" Y="0.6889999" Z="-0.8000000"/>
+      </General>
+   </Stability>
+   <Wheels>
+      <FrontLeft Radius="0.5000000" Width="0.2099999" Mass="0.0500000" Spring_rate_non_tuned="10.000000" Spring_rate_fully_tuned="10.000000" Damping_coefficient_non_tuned="0.0000000" Damping_coefficient_fully_tuned="2.5000000" Minimum_position="-0.2000000" Maximum_position_non_tuned="0.0000000" Maximum_position_fully_tuned="0.8989999" Maximum_velocity="10.000000"/>
+      <RearLeft Radius="0.5599998" Width="0.3600000" Mass="0.0500000" Spring_rate_non_tuned="30.000000" Spring_rate_fully_tuned="30.000000" Damping_coefficient_non_tuned="0.0000000" Damping_coefficient_fully_tuned="4.0000000" Minimum_position="-0.2000000" Maximum_position_non_tuned="0.0000000" Maximum_position_fully_tuned="0.6489999" Maximum_velocity="10.000000"/>
+      <FrontRight Radius="0.5000000" Width="0.2099999" Mass="0.0500000" Spring_rate_non_tuned="10.000000" Spring_rate_fully_tuned="10.000000" Damping_coefficient_non_tuned="0.0000000" Damping_coefficient_fully_tuned="2.5000000" Minimum_position="-0.2000000" Maximum_position_non_tuned="0.0000000" Maximum_position_fully_tuned="0.8989999" Maximum_velocity="10.000000"/>
+      <RearRight Radius="0.5599998" Width="0.3600000" Mass="0.0500000" Spring_rate_non_tuned="30.000000" Spring_rate_fully_tuned="30.000000" Damping_coefficient_non_tuned="0.0000000" Damping_coefficient_fully_tuned="4.0000000" Minimum_position="-0.2000000" Maximum_position_non_tuned="0.0000000" Maximum_position_fully_tuned="0.6489999" Maximum_velocity="10.000000"/>
+   </Wheels>
+</Root>

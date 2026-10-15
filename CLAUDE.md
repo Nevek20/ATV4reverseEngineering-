@@ -28,10 +28,10 @@ car.gd               física do carro (portada do exe), visual das rodas
 game_camera.gd       câmera de corrida do jogo (componentes do exe, 1/60 s)
 suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
-main.gd              cena: terreno, carro, câmera, HUD, troca de carro (V)
+main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V)
 terrain.gd           relevo da pista RX01
-data/                XMLs do jogo (física, câmeras, veículos, peças)
-assets/              modelos do pingu2obj: renegade, sphinx, rodas (fora do git)
+data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
+assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas (fora do git)
 tests/               teste de física sem tela + rodar_testes.py
 tools/               scripts Python de extração (pingu2obj, pintura, savestate)
 re/                  engenharia reversa: scripts do Ghidra, exe_util, dumps
@@ -56,6 +56,9 @@ python tools/ler_savestate.py arquivo.p2s
 :: checar um script sem abrir o editor
 %GODOT% --headless --path . --check-only --script res://car.gd
 
+:: assets dos 12 buggies (modelo, peças, freios, rodas, pintura)
+python tools/gerar_buggies.py <unpacked> <texturas>
+
 :: caçar coisas no exe
 python re/exe_util.py SCES_546.88 str NOME | jal 0xENDERECO | words 0xEND 32
 ```
@@ -67,7 +70,9 @@ stream, unpacked). As texturas não vão pra lá: saem do unpacked com
 `python tools/gob_tex2png.py <dados>/unpacked/gob --out <dados>/texturas`
 (uns 6 min).
 
-Ghidra headless (Ghidra 12.1.3 + extensão ghidra-emotionengine-reloaded):
+Ghidra headless (Ghidra 12.1.3 + extensão ghidra-emotionengine-reloaded).
+Na nuvem: `bash re/instalar_ghidra.sh` baixa os dois e importa o exe com a
+análise (~7 min) em `~/ghidra_proj` (projeto `atv4`).
 
 ```
 analyzeHeadless <proj_dir> atv4 -process -noanalysis -readOnly ^
@@ -103,6 +108,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   FinalDriveRatio do GearboxLevel 0/1.
 - A câmera mira a ORIGEM DO MODELO (veículo +0xaa0), não o CoM.
 - Zoom -> FOV: meia-altura do frustum = 0.375/zoom (tela 4:3), KEEP_HEIGHT.
+- Peças da suspensão: lista de 11 blocos por carro (main.gd parts_ids),
+  não "base + n": em 7 carros tem uma textura no meio da sequência.
 - Modelos: o pingu2obj vira os triângulos pelas normais do jogo e o Godot
   descarta a face de trás (`MODEL_CULL`). Total de materiais do .pingu em
   0xAC (0xBC conta menos).
@@ -121,4 +128,5 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Roda travando no freio (0x210908).
 - Atrito por tipo de chão (TireBehaviour por superfície).
 - Som do motor (00002/00004/00005 xml: bancos e faders por buggy).
-- Mais carros: a tabela VEHICLES em main.gd + blocos em docs/assets.md.
+- Volante girando nos outros 11 buggies (só o Renegade tem o --split).
+- Para-choque, luzes e estepe (componentes Bumper/Lighting/SpareWheel01).

@@ -2,6 +2,7 @@
 assets/renegade/
 assets/sphinx/
 assets/rodas/
+assets/buggy_*/
 re/decomp/
 *.p2s
 *.iso
