@@ -23,17 +23,39 @@ Ordem da lista do jogo (= FEOrder em data/vehicles.xml):
 7 Kraken V8, 8 McKenzies, 9 Viper, 10 Renegade, 11 Hurricane, 12 Storm.
 Física: 15144 + N (15145 = base e Mosquito).
 
+## Rodas (iguais em todos os buggies de fábrica)
+
+DefaultConfig (data/vehicles.xml): Wheel=TYRE_GENERIC_MEDIUM, Tire=DIRT_BUDGET,
+Alloy=WHEEL_01 (= Wheel_Heavyclass_01 no 14882). Os nomes dos modelos não
+aparecem em nenhum arquivo; a posição no unpacked é que diz quem é quem.
+
+- Modelos de jogo dos 4 TYRE_GENERIC (grupo ALLOY + 2 modelos + TYRE), na
+  ordem alfabética dos nomes: LARGE 21963/21964 (raio 0,60), MEDIUM
+  21968/21969 (0,54), SANDCAR 21973/21974 (0,44, malha diferente), SMALL
+  21978/21979 (0,46). A ordem por tamanho bate com os nomes.
+- Primeiro modelo = FrontWheel, segundo = RearWheel (component map 14881,
+  nessa ordem). As rodas da esquerda do jogo (x < 0) usam Mirror="1".
+- O modelo já traz o aro: materiais ALLOY e TYRE. Essas texturas são iguais
+  byte a byte a IG_WHEEL_HEAVYCLASS_01 (22398) e IG_TYRE_DIRT_BUDGET (22384),
+  ou seja, as peças de fábrica. Hipótese (não confirmada no exe): trocar aro
+  ou pneu troca só a textura (IG_WHEEL_HEAVYCLASS_0N, IG_TYRE_*).
+- Raio do modelo (0,54) é maior que o Radius da física (0,50): o jogo usa o
+  modelo como está.
+- Os grupos de ~100 KB com texturas UI_TYRE_* (21862 a 22146, 5 por tipo de
+  pneu) são os modelos do menu (FE), não os de corrida.
+
 ## Comandos
 
 ```
 python pingu2obj.py unpacked\other\21711_bloco.bin --out renegade --copy-tex --split volante:44,53,54,234-242
 for %b in (21694 21695 21696 21697 21699 21700 21701 21702 21703 21704 21713 21714 21715 21716) do python pingu2obj.py unpacked\other\%b_bloco.bin --out renegade --copy-tex
 for %b in (21531 21513 21514 21515 21516 21518 21519 21520 21521 21522 21523 21533 21534 21535 21536) do python pingu2obj.py unpacked\other\%b_bloco.bin --out sphinx --copy-tex
+for %b in (21968 21969) do python pingu2obj.py unpacked\other\%b_bloco.bin --out rodas --copy-tex
 python gerar_pintura.py unpacked BUGGY_10 renegade
 python gerar_pintura.py unpacked BUGGY_04 sphinx
 python gerar_pintura.py unpacked BUGGY_04 sphinx --nome pintura_speedrun.png --base 225,225,230 --primary 45,35,175 --secondary 215,85,20
 ```
-Depois copiar as pastas pra `assets\renegade` e `assets\sphinx`.
+Depois copiar as pastas pra `assets\renegade`, `assets\sphinx` e `assets\rodas`.
 
 ## Formato .pingu (resumo)
 

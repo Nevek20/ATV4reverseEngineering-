@@ -31,7 +31,7 @@ vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
 main.gd              cena: terreno, carro, câmera, HUD, troca de carro (V)
 terrain.gd           relevo da pista RX01
 data/                XMLs do jogo (física, câmeras, veículos, peças)
-assets/              modelos gerados pelo pingu2obj (NÃO vão pro git)
+assets/              modelos do pingu2obj: renegade, sphinx, rodas (fora do git)
 tests/               teste de física sem tela + rodar_testes.py
 tools/               scripts Python de extração (pingu2obj, pintura, savestate)
 re/                  engenharia reversa: scripts do Ghidra, exe_util, dumps
@@ -50,6 +50,9 @@ python tests/rodar_testes.py accel --veh 1 --tune "{\"engine\":0.81}"
 :: save state do PCSX2 -> valores reais do jogo
 python tools/ler_savestate.py arquivo.p2s
 
+:: print do carro parado (na nuvem: xvfb-run -a ... --rendering-driver opengl3)
+%GODOT% --path . -s res://tests/print_tela.gd -- print.png lado
+
 :: checar um script sem abrir o editor
 %GODOT% --headless --path . --check-only --script res://car.gd
 
@@ -59,6 +62,10 @@ python re/exe_util.py SCES_546.88 str NOME | jal 0xENDERECO | words 0xEND 32
 
 Na nuvem (Claude Code web) o `.claude/hooks/session-start.sh` instala o
 Godot 4.7.1 de Linux, Pillow e zstandard e já deixa `$GODOT` pronto.
+Os arquivos do jogo ficam no repo privado `Nevek20/atv4-dados` (exe,
+stream, unpacked). As texturas não vão pra lá: saem do unpacked com
+`python tools/gob_tex2png.py <dados>/unpacked/gob --out <dados>/texturas`
+(uns 6 min).
 
 Ghidra headless (Ghidra 12.1.3 + extensão ghidra-emotionengine-reloaded):
 
@@ -105,7 +112,7 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 
 ## Pendente / ideias
 
-- Rodas de verdade (modelos de pneu/roda do jogo no lugar dos cilindros).
+- Pneu e aro comprados (hipótese: troca de textura, ver docs/assets.md).
 - Decalques e número na pintura (camadas Decal/Text do XML 150xx).
 - Tremida da câmera (jitter e batida), componente 0x380418 + 0x380170.
 - Roda travando no freio (0x210908).

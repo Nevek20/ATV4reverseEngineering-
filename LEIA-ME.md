@@ -8,6 +8,11 @@ Copie **todos** os arquivos da pasta `renegade` (o `.obj`, o `.mtl` e os PNGs
 que o `pingu2obj.py --copy-tex` gerou) para `assets/renegade/`.
 Sem isso o carro aparece como uma caixa.
 
+Rodas (as mesmas nos dois buggies): gere com
+`python pingu2obj.py unpacked\other\21968_bloco.bin --out rodas --copy-tex`
+e o mesmo pro `21969`, depois copie a pasta pra `assets/rodas/`. Sem isso as
+rodas aparecem como cilindros.
+
 Pro Sphinx, gere o modelo do mesmo jeito e copie pra `assets/sphinx/`:
 
 ```
@@ -108,8 +113,7 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
 
 ## O que ainda é provisório
 
-- Rodas (cilindros). A posição delas já é a do jogo
-  (`data/vehicles/renegade_points.bin`, o arquivo 21712 do unpacked)
+- Troca de pneu e aro (peças compradas): por enquanto só as de fábrica
 - Atrito por tipo de chão (o jogo muda a aderência na terra, lama, água...)
 - Roda travando no freio (função 0x210908 do jogo, ainda não portada)
 - Tremida da câmera (jitter e batida) ainda não portada
