@@ -110,8 +110,8 @@ func _arm_angle(k: Dictionary, dy: float) -> float:
 
 
 ## transform (no frame do modelo) que gira em torno de p
-static func _about(p: Vector3, basis: Basis) -> Transform3D:
-	return Transform3D(basis, p - basis * p)
+static func _about(p: Vector3, b: Basis) -> Transform3D:
+	return Transform3D(b, p - b * p)
 
 
 ## base que leva a direção a até a direção b (menor rotação)

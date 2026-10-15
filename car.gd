@@ -479,12 +479,12 @@ func _add_corr(c: Vector3, d: Vector3) -> Vector3:
 	return c
 
 
-func _solve_static(w: Dictionary, load: float) -> float:
+func _solve_static(w: Dictionary, f_load: float) -> float:
 	var lo := 0.0
 	var hi: float = w.max
 	for i in 40:
 		var mid := (lo + hi) * 0.5
-		if _spring(w, mid) < load:
+		if _spring(w, mid) < f_load:
 			lo = mid
 		else:
 			hi = mid
@@ -730,7 +730,6 @@ func _physics_process(dt: float) -> void:
 	var com_w := global_transform * center_of_mass
 	grounded = 0
 	var n_sum := Vector3.ZERO
-	var front_g := 0
 	var rear_g := 0
 	var h_sum := 0.0
 	var corr := Vector3.ZERO                # correção de posição (batente), 0x23f6c0
@@ -759,9 +758,7 @@ func _physics_process(dt: float) -> void:
 		w.normal = hn
 		grounded += 1
 		n_sum += hn
-		if w.front:
-			front_g += 1
-		else:
+		if not w.front:
 			rear_g += 1
 		h_sum += (com_w - hp).dot(up)
 		w.x += pen
@@ -780,9 +777,7 @@ func _physics_process(dt: float) -> void:
 	var left := ground_n.cross(fwd)
 	var v := linear_velocity
 	var v_f := v.dot(fwd)
-	var v_l := v.dot(left)
 	var spd := v.length()
-	var spd_mph := spd / MPH
 
 	# ---- motor e câmbio
 	var driven_g := rear_g if REAR_DRIVE else grounded
@@ -1365,7 +1360,7 @@ func _drivetrain(dt: float, v_f: float, driven_on_ground: bool, forced_open: boo
 	var ct := _gearbox(dt, v_f, out_rpm, driven_on_ground, forced_open)
 
 	# ---- 0x20c808 + 0x246858
-	var load := 0.0 if cstate == 3 else ct
+	var e_load := 0.0 if cstate == 3 else ct
 	if rpm > P.lim_on:
 		lim_k = maxf(lim_k - P.lim_rate_on * dt, 0.0)
 	elif rpm < P.lim_off:
@@ -1374,7 +1369,7 @@ func _drivetrain(dt: float, v_f: float, driven_on_ground: bool, forced_open: boo
 	eng_torque = thr_eng * lim_k * VehicleData.sample(drive_curve, rpm) * P.drive_scale \
 		- VehicleData.sample(fric_curve, rpm) * P.fric_scale
 	if integrate:
-		rpm += (eng_torque - load) * dt / P.eng_inertia
+		rpm += (eng_torque - e_load) * dt / P.eng_inertia
 	if rpm < P.idle:
 		rpm = P.idle
 	if rpm <= P.idle and eng_torque < 0.0:

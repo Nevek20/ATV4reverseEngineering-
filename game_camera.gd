@@ -205,11 +205,11 @@ func _step(dt: float, s: Dictionary, terrain) -> void:
 
 	# 0x383cf8 + 0x384168 amortecimento em Y. Subindo (vy > 1) usa a taxa de
 	# subida; a taxa cai na hora mas volta devagar.
-	var tr: float = p.POS_DAMPING_Y_GOING_UP if vel.y > 1.0 else p.POS_DAMPING_Y_GOING_DOWN
-	if y_rate < tr:
-		y_rate += dt * (tr - y_rate)
+	var y_tgt: float = p.POS_DAMPING_Y_GOING_UP if vel.y > 1.0 else p.POS_DAMPING_Y_GOING_DOWN
+	if y_rate < y_tgt:
+		y_rate += dt * (y_tgt - y_rate)
 	else:
-		y_rate = tr
+		y_rate = y_tgt
 	y_s += minf(y_rate * dt, 1.0) * (c.y - y_s)
 	c.y = y_s
 

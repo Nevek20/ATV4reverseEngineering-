@@ -55,7 +55,8 @@ func _build_collision() -> void:
 
 
 func _build_mesh() -> void:
-	var n := (size - 1) / mesh_step + 1
+	@warning_ignore("integer_division")
+	var n := (size - 1) / mesh_step + 1     # divisão inteira de propósito
 	var verts := PackedVector3Array()
 	var norms := PackedVector3Array()
 	var uvs := PackedVector2Array()
