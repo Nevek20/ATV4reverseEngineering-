@@ -19,7 +19,7 @@ são onde o número entra).
 Uso:
     python gerar_pintura.py unpacked BUGGY_10 renegade
     python gerar_pintura.py unpacked BUGGY_04 sphinx
-    python gerar_pintura.py unpacked BUGGY_04 sphinx --nome pintura_speedrun.png --base 225,225,230 --primary 45,35,175 --secondary 215,85,20
+    python gerar_pintura.py unpacked BUGGY_04 sphinx --nome pintura_speedrun.png --base 225,225,230 --primary 215,85,20 --secondary 45,35,175
 
 As cores padrão são as do XML (as de fábrica). --base/--primary/--secondary
 trocam a cor, como na oficina de pintura do jogo.

@@ -52,7 +52,7 @@ faz a mesma coisa e salva `pintura.png` do lado do modelo:
 ```
 python gerar_pintura.py unpacked BUGGY_10 renegade
 python gerar_pintura.py unpacked BUGGY_04 sphinx
-python gerar_pintura.py unpacked BUGGY_04 sphinx --nome pintura_speedrun.png --base 225,225,230 --primary 45,35,175 --secondary 215,85,20
+python gerar_pintura.py unpacked BUGGY_04 sphinx --nome pintura_speedrun.png --base 225,225,230 --primary 215,85,20 --secondary 45,35,175
 ```
 
 ## Claude Code

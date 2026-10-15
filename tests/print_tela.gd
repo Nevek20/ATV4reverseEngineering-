@@ -1,7 +1,8 @@
 extends SceneTree
 ## Tira um print do carro parado na pista, sem abrir o editor.
+## "jogo" usa a câmera de corrida portada (a mesma do F5).
 ## Uso (precisa de tela; na nuvem: xvfb-run):
-##   godot --path . -s res://tests/print_tela.gd -- saida.png [lado|tras|frente] [veiculo]
+##   godot --path . -s res://tests/print_tela.gd -- saida.png [lado|tras|frente|jogo|...] [veiculo]
 
 var frames := 0
 var main
@@ -27,13 +28,13 @@ func _process(_dt: float) -> bool:
 	if frames == 2 and veh != main.veh_idx:
 		main.car.queue_free()
 		main.spawn_vehicle(veh, main.spawn_point(), deg_to_rad(90.0))
-	if frames == 90:
+	if frames == 90 and view != "jogo":
 		var car: Node3D = main.car
 		var t := car.global_transform
 		var off := {"lado": Vector3(4.5, 1.2, 0.0), "tras": Vector3(0.0, 1.6, -6.0),
 			"frente": Vector3(2.5, 1.0, 5.0), "outro_lado": Vector3(-4.5, 1.2, 0.0),
 			"cima": Vector3(0.01, 7.0, 0.0), "tras_baixo": Vector3(1.5, 0.6, -4.0),
-			"roda_tras": Vector3(-2.6, 1.0, -0.6), "roda_tras_dentro": Vector3(0.0, 0.3, -0.8)}.get(
+			"roda_tras": Vector3(-2.6, 1.0, -0.6), "persegue": Vector3(0.0, 2.3, -6.5), "roda_tras_dentro": Vector3(0.0, 0.3, -0.8)}.get(
 			view, Vector3(4.5, 1.2, 0.0)) as Vector3
 		var alvo := Vector3(0, 0.7, 0)
 		if view.begins_with("roda_tras"):
