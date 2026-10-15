@@ -38,7 +38,8 @@ func _ready():
 	car.vehicle_id = v.id
 	car.vehicle_name = v.name
 	car.tune_override = v.get("tune", {})
-	car.parts_base = -1
+	car.parts_ids = []
+	car.brakes_base = -1
 	if OS.get_environment("TUNE") != "":
 		car.tune_override = JSON.parse_string(OS.get_environment("TUNE"))
 	if OS.get_environment("MU") != "":

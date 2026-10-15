@@ -51,8 +51,9 @@ def cor(s, nome):
 
 
 def achar_gob(gob_dir, nome):
+    # o nome no disco nem sempre bate a caixa com o XML (Buggy_03_base)
     for f in sorted(os.listdir(gob_dir)):
-        if f.endswith(f"_{nome}.gob"):
+        if f.lower().endswith(f"_{nome}.gob".lower()):
             return os.path.join(gob_dir, f)
     return None
 
@@ -71,6 +72,8 @@ def main():
     src, veh, out = a.src, a.veh, a.out
     prefixo = re.sub(r"^BUGGY", "Buggy", veh, flags=re.I)
     prefixo = re.sub(r"^TRUCK", "Truck", prefixo, flags=re.I)
+    if prefixo == "Buggy_12":
+        prefixo = "Lancia"          # o Storm usa as texturas Lancia_*
     xml_nome, s = achar_xml(os.path.join(src, "xml"), prefixo)
     if not s:
         print(f"[!] não achei o XML da pintura de {prefixo}")

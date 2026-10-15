@@ -11,10 +11,12 @@ extends Node3D
 ## da física (como no jogo, ver _arm_angle); o que é preso nela acompanha, e os
 ## amortecedores apontam de um ponto ao outro.
 ##
-## Blocos (unpacked/other), na ordem em que aparecem antes do modelo do carro:
-##   base+0/1 balança dianteira E/D, +2/3 traseira E/D, +4 sombra (não usa),
-##   +5/6 corpo do amortecedor traseiro, +7/8 amortecedor dianteiro,
-##   +9/10 haste do amortecedor traseiro. Freios: brakes+0..3 = DE, DD, TE, TD.
+## Peças (blocos do unpacked/other, na ordem em que aparecem antes do modelo,
+## às vezes com uma textura no meio; tools/gerar_buggies.py acha elas):
+##   [0/1] balança dianteira E/D, [2/3] traseira E/D, [4] sombra (não usa),
+##   [5/6] corpo do amortecedor traseiro, [7/8] amortecedor dianteiro,
+##   [9/10] haste do amortecedor traseiro. Freios: brakes+0..3 = DE, DD, TE, TD.
+##   Lista vazia (Mosquito): só os freios.
 ## "Esquerda" no jogo é x < 0 no modelo.
 
 var car                      # car.gd
@@ -22,7 +24,7 @@ var off := Vector3.ZERO      # model_offset do carro
 var corners := []            # um por roda: {wheel, frame, end, brake, shocks...}
 
 
-func build(c, pts: Dictionary, dir: String, base: int, brakes: int) -> void:
+func build(c, pts: Dictionary, dir: String, parts: Array, brakes: int) -> void:
 	car = c
 	off = c.model_offset
 	for side in ["LEFT", "RIGHT"]:
@@ -44,8 +46,7 @@ func build(c, pts: Dictionary, dir: String, base: int, brakes: int) -> void:
 			k.pivot = pts[pivot_name]
 			k.end = pts[end_name]
 			k.front = front
-			var fb := base + (0 if front else 2) + i_side
-			k.frame = _part(dir, fb)
+			k.frame = _part(dir, _id(parts, (0 if front else 2) + i_side))
 			var bi := (0 if front else 2) + i_side
 			k.brake = _part(dir, brakes + bi) if brakes >= 0 else null
 			if front:
@@ -54,7 +55,7 @@ func build(c, pts: Dictionary, dir: String, base: int, brakes: int) -> void:
 				if pts.has(t) and pts.has(b):
 					k.top = pts[t]
 					k.bottom = pts[b]
-					k.shock = _part(dir, base + 7 + i_side)
+					k.shock = _part(dir, _id(parts, 7 + i_side))
 			else:
 				var s := "L" if left else "R"
 				var ch := "SHOCK_CHAMBER_R%s" % s
@@ -62,8 +63,8 @@ func build(c, pts: Dictionary, dir: String, base: int, brakes: int) -> void:
 				if pts.has(ch) and pts.has(pi):
 					k.top = pts[ch]
 					k.bottom = pts[pi]
-					k.chamber = _part(dir, base + 5 + i_side)
-					k.piston = _part(dir, base + 9 + i_side)
+					k.chamber = _part(dir, _id(parts, 5 + i_side))
+					k.piston = _part(dir, _id(parts, 9 + i_side))
 			# eixo da balança, medido no save state (matriz de cada roda na RAM):
 			# a da frente gira no eixo comprido do carro, a de trás no eixo
 			# lateral. Com isso as 8 rodas (Renegade e Sphinx) ficam a menos
@@ -73,7 +74,13 @@ func build(c, pts: Dictionary, dir: String, base: int, brakes: int) -> void:
 			corners.append(k)
 
 
+static func _id(parts: Array, i: int) -> int:
+	return int(parts[i]) if i < parts.size() else -1
+
+
 func _part(dir: String, block: int) -> MeshInstance3D:
+	if block < 0:
+		return null
 	var path := "%s/%d_bloco.obj" % [dir, block]
 	if not ResourceLoader.exists(path):
 		return null
