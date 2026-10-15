@@ -107,6 +107,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   descarta a face de trás (`MODEL_CULL`). Total de materiais do .pingu em
   0xAC (0xBC conta menos).
 - Carroceria usa a textura "white" = pintura gerada (tools/gerar_pintura.py).
+- Rodas: posição tirada do save state (matriz na RAM). Balança da frente
+  gira no eixo z, a de trás no x, até o centro da roda subir o curso. Sem
+  deslocamento pra fora; o pneu afunda ~4 cm no chão no jogo também.
 - Física roda a 120 Hz com interpolação ligada; câmera em passos de 1/60
   interpolando no frame do carro (senão aparece "fantasma").
 
