@@ -19,6 +19,7 @@ const VEHICLES := [
 		"model": "res://assets/sphinx/21531_bloco.obj",
 		"data": "res://data/vehicles/sphinx.xml", "points": "res://data/vehicles/sphinx_points.bin",
 		"parts": "res://assets/sphinx", "parts_base": 21513, "brakes": 21533,
+		"livery": "pintura_speedrun.png",
 		"tune": {"engine": 0.81, "mass": 1.0, "shift": 1.0}},
 ]
 var veh_idx := 0
@@ -74,6 +75,7 @@ func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
 	car.points_file = v.points
 	car.vehicle_id = v.id
 	car.tune_override = v.get("tune", {})
+	car.livery_file = v.get("livery", "pintura.png")
 	car.parts_dir = v.get("parts", "")
 	car.parts_base = v.get("parts_base", -1)
 	car.brakes_base = v.get("brakes", -1)
