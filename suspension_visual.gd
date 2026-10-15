@@ -83,7 +83,7 @@ func _part(dir: String, block: int) -> MeshInstance3D:
 	for i in mesh.get_surface_count():
 		var m := mesh.surface_get_material(i)
 		var m2: StandardMaterial3D = m.duplicate() if m is StandardMaterial3D else StandardMaterial3D.new()
-		m2.cull_mode = BaseMaterial3D.CULL_DISABLED
+		m2.cull_mode = car.MODEL_CULL
 		mi.set_surface_override_material(i, m2)
 	add_child(mi)
 	mi.position = off

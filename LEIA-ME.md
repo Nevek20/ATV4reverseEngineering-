@@ -14,6 +14,17 @@ Pro Sphinx, gere o modelo do mesmo jeito e copie pra `assets/sphinx/`:
 python pingu2obj.py unpacked\other\21531_bloco.bin --out sphinx --copy-tex
 ```
 
+### Modelos (gere de novo sempre que o pingu2obj mudar)
+
+```
+python pingu2obj.py unpacked\other\21711_bloco.bin --out renegade --copy-tex --split volante:44,53,54,234-242
+python pingu2obj.py unpacked\other\21531_bloco.bin --out sphinx --copy-tex
+```
+
+O pingu2obj vira os triângulos pelas normais do jogo e o Godot descarta a
+face de trás (`MODEL_CULL` no car.gd). Modelos gerados com o pingu2obj
+antigo aparecem com buracos.
+
 ### Peças da suspensão
 
 As balanças, amortecedores e freios são blocos separados. Gere com textura
@@ -26,6 +37,18 @@ for %b in (21513 21514 21515 21516 21518 21519 21520 21521 21522 21523 21533 215
 ```
 
 Sem essas peças o carro roda normal, só sem a suspensão aparecendo.
+
+### Pintura
+
+A carroceria usa uma textura "white" que o jogo monta em tempo real
+(camadas Base/Primary/Secondary/Detail + cores do XML). O `gerar_pintura.py`
+faz a mesma coisa e salva `pintura.png` do lado do modelo:
+
+```
+python gerar_pintura.py unpacked BUGGY_10 renegade
+python gerar_pintura.py unpacked BUGGY_04 sphinx
+python gerar_pintura.py unpacked BUGGY_04 sphinx --nome pintura_speedrun.png --base 225,225,230 --primary 45,35,175 --secondary 215,85,20
+```
 
 ## Rodar
 

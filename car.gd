@@ -29,6 +29,7 @@ var points_file := "res://data/vehicles/renegade_points.bin"
 var points := {}              # pontos lidos do arquivo acima
 # peças da suspensão (blocos do unpacked convertidos com o pingu2obj):
 # pasta, primeiro bloco das peças e primeiro bloco dos freios (-1 = sem)
+var livery_file := "pintura.png"   # gerada pelo gerar_pintura.py, ao lado do modelo
 var parts_dir := "res://assets/renegade"
 var parts_base := 21694
 var brakes_base := 21713
@@ -73,6 +74,10 @@ const SW_TURNS := 2.6
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
 const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
+# o pingu2obj acerta o giro dos triângulos pelas normais do jogo, então a face
+# de trás pode ser descartada (painéis de duas faces não piscam mais).
+# Modelos gerados com o pingu2obj antigo precisam de CULL_DISABLED.
+const MODEL_CULL := BaseMaterial3D.CULL_BACK
 
 var model_root: Node3D
 var model_offset := Vector3.ZERO
@@ -532,6 +537,13 @@ func _load_model() -> void:
 		model_root.add_child(mi)
 		return
 	mi.mesh = mesh
+	# pintura: a carroceria usa a textura "white", que o jogo gera em tempo
+	# real juntando camadas (Base/Primary/Secondary/Detail + cores do XML).
+	# O gerar_pintura.py faz isso e salva pintura.png do lado do modelo.
+	var livery: Texture2D = null
+	var lp := model_path.get_base_dir().path_join(livery_file)
+	if ResourceLoader.exists(lp):
+		livery = load(lp)
 	for i in mesh.get_surface_count():
 		var m := mesh.surface_get_material(i)
 		var m2: StandardMaterial3D
@@ -540,7 +552,9 @@ func _load_model() -> void:
 		else:
 			m2 = StandardMaterial3D.new()
 			m2.albedo_color = Color(0.85, 0.85, 0.85)
-		m2.cull_mode = BaseMaterial3D.CULL_DISABLED
+		if livery and m and m.resource_name.ends_with("_white"):
+			m2.albedo_texture = livery
+		m2.cull_mode = MODEL_CULL
 		mi.set_surface_override_material(i, m2)
 	var aabb := mesh.get_aabb()
 	var c := aabb.get_center()
@@ -566,7 +580,7 @@ func _load_steering_wheel() -> void:
 	for i in mesh.get_surface_count():
 		var m := mesh.surface_get_material(i)
 		var m2: StandardMaterial3D = m.duplicate() if m is StandardMaterial3D else StandardMaterial3D.new()
-		m2.cull_mode = BaseMaterial3D.CULL_DISABLED
+		m2.cull_mode = MODEL_CULL
 		mi.set_surface_override_material(i, m2)
 	sw_pivot.add_child(mi)
 
