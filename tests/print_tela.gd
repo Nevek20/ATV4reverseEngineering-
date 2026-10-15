@@ -34,7 +34,7 @@ func _process(_dt: float) -> bool:
 		var off := {"lado": Vector3(4.5, 1.2, 0.0), "tras": Vector3(0.0, 1.6, -6.0),
 			"frente": Vector3(2.5, 1.0, 5.0), "outro_lado": Vector3(-4.5, 1.2, 0.0),
 			"cima": Vector3(0.01, 7.0, 0.0), "tras_baixo": Vector3(1.5, 0.6, -4.0),
-			"roda_tras": Vector3(-2.6, 1.0, -0.6), "persegue": Vector3(0.0, 2.3, -6.5), "roda_tras_dentro": Vector3(0.0, 0.3, -0.8)}.get(
+			"roda_tras": Vector3(-2.6, 1.0, -0.6), "persegue": Vector3(0.0, 2.3, -6.5), "garagem_lado": Vector3(-5.0, 1.0, 0.6), "garagem_tras": Vector3(-3.2, 1.3, -4.6), "roda_tras_dentro": Vector3(0.0, 0.3, -0.8)}.get(
 			view, Vector3(4.5, 1.2, 0.0)) as Vector3
 		var alvo := Vector3(0, 0.7, 0)
 		if view.begins_with("roda_tras"):
