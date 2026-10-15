@@ -44,6 +44,18 @@ aparecem em nenhum arquivo; a posição no unpacked é que diz quem é quem.
 - Os grupos de ~100 KB com texturas UI_TYRE_* (21862 a 22146, 5 por tipo de
   pneu) são os modelos do menu (FE), não os de corrida.
 
+## Referência em vídeo
+
+Speedrun do Sphinx (Amateur National Buggy, 26m39s) no repo `atv4-dados`,
+pasta `videos/` (720p, 60 fps, 6 partes de ~5 min). A câmera fica atrás do
+carro quase o tempo todo; de lado só nas curvas e nos saltos.
+- Pintura do speedrun: V grande azul (camada Secondary) e laterais laranja
+  (Primary). Teto com listras vermelho/branco/azul (decalque, ainda não feito).
+- De trás bate com o nosso: balança cinza até a roda, aro aparecendo por
+  dentro embaixo. A balança traseira (21515/21516) entra no pneu pela frente
+  embaixo também no nosso modelo; no vídeo esse ponto não aparece em nenhum
+  ângulo, então não dá pra confirmar se o jogo também atravessa.
+
 ## Comandos
 
 ```
@@ -53,7 +65,7 @@ for %b in (21531 21513 21514 21515 21516 21518 21519 21520 21521 21522 21523 215
 for %b in (21968 21969) do python pingu2obj.py unpacked\other\%b_bloco.bin --out rodas --copy-tex
 python gerar_pintura.py unpacked BUGGY_10 renegade
 python gerar_pintura.py unpacked BUGGY_04 sphinx
-python gerar_pintura.py unpacked BUGGY_04 sphinx --nome pintura_speedrun.png --base 225,225,230 --primary 45,35,175 --secondary 215,85,20
+python gerar_pintura.py unpacked BUGGY_04 sphinx --nome pintura_speedrun.png --base 225,225,230 --primary 215,85,20 --secondary 45,35,175
 ```
 Depois copiar as pastas pra `assets\renegade`, `assets\sphinx` e `assets\rodas`.
 
