@@ -39,7 +39,7 @@ var susp_vis    # suspension_visual.gd
 # texturas padrão são as das peças de fábrica (WHEEL_01 e DIRT_BUDGET)
 var wheel_front_file := "res://assets/rodas/21968_bloco.obj"
 var wheel_rear_file := "res://assets/rodas/21969_bloco.obj"
-const WHEEL_OUTBOARD := true
+const WHEEL_OUTBOARD := false
 var vehicle_name := "Renegade (Buggy)"
 
 # peças de fábrica (DefaultConfig do jogo). Cada número diz quanto o valor
@@ -520,10 +520,9 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 		# que é o x < 0 do modelo (aqui o modelo não é espelhado)
 		if w.px < 0.0:
 			mi.scale.x = -1.0
-		# o ponto WHEEL_* é a face de dentro da roda: o pneu fica todo pra fora
-		# dele. Centrado no ponto, a balança traseira do Sphinx (21515) sai
-		# pela frente do pneu; nos prints da garagem do jogo ela some por
-		# dentro do aro (ver docs/assets.md). Só visual, a física não muda.
+		# a roda fica centrada no ponto WHEEL_* (print do Sphinx na corrida:
+		# a balança da frente chega no centro da roda). WHEEL_OUTBOARD põe o
+		# pneu todo pra fora do ponto; testado e descartado (docs/assets.md)
 		if WHEEL_OUTBOARD:
 			mi.position.x = signf(w.px) * mesh.get_aabb().size.x * 0.5
 		spin.add_child(mi)
