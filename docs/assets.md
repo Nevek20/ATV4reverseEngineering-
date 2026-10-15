@@ -39,11 +39,13 @@ aparecem em nenhum arquivo; a posição no unpacked é que diz quem é quem.
   byte a byte a IG_WHEEL_HEAVYCLASS_01 (22398) e IG_TYRE_DIRT_BUDGET (22384),
   ou seja, as peças de fábrica. Hipótese (não confirmada no exe): trocar aro
   ou pneu troca só a textura (IG_WHEEL_HEAVYCLASS_0N, IG_TYRE_*).
-- Posição: o ponto WHEEL_* do arquivo de pontos é a face de DENTRO da roda;
-  o pneu fica todo pra fora (car.gd, WHEEL_OUTBOARD). Fonte: prints da
-  garagem do Sphinx (PCSX2), onde a placa da balança traseira entra por
-  dentro do aro e não aparece de lado. Com a roda centrada no ponto ela
-  atravessa a frente do pneu. Ainda não visto no exe.
+- Posição: roda centrada no ponto WHEEL_*. Fonte: print do Sphinx na
+  corrida (PCSX2), a balança da frente chega no centro da roda. Testei pôr o
+  pneu todo pra fora do ponto (WHEEL_OUTBOARD em car.gd) por causa dos prints
+  da garagem, mas na corrida as rodas ficam bem mais perto do carro; descartado.
+- Com a roda centrada, a placa da balança traseira do Sphinx (21515/21516)
+  sai pela frente do pneu, embaixo. Provavelmente acontece no jogo também:
+  esse ponto não aparece em nenhum print ou vídeo da corrida.
 - Raio do modelo (0,54) é maior que o Radius da física (0,50): o jogo usa o
   modelo como está.
 - Os grupos de ~100 KB com texturas UI_TYRE_* (21862 a 22146, 5 por tipo de
@@ -58,8 +60,7 @@ carro quase o tempo todo; de lado só nas curvas e nos saltos.
   (Primary). Teto com listras vermelho/branco/azul (decalque, ainda não feito).
 - De trás bate com o nosso: balança cinza até a roda, aro aparecendo por
   dentro embaixo. A balança traseira (21515/21516) entra no pneu pela frente
-  embaixo quando a roda fica centrada no ponto WHEEL_*; os prints da garagem
-  mostraram que no jogo a roda fica pra fora do ponto (ver Rodas).
+  embaixo; esse ponto não aparece no vídeo (ver Rodas).
 
 ## Comandos
 
