@@ -27,22 +27,19 @@ var data_files := ["res://data/vehicles/buggy_base.xml", "res://data/vehicles/bu
 # arquivo de pontos do modelo (POINT 1.00): posição das rodas no modelo do jogo
 var points_file := "res://data/vehicles/buggy_10_points.bin"
 var points := {}              # pontos lidos do arquivo acima
-# peças da suspensão (blocos do unpacked convertidos com o pingu2obj):
-# pasta, lista das peças e primeiro bloco dos freios (-1 = sem)
+var points_rot := {}          # matriz 3x3 de cada ponto (Basis: colunas = linhas do jogo)
+# pasta do carro em assets/ com o pecas.json do tools/gerar_buggies.py:
+# Position do component map -> .obj (Body, FrontLeftFrame, ...), rodas, rally
+var asset_dir := ""
+var pecas := {}
 var livery_file := "pintura.png"   # gerada pelo gerar_pintura.py, ao lado do modelo
-var parts_dir := "res://assets/renegade"
-var parts_ids := []                 # 11 peças da suspensão (ver suspension_visual.gd)
-var brakes_base := -1
+var suspension := true        # desenha balanças, freios e amortecedores
 var susp_vis    # suspension_visual.gd
-# rodas do jogo (componente Wheel, TYRE_GENERIC_MEDIUM nos buggies de fábrica):
-# modelo da frente e de trás. Já vêm com o aro (ALLOY) e o pneu (TYRE), e as
-# texturas padrão são as das peças de fábrica (WHEEL_01 e DIRT_BUDGET)
-var wheel_front_file := "res://assets/rodas/21968_bloco.obj"
-var wheel_rear_file := "res://assets/rodas/21969_bloco.obj"
-const WHEEL_OUTBOARD := false
-# deslocamento extra da roda pra fora do ponto WHEEL_* (m). O save state
-# mostrou que é 0: a roda fica no ponto e só segue o arco da balança
-var wheel_dx := 0.0
+# rodas do jogo (componente Wheel, TYRE_GENERIC_* nos buggies de fábrica):
+# modelo da frente e de trás (Models_4K, o que o jogo carrega na corrida). Já
+# vêm com o aro (ALLOY) e o pneu (TYRE). Sem escala: o tamanho é o do modelo
+var wheel_front_file := ""
+var wheel_rear_file := ""
 var vehicle_name := "Renegade (Buggy)"
 
 # peças de fábrica (DefaultConfig do jogo). Cada número diz quanto o valor
@@ -149,6 +146,7 @@ var test_input = null         # {thr, brk, steer} pra testes automáticos
 func _ready() -> void:
 	model_root = Node3D.new()
 	add_child(model_root)
+	_load_pecas()
 	_load_model()                 # antes da física: define model_offset
 	_load_physics()
 	var shape := CollisionShape3D.new()
@@ -159,10 +157,33 @@ func _ready() -> void:
 	add_child(shape)
 	for w in wheels:
 		_make_wheel_mesh(w)
-	if (not parts_ids.is_empty() or brakes_base >= 0) and not points.is_empty():
+	if suspension and not pecas.is_empty() and not points.is_empty():
 		susp_vis = preload("res://suspension_visual.gd").new()
 		add_child(susp_vis)
-		susp_vis.build(self, points, parts_dir, parts_ids, brakes_base)
+		var spare_mesh: Mesh = null
+		if ResourceLoader.exists(wheel_rear_file):
+			spare_mesh = load(wheel_rear_file) as Mesh
+		susp_vis.build(self, points, points_rot, asset_dir, pecas.get("pecas", {}),
+			pecas.get("rally", false), pecas.get("estepe", []), spare_mesh)
+
+
+## pecas.json (tools/gerar_buggies.py): modelo, peças e rodas do carro
+func _load_pecas() -> void:
+	var p := asset_dir.path_join("pecas.json")
+	if asset_dir == "" or not FileAccess.file_exists(p):
+		return
+	pecas = JSON.parse_string(FileAccess.get_file_as_string(p))
+	if pecas == null:
+		pecas = {}
+		return
+	var pc: Dictionary = pecas.get("pecas", {})
+	if model_path == "" and pc.has("Body"):
+		model_path = asset_dir.path_join(pc.Body)
+	var rd: Dictionary = pecas.get("rodas", {})
+	if wheel_front_file == "" and rd.has("FrontWheel"):
+		wheel_front_file = asset_dir.path_join(rd.FrontWheel).simplify_path()
+	if wheel_rear_file == "" and rd.has("RearWheel"):
+		wheel_rear_file = asset_dir.path_join(rd.RearWheel).simplify_path()
 
 
 # ------------------------------------------------------------------ dados
@@ -459,20 +480,28 @@ func _damper(w: Dictionary, v: float) -> float:
 	return w.c * VehicleData.sample(w.dc, absf(v)) * v * 1000.0
 
 
-## Arquivo de pontos do modelo: "POINT 1.00", depois entradas de 0x50 bytes
-## com nome (0x04..0x24) e posição x, y, z (0x24).
+## Arquivo de pontos do modelo: "POINT 1.00", contagem em 0x10, entradas de
+## 0x50 bytes a partir de 0x14: nome (0x00..0x20), posição x, y, z (0x20) e
+## matriz 3x3 em linhas (0x2c, escala 0.01; o jogo usa normalizada). A linha
+## 2 da matriz do A_FRAME_* é o eixo da balança (suspension_visual.gd).
 func _load_points(path: String) -> Dictionary:
 	var out := {}
+	points_rot = {}
 	if path == "" or not FileAccess.file_exists(path):
 		return out
 	var buf := FileAccess.get_file_as_bytes(path)
 	if buf.size() < 0x60 or buf.slice(0, 5).get_string_from_ascii() != "POINT":
 		push_warning("%s não é um arquivo de pontos" % path)
 		return out
-	var off := 0x10
+	var off := 0x14
 	while off + 0x50 <= buf.size():
-		var nm := buf.slice(off + 4, off + 0x24).get_string_from_ascii()
-		out[nm] = Vector3(buf.decode_float(off + 0x24), buf.decode_float(off + 0x28), buf.decode_float(off + 0x2c))
+		var nm := buf.slice(off, off + 0x20).get_string_from_ascii()
+		out[nm] = Vector3(buf.decode_float(off + 0x20), buf.decode_float(off + 0x24), buf.decode_float(off + 0x28))
+		var rows := []
+		for r in 3:
+			var o := off + 0x2c + r * 12
+			rows.append(Vector3(buf.decode_float(o), buf.decode_float(o + 4), buf.decode_float(o + 8)).normalized())
+		points_rot[nm] = Basis(rows[0], rows[1], rows[2])
 		off += 0x50
 	return out
 
@@ -523,15 +552,7 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 		# que é o x < 0 do modelo (aqui o modelo não é espelhado)
 		if w.px < 0.0:
 			mi.scale.x = -1.0
-		# a roda fica centrada no ponto WHEEL_* (print do Sphinx na corrida:
-		# a balança da frente chega no centro da roda). WHEEL_OUTBOARD põe o
-		# pneu todo pra fora do ponto; testado e descartado (docs/assets.md)
-		if WHEEL_OUTBOARD:
-			mi.position.x = signf(w.px) * mesh.get_aabb().size.x * 0.5
-		else:
-			mi.position.x = signf(w.px) * wheel_dx
-		if OS.has_environment("RODA_DX"):
-			mi.position.x = signf(w.px) * float(OS.get_environment("RODA_DX"))
+		# centro do modelo = centro da roda (sem deslocamento: matriz da RAM)
 		spin.add_child(mi)
 		return
 	push_warning("Roda não encontrada em %s. Veja docs/assets.md (rodas)." % path)

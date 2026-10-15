@@ -53,6 +53,9 @@ python tools/ler_savestate.py arquivo.p2s
 :: print do carro parado (na nuvem: xvfb-run -a ... --rendering-driver opengl3)
 %GODOT% --path . -s res://tests/print_tela.gd -- print.png lado
 
+:: peças da suspensão x RAM do jogo (36 matrizes)
+%GODOT% --headless --path . -s res://tests/teste_pecas.gd
+
 :: checar um script sem abrir o editor
 %GODOT% --headless --path . --check-only --script res://car.gd
 
@@ -108,15 +111,20 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   FinalDriveRatio do GearboxLevel 0/1.
 - A câmera mira a ORIGEM DO MODELO (veículo +0xaa0), não o CoM.
 - Zoom -> FOV: meia-altura do frustum = 0.375/zoom (tela 4:3), KEEP_HEIGHT.
-- Peças da suspensão: lista de 11 blocos por carro (main.gd parts_ids),
-  não "base + n": em 7 carros tem uma textura no meio da sequência.
+- Blocos: nunca pela posição no unpacked. data/arquivos.tsv (índice do
+  archive, re/indice_archive.py) dá caminho -> bloco. Corrida usa
+  Models_4K; as peças do carro N vêm DEPOIS do BODY dele (pasta alfabética).
+  SANDCAR 4K = 21059/21060; 21973/21974 é TYRE_GENERIC_RALLY 5K.
+- Suspensão = cCompPlace_* do exe (docs/engenharia_reversa.md, Peças): eixo
+  da balança = linha 2 da matriz do ponto A_FRAME_*, ângulo atan(x/r). Roda
+  e freio não giram com a balança. tests/teste_pecas.gd confere com a RAM.
 - Modelos: o pingu2obj vira os triângulos pelas normais do jogo e o Godot
   descarta a face de trás (`MODEL_CULL`). Total de materiais do .pingu em
   0xAC (0xBC conta menos).
 - Carroceria usa a textura "white" = pintura gerada (tools/gerar_pintura.py).
-- Rodas: posição tirada do save state (matriz na RAM). Balança da frente
-  gira no eixo z, a de trás no x, até o centro da roda subir o curso. Sem
-  deslocamento pra fora; o pneu afunda ~4 cm no chão no jogo também.
+- Rodas sem escala (tamanho = modelo). Frente: centro gira com a balança em
+  x/z e y = WHEEL.y + curso; trás: arco inteiro. O pneu afunda uns cm parado
+  no jogo também.
 - Física roda a 120 Hz com interpolação ligada; câmera em passos de 1/60
   interpolando no frame do carro (senão aparece "fantasma").
 
@@ -129,4 +137,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Atrito por tipo de chão (TireBehaviour por superfície).
 - Som do motor (00002/00004/00005 xml: bancos e faders por buggy).
 - Volante girando nos outros 11 buggies (só o Renegade tem o --split).
-- Para-choque, luzes e estepe (componentes Bumper/Lighting/SpareWheel01).
+- Tremida das rodas no chão (0x202760) e sinal do giro/direção visual
+  (falta save state andando com volante virado).
+- Confirmar com save state: frente do Bulldog (eixo x, braço 0.08), trás do
+  Phantom e Storm (eixo z).
+- Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).

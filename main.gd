@@ -2,79 +2,41 @@ extends Node3D
 ## Cena principal do protótipo: monta mundo, chão, carro, câmera e HUD
 ## tudo por código, pra ficar fácil de ler e mexer.
 
-# veículos do jogo: modelo, física (base + veículo), pontos, câmera, peças e
-# rodas. "id" é o nome no vehicles.xml (posição na lista do jogo, contando do 1).
+# veículos do jogo: física (base + veículo), pontos, câmera e a pasta dos
+# assets ("dir", com o pecas.json do gerar_buggies.py: modelo, peças, rodas).
+# "id" é o nome no vehicles.xml (posição na lista do jogo, contando do 1).
 # Os 3 primeiros ficam fixos (os testes usam --veh 0/1/2).
 const VEHICLES := [
-	{"name": "Renegade", "id": "BUGGY_10", "cams": "BuggyCamSet_10",
-		"model": "res://assets/renegade/21711_bloco.obj", "data": "res://data/vehicles/buggy_10.xml",
-		"points": "res://data/vehicles/buggy_10_points.bin", "parts": "res://assets/renegade",
-		"parts_ids": [21694, 21695, 21696, 21697, 21698, 21699, 21700, 21701, 21702, 21703, 21704], "brakes": 21713,
-		"wheel_front": "res://assets/rodas/21968_bloco.obj", "wheel_rear": "res://assets/rodas/21969_bloco.obj"},
-	{"name": "Sphinx", "id": "BUGGY_04", "cams": "BuggyCamSet_04",
-		"model": "res://assets/sphinx/21531_bloco.obj", "data": "res://data/vehicles/buggy_04.xml",
-		"points": "res://data/vehicles/buggy_04_points.bin", "parts": "res://assets/sphinx",
-		"parts_ids": [21513, 21514, 21515, 21516, 21517, 21518, 21519, 21520, 21521, 21522, 21523], "brakes": 21533,
-		"wheel_front": "res://assets/rodas/21968_bloco.obj", "wheel_rear": "res://assets/rodas/21969_bloco.obj"},
+	{"name": "Renegade", "id": "BUGGY_10", "cams": "BuggyCamSet_10", "dir": "res://assets/renegade",
+		"data": "res://data/vehicles/buggy_10.xml", "points": "res://data/vehicles/buggy_10_points.bin"},
+	{"name": "Sphinx", "id": "BUGGY_04", "cams": "BuggyCamSet_04", "dir": "res://assets/sphinx",
+		"data": "res://data/vehicles/buggy_04.xml", "points": "res://data/vehicles/buggy_04_points.bin"},
 	# o Sphinx do speedrun tem peças compradas: com motor 0.81, BodyMass L2 e
 	# Clutch L2 as trocas (38/57/75 mph) caem no mesmo tempo do vídeo
-	{"name": "Sphinx speedrun", "id": "BUGGY_04", "cams": "BuggyCamSet_04",
-		"model": "res://assets/sphinx/21531_bloco.obj", "data": "res://data/vehicles/buggy_04.xml",
-		"points": "res://data/vehicles/buggy_04_points.bin", "parts": "res://assets/sphinx",
-		"parts_ids": [21513, 21514, 21515, 21516, 21517, 21518, 21519, 21520, 21521, 21522, 21523], "brakes": 21533,
-		"wheel_front": "res://assets/rodas/21968_bloco.obj", "wheel_rear": "res://assets/rodas/21969_bloco.obj",
+	{"name": "Sphinx speedrun", "id": "BUGGY_04", "cams": "BuggyCamSet_04", "dir": "res://assets/sphinx",
+		"data": "res://data/vehicles/buggy_04.xml", "points": "res://data/vehicles/buggy_04_points.bin",
 		"livery": "pintura_speedrun.png", "tune": {"engine": 0.81, "mass": 1.0, "shift": 1.0}},
 	# os outros buggies, na ordem da lista do jogo (tools/gerar_buggies.py)
-	{"name": "Mosquito", "id": "BUGGY_01", "cams": "BuggyCamSet_01",
-		"model": "res://assets/buggy_01/21447_bloco.obj", "data": "res://data/vehicles/buggy_01.xml",
-		"points": "res://data/vehicles/buggy_01_points.bin", "parts": "res://assets/buggy_01",
-		"parts_ids": [], "brakes": 21449,
-		"wheel_front": "res://assets/rodas/21968_bloco.obj", "wheel_rear": "res://assets/rodas/21969_bloco.obj"},
-	{"name": "Inferno", "id": "BUGGY_02", "cams": "BuggyCamSet_02",
-		"model": "res://assets/buggy_02/21474_bloco.obj", "data": "res://data/vehicles/buggy_02.xml",
-		"points": "res://data/vehicles/buggy_02_points.bin", "parts": "res://assets/buggy_02",
-		"parts_ids": [21458, 21459, 21460, 21461, 21463, 21464, 21465, 21466, 21467, 21468, 21469], "brakes": 21476,
-		"wheel_front": "res://assets/rodas/21973_bloco.obj", "wheel_rear": "res://assets/rodas/21974_bloco.obj"},
-	{"name": "Trident", "id": "BUGGY_03", "cams": "BuggyCamSet_03",
-		"model": "res://assets/buggy_03/21500_bloco.obj", "data": "res://data/vehicles/buggy_03.xml",
-		"points": "res://data/vehicles/buggy_03_points.bin", "parts": "res://assets/buggy_03",
-		"parts_ids": [21486, 21487, 21488, 21489, 21491, 21492, 21493, 21494, 21495, 21496, 21497], "brakes": 21502,
-		"wheel_front": "res://assets/rodas/21973_bloco.obj", "wheel_rear": "res://assets/rodas/21974_bloco.obj"},
-	{"name": "Bulldog", "id": "BUGGY_05", "cams": "BuggyCamSet_05",
-		"model": "res://assets/buggy_05/21563_bloco.obj", "data": "res://data/vehicles/buggy_05.xml",
-		"points": "res://data/vehicles/buggy_05_points.bin", "parts": "res://assets/buggy_05",
-		"parts_ids": [21546, 21547, 21548, 21549, 21550, 21551, 21552, 21553, 21554, 21555, 21556], "brakes": 21565,
-		"wheel_front": "res://assets/rodas/21978_bloco.obj", "wheel_rear": "res://assets/rodas/21979_bloco.obj"},
-	{"name": "Phantom", "id": "BUGGY_06", "cams": "BuggyCamSet_06",
-		"model": "res://assets/buggy_06/21589_bloco.obj", "data": "res://data/vehicles/buggy_06.xml",
-		"points": "res://data/vehicles/buggy_06_points.bin", "parts": "res://assets/buggy_06",
-		"parts_ids": [21574, 21575, 21576, 21577, 21579, 21580, 21581, 21582, 21583, 21584, 21585], "brakes": 21591,
-		"wheel_front": "res://assets/rodas/21968_bloco.obj", "wheel_rear": "res://assets/rodas/21969_bloco.obj"},
-	{"name": "Kraken V8", "id": "BUGGY_07", "cams": "BuggyCamSet_07",
-		"model": "res://assets/buggy_07/21619_bloco.obj", "data": "res://data/vehicles/buggy_07.xml",
-		"points": "res://data/vehicles/buggy_07_points.bin", "parts": "res://assets/buggy_07",
-		"parts_ids": [21602, 21603, 21604, 21605, 21607, 21608, 21609, 21610, 21611, 21612, 21613], "brakes": 21621,
-		"wheel_front": "res://assets/rodas/21963_bloco.obj", "wheel_rear": "res://assets/rodas/21964_bloco.obj"},
-	{"name": "McKenzies", "id": "BUGGY_08", "cams": "BuggyCamSet_08",
-		"model": "res://assets/buggy_08/21649_bloco.obj", "data": "res://data/vehicles/buggy_08.xml",
-		"points": "res://data/vehicles/buggy_08_points.bin", "parts": "res://assets/buggy_08",
-		"parts_ids": [21632, 21633, 21634, 21635, 21636, 21637, 21638, 21639, 21640, 21641, 21642], "brakes": 21651,
-		"wheel_front": "res://assets/rodas/21963_bloco.obj", "wheel_rear": "res://assets/rodas/21964_bloco.obj"},
-	{"name": "Viper", "id": "BUGGY_09", "cams": "BuggyCamSet_09",
-		"model": "res://assets/buggy_09/21681_bloco.obj", "data": "res://data/vehicles/buggy_09.xml",
-		"points": "res://data/vehicles/buggy_09_points.bin", "parts": "res://assets/buggy_09",
-		"parts_ids": [21663, 21664, 21665, 21666, 21668, 21669, 21670, 21671, 21672, 21673, 21674], "brakes": 21683,
-		"wheel_front": "res://assets/rodas/21968_bloco.obj", "wheel_rear": "res://assets/rodas/21969_bloco.obj"},
-	{"name": "Hurricane", "id": "BUGGY_11", "cams": "BuggyCamSet_11",
-		"model": "res://assets/buggy_11/21740_bloco.obj", "data": "res://data/vehicles/buggy_11.xml",
-		"points": "res://data/vehicles/buggy_11_points.bin", "parts": "res://assets/buggy_11",
-		"parts_ids": [21724, 21725, 21726, 21727, 21729, 21730, 21731, 21732, 21733, 21734, 21735], "brakes": 21742,
-		"wheel_front": "res://assets/rodas/21968_bloco.obj", "wheel_rear": "res://assets/rodas/21969_bloco.obj"},
-	{"name": "Storm", "id": "BUGGY_12", "cams": "LanciaCam",
-		"model": "res://assets/buggy_12/21769_bloco.obj", "data": "res://data/vehicles/buggy_12.xml",
-		"points": "res://data/vehicles/buggy_12_points.bin", "parts": "res://assets/buggy_12",
-		"parts_ids": [21752, 21753, 21754, 21755, 21758, 21759, 21760, 21761, 21762, 21763, 21764], "brakes": 21776,
-		"wheel_front": "res://assets/rodas/21267_bloco.obj", "wheel_rear": "res://assets/rodas/21268_bloco.obj"},
+	{"name": "Mosquito", "id": "BUGGY_01", "cams": "BuggyCamSet_01", "dir": "res://assets/buggy_01",
+		"data": "res://data/vehicles/buggy_01.xml", "points": "res://data/vehicles/buggy_01_points.bin"},
+	{"name": "Inferno", "id": "BUGGY_02", "cams": "BuggyCamSet_02", "dir": "res://assets/buggy_02",
+		"data": "res://data/vehicles/buggy_02.xml", "points": "res://data/vehicles/buggy_02_points.bin"},
+	{"name": "Trident", "id": "BUGGY_03", "cams": "BuggyCamSet_03", "dir": "res://assets/buggy_03",
+		"data": "res://data/vehicles/buggy_03.xml", "points": "res://data/vehicles/buggy_03_points.bin"},
+	{"name": "Bulldog", "id": "BUGGY_05", "cams": "BuggyCamSet_05", "dir": "res://assets/buggy_05",
+		"data": "res://data/vehicles/buggy_05.xml", "points": "res://data/vehicles/buggy_05_points.bin"},
+	{"name": "Phantom", "id": "BUGGY_06", "cams": "BuggyCamSet_06", "dir": "res://assets/buggy_06",
+		"data": "res://data/vehicles/buggy_06.xml", "points": "res://data/vehicles/buggy_06_points.bin"},
+	{"name": "Kraken V8", "id": "BUGGY_07", "cams": "BuggyCamSet_07", "dir": "res://assets/buggy_07",
+		"data": "res://data/vehicles/buggy_07.xml", "points": "res://data/vehicles/buggy_07_points.bin"},
+	{"name": "McKenzies", "id": "BUGGY_08", "cams": "BuggyCamSet_08", "dir": "res://assets/buggy_08",
+		"data": "res://data/vehicles/buggy_08.xml", "points": "res://data/vehicles/buggy_08_points.bin"},
+	{"name": "Viper", "id": "BUGGY_09", "cams": "BuggyCamSet_09", "dir": "res://assets/buggy_09",
+		"data": "res://data/vehicles/buggy_09.xml", "points": "res://data/vehicles/buggy_09_points.bin"},
+	{"name": "Hurricane", "id": "BUGGY_11", "cams": "BuggyCamSet_11", "dir": "res://assets/buggy_11",
+		"data": "res://data/vehicles/buggy_11.xml", "points": "res://data/vehicles/buggy_11_points.bin"},
+	{"name": "Storm", "id": "BUGGY_12", "cams": "LanciaCam", "dir": "res://assets/buggy_12",
+		"data": "res://data/vehicles/buggy_12.xml", "points": "res://data/vehicles/buggy_12_points.bin"},
 ]
 var veh_idx := 0
 const SPAWN_XZ := Vector2(400.0, 340.0)   # em cima da reta de cima da pista
@@ -125,18 +87,12 @@ func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
 	veh_idx = i
 	var v: Dictionary = VEHICLES[i]
 	car = Car.new()
-	car.model_path = v.model
+	car.asset_dir = v.dir
 	car.data_files = ["res://data/vehicles/buggy_base.xml", v.data]
 	car.points_file = v.points
 	car.vehicle_id = v.id
 	car.tune_override = v.get("tune", {})
 	car.livery_file = v.get("livery", "pintura.png")
-	car.parts_dir = v.get("parts", "")
-	car.parts_ids = v.get("parts_ids", [])
-	car.brakes_base = v.get("brakes", -1)
-	car.wheel_front_file = v.get("wheel_front", car.wheel_front_file)
-	car.wheel_rear_file = v.get("wheel_rear", car.wheel_rear_file)
-	car.wheel_dx = v.get("wheel_dx", 0.0)
 	car.vehicle_name = "%s (%s)" % [v.name, v.id]
 	add_child(car)
 	car.manual = manual

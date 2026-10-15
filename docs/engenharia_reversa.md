@@ -76,10 +76,13 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 
 ## Pontos do modelo
 
-- Arquivo "POINT 1.00": entradas de 0x50 bytes, nome em 0x04..0x24, xyz em
-  0x24. Tabela de nomes no exe em 0x55070c (WHEEL_*, A_FRAME_*,
-  A_FRAME_END_*, SHOCKS_TOP/BOTTOM_FRONT_*, SHOCK_PISTON/CHAMBER_R*, ARSE,
-  LIGHTRIG, BUMPER...). "Esquerda" do jogo = x < 0 no modelo.
+- Arquivo "POINT 1.00": contagem em 0x10, entradas de 0x50 bytes a partir
+  de 0x14: nome 0x00..0x20, xyz em 0x20, matriz 3x3 em linhas em 0x2c
+  (escala 0.01; na RAM fica normalizada, +0x30/+0x40/+0x50 do objeto).
+  Loader 0x62fa18; tabela por id 0x222b38 (enum em 0x550700: 1..4 WHEEL,
+  9..16 A_FRAME/A_FRAME_END, 21..24 SHOCKS_BOTTOM/TOP_FRONT, 25..28
+  SHOCK_PISTON/CHAMBER, 29/30 SpareWheel, 31 LIGHTRIG, 32 BUMPER). Nomes
+  também em 0x55070c. "Esquerda" do jogo = x < 0 no modelo.
 - CoM do XML em coordenadas do modelo. Corpo físico +0x70 = CoM; veículo
   +0xaa0 = origem do modelo (= CoM − R·CoM_local).
 
@@ -107,17 +110,56 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   Orientation.X em graus, FOV fixo. MountOnFront fica dentro da carroceria
   (não desenha o carro).
 
-## Peças e pintura
+## Peças (cCompPlace_<Position>)
 
-- Component map (14881) BuggyCompMap_B: Body, Frames_*, Brake_*,
-  Shock_Piston/Chamber_R*, Shock_Front_*, FrontWheel/RearWheel (Mirror=1 na
-  esquerda). Animação das peças: não achei a função; o remake gira as
-  balanças no pivô A_FRAME até a ponta seguir o curso.
-- Pintura: textura "white" gerada em tempo real pelas camadas do XML 150xx
+- Cada componente do component map vira uma classe
+  sprintf("cCompPlace_%s", Position) (0x222d88; registro 0x5502c8, fábricas
+  0x208d40..0x2097e8, vtables 0x5801e0..0x580898). O método +0x1c
+  (0x1fc150..0x1fd8c8) copia 4 linhas de uma pose P que fica no scratchpad
+  (0x70000000, 0xe70 bytes) e é recalculada por quadro, sob demanda
+  (0x21dff8..0x221d58). Monta P: 0x203930 / 0x221e48; render 0x22ace8.
+- Convenção vetor-linha: v' = v·R + t, linhas = eixos. No Godot: colunas do
+  Basis = linhas do jogo. Rx/Ry/Rz 0x61e1a8/0x61e2a0/0x61e528 = Basis(RIGHT/
+  UP/BACK, a); eixo-ângulo 0x61e6c8 = Basis(u, a).
+- Curso visual 0x222078: W+0xe8 + tremida (veículo+0xab0+4i). Rodas na
+  ordem FL, RL, FR, RR (corpo+0x254).
+- Balança (0x21eec0 FL, 0x21f050 FR, 0x21f1b8 RL, 0x21f320 RR): u = linha 2
+  da matriz do A_FRAME_*, d = A_FRAME_END − A_FRAME, r = |d.x·u.z + d.z·u.x|,
+  ângulo = atan(x/r), gira em volta do A_FRAME. Frente e trás iguais; o eixo
+  sai do arquivo (Bulldog frente em x, Phantom trás e Storm em z).
+- Centro da roda (0x220110..0x220460): WHEEL girado com a balança; só na
+  frente o y vira WHEEL.y + x. Roda dianteira R = Rx(giro)·Ry(direção),
+  traseira Rx(giro); esquerda com a linha 0 negada. Não herda a balança.
+- Freios: frente (0x221748) R = Ry(direção), t = centro − WHEEL·R; trás
+  (0x221928) só translada até o centro.
+- Amortecedor dianteiro (0x21f590): rígido, Rz(±acos(...)) em volta do
+  SHOCKS_TOP até o SHOCKS_BOTTOM girado (negativo na esquerda). Traseiro
+  (0x21fb68..): câmara e haste com Rx(atan(...) − atan(...)), haste levada
+  até o SHOCK_PISTON girado (x original). atan, não atan2.
+- Rally (0x220528 / 0x220cf0): roda = WHEEL + x·dir, sem balança.
+  Estepe/LIGHTRIG/BUMPER (0x221a88..): matriz e posição do ponto, fixos.
+- Tremida 0x202760 (não portada): roda no chão, ±0.0375·min(1, rug·0.0639·v).
+- Conferido: tests/teste_pecas.gd compara as 36 matrizes (Renegade e
+  Sphinx) com a RAM, erro < 0.01 mm.
+
+## Archive
+
+- Busca por caminho FUN_0066c978 (0066d110 / 0066d270 / 0066d308): CRC32 de
+  cada pedaço do caminho em minúsculas (refletido, tabela 0x7d3298, init −1,
+  sem xor final), árvore varint no archive.bin (RAM 0x89ab50, 0x3d00b
+  bytes). Ver re/indice_archive.py e data/arquivos.tsv.
+
+## Pintura
+
+- Textura "white" gerada em tempo real pelas camadas do XML 150xx
   (Buggy_NN_Base/Primary/Secondary/Detail + cores + decalques + número).
 
 ## Save state do PCSX2
 
+Rodas: ponteiros em corpo+0x254 (W), curso W+0xe8, giro W+0x4c (a tag
+0x585cc0 fica em W−0x1c e às vezes está sobrescrita). Lista de peças do
+buggy: 21 pares (flag, ptr) em 0x11dbce0 (a.ram), matriz em linhas no
+pacote VIF apontado (rodas no mundo, peças no frame do modelo).
 `tools/ler_savestate.py` acha a câmera (vtable 0x5b3f30 em +0x68), o alvo,
 o veículo (+0x2b0 → +0xf0) e o corpo (+0x9d4). Câmbio em corpo+0x2d0 (+0x08
 marchas, +0x20 final, +0x9c embreagem máx, +0x60 rpm de subir). Motor em
