@@ -31,12 +31,20 @@ func _process(_dt: float) -> bool:
 		var car: Node3D = main.car
 		var t := car.global_transform
 		var off := {"lado": Vector3(4.5, 1.2, 0.0), "tras": Vector3(0.0, 1.6, -6.0),
-			"frente": Vector3(2.5, 1.0, 5.0)}.get(view, Vector3(4.5, 1.2, 0.0)) as Vector3
+			"frente": Vector3(2.5, 1.0, 5.0), "outro_lado": Vector3(-4.5, 1.2, 0.0),
+			"cima": Vector3(0.01, 7.0, 0.0), "tras_baixo": Vector3(1.5, 0.6, -4.0),
+			"roda_tras": Vector3(-2.6, 1.0, -0.6), "roda_tras_dentro": Vector3(0.0, 0.3, -0.8)}.get(
+			view, Vector3(4.5, 1.2, 0.0)) as Vector3
+		var alvo := Vector3(0, 0.7, 0)
+		if view.begins_with("roda_tras"):
+			for w in car.wheels:
+				if not w.front and w.px < 0.0:
+					alvo = w.pivot.position
 		var cam := Camera3D.new()
 		root.add_child(cam)
 		cam.fov = 45.0
 		cam.global_position = t * off
-		cam.look_at(t * Vector3(0, 0.7, 0), Vector3.UP)
+		cam.look_at(t * alvo, Vector3.UP)
 		cam.current = true
 	if frames == 95:
 		root.get_viewport().get_texture().get_image().save_png(out)
