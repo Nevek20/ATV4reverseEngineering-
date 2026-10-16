@@ -681,11 +681,13 @@ func driver_eye() -> Vector3:
 # centralizado atrás do volante de cada carro (pecas.json, tools/volante.py):
 # FP_UP acima e FP_BACK atrás do centro do aro. Sem volante, usa o banco
 # (ponto ARSE + EYE_FROM_ARSE, medido no Renegade).
-var FP_FOV := 70.0            # graus na vertical (KEEP_HEIGHT)
-var FP_PITCH := 0.08          # quanto olha pra baixo (componente -y da direção)
-var FP_NEAR := 0.1
-var FP_UP := 0.44
-var FP_BACK := 0.61
+# Calibrado pelos prints dos 12 carros contra a referência do Matheus (cockpit
+# de rally: volante grande embaixo, painel e pista pelo para-brisa)
+var FP_FOV := 65.0            # graus na vertical (KEEP_HEIGHT)
+var FP_PITCH := 0.25          # quanto olha pra baixo (componente -y da direção, ~14°)
+var FP_NEAR := 0.05
+var FP_UP := 0.25             # olho acima do centro do volante (m)
+var FP_BACK := 0.50           # olho atrás do centro do volante (m)
 var FP_VOLANTE := true        # olho pelo volante (false = pelo banco)
 
 

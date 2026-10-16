@@ -50,6 +50,7 @@ roda a física sem tela. Comandos: `/teste` e `/entrega`.
 | Tab | menu de carros (os 12 buggies + Sphinx do speedrun): clique ou Enter |
 | V | próximo carro da lista |
 | F | girar o modelo 180° (se ele parecer andar de ré) |
+| 1/2, 3/4, 5/6, 7/8 | na câmera do piloto: altura, distância, inclinação e campo de visão (valores no HUD) |
 | Esc | sair |
 
 Controle de videogame também funciona (gatilhos e analógico esquerdo).

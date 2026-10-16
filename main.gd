@@ -160,6 +160,11 @@ func _unhandled_input(event: InputEvent) -> void:
 				_swap_vehicle((veh_idx + 1) % VEHICLES.size())
 			KEY_F:
 				car.flip_model()
+			# ajuste ao vivo da câmera do piloto (1/2 altura, 3/4 distância,
+			# 5/6 inclinação, 7/8 campo de visão); os valores aparecem no HUD
+			KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8:
+				if cam_mode == 4:
+					_ajusta_piloto(event.physical_keycode)
 			KEY_ESCAPE:
 				get_tree().quit()
 
@@ -207,13 +212,31 @@ func _swap_vehicle(i: int) -> void:
 	spawn_vehicle(i, Vector3(p.x, terrain.height_at(p.x, p.z) + 1.5, p.z), car.global_rotation.y)
 
 
+func _ajusta_piloto(k: int) -> void:
+	match k:
+		KEY_1: car.FP_UP -= 0.02
+		KEY_2: car.FP_UP += 0.02
+		KEY_3: car.FP_BACK -= 0.02
+		KEY_4: car.FP_BACK += 0.02
+		KEY_5: car.FP_PITCH -= 0.02
+		KEY_6: car.FP_PITCH += 0.02
+		KEY_7: car.FP_FOV -= 2.0
+		KEY_8: car.FP_FOV += 2.0
+	car.update_eye()
+
+
 func _process(delta: float) -> void:
 	if car == null:
 		return
 	_update_camera(delta)
 	var kmh: float = car.linear_velocity.length() * 3.6
+	var fp := ""
+	if cam_mode == 4:
+		fp = "\n\npiloto: altura %.2f (1/2)  distância %.2f (3/4)  inclinação %.2f (5/6)  campo de visão %.0f° (7/8)" % [
+			car.FP_UP, car.FP_BACK, car.FP_PITCH, car.FP_FOV]
 	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço: powerslide (freio de mão)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC: câmera (%s)   V: próximo carro   Tab: menu de carros   F: girar o modelo   Esc: sair" % [
 		int(kmh), int(kmh / 1.609), car.gear_label(), int(car.rpm), "MANUAL" if car.manual else "AUTO", car.vehicle_name, ("pneus portados do jogo" if car.use_ported else "pneus antigos") + (", lateral do jogo" if car.lateral_game else ", lateral remendo"), CAM_NAMES[cam_mode]]
+	hud.text += fp
 
 
 const GameCamera := preload("res://game_camera.gd")
