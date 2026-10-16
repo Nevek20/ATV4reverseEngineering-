@@ -1,15 +1,20 @@
 extends Node3D
 ## Terreno da pista RX_01 tirado do stream do jogo (STREAMT/RX/RX01.000) por
-## tools/extrair_material.py. Grade de SIZE x SIZE pontos, 1 m entre eles,
-## linha = z, ponto (i, j) = (x = i, z = j) do remake = mundo do jogo
-## (x, z + 1024). Bate com a RAM dos save states da largada: altura do contato
-## das rodas a 0.1 mm e material igual.
+## tools/extrair_material.py. Grade de SIZE x SIZE pontos, 1 m entre eles.
+## Bate com a RAM dos save states da largada: altura do contato das rodas a
+## 0.1 mm e material igual (tests/teste_chao.gd).
 ##   rx01_height.bin   float32, altura do jogo (FUN_00299a60)
 ##   rx01_material.bin u8, índice i do material = Material_(i+1) do
 ##                     Levels/RX_01/Env/Materials.xml (data/materials_rx01.xml);
 ##                     célula de 2 m (entrada E do tile, byte0 & 0xF)
-## Triângulo de cada célula pela diagonal (i+1, j)-(i, j+1), igual ao jogo e
-## ao HeightMapShape3D do Godot (Godot Physics e Jolt, testado).
+## Os .bin estão no layout do jogo (linha = z do jogo, coluna = x).
+##
+## O jogo é mão esquerda e o Godot mão direita, então o mundo passa por um
+## espelho: remake (X, Y, Z) = (z - 1024, y, x) do jogo (do_jogo). É uma
+## transposição (x <-> z), feita na carga. Com ela o triângulo de cada célula
+## continua pela diagonal (i+1, j)-(i, j+1), igual ao jogo e ao
+## HeightMapShape3D do Godot (Godot Physics e Jolt, testado). Inverter só o x
+## trocaria a diagonal.
 
 @export var height_path := "res://assets/terrain/rx01_height.bin"
 @export var material_path := "res://assets/terrain/rx01_material.bin"
@@ -18,9 +23,25 @@ extends Node3D
 @export var size := 1025          # pontos por lado
 @export var mesh_step := 2        # malha visual usa 1 ponto a cada N (colisão usa todos)
 
-var heights := PackedFloat32Array()
+var heights := PackedFloat32Array()   # já no remake: [Z * size + X]
 var mat_map := PackedByteArray()
 var materials := []               # atributos de cada Material_N do XML (N - 1)
+const Z0 := 1024.0                # z do jogo na linha 0 dos .bin
+
+
+## ponto do mundo do jogo -> remake
+static func do_jogo(p: Vector3) -> Vector3:
+	return Vector3(p.z - Z0, p.y, p.x)
+
+
+## direção do mundo do jogo -> remake
+static func dir_do_jogo(d: Vector3) -> Vector3:
+	return Vector3(d.z, d.y, d.x)
+
+
+## ponto do remake -> mundo do jogo
+static func pro_jogo(p: Vector3) -> Vector3:
+	return Vector3(p.z, p.y, p.x + Z0)
 
 
 func _ready() -> void:
@@ -28,15 +49,24 @@ func _ready() -> void:
 	if f == null:
 		push_error("Não achei %s" % height_path)
 		return
-	heights = f.get_buffer(size * size * 4).to_float32_array()
+	heights = _transpor(f.get_buffer(size * size * 4), Image.FORMAT_RF).to_float32_array()
 	f.close()
 	f = FileAccess.open(material_path, FileAccess.READ)
 	if f:
-		mat_map = f.get_buffer(size * size)
+		mat_map = _transpor(f.get_buffer(size * size), Image.FORMAT_R8)
 		f.close()
 	materials = load_materials(materials_xml)
 	_build_collision()
 	_build_mesh()
+
+
+## grade do jogo [z * size + x] -> remake [Z * size + X], com X = z e Z = x
+## do jogo (troca linha e coluna)
+func _transpor(dados: PackedByteArray, formato: Image.Format) -> PackedByteArray:
+	var img := Image.create_from_data(size, size, false, formato, dados)
+	img.rotate_90(CLOCKWISE)
+	img.flip_x()
+	return img.get_data()
 
 
 ## Material_1..N do Materials.xml da pista, em ordem (só os atributos)
@@ -136,7 +166,7 @@ func _build_mesh() -> void:
 			var h := heights[z * size + x]
 			var k := j * n + i
 			verts[k] = Vector3(x, h, z)
-			uvs[k] = Vector2(x / span, z / span)
+			uvs[k] = Vector2(z / span, x / span)    # a textura está no layout do jogo
 			# normal pela diferença central
 			var xl := maxi(x - 1, 0)
 			var xr := mini(x + 1, size - 1)

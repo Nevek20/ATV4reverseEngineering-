@@ -47,6 +47,13 @@ func _physics_process(dt: float) -> bool:
 		return false
 	if t == 0.0:
 		car.reset_to(Vector3(0, 1.0, -1500), 0.0)
+		# ordem do jogo FL, RL, FR, RR; esquerda do jogo = +X no Godot
+		var esperado := [[true, true], [false, true], [true, false], [false, false]]
+		for k in 4:
+			var w: Dictionary = car.wheels[car.jit_order[k]]
+			if w.front != esperado[k][0] or (w.px > 0.0) != esperado[k][1]:
+				falhas += 1
+				print("jit_order[%d] é a roda errada (px %.3f, frente %s)" % [k, w.px, w.front])
 	t += dt
 	var o: Array = car.jit_order
 	var spd: float = car.spd_ground

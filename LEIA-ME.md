@@ -57,6 +57,8 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
 
 ## O que já é do jogo
 
+- Mão certa: o jogo usa outra convenção de eixos e até out/2026 o remake
+  saía espelhado (pista e carro). Agora carro e pista ficam como no jogo
 - Chão: relevo, textura e material da pista RX01 (tiles do STREAMT). A
   roda só treme na terra e no cascalho (no asfalto não), como no jogo; o HUD
   mostra o chão embaixo de cada roda. O carro larga na largada do jogo

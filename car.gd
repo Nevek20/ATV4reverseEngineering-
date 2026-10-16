@@ -81,7 +81,7 @@ const VOLANTE_GIRA := true
 var SW_CENTER := Vector3(-0.434, 1.351, 0.396)    # Renegade, se faltar no pecas.json
 var SW_AXIS := Vector3(0.0, 0.684, -0.729)
 const SW_TURNS := 2.6         # sem fonte no jogo (escolha do remake)
-var rider_s := 0.0            # direção suavizada do piloto (rider+0x2d8)
+var rider_s := 0.0            # direção suavizada do piloto (rider+0x2d8 com sinal trocado: + = esquerda)
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
 const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
@@ -90,8 +90,16 @@ const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
 # Modelos gerados com o pingu2obj antigo precisam de CULL_DISABLED.
 const MODEL_CULL := BaseMaterial3D.CULL_BACK
 
+# O jogo é mão esquerda (x direita, y cima, z frente; esquerda do jogo = x < 0
+# no modelo) e o Godot é mão direita. Tudo que vem do jogo em frame do modelo
+# (malhas, pontos, peças, volante, olho) fica em frame do JOGO embaixo do nó
+# espelho (escala (-1, 1, 1) na origem do corpo). A física roda no frame do
+# Godot (+X = esquerda): ponto do jogo entra nela por corpo(). Nunca converter
+# a mesma coisa nos dois lugares.
+const ESPELHO := Vector3(-1.0, 1.0, 1.0)
+var espelho: Node3D             # filhos em frame do jogo (model_root, susp_vis, rodas)
 var model_root: Node3D
-var model_offset := Vector3.ZERO
+var model_offset := Vector3.ZERO  # origem do modelo no frame do JOGO (dentro do espelho)
 var sw_pivot: Node3D
 
 # ---- parâmetros carregados do XML ----
@@ -166,8 +174,12 @@ var test_input = null         # {thr, brk, steer} pra testes automáticos
 
 
 func _ready() -> void:
+	espelho = Node3D.new()
+	espelho.name = "Espelho"
+	espelho.scale = ESPELHO
+	add_child(espelho)
 	model_root = Node3D.new()
-	add_child(model_root)
+	espelho.add_child(model_root)
 	_load_pecas()
 	_load_model()                 # antes da física: define model_offset
 	_load_physics()
@@ -181,7 +193,7 @@ func _ready() -> void:
 		_make_wheel_mesh(w)
 	if suspension and not pecas.is_empty() and not points.is_empty():
 		susp_vis = preload("res://suspension_visual.gd").new()
-		add_child(susp_vis)
+		espelho.add_child(susp_vis)
 		var spare_mesh: Mesh = null
 		if ResourceLoader.exists(wheel_rear_file):
 			spare_mesh = load(wheel_rear_file) as Mesh
@@ -256,8 +268,8 @@ func _load_physics() -> void:
 		d.f("Stability/General/Centre_of_mass", "Z"))
 	# o centro de massa do XML está nas coordenadas do modelo (no jogo, a origem
 	# do modelo fica em corpo - CoM, 0x20ca88); aqui o modelo foi deslocado
-	# por model_offset, então o CoM anda junto
-	com += model_offset
+	# por model_offset, então o CoM anda junto (e passa pro frame do Godot)
+	com = corpo(com)
 	center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
 	center_of_mass = com
 
@@ -416,9 +428,8 @@ func _load_physics() -> void:
 	P.ap_acc = d.f("Stability/AntiPitch", "Acceleration", 0.0)
 
 	# rodas: esquerda = +X (o carro anda pra +Z). Com o arquivo de pontos do
-	# jogo, a roda fica onde o jogo põe (WHEEL_FRONT_LEFT...); sem ele, no chute.
-	# O modelo não é espelhado aqui, então o lado "esquerdo" do jogo (x < 0)
-	# aparece no -X do Godot; a física só precisa saber de que lado cada roda fica.
+	# jogo, a roda fica onde o jogo põe (WHEEL_FRONT_LEFT...), passada pro frame
+	# do Godot por corpo(): a esquerda do jogo (x < 0) vira +X. Sem ele, no chute.
 	wheels.clear()
 	var pts := _load_points(points_file)
 	points = pts
@@ -426,8 +437,8 @@ func _load_physics() -> void:
 	var wpos := {}
 	for k in ["FRONT_LEFT", "FRONT_RIGHT", "REAR_LEFT", "REAR_RIGHT"]:
 		if pts.has("WHEEL_" + k):
-			var pp: Vector3 = pts["WHEEL_" + k] + model_offset
-			var side := "Left" if pp.x > 0.0 else "Right"
+			var pp: Vector3 = corpo(pts["WHEEL_" + k])
+			var side := "Left" if k.ends_with("LEFT") else "Right"
 			var key: String = ("Front" if k.begins_with("FRONT") else "Rear") + side
 			wpos[key] = pp
 	var from_points := wpos.size() == 4
@@ -441,6 +452,7 @@ func _load_physics() -> void:
 		var path: String = "Wheels/" + info[0]
 		var w := {}
 		w.front = info[2] > 0
+		w.left = info[1] > 0                # esquerda do jogo = +X no Godot
 		w.px = WHEEL_X * info[1]
 		w.pz = WHEEL_Z * info[2]
 		if from_points:
@@ -478,12 +490,12 @@ func _load_physics() -> void:
 		w.fz = 0.0                          # força longitudinal do passo (N)
 		wheels.append(w)
 	P.wheel_r = wheels[2].r
-	# ordem do jogo (corpo+0x254): FL, RL, FR, RR, com esquerda = x < 0 no modelo
+	# ordem do jogo (corpo+0x254): FL, RL, FR, RR
 	jit_order = []
 	for fl in [[true, true], [false, true], [true, false], [false, false]]:
 		for i in wheels.size():
 			var w: Dictionary = wheels[i]
-			if w.front == fl[0] and (w.px - model_offset.x < 0.0) == fl[1]:
+			if w.front == fl[0] and w.left == fl[1]:
 				jit_order.append(i)
 	jit_seed = Time.get_ticks_msec() & 0x3FFFFFFF   # o jogo semeia com o relógio
 	# 0x20bf58: o jogo mede os eixos a partir da ORIGEM DO MODELO, não do CoM
@@ -562,8 +574,8 @@ func _solve_static(w: Dictionary, f_load: float) -> float:
 
 # ------------------------------------------------------------------ visual
 func _make_wheel_mesh(w: Dictionary) -> void:
-	var pivot := Node3D.new()
-	add_child(pivot)
+	var pivot := Node3D.new()       # frame do jogo (dentro do espelho)
+	espelho.add_child(pivot)
 	var spin := Node3D.new()
 	pivot.add_child(spin)
 	w.pivot = pivot
@@ -579,9 +591,9 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 				var m2: StandardMaterial3D = m.duplicate()
 				m2.cull_mode = MODEL_CULL
 				mi.set_surface_override_material(i, m2)
-		# component map (14881): Mirror="1" nas rodas da esquerda do jogo,
-		# que é o x < 0 do modelo (aqui o modelo não é espelhado)
-		if w.px < 0.0:
+		# component map (14881): Mirror="1" nas rodas da esquerda do jogo
+		# (o pivô está no frame do jogo, dentro do espelho)
+		if w.left:
 			mi.scale.x = -1.0
 		# centro do modelo = centro da roda (sem deslocamento: matriz da RAM)
 		spin.add_child(mi)
@@ -679,6 +691,16 @@ func _load_steering_wheel() -> void:
 
 func driver_eye() -> Vector3:
 	return model_root.get_global_transform_interpolated() * (model_offset + DRIVER_EYE)
+
+
+## ponto do modelo do jogo -> frame do corpo no Godot (física, câmera)
+func corpo(p: Vector3) -> Vector3:
+	return (p + model_offset) * ESPELHO
+
+
+## frame do corpo no Godot -> ponto do modelo do jogo
+func jogo(q: Vector3) -> Vector3:
+	return q * ESPELHO - model_offset
 
 
 # câmera de primeira pessoa (não existe no jogo; é do remake). O olho fica
@@ -1667,10 +1689,13 @@ func _down_speed(g: int) -> float:
 
 
 func _update_visuals(dt: float, v_f: float) -> void:
+	# o visual fica no frame do jogo (espelho): rotação em y troca de sinal
+	# (S Ry(a) S = Ry(-a)), em x não. a_jogo = ângulo das rodas no jogo
+	var a_jogo: float = -steer * P.vis_steer
 	for w in wheels:
 		var x: float = clampf(w.x, w.min, w.max) + w.jit   # 0x222078: sem clamp depois
-		w.pivot.position = Vector3(w.px, w.y0 + x, w.pz)
-		w.pivot.rotation.y = steer * P.vis_steer if w.front else 0.0
+		w.pivot.position = Vector3(w.px, w.y0 + x, w.pz) * ESPELHO
+		w.pivot.rotation.y = a_jogo if w.front else 0.0
 		w.spin += v_f / w.r * dt
 		w.spin_node.rotation.x = w.spin
 	# direção suavizada do piloto (0x187060: s += min(1/dt, 30)·(direção - s)·dt):
@@ -1678,6 +1703,6 @@ func _update_visuals(dt: float, v_f: float) -> void:
 	if dt > 0.0:
 		rider_s = clampf(rider_s + minf(1.0 / dt, 30.0) * (steer - rider_s) * dt, -1.0, 1.0)
 	if sw_pivot and VOLANTE_GIRA:
-		sw_pivot.basis = Basis(SW_AXIS.normalized(), rider_s * SW_TURNS)
+		sw_pivot.basis = Basis(SW_AXIS.normalized(), -rider_s * SW_TURNS)
 	if susp_vis:
-		susp_vis.update(steer * P.vis_steer)
+		susp_vis.update(a_jogo)

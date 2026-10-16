@@ -4,7 +4,7 @@ extrair_material.py
 Lê o stream da pista (STREAMT/RX/RX01.000) e gera o mapa de MATERIAL do chão
 (índice 0..15 do Materials.xml da pista) na mesma grade do
 assets/terrain/rx01_height.bin: 1025 x 1025 pontos, 1 m, linha = z, coluna = x,
-pixel (gx, gz) = ponto do mundo (x = gx, z = 1024 + gz).
+pixel (gx, gz) = ponto do mundo do jogo (x = gx, z = 1024 + gz).
 
 Uso (na pasta do projeto):
     python tools/extrair_material.py <RX01.000> assets/terrain
@@ -12,15 +12,19 @@ Uso (na pasta do projeto):
                                            WheelJitter no JSON; pode ser só o
                                            prefixo, o unpacked põe sufixo)
         [--png previa.png]                 mapa em cinza (valor = material)
-        [--ram arquivo.ram ...]            confere com a RAM de save states
+        [--ram [nome=]arquivo.ram ...]     confere com a RAM de save states
                                            parados (tools/ler_savestate.py --dump)
+        [--ref tests/ref_ram_chao.json]    grava o contato e o material das
+                                           rodas dessas RAMs (mundo do jogo)
 
 Sai na pasta:
     rx01_material.bin  u8 1025x1025 (linha = z), índice do material
     rx01_material.json contagem por material e a regra de alinhamento
     rx01_height.bin    float32 1025x1025 (linha = z), altura do jogo
     rx01_height.json   tamanho e min/max
-terrain.gd lê os .bin com FileAccess.
+Os .bin ficam no layout do jogo (linha = z, coluna = x). terrain.gd lê com
+FileAccess e transpõe pro remake (X = z - 1024, Z = x), por causa da mão
+(o jogo é mão esquerda).
 
 Alturas: a grade de 1 m com a diagonal do jogo, (i+1, j)-(i, j+1) (a mesma do
 HeightMapShape3D do Godot), reproduz FUN_00299a60 exato, menos na última
@@ -201,8 +205,10 @@ def ler_materiais(caminho):
 
 def conferir_ram(caminho, tiles):
     """rodas do jogador num save state parado: contato no mundo (W+0x130)
-    -> célula da grade -> material e altura do stream x RAM"""
+    -> célula da grade -> material e altura do stream x RAM. Devolve as rodas
+    (mundo do jogo) pro --ref."""
     r = open(caminho, "rb").read()
+    rodas = []
 
     def rd(a, f="<I"):
         return struct.unpack_from(f, r, a & 0x1FFFFFF)[0]
@@ -222,6 +228,9 @@ def conferir_ram(caminho, tiles):
         print(f"  {nome}: mundo ({x:.2f}, {y:.3f}, {z:.2f}) grade ({gx}, {gz}) "
               f"material stream {mat} / RAM W+0x140 {rd(W + 0x140)} veh+0xa88 {rd(veh + 0xA88 + 4 * i)} "
               f"| altura stream {h:.4f} (dif {h - y:+.4f})")
+        rodas.append({"roda": nome, "x": round(x, 5), "y": round(y, 5), "z": round(z, 5),
+                      "mat": rd(W + 0x140)})
+    return rodas
 
 
 def main():
@@ -231,6 +240,7 @@ def main():
     ap.add_argument("--materiais")
     ap.add_argument("--png")
     ap.add_argument("--ram", nargs="*", default=[])
+    ap.add_argument("--ref")
     a = ap.parse_args()
 
     buf = open(a.stream, "rb").read()
@@ -272,8 +282,9 @@ def main():
         "tamanho": TAM,
         "espacamento_m": 1.0,
         "origem_mundo_xz": [0.0, Z0],
-        "orientacao": "byte (coluna gx, linha gz) = mundo (x = gx, z = 1024 + gz) = remake (x = gx, z = gz), igual ao rx01_height.bin",
-        "regra": "material no ponto (x, z) do remake = byte (floor(x), floor(z)); "
+        "orientacao": "byte (coluna gx, linha gz) = mundo do jogo (x = gx, z = 1024 + gz), igual ao "
+                      "rx01_height.bin; no remake (espelho, terrain.gd) X = gz, Z = gx",
+        "regra": "material no ponto (x, z) do jogo = byte (floor(x), floor(z - 1024)); "
                  "células de 2 m (byte0 & 0xF da entrada E int(lx/2), int(lz/2) do tile); "
                  "índice i = Material_(i+1) do Materials.xml da pista",
         "materiais": {},
@@ -310,8 +321,16 @@ def main():
         json.dump({"size": TAM, "spacing": 1.0, "min": min(alt), "max": max(alt)}, f)
     print(f"gravei {sai} (min {min(alt):.3f}, max {max(alt):.3f})")
 
+    ref = {}
     for r in a.ram:
-        conferir_ram(r, tiles)
+        nome, _, arq = r.rpartition("=")
+        ref[nome or os.path.basename(arq)] = conferir_ram(arq, tiles)
+    if a.ref:
+        with open(a.ref, "w", encoding="utf-8") as f:
+            json.dump({"fonte": "contato das rodas (W+0x130) e material (W+0x140) nos save states "
+                                "parados na largada, mundo do jogo (tools/extrair_material.py --ref)",
+                       "carros": ref}, f, indent=1, ensure_ascii=False)
+        print(f"gravei {a.ref}")
 
 
 if __name__ == "__main__":

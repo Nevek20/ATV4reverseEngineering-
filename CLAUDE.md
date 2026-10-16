@@ -136,10 +136,20 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Física roda a 120 Hz com interpolação ligada; câmera em passos de 1/60
   interpolando no frame do carro (senão aparece "fantasma"). O passo de
   física do jogo no PAL é 1/50 (a tremida das rodas sorteia a 50 Hz).
-- Terreno RX01: mundo do jogo (x, z) = remake (x, z + 1024). Alturas e
-  material saem do stream (tools/extrair_material.py), conferidos com a RAM
-  (tests/teste_chao.gd). Diagonal da célula (i+1, j)-(i, j+1) = a do
-  HeightMapShape3D. Material i = Material_(i+1) do data/materials_rx01.xml.
+- MÃO: o jogo é mão esquerda (esquerda do jogo = x < 0 no modelo), o Godot
+  mão direita. Até out/2026 o remake saía todo ESPELHADO. Agora: carro =
+  nó `espelho` (escala (-1,1,1)) com tudo do jogo em frame do jogo dentro
+  (malha, suspensão, rodas, volante); a física usa car.corpo(p) e a
+  esquerda do jogo é +X (w.left). Mundo = Terrain.do_jogo: remake
+  (X, Y, Z) = (z - 1024, y, x) do jogo (transposição, mantém a diagonal do
+  terreno). Ângulo de esterço no frame do jogo = -steer (car.gd a_jogo).
+  Câmeras do XML: x negado no _parse. Nunca converter a mesma coisa duas
+  vezes. tests/teste_chao.gd põe os 6 carros na pose da RAM e confere roda
+  por roda (lado trocado = 2,4 m de erro).
+- Terreno RX01: .bin no layout do jogo, transposto na carga (terrain.gd).
+  Alturas e material saem do stream (tools/extrair_material.py), conferidos
+  com a RAM (tests/teste_chao.gd). Diagonal da célula (i+1, j)-(i, j+1) = a
+  do HeightMapShape3D. Material i = Material_(i+1) do data/materials_rx01.xml.
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto, que ainda não temos.

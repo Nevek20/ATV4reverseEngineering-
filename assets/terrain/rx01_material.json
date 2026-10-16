@@ -6,8 +6,8 @@
   0.0,
   1024.0
  ],
- "orientacao": "byte (coluna gx, linha gz) = mundo (x = gx, z = 1024 + gz) = remake (x = gx, z = gz), igual ao rx01_height.bin",
- "regra": "material no ponto (x, z) do remake = byte (floor(x), floor(z)); células de 2 m (byte0 & 0xF da entrada E int(lx/2), int(lz/2) do tile); índice i = Material_(i+1) do Materials.xml da pista",
+ "orientacao": "byte (coluna gx, linha gz) = mundo do jogo (x = gx, z = 1024 + gz), igual ao rx01_height.bin; no remake (espelho, terrain.gd) X = gz, Z = gx",
+ "regra": "material no ponto (x, z) do jogo = byte (floor(x), floor(z - 1024)); células de 2 m (byte0 & 0xF da entrada E int(lx/2), int(lz/2) do tile); índice i = Material_(i+1) do Materials.xml da pista",
  "materiais": {
   "0": {
    "pixels": 11892,

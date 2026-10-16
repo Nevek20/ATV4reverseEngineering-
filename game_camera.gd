@@ -96,12 +96,14 @@ func _parse(path: String, set_name: String, cam_name: String) -> void:
 					p[k] = 1.0 if v == "true" else (0.0 if v == "false" else v.to_float())
 				if x.is_empty():
 					in_cam = false
+			# o XML é frame do carro do jogo (mão esquerda): passa pro Godot aqui,
+			# um lugar só. Posição: x negado. Ângulos (pseudovetor): y e z negados
 			elif in_cam and (n == "POS_OFFSET" or n == "PosOffset"):
-				pos_off = _vec(x)
+				pos_off = _vec(x) * Vector3(-1.0, 1.0, 1.0)
 			elif in_cam and n == "LOOK_OFFSET":
-				look_off = _vec(x)
+				look_off = _vec(x) * Vector3(-1.0, 1.0, 1.0)
 			elif in_cam and n == "Orientation":
-				p["orient"] = _vec(x)
+				p["orient"] = _vec(x) * Vector3(1.0, -1.0, -1.0)
 		elif t == XMLParser.NODE_ELEMENT_END:
 			var n := x.get_node_name()
 			if in_set and n == cam_name:
@@ -195,13 +197,14 @@ func _step(dt: float, s: Dictionary, terrain) -> void:
 		h += (p.MAX_Y_OFFSET - pos_off.y) * _c01((spd - p.MAX_Y_SPEED_MIN) / (p.MAX_Y_SPEED_MAX - p.MAX_Y_SPEED_MIN))
 
 	# 0x383588 offset no frame do carro, só com a guinada (up do mundo)
+	# lado = +X do carro no Godot (esquerda); pos_off já está no frame do Godot
 	var fz: Vector3 = b.z
-	var right := Vector3.UP.cross(fz)
-	if right.length() < 1e-5:
-		right = b.x
-	right = right.normalized()
-	var ffl := right.cross(Vector3.UP)
-	var c := tp + right * pos_off.x + Vector3.UP * h + ffl * pos_off.z
+	var lado := Vector3.UP.cross(fz)
+	if lado.length() < 1e-5:
+		lado = b.x
+	lado = lado.normalized()
+	var ffl := lado.cross(Vector3.UP)
+	var c := tp + lado * pos_off.x + Vector3.UP * h + ffl * pos_off.z
 
 	# 0x383cf8 + 0x384168 amortecimento em Y. Subindo (vy > 1) usa a taxa de
 	# subida; a taxa cai na hora mas volta devagar.

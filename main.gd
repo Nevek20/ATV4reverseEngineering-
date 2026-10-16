@@ -42,10 +42,11 @@ const VEHICLES := [
 ]
 var veh_idx := 0
 # largada do RX_01: centro das 4 rodas e direção do carro nos 6 save states
-# parados na largada (mundo do jogo (581.0, z 1564.4), z do remake = z - 1024).
+# parados na largada (tests/ref_ram_chao.json), passados pro remake por
+# Terrain.do_jogo (jogo (580.8, z 1564.3), frente a -115.1° no jogo).
 # É asfalto (COMMON_3 TARMAC), então ali a roda não treme.
-const SPAWN_XZ := Vector2(581.0, 540.4)
-const SPAWN_YAW := -114.9                 # graus, frente = +Z do carro
+const SPAWN_XZ := Vector2(540.3, 580.8)
+const SPAWN_YAW := -154.9                 # graus, frente = +Z do carro
 
 const Car := preload("res://car.gd")
 const Terrain := preload("res://terrain.gd")
@@ -136,7 +137,8 @@ func _make_environment() -> void:
 	add_child(we)
 
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-50, -35, 0)   # mesma ideia do XML: sol vindo de +X, de cima
+	# Sun Dir do Environment.xml do RX_01 (12282), passado pro remake
+	sun.basis = Basis.looking_at(Terrain.dir_do_jogo(Vector3(0.396, -0.780, 0.483)))
 	sun.light_energy = 1.2
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 150.0
@@ -285,7 +287,7 @@ func cam_state() -> Dictionary:
 	# transform interpolado: é o que aparece na tela (física roda a 120 Hz)
 	var xf: Transform3D = car.get_global_transform_interpolated()
 	var b := xf.basis.orthonormalized()
-	var tp: Vector3 = xf * car.model_offset
+	var tp: Vector3 = xf * car.corpo(Vector3.ZERO)   # origem do modelo
 	var v: Vector3 = car.linear_velocity
 	return {
 		"tp": tp, "basis": b, "vel": v, "v_f": v.dot(b.z),
@@ -342,7 +344,7 @@ func _update_camera(delta: float) -> void:
 	var g = gcams[cam_mode]
 	var xf: Transform3D = car.get_global_transform_interpolated()
 	var bb := xf.basis.orthonormalized()
-	var pos: Vector3 = xf * (car.model_offset + g.pos_off)
+	var pos: Vector3 = xf * (car.corpo(Vector3.ZERO) + g.pos_off)
 	var o: Vector3 = g.p.get("orient", Vector3.ZERO)
 	var fwd := bb.z.rotated(bb.x, deg_to_rad(-o.x))
 	cam.keep_aspect = Camera3D.KEEP_HEIGHT

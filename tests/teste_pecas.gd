@@ -11,6 +11,7 @@ const TOL := 1e-3
 
 var falhas := 0
 var total := 0
+var lado_errado := 0
 var ref := {}
 var carros := {}
 var frames := 0
@@ -35,8 +36,9 @@ func _process(_dt: float) -> bool:
 		return false
 	for nome in ref:
 		_conferir(nome, carros[nome], ref[nome])
-	print("teste_pecas: %d de %d matrizes batem com a RAM (tolerância %s m)" % [total - falhas, total, TOL])
-	quit(1 if falhas > 0 or total == 0 else 0)
+	print("teste_pecas: %d de %d matrizes batem com a RAM (tolerância %s m)%s" % [total - falhas, total, TOL,
+		"" if lado_errado == 0 else ", %d cantos com a roda da física do lado errado" % lado_errado])
+	quit(1 if falhas > 0 or total == 0 or lado_errado > 0 else 0)
 	return true
 
 
@@ -69,6 +71,12 @@ func _conferir(nome: String, c, r: Dictionary) -> void:
 	var p: Dictionary = r.pecas
 	for k in susp.corners:
 		var cn: String = ("F" if k.front else "R") + ("L" if k.left else "R")
+		# o canto (frame do jogo) tem que pegar a roda da física do mesmo lado:
+		# esquerda do jogo = +X no Godot (car.gd, espelho)
+		var w: Dictionary = k.wheel
+		if w.left != k.left or w.front != k.front or (w.px > 0.0) != k.left:
+			lado_errado += 1
+			print("  %-11s roda da física do lado errado (px %.3f)" % [cn, w.px])
 		var x: float = r.curso[cn]
 		var ps: Dictionary = susp.pose(k, x, 0.0)
 		_cmp("Frame_" + cn, ps.frame, _xf(p["Frame_" + cn].linhas))

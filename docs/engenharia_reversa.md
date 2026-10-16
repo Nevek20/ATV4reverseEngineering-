@@ -191,15 +191,42 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - Material: entrada E do tile, uma a cada 2 m, byte0 & 0xF = índice i ->
   Material_(i+1) do Levels/RX_01/Env/Materials.xml (unpacked/xml/12280,
   copiado em data/materials_rx01.xml). Mapa em rx01_material.bin.
-- Mundo do jogo (x, z) = remake (x, z + 1024).
+- Os .bin ficam no layout do jogo (linha = z, coluna = x); terrain.gd
+  transpõe na carga (ver Mão abaixo).
 - Conferido: contato das rodas (W+0x130) e material (W+0x140) dos 6 save
   states da largada: altura a 0,1 mm, material 2 (COMMON_3 TARMAC) igual.
   tests/teste_chao.gd + tests/ref_ram_chao.json.
-- Largada: centro das rodas (581.0, 540.4) no remake, frente a −114,9°
-  (main.gd SPAWN_XZ/SPAWN_YAW).
+- Largada: centro das rodas no jogo (580.8, z 1564.3), frente a −115,1°;
+  no remake (540.3, 580.8) e −154,9° (main.gd SPAWN_XZ/SPAWN_YAW).
 - Por material o XML também tem Friction, Damping, Bounciness, Sink e os
   Overrides "FRICTION TYRE <pneu> <valor>" (DIRT_BUDGET 0,80 na terra e
   1,10 no asfalto do RX_01). Atrito por material ainda não portado.
+
+## Mão (espelho)
+
+- O jogo é mão esquerda: x direita, y cima, z frente; WHEEL_*_LEFT em x < 0
+  no modelo e, no mundo, FL - FR aponta pra -(cima x frente) se lido como
+  mão direita. O Godot é mão direita, então copiar os números direto
+  espelha tudo (foi assim até out/2026; o Matheus confirmou no jogo).
+- Carro: S = diag(-1, 1, 1). car.gd põe malha, suspensão (cCompPlace),
+  rodas e volante embaixo de um nó com escala S, em frame do jogo (o
+  teste_pecas continua comparando direto com a RAM). Física no frame do
+  Godot: ponto do jogo -> car.corpo(p) = (p + model_offset)·S; esquerda do
+  jogo = +X (w.left). Rotação em y e z troca de sinal sob S (em x não): o
+  ângulo das rodas no jogo é -steer·vis_steer (steer + = esquerda no
+  remake, então no jogo ângulo + = direita, como o STEER_LEFT espelhado com
+  s > 0 do piloto). Volante: -rider_s.
+- Mundo: W = transposição, remake (X, Y, Z) = (z − 1024, y, x) do jogo
+  (Terrain.do_jogo / dir_do_jogo / pro_jogo). Inverter só o x também
+  resolveria a mão, mas trocaria a diagonal das células do terreno.
+  Pose de um carro do jogo no remake: W·T_jogo·T(−model_offset)·S, yaw do
+  remake = 90° − yaw do jogo.
+- Câmeras (cameras.xml): PosOffset/LOOK_OFFSET com x negado e Orientation
+  com y e z negados (pseudovetor), no game_camera._parse.
+- Sol: Sun Dir do Environment.xml do RX_01 (12282) passado por W.
+- Física: espelho exato (accel igual; curva pra esquerda nova = curva pra
+  direita antiga, Renegade e Mosquito com diferença zero; Sphinx igual até
+  uma derrapagem de 48° em 8,6 s, onde 1 rpm de ruído cresce).
 
 ## Archive
 
