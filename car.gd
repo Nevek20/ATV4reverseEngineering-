@@ -682,11 +682,12 @@ func driver_eye() -> Vector3:
 # FP_UP acima e FP_BACK atrás do centro do aro. Sem volante, usa o banco
 # (ponto ARSE + EYE_FROM_ARSE, medido no Renegade).
 # Calibrado pelos prints dos 12 carros contra a referência do Matheus (cockpit
-# de rally: volante grande embaixo, painel e pista pelo para-brisa)
+# do Dirt Rally 2.0: horizonte perto do meio, volante cortado embaixo, muita
+# estrada pelo para-brisa)
 var FP_FOV := 65.0            # graus na vertical (KEEP_HEIGHT)
-var FP_PITCH := 0.25          # quanto olha pra baixo (componente -y da direção, ~14°)
+var FP_PITCH := 0.10          # quanto olha pra baixo (componente -y da direção, ~6°)
 var FP_NEAR := 0.05
-var FP_UP := 0.25             # olho acima do centro do volante (m)
+var FP_UP := 0.35             # olho acima do centro do volante (m)
 var FP_BACK := 0.50           # olho atrás do centro do volante (m)
 var FP_VOLANTE := true        # olho pelo volante (false = pelo banco)
 
