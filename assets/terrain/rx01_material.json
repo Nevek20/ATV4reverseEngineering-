@@ -1,0 +1,109 @@
+{
+ "arquivo": "rx01_material.png",
+ "tamanho": 1025,
+ "espacamento_m": 1.0,
+ "origem_mundo_xz": [
+  0.0,
+  1024.0
+ ],
+ "orientacao": "pixel (coluna gx, linha gz) = mundo (x = gx, z = 1024 + gz), igual ao rx01_height.bin",
+ "regra": "material no ponto (x, z) do mundo = pixel (floor(x), floor(z - 1024)); células de 2 m (byte0 & 0xF da entrada E int(lx/2), int(lz/2) do tile)",
+ "materiais": {
+  "0": {
+   "pixels": 11892,
+   "celulas_2m": 2973,
+   "porcento": 1.134,
+   "nome": "COMMON_1(DIRT/COMMON)*",
+   "WheelJitter": 0.3,
+   "SFX": "Dirt"
+  },
+  "1": {
+   "pixels": 675868,
+   "celulas_2m": 168716,
+   "porcento": 64.36,
+   "nome": "COMMON_2(DIRT/OFFTRACK2)*",
+   "WheelJitter": 0.3,
+   "SFX": "Dirt"
+  },
+  "2": {
+   "pixels": 32776,
+   "celulas_2m": 8194,
+   "porcento": 3.126,
+   "nome": "COMMON_3(TARMAC/COMMON)*",
+   "WheelJitter": 0.0,
+   "SFX": "Tarmac"
+  },
+  "3": {
+   "pixels": 13720,
+   "celulas_2m": 3430,
+   "porcento": 1.308,
+   "nome": "COMMON_4(TARMAC/DUSTY)*",
+   "WheelJitter": 0.0,
+   "SFX": "Tarmac"
+  },
+  "4": {
+   "pixels": 5252,
+   "celulas_2m": 1313,
+   "porcento": 0.501,
+   "nome": "COMMON_5(DIRT/LOOSE)*",
+   "WheelJitter": 0.3,
+   "SFX": "Dirt"
+  },
+  "5": {
+   "pixels": 109080,
+   "celulas_2m": 27270,
+   "porcento": 10.403,
+   "nome": "COMMON_6(GRAVEL/ROCK)*",
+   "WheelJitter": 0.3,
+   "SFX": "Gravel"
+  },
+  "6": {
+   "pixels": 104589,
+   "celulas_2m": 25923,
+   "porcento": 9.889,
+   "nome": "COMMON_7(DIRT/OFFTRACK2)*",
+   "WheelJitter": 0.3,
+   "SFX": "Dirt"
+  },
+  "7": {
+   "pixels": 1924,
+   "celulas_2m": 481,
+   "porcento": 0.183,
+   "nome": "COMMON_8(DIRT/MOIST)*",
+   "WheelJitter": 0.3,
+   "SFX": "Dirt"
+  },
+  "8": {
+   "pixels": 74484,
+   "celulas_2m": 18584,
+   "porcento": 7.089,
+   "nome": "COMMON_9(GRAVEL/OFFTRACK1)*",
+   "WheelJitter": 0.3,
+   "SFX": "Gravel"
+  },
+  "9": {
+   "pixels": 12696,
+   "celulas_2m": 3174,
+   "porcento": 1.211,
+   "nome": "COMMON_10(DIRT/OFFTRACK1)*",
+   "WheelJitter": 0.3,
+   "SFX": "Dirt"
+  },
+  "10": {
+   "pixels": 3488,
+   "celulas_2m": 872,
+   "porcento": 0.333,
+   "nome": "COMMON_11(DIRT/OFFTRACK2)*",
+   "WheelJitter": 0.3,
+   "SFX": "Dirt"
+  },
+  "11": {
+   "pixels": 4856,
+   "celulas_2m": 1214,
+   "porcento": 0.463,
+   "nome": "COMMON_12(GRAVEL/OFFTRACK2)*",
+   "WheelJitter": 0.3,
+   "SFX": "Gravel"
+  }
+ }
+}
