@@ -80,7 +80,8 @@ const WHEEL_Y := 0.45         # altura do cubo com o carro parado
 const VOLANTE_GIRA := true
 var SW_CENTER := Vector3(-0.434, 1.351, 0.396)    # Renegade, se faltar no pecas.json
 var SW_AXIS := Vector3(0.0, 0.684, -0.729)
-const SW_TURNS := 2.6
+const SW_TURNS := 2.6         # sem fonte no jogo (escolha do remake)
+var rider_s := 0.0            # direção suavizada do piloto (rider+0x2d8)
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
 const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
@@ -1631,7 +1632,11 @@ func _update_visuals(dt: float, v_f: float) -> void:
 		w.pivot.rotation.y = steer * P.vis_steer if w.front else 0.0
 		w.spin += v_f / w.r * dt
 		w.spin_node.rotation.x = w.spin
+	# direção suavizada do piloto (0x187060: s += min(1/dt, 30)·(direção - s)·dt):
+	# é o que move os braços dele no jogo, então o volante anda junto
+	if dt > 0.0:
+		rider_s = clampf(rider_s + minf(1.0 / dt, 30.0) * (steer - rider_s) * dt, -1.0, 1.0)
 	if sw_pivot and VOLANTE_GIRA:
-		sw_pivot.basis = Basis(SW_AXIS.normalized(), steer * SW_TURNS)
+		sw_pivot.basis = Basis(SW_AXIS.normalized(), rider_s * SW_TURNS)
 	if susp_vis:
 		susp_vis.update(steer * P.vis_steer)

@@ -171,11 +171,14 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   esqueleto InGame_Mid.skl (00519, 47 ossos). Animação Truck_Riding
   (Setup/RiderAnimation.xml): clip STEER_LEFT.bac (00312) tocado no tempo
   |s|·(1/6 s), espelhado com s > 0 (0x190e50). s suavizado em 0x187060:
-  s += min(1/dt, 30)·(direção − s)·dt. mRiderMatchSteer = 0 nos buggies.
+  s += min(1/dt, 30)·(direção − s)·dt (o volante do remake usa esse s, car.gd
+  rider_s). mRiderMatchSteer = 0 nos buggies; IK das mãos só no ATV_Riding e
+  Bike_Riding (0x1a15a0/0x1a1650), não no Truck_Riding que o Seated usa.
   Câmeras: mRenderRider = 0 em On_Front, On_Hood e Wheel (xml 14837).
   Ainda não portado (faltam parsers de .srd/.skl/.bac).
 - Direção visual das rodas 0x21def8 / 0x20ede8: body+0x3c0 = direção ·
-  lerp(Max_visual_steer_zero, _full, mph/ref); nos buggies 30°/30°.
+  lerp(Max_visual_steer_zero, _full, mph/SpeedMax), SpeedMax = curva
+  BasicSteering/Angle_vs_speed (params+0x4e8 = 100); nos buggies 30°/30°.
 
 ## Archive
 
