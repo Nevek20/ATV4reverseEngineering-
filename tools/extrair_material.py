@@ -8,12 +8,20 @@ pixel (gx, gz) = ponto do mundo (x = gx, z = 1024 + gz).
 
 Uso:
     python tools/extrair_material.py <RX01.000> <saida.png>
-        [--materiais Materials.xml]   nomes no JSON (unpacked/xml/12280)
+        [--materiais Materials.xml]   nomes no JSON (unpacked/xml/12280_...xml;
+                                      pode passar só o prefixo .../xml/12280)
+        [--bin saida.bin]             mesmo mapa cru (u8 1025x1025, linha = z),
+                                      pra ler com FileAccess como o rx01_height.bin
         [--alturas saida.bin]         também grava as alturas (float32 1025x1025)
         [--ram arquivo.ram ...]       confere com a RAM de save states parados
 
 Sai <saida.png> (8 bits, cinza, valor = índice do material) e <saida>.json
 (contagem por material e a regra de alinhamento).
+
+Alturas: a grade de 1 m com a diagonal do jogo, (i+1, j)-(i, j+1) (a mesma do
+HeightMapShape3D do Godot), reproduz FUN_00299a60 exato, menos na última
+célula de 1 m de um bloco de 8 m vizinho de patch de outro passo (até ~2 cm).
+Bilinear erra até 10 cm.
 
 Formato do RX01.000 (conferido no exe e na RAM dos 6 save states da largada;
 alturas batem com o contato das rodas a 0.1 mm):
@@ -39,6 +47,7 @@ alturas batem com o contato das rodas a 0.1 mm):
 """
 
 import argparse
+import glob
 import json
 import os
 import re
@@ -172,6 +181,12 @@ def gravar_png(caminho, w, h, linhas):
 
 
 def ler_materiais(caminho):
+    if not os.path.exists(caminho):
+        # o unpacked põe sufixo no nome (xml/12280_COMMON_1_DIRT_COMMON__.xml)
+        achados = sorted(glob.glob(glob.escape(caminho) + "_*"))
+        if not achados:
+            sys.exit(f"não achei {caminho}")
+        caminho = achados[0]
     xml = open(caminho, encoding="latin-1").read()
     mats = {}
     for m in re.finditer(r"<Material_(\d+) ([^>]*)>", xml):
@@ -210,6 +225,7 @@ def main():
     ap.add_argument("stream")
     ap.add_argument("saida")
     ap.add_argument("--materiais")
+    ap.add_argument("--bin")
     ap.add_argument("--alturas")
     ap.add_argument("--ram", nargs="*", default=[])
     a = ap.parse_args()
@@ -231,6 +247,10 @@ def main():
             mat[gz][gx] = tiles[(tx, tz)].entrada_e(gx - tx * TILE, lz)[0] & 0xF
     os.makedirs(os.path.dirname(os.path.abspath(a.saida)), exist_ok=True)
     gravar_png(a.saida, TAM, TAM, mat)
+    if a.bin:
+        with open(a.bin, "wb") as f:
+            f.write(b"".join(bytes(l) for l in mat))
+        print(f"gravei {a.bin} (u8 {TAM}x{TAM}, linha = z)")
 
     cont = {}
     for linha in mat:
