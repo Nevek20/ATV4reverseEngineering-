@@ -19,6 +19,8 @@ extends Node3D
 ##   levada até o SHOCK_PISTON girado (com o x original).
 ## rally (Storm, 0x220528 / 0x220cf0): roda = WHEEL + x, sem balança no meio.
 ## estepe (0x221a88): fixo, matriz e posição do ponto SpareWheel01Centre.
+## O curso usado em tudo isso já tem a tremida das rodas no chão (car.gd,
+## 0x202760), então balança, cubo, freio e amortecedor tremem juntos.
 ##
 ## Convenção: o jogo usa vetor-linha (v' = v*R + t, linhas = eixos). No Godot
 ## as colunas do Basis são as linhas do jogo: EixoAngulo(a, u) = Basis(u, a),
@@ -159,7 +161,8 @@ func pose(k: Dictionary, x: float, steer: float) -> Dictionary:
 func update(steer_angle: float) -> void:
 	for k in corners:
 		var w: Dictionary = k.wheel
-		var x: float = clampf(w.x, w.min, w.max)
+		# curso visual do jogo (0x222078) = curso + tremida (car.gd)
+		var x: float = clampf(w.x, w.min, w.max) + w.get("jit", 0.0)
 		var p := pose(k, x, steer_angle)
 		_place(k.frame, p.frame)
 		w.pivot.position = off + p.hub

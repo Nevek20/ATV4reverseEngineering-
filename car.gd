@@ -140,6 +140,20 @@ var air_lat_scale := 1.0
 var sideslip := 0.0           # rad, + = bico à esquerda da trajetória
 var grounded := 0
 
+# tremida das rodas no chão (0x202760, só visual). A cada passo de física do
+# jogo (50 Hz no PAL) cada roda no chão sorteia um deslocamento do curso:
+# amp = min(1, WheelJitter * 0.06392613 * v) e tremida = amp * (U*0.075 - 0.0375),
+# com v a velocidade no plano do chão (m/s) e U do gerador do piloto
+# (x = x*31415821 + 1 mod 2^30). A traseira direita do jogo copia a esquerda.
+# WheelJitter vem do Materials.xml da pista: 0.3 na terra do RX_01, 0 no asfalto.
+const JIT_K := 0.06392613     # 2.2374146 / 35: amplitude cheia a 35 mph com WheelJitter 1
+const JIT_HZ := 50.0          # passo de física do PAL (FUN_00172778)
+var surface_jitter := 0.3     # o terreno do remake é todo terra (Material_1 DIRT/COMMON)
+var jit_seed := 0
+var jit_acc := 0.0
+var spd_ground := 0.0         # corpo+0x440: velocidade no plano do chão (m/s)
+var jit_order := []           # índices das rodas na ordem do jogo: FL, RL, FR, RR
+
 var lateral_game := true     # L alterna: força lateral por eixo (jogo) x remendo antigo
 var use_ported := true      # P alterna: física portada do jogo x modelo antigo
 var stf_blend := 0.0          # 0x474: quanto da força pra frente veio da derrapagem
@@ -450,6 +464,7 @@ func _load_physics() -> void:
 		w.v = 0.0                           # velocidade do curso (0x0f4)
 		w.f = 0.0                           # força da mola no carro (N, 0x0fc)
 		w.hit = false
+		w.jit = 0.0                         # tremida visual do curso (m)
 		w.point = Vector3.ZERO
 		w.normal = Vector3.UP
 		w.spin = 0.0
@@ -459,6 +474,14 @@ func _load_physics() -> void:
 		w.fz = 0.0                          # força longitudinal do passo (N)
 		wheels.append(w)
 	P.wheel_r = wheels[2].r
+	# ordem do jogo (corpo+0x254): FL, RL, FR, RR, com esquerda = x < 0 no modelo
+	jit_order = []
+	for fl in [[true, true], [false, true], [true, false], [false, false]]:
+		for i in wheels.size():
+			var w: Dictionary = wheels[i]
+			if w.front == fl[0] and (w.px - model_offset.x < 0.0) == fl[1]:
+				jit_order.append(i)
+	jit_seed = Time.get_ticks_msec() & 0x3FFFFFFF   # o jogo semeia com o relógio
 	# 0x20bf58: o jogo mede os eixos a partir da ORIGEM DO MODELO, não do CoM
 	# (a média do z das rodas, antes de descontar o centro de massa). Esses
 	# valores entram na curvatura, na divisão da força lateral entre os eixos e
@@ -843,6 +866,8 @@ func _physics_process(dt: float) -> void:
 	var v := linear_velocity
 	var v_f := v.dot(fwd)
 	var spd := v.length()
+	if grounded > 0:
+		spd_ground = (v - ground_n * v.dot(ground_n)).length()   # no ar fica o último
 
 	# ---- motor e câmbio
 	var driven_g := rear_g if REAR_DRIVE else grounded
@@ -941,7 +966,27 @@ func _physics_process(dt: float) -> void:
 	if grounded > 0 and v_f < -P.rev_limit * MPH:
 		linear_velocity -= fwd * (v_f + P.rev_limit * MPH)
 
+	jit_acc += dt
+	while jit_acc >= 1.0 / JIT_HZ:
+		jit_acc -= 1.0 / JIT_HZ
+		_wheel_jitter()
 	_update_visuals(dt, v_f)
+
+
+## 0x202760: sorteia a tremida das rodas no chão (FL, RL, FR; RR = RL)
+func _wheel_jitter() -> void:
+	for w in wheels:
+		w.jit = 0.0
+	if jit_order.size() != 4:
+		return
+	for k in 3:
+		var w: Dictionary = wheels[jit_order[k]]
+		if not w.hit:
+			continue
+		var amp := minf(surface_jitter * JIT_K * spd_ground, 1.0)
+		jit_seed = (jit_seed * 31415821 + 1) & 0x3FFFFFFF
+		w.jit = amp * (float(jit_seed) * 0.075 / 1073741824.0 - 0.0375)
+	wheels[jit_order[3]].jit = wheels[jit_order[1]].jit
 
 
 # ------------------------------------------------------------------ pneus
@@ -1581,7 +1626,7 @@ func _down_speed(g: int) -> float:
 
 func _update_visuals(dt: float, v_f: float) -> void:
 	for w in wheels:
-		var x: float = clampf(w.x, w.min, w.max)
+		var x: float = clampf(w.x, w.min, w.max) + w.jit   # 0x222078: sem clamp depois
 		w.pivot.position = Vector3(w.px, w.y0 + x, w.pz)
 		w.pivot.rotation.y = steer * P.vis_steer if w.front else 0.0
 		w.spin += v_f / w.r * dt

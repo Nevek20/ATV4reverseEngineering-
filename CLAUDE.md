@@ -53,8 +53,9 @@ python tools/ler_savestate.py arquivo.p2s
 :: print do carro parado (na nuvem: xvfb-run -a ... --rendering-driver opengl3)
 %GODOT% --path . -s res://tests/print_tela.gd -- print.png lado
 
-:: peças da suspensão x RAM do jogo (100 matrizes, 6 carros)
+:: peças da suspensão x RAM do jogo (100 matrizes, 6 carros) e tremida
 %GODOT% --headless --path . -s res://tests/teste_pecas.gd
+%GODOT% --headless --path . -s res://tests/teste_tremida.gd
 
 :: checar um script sem abrir o editor
 %GODOT% --headless --path . --check-only --script res://car.gd
@@ -129,7 +130,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   x/z e y = WHEEL.y + curso; trás: arco inteiro. O pneu afunda uns cm parado
   no jogo também.
 - Física roda a 120 Hz com interpolação ligada; câmera em passos de 1/60
-  interpolando no frame do carro (senão aparece "fantasma").
+  interpolando no frame do carro (senão aparece "fantasma"). O passo de
+  física do jogo no PAL é 1/50 (a tremida das rodas sorteia a 50 Hz).
+- Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
+  (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
+  são os braços do piloto, que ainda não temos.
 
 ## Pendente / ideias
 
@@ -139,7 +144,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Roda travando no freio (0x210908).
 - Atrito por tipo de chão (TireBehaviour por superfície).
 - Som do motor (00002/00004/00005 xml: bancos e faders por buggy).
-- Volante girando nos outros 11 buggies (só o Renegade tem o --split).
-- Tremida das rodas no chão (0x202760) e sinal do giro/direção visual
-  (falta save state andando com volante virado).
+- Piloto sentado e animado (MALE_*.srd + InGame_Mid.skl + STEER_LEFT.bac,
+  docs/engenharia_reversa.md "Piloto"): falta parser dos 3 formatos.
+- Material do chão por triângulo (Materials.xml: atrito, WheelJitter 0 no
+  asfalto da largada do RX_01). Hoje o terreno é todo terra.
+- Sinal do giro/direção visual: falta save state andando com volante virado.
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).

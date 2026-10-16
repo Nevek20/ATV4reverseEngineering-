@@ -138,13 +138,44 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   até o SHOCK_PISTON girado (x original). atan, não atan2.
 - Rally (0x220528 / 0x220cf0): roda = WHEEL + x·dir, sem balança.
   Estepe/LIGHTRIG/BUMPER (0x221a88..): matriz e posição do ponto, fixos.
-- Tremida 0x202760 (não portada): roda no chão, ±0.0375·min(1, rug·0.0639·v).
+- Tremida 0x202760 (portada, car.gd _wheel_jitter): uma vez por passo de
+  física (50 Hz no PAL: FUN_00172778, obj+0x70 = 50 se 0x7f3e8c == 3),
+  todos os veículos. Zera as 5 entradas; pra FL, RL, FR (pula a RR) no chão
+  (corpo+0x898+4i = W+0x10c): amp = min(1, WheelJitter·0.06392613·v), com
+  v = corpo+0x440 (m/s no plano do chão, 0x20d568) e 0.06392613 =
+  2.2374146/35; x = (x·31415821 + 1) mod 2^30 (gerador do piloto, semente =
+  relógio em ms + índice); tremida = amp·(x·0.075/2^30 − 0.0375). Depois
+  RR = RL (vem do eixo rígido dos ATVs, cCompPlace_RearFreeAxle 0x21ee00).
+  WheelJitter = Materials.xml da pista (+0x3c, loader 0x3a9608): RX_01 0.3
+  na terra/cascalho/grama, 0 no asfalto e gelo; material da roda = do
+  triângulo do contato (W+0x140). A largada do RX_01 é asfalto. Entra em
+  0x222078 (curso visual, sem clamp depois), então mexe balança, cubo,
+  freio e amortecedor. tests/teste_tremida.gd.
 - Conferido: tests/teste_pecas.gd compara 100 matrizes de 6 carros
   (Renegade, Sphinx, Inferno, Bulldog, Phantom, Storm) com a RAM dos save
   states parados na largada, erro < 0.01 mm. Classes das rodas de rally:
   método +0x1c 0x1fd1c0 FL, 0x1fd248 FR, 0x1fd2d0 RL, 0x1fd358 RR; estepe
   0x1fd730. Os caminhos carregados na RAM (Models_4K/Chassis/..., Wheel/...)
   são os mesmos do pecas.json de cada carro.
+
+## Piloto e volante
+
+- O volante NÃO gira no jogo: faz parte do BODY.pingu, desenhado com a
+  matriz do carro (cCompPlace_Body +0x1c = 0x1fc100, identidade). Nenhum
+  .pingu tem índice de matriz por vértice. O volante girando do remake é
+  melhoria (car.gd VOLANTE_GIRA; tools/volante.py acha o aro).
+- Quem mexe com a direção é o piloto: Driver="Seated" ->
+  cDriverComponentFactory_Seated (0x1fe918, 0x1b1508) -> AObjectRider
+  (0x1829c8), sentado no ponto ARSE (rider+0x2f0; origem = ARSE −
+  (0, 1.1315, 0.3032)). Modelo MALE_HIGH/MID/LOW.srd (other/00514..00516),
+  esqueleto InGame_Mid.skl (00519, 47 ossos). Animação Truck_Riding
+  (Setup/RiderAnimation.xml): clip STEER_LEFT.bac (00312) tocado no tempo
+  |s|·(1/6 s), espelhado com s > 0 (0x190e50). s suavizado em 0x187060:
+  s += min(1/dt, 30)·(direção − s)·dt. mRiderMatchSteer = 0 nos buggies.
+  Câmeras: mRenderRider = 0 em On_Front, On_Hood e Wheel (xml 14837).
+  Ainda não portado (faltam parsers de .srd/.skl/.bac).
+- Direção visual das rodas 0x21def8 / 0x20ede8: body+0x3c0 = direção ·
+  lerp(Max_visual_steer_zero, _full, mph/ref); nos buggies 30°/30°.
 
 ## Archive
 
