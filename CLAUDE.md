@@ -53,7 +53,7 @@ python tools/ler_savestate.py arquivo.p2s
 :: print do carro parado (na nuvem: xvfb-run -a ... --rendering-driver opengl3)
 %GODOT% --path . -s res://tests/print_tela.gd -- print.png lado
 
-:: peças da suspensão x RAM do jogo (36 matrizes)
+:: peças da suspensão x RAM do jogo (100 matrizes, 6 carros)
 %GODOT% --headless --path . -s res://tests/teste_pecas.gd
 
 :: checar um script sem abrir o editor
@@ -117,7 +117,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   SANDCAR 4K = 21059/21060; 21973/21974 é TYRE_GENERIC_RALLY 5K.
 - Suspensão = cCompPlace_* do exe (docs/engenharia_reversa.md, Peças): eixo
   da balança = linha 2 da matriz do ponto A_FRAME_*, ângulo atan(x/r). Roda
-  e freio não giram com a balança. tests/teste_pecas.gd confere com a RAM.
+  e freio não giram com a balança. tests/teste_pecas.gd confere com a RAM
+  de 6 carros (save states em atv4-dados/savestates: Bulldog, Phantom,
+  Storm, Inferno; Renegade e Sphinx são os a.p2s/b.p2s), inclusive a frente
+  do Bulldog em x, a traseira do Phantom e o Storm em z, rally e estepe.
 - Modelos: o pingu2obj vira os triângulos pelas normais do jogo e o Godot
   descarta a face de trás (`MODEL_CULL`). Total de materiais do .pingu em
   0xAC (0xBC conta menos).
@@ -139,6 +142,4 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Volante girando nos outros 11 buggies (só o Renegade tem o --split).
 - Tremida das rodas no chão (0x202760) e sinal do giro/direção visual
   (falta save state andando com volante virado).
-- Confirmar com save state: frente do Bulldog (eixo x, braço 0.08), trás do
-  Phantom e Storm (eixo z).
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).

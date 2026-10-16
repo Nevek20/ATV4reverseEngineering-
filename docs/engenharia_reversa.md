@@ -139,8 +139,12 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - Rally (0x220528 / 0x220cf0): roda = WHEEL + x·dir, sem balança.
   Estepe/LIGHTRIG/BUMPER (0x221a88..): matriz e posição do ponto, fixos.
 - Tremida 0x202760 (não portada): roda no chão, ±0.0375·min(1, rug·0.0639·v).
-- Conferido: tests/teste_pecas.gd compara as 36 matrizes (Renegade e
-  Sphinx) com a RAM, erro < 0.01 mm.
+- Conferido: tests/teste_pecas.gd compara 100 matrizes de 6 carros
+  (Renegade, Sphinx, Inferno, Bulldog, Phantom, Storm) com a RAM dos save
+  states parados na largada, erro < 0.01 mm. Classes das rodas de rally:
+  método +0x1c 0x1fd1c0 FL, 0x1fd248 FR, 0x1fd2d0 RL, 0x1fd358 RR; estepe
+  0x1fd730. Os caminhos carregados na RAM (Models_4K/Chassis/..., Wheel/...)
+  são os mesmos do pecas.json de cada carro.
 
 ## Archive
 

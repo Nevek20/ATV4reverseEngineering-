@@ -29,6 +29,7 @@ var car                      # car.gd
 var off := Vector3.ZERO      # model_offset do carro
 var corners := []            # um por roda
 var rally := false
+var spares := []             # transform de cada estepe (frame do modelo)
 
 
 func build(c, pts: Dictionary, rot: Dictionary, dir: String, pecas: Dictionary,
@@ -81,7 +82,9 @@ func build(c, pts: Dictionary, rot: Dictionary, dir: String, pecas: Dictionary,
 		var pn: String = s + "Centre"
 		if spare_mesh and pts.has(pn):
 			var mi := _mesh_instance(spare_mesh)
-			_place(mi, Transform3D(rot.get(pn, Basis()), pts[pn]))
+			var xf := Transform3D(rot.get(pn, Basis()), pts[pn])
+			_place(mi, xf)
+			spares.append(xf)
 
 
 func _part(dir: String, file: String) -> MeshInstance3D:
