@@ -115,9 +115,10 @@ func _spawn(i: int) -> void:
 		c.FP_BACK = v.fp[1]
 		c.FP_PITCH = v.fp[2]
 	c.vehicle_name = "%s (%s)" % [v.name, v.id]
+	c.terrain = main.terrain
 	main.add_child(c)
 	main.car = c
-	c.reset_to(main.spawn_point(), deg_to_rad(90.0))
+	c.reset_to(main.spawn_point(), deg_to_rad(main.SPAWN_YAW))
 	main.gcams.clear()
 	main.cam_ready = false
 
@@ -129,7 +130,7 @@ func _process(_dt: float) -> bool:
 			_spawn(veh)
 		else:
 			main.car.queue_free()
-			main.spawn_vehicle(veh, main.spawn_point(), deg_to_rad(90.0))
+			main.spawn_vehicle(veh, main.spawn_point(), deg_to_rad(main.SPAWN_YAW))
 	if multi:
 		return _process_multi()
 	if frames == 90 and view != "jogo":

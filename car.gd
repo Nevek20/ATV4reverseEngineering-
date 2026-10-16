@@ -146,10 +146,13 @@ var grounded := 0
 # amp = min(1, WheelJitter * 0.06392613 * v) e tremida = amp * (U*0.075 - 0.0375),
 # com v a velocidade no plano do chão (m/s) e U do gerador do piloto
 # (x = x*31415821 + 1 mod 2^30). A traseira direita do jogo copia a esquerda.
-# WheelJitter vem do Materials.xml da pista: 0.3 na terra do RX_01, 0 no asfalto.
+# WheelJitter vem do Materials.xml da pista, pelo material do chão embaixo de
+# cada roda (W+0x140, terrain.gd): 0.3 na terra/cascalho do RX_01, 0 no asfalto.
+# No ar a roda fica com o último material (o jogo não mexe no W+0x140).
 const JIT_K := 0.06392613     # 2.2374146 / 35: amplitude cheia a 35 mph com WheelJitter 1
 const JIT_HZ := 50.0          # passo de física do PAL (FUN_00172778)
-var surface_jitter := 0.3     # o terreno do remake é todo terra (Material_1 DIRT/COMMON)
+var surface_jitter := 0.3     # sem terreno (teste no plano): terra (Material_1 DIRT/COMMON)
+var terrain = null            # terrain.gd (main.gd põe): material do chão por roda
 var jit_seed := 0
 var jit_acc := 0.0
 var spd_ground := 0.0         # corpo+0x440: velocidade no plano do chão (m/s)
@@ -465,6 +468,7 @@ func _load_physics() -> void:
 		w.f = 0.0                           # força da mola no carro (N, 0x0fc)
 		w.hit = false
 		w.jit = 0.0                         # tremida visual do curso (m)
+		w.mat = -1                          # material do chão embaixo da roda (W+0x140)
 		w.point = Vector3.ZERO
 		w.normal = Vector3.UP
 		w.spin = 0.0
@@ -879,6 +883,8 @@ func _physics_process(dt: float) -> void:
 		var hn: Vector3 = hit.normal
 		w.point = hp
 		w.normal = hn
+		if terrain:
+			w.mat = terrain.material_at(hp.x, hp.z)
 		grounded += 1
 		n_sum += hn
 		if not w.front:
@@ -1018,7 +1024,8 @@ func _wheel_jitter() -> void:
 		var w: Dictionary = wheels[jit_order[k]]
 		if not w.hit:
 			continue
-		var amp := minf(surface_jitter * JIT_K * spd_ground, 1.0)
+		var wj: float = terrain.wheel_jitter(w.mat, surface_jitter) if terrain else surface_jitter
+		var amp := minf(wj * JIT_K * spd_ground, 1.0)
 		jit_seed = (jit_seed * 31415821 + 1) & 0x3FFFFFFF
 		w.jit = amp * (float(jit_seed) * 0.075 / 1073741824.0 - 0.0375)
 	wheels[jit_order[3]].jit = wheels[jit_order[1]].jit

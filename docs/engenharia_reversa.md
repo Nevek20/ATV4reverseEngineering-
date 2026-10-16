@@ -180,6 +180,27 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   lerp(Max_visual_steer_zero, _full, mph/SpeedMax), SpeedMax = curva
   BasicSteering/Angle_vs_speed (params+0x4e8 = 100); nos buggies 30°/30°.
 
+## Terreno (STREAMT/RX/RX01.000)
+
+- tools/extrair_material.py decodifica o stream (formato no cabeçalho do
+  script): 64 tiles de 128 m, patches 9x9 (FUN_0029bcb0, tabela 0x550c00),
+  altura = FUN_00299a60 com a diagonal (i+1, j)-(i, j+1). A mesma diagonal
+  do HeightMapShape3D do Godot (Godot Physics e Jolt, testado). Grade de
+  1 m em assets/terrain/rx01_height.bin; o .bin antigo errava 1,5 m em
+  média (até 32 m).
+- Material: entrada E do tile, uma a cada 2 m, byte0 & 0xF = índice i ->
+  Material_(i+1) do Levels/RX_01/Env/Materials.xml (unpacked/xml/12280,
+  copiado em data/materials_rx01.xml). Mapa em rx01_material.bin.
+- Mundo do jogo (x, z) = remake (x, z + 1024).
+- Conferido: contato das rodas (W+0x130) e material (W+0x140) dos 6 save
+  states da largada: altura a 0,1 mm, material 2 (COMMON_3 TARMAC) igual.
+  tests/teste_chao.gd + tests/ref_ram_chao.json.
+- Largada: centro das rodas (581.0, 540.4) no remake, frente a −114,9°
+  (main.gd SPAWN_XZ/SPAWN_YAW).
+- Por material o XML também tem Friction, Damping, Bounciness, Sink e os
+  Overrides "FRICTION TYRE <pneu> <valor>" (DIRT_BUDGET 0,80 na terra e
+  1,10 no asfalto do RX_01). Atrito por material ainda não portado.
+
 ## Archive
 
 - Busca por caminho FUN_0066c978 (0066d110 / 0066d270 / 0066d308): CRC32 de

@@ -6,17 +6,21 @@ Lê o stream da pista (STREAMT/RX/RX01.000) e gera o mapa de MATERIAL do chão
 assets/terrain/rx01_height.bin: 1025 x 1025 pontos, 1 m, linha = z, coluna = x,
 pixel (gx, gz) = ponto do mundo (x = gx, z = 1024 + gz).
 
-Uso:
-    python tools/extrair_material.py <RX01.000> <saida.png>
-        [--materiais Materials.xml]   nomes no JSON (unpacked/xml/12280_...xml;
-                                      pode passar só o prefixo .../xml/12280)
-        [--bin saida.bin]             mesmo mapa cru (u8 1025x1025, linha = z),
-                                      pra ler com FileAccess como o rx01_height.bin
-        [--alturas saida.bin]         também grava as alturas (float32 1025x1025)
-        [--ram arquivo.ram ...]       confere com a RAM de save states parados
+Uso (na pasta do projeto):
+    python tools/extrair_material.py <RX01.000> assets/terrain
+        --materiais <unpacked>/xml/12280   Materials.xml do RX_01 (nomes e
+                                           WheelJitter no JSON; pode ser só o
+                                           prefixo, o unpacked põe sufixo)
+        [--png previa.png]                 mapa em cinza (valor = material)
+        [--ram arquivo.ram ...]            confere com a RAM de save states
+                                           parados (tools/ler_savestate.py --dump)
 
-Sai <saida.png> (8 bits, cinza, valor = índice do material) e <saida>.json
-(contagem por material e a regra de alinhamento).
+Sai na pasta:
+    rx01_material.bin  u8 1025x1025 (linha = z), índice do material
+    rx01_material.json contagem por material e a regra de alinhamento
+    rx01_height.bin    float32 1025x1025 (linha = z), altura do jogo
+    rx01_height.json   tamanho e min/max
+terrain.gd lê os .bin com FileAccess.
 
 Alturas: a grade de 1 m com a diagonal do jogo, (i+1, j)-(i, j+1) (a mesma do
 HeightMapShape3D do Godot), reproduz FUN_00299a60 exato, menos na última
@@ -223,10 +227,9 @@ def conferir_ram(caminho, tiles):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("stream")
-    ap.add_argument("saida")
+    ap.add_argument("pasta")
     ap.add_argument("--materiais")
-    ap.add_argument("--bin")
-    ap.add_argument("--alturas")
+    ap.add_argument("--png")
     ap.add_argument("--ram", nargs="*", default=[])
     a = ap.parse_args()
 
@@ -236,6 +239,7 @@ def main():
         sys.exit(f"esperava 64 tiles hi 8x8, achei {len(hi)}")
     tiles = {k: Tile(buf, off) for k, off in hi.items()}
     print(f"{len(hi)} tiles hi, {len(lo)} tiles lo")
+    os.makedirs(a.pasta, exist_ok=True)
 
     # material: pixel (gx, gz) = entrada E da célula de 2 m que contém o ponto
     mat = [[0] * TAM for _ in range(TAM)]
@@ -245,12 +249,12 @@ def main():
         for gx in range(TAM):
             tx = min(gx // TILE, 7)
             mat[gz][gx] = tiles[(tx, tz)].entrada_e(gx - tx * TILE, lz)[0] & 0xF
-    os.makedirs(os.path.dirname(os.path.abspath(a.saida)), exist_ok=True)
-    gravar_png(a.saida, TAM, TAM, mat)
-    if a.bin:
-        with open(a.bin, "wb") as f:
-            f.write(b"".join(bytes(l) for l in mat))
-        print(f"gravei {a.bin} (u8 {TAM}x{TAM}, linha = z)")
+    sai = os.path.join(a.pasta, "rx01_material.bin")
+    with open(sai, "wb") as f:
+        f.write(b"".join(bytes(l) for l in mat))
+    print(f"gravei {sai} (u8 {TAM}x{TAM}, linha = z)")
+    if a.png:
+        gravar_png(a.png, TAM, TAM, mat)
 
     cont = {}
     for linha in mat:
@@ -264,13 +268,14 @@ def main():
             cel[v] = cel.get(v, 0) + 1
     nomes = ler_materiais(a.materiais) if a.materiais else {}
     info = {
-        "arquivo": os.path.basename(a.saida),
+        "arquivo": "rx01_material.bin",
         "tamanho": TAM,
         "espacamento_m": 1.0,
         "origem_mundo_xz": [0.0, Z0],
-        "orientacao": "pixel (coluna gx, linha gz) = mundo (x = gx, z = 1024 + gz), igual ao rx01_height.bin",
-        "regra": "material no ponto (x, z) do mundo = pixel (floor(x), floor(z - 1024)); "
-                 "células de 2 m (byte0 & 0xF da entrada E int(lx/2), int(lz/2) do tile)",
+        "orientacao": "byte (coluna gx, linha gz) = mundo (x = gx, z = 1024 + gz) = remake (x = gx, z = gz), igual ao rx01_height.bin",
+        "regra": "material no ponto (x, z) do remake = byte (floor(x), floor(z)); "
+                 "células de 2 m (byte0 & 0xF da entrada E int(lx/2), int(lz/2) do tile); "
+                 "índice i = Material_(i+1) do Materials.xml da pista",
         "materiais": {},
     }
     total_cel = 512 * 512
@@ -282,26 +287,28 @@ def main():
             e["WheelJitter"] = float(nomes[k].get("WheelJitter", "nan"))
             e["SFX"] = nomes[k].get("SFX")
         info["materiais"][str(k)] = e
-    js = os.path.splitext(a.saida)[0] + ".json"
+    js = os.path.join(a.pasta, "rx01_material.json")
     with open(js, "w", encoding="utf-8") as f:
         json.dump(info, f, indent=1, ensure_ascii=False)
-    print(f"gravei {a.saida} e {js}")
+    print(f"gravei {js}")
     for k, e in info["materiais"].items():
         print(f"  {k:>2} {e.get('nome', ''):<28} {e['porcento']:7.3f}%  ({e['celulas_2m']} células)")
 
-    if a.alturas:
-        import array
-        alt = array.array("f")
-        for gz in range(TAM):
-            tz = min(gz // TILE, 7)
-            for gx in range(TAM):
-                tx = min(gx // TILE, 7)
-                alt.append(tiles[(tx, tz)].altura(gx - tx * TILE, gz - tz * TILE))
-        if sys.byteorder != "little":
-            alt.byteswap()
-        with open(a.alturas, "wb") as f:
-            alt.tofile(f)
-        print(f"gravei {a.alturas} (min {min(alt):.3f}, max {max(alt):.3f})")
+    import array
+    alt = array.array("f")
+    for gz in range(TAM):
+        tz = min(gz // TILE, 7)
+        for gx in range(TAM):
+            tx = min(gx // TILE, 7)
+            alt.append(tiles[(tx, tz)].altura(gx - tx * TILE, gz - tz * TILE))
+    if sys.byteorder != "little":
+        alt.byteswap()
+    sai = os.path.join(a.pasta, "rx01_height.bin")
+    with open(sai, "wb") as f:
+        alt.tofile(f)
+    with open(os.path.join(a.pasta, "rx01_height.json"), "w") as f:
+        json.dump({"size": TAM, "spacing": 1.0, "min": min(alt), "max": max(alt)}, f)
+    print(f"gravei {sai} (min {min(alt):.3f}, max {max(alt):.3f})")
 
     for r in a.ram:
         conferir_ram(r, tiles)

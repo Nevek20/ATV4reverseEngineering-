@@ -1,14 +1,26 @@
 extends Node3D
-## Terreno da pista montado a partir das alturas extraídas dos tiles do jogo
-## (STREAMT/RX/RX01.000). O arquivo .bin é uma grade de floats (little endian)
-## de SIZE x SIZE pontos, 1 m entre eles, em linhas ao longo de Z.
+## Terreno da pista RX_01 tirado do stream do jogo (STREAMT/RX/RX01.000) por
+## tools/extrair_material.py. Grade de SIZE x SIZE pontos, 1 m entre eles,
+## linha = z, ponto (i, j) = (x = i, z = j) do remake = mundo do jogo
+## (x, z + 1024). Bate com a RAM dos save states da largada: altura do contato
+## das rodas a 0.1 mm e material igual.
+##   rx01_height.bin   float32, altura do jogo (FUN_00299a60)
+##   rx01_material.bin u8, índice i do material = Material_(i+1) do
+##                     Levels/RX_01/Env/Materials.xml (data/materials_rx01.xml);
+##                     célula de 2 m (entrada E do tile, byte0 & 0xF)
+## Triângulo de cada célula pela diagonal (i+1, j)-(i, j+1), igual ao jogo e
+## ao HeightMapShape3D do Godot (Godot Physics e Jolt, testado).
 
 @export var height_path := "res://assets/terrain/rx01_height.bin"
+@export var material_path := "res://assets/terrain/rx01_material.bin"
+@export var materials_xml := "res://data/materials_rx01.xml"
 @export var texture_path := "res://assets/terrain/rx01_terrain.jpg"
 @export var size := 1025          # pontos por lado
 @export var mesh_step := 2        # malha visual usa 1 ponto a cada N (colisão usa todos)
 
 var heights := PackedFloat32Array()
+var mat_map := PackedByteArray()
+var materials := []               # atributos de cada Material_N do XML (N - 1)
 
 
 func _ready() -> void:
@@ -18,12 +30,37 @@ func _ready() -> void:
 		return
 	heights = f.get_buffer(size * size * 4).to_float32_array()
 	f.close()
+	f = FileAccess.open(material_path, FileAccess.READ)
+	if f:
+		mat_map = f.get_buffer(size * size)
+		f.close()
+	materials = load_materials(materials_xml)
 	_build_collision()
 	_build_mesh()
 
 
+## Material_1..N do Materials.xml da pista, em ordem (só os atributos)
+static func load_materials(path: String) -> Array:
+	var out := []
+	var x := XMLParser.new()
+	if x.open(path) != OK:
+		push_error("Não achei %s" % path)
+		return out
+	while x.read() == OK:
+		if x.get_node_type() != XMLParser.NODE_ELEMENT or not x.get_node_name().begins_with("Material_"):
+			continue
+		var i := x.get_node_name().trim_prefix("Material_").to_int() - 1
+		var at := {}
+		for k in x.get_attribute_count():
+			at[x.get_attribute_name(k)] = x.get_attribute_value(k)
+		while out.size() <= i:
+			out.append({})
+		out[i] = at
+	return out
+
+
 func height_at(x: float, z: float) -> float:
-	# altura interpolada (bilinear) num ponto do mundo
+	# altura no triângulo da célula, diagonal (i+1, j)-(i, j+1) como o jogo
 	x = clampf(x, 0.0, size - 1.001)
 	z = clampf(z, 0.0, size - 1.001)
 	var ix := int(x)
@@ -34,7 +71,35 @@ func height_at(x: float, z: float) -> float:
 	var h10 := heights[iz * size + ix + 1]
 	var h01 := heights[(iz + 1) * size + ix]
 	var h11 := heights[(iz + 1) * size + ix + 1]
-	return lerpf(lerpf(h00, h10, fx), lerpf(h01, h11, fx), fz)
+	if fx + fz <= 1.0:
+		return h00 + (h10 - h00) * fx + (h01 - h00) * fz
+	return h11 + (h01 - h11) * (1.0 - fx) + (h10 - h11) * (1.0 - fz)
+
+
+## índice do material do chão no ponto (x, z) do remake (-1 sem mapa)
+func material_at(x: float, z: float) -> int:
+	if mat_map.is_empty():
+		return -1
+	var ix := clampi(floori(x), 0, size - 1)
+	var iz := clampi(floori(z), 0, size - 1)
+	return mat_map[iz * size + ix]
+
+
+## WheelJitter do material (0x202760); -1 = sem material
+func wheel_jitter(m: int, fallback: float) -> float:
+	if m < 0 or m >= materials.size():
+		return fallback
+	return float(materials[m].get("WheelJitter", fallback))
+
+
+## nome curto do material: "COMMON_3(TARMAC/COMMON)*" -> "TARMAC/COMMON"
+func material_name(m: int) -> String:
+	if m < 0 or m >= materials.size():
+		return "?"
+	var n: String = materials[m].get("Name", "?")
+	var a := n.find("(")
+	var b := n.find(")")
+	return n.substr(a + 1, b - a - 1) if a >= 0 and b > a else n
 
 
 func _build_collision() -> void:

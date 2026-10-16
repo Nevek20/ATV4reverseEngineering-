@@ -57,7 +57,9 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
 
 ## O que já é do jogo
 
-- Chão: relevo e textura da pista RX01 (tiles do STREAMT)
+- Chão: relevo, textura e material da pista RX01 (tiles do STREAMT). A
+  roda só treme na terra e no cascalho (no asfalto não), como no jogo; o HUD
+  mostra o chão embaixo de cada roda. O carro larga na largada do jogo
 - Carros: os 12 buggies, modelo, suspensão, rodas e pintura de fábrica do jogo
 - Física: os XMLs do próprio jogo em `data/vehicles` (`buggy_base.xml` é a
   base da classe e `buggy_NN.xml` o veículo (Renegade = buggy_10 = 15154). Os arquivos

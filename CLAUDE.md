@@ -29,7 +29,7 @@ game_camera.gd       câmera de corrida do jogo (componentes do exe, 1/60 s)
 suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
 main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V)
-terrain.gd           relevo da pista RX01
+terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas (fora do git)
 tests/               teste de física sem tela + rodar_testes.py
@@ -53,9 +53,13 @@ python tools/ler_savestate.py arquivo.p2s
 :: print do carro parado (na nuvem: xvfb-run -a ... --rendering-driver opengl3)
 %GODOT% --path . -s res://tests/print_tela.gd -- print.png lado
 
-:: peças da suspensão x RAM do jogo (100 matrizes, 6 carros) e tremida
+:: peças da suspensão x RAM do jogo (100 matrizes, 6 carros), tremida e chão
 %GODOT% --headless --path . -s res://tests/teste_pecas.gd
 %GODOT% --headless --path . -s res://tests/teste_tremida.gd
+%GODOT% --headless --path . -s res://tests/teste_chao.gd
+
+:: terreno do RX01 (alturas + material) a partir do stream do jogo
+python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materiais <dados>/unpacked/xml/12280
 
 :: checar um script sem abrir o editor
 %GODOT% --headless --path . --check-only --script res://car.gd
@@ -132,6 +136,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Física roda a 120 Hz com interpolação ligada; câmera em passos de 1/60
   interpolando no frame do carro (senão aparece "fantasma"). O passo de
   física do jogo no PAL é 1/50 (a tremida das rodas sorteia a 50 Hz).
+- Terreno RX01: mundo do jogo (x, z) = remake (x, z + 1024). Alturas e
+  material saem do stream (tools/extrair_material.py), conferidos com a RAM
+  (tests/teste_chao.gd). Diagonal da célula (i+1, j)-(i, j+1) = a do
+  HeightMapShape3D. Material i = Material_(i+1) do data/materials_rx01.xml.
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto, que ainda não temos.
@@ -142,14 +150,14 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Decalques e número na pintura (camadas Decal/Text do XML 150xx).
 - Tremida da câmera (jitter e batida), componente 0x380418 + 0x380170.
 - Roda travando no freio (0x210908).
-- Atrito por tipo de chão (TireBehaviour por superfície).
 - Som do motor (00002/00004/00005 xml: bancos e faders por buggy).
 - Piloto sentado e animado (MALE_*.srd + InGame_Mid.skl + STEER_LEFT.bac,
   docs/engenharia_reversa.md "Piloto"): falta parser dos 3 formatos.
   Melhoria nossa depois: mãos tremendo no volante em alta velocidade.
 - Câmera do piloto: referência do Matheus = cockpit do Dirt Rally 2.0
   (horizonte perto do meio, volante cortado embaixo, muita estrada).
-- Material do chão por triângulo (Materials.xml: atrito, WheelJitter 0 no
-  asfalto da largada do RX_01). Hoje o terreno é todo terra.
+- Atrito por material do chão (Friction/Overrides do data/materials_rx01.xml).
+  O material por roda já existe (terrain.material_at, w.mat); hoje só a
+  tremida usa.
 - Sinal do giro/direção visual: falta save state andando com volante virado.
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).

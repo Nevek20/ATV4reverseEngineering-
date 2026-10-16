@@ -41,7 +41,11 @@ const VEHICLES := [
 		"data": "res://data/vehicles/buggy_12.xml", "points": "res://data/vehicles/buggy_12_points.bin", "fp": [0.33, 0.46, 0.00]},
 ]
 var veh_idx := 0
-const SPAWN_XZ := Vector2(400.0, 340.0)   # em cima da reta de cima da pista
+# largada do RX_01: centro das 4 rodas e direção do carro nos 6 save states
+# parados na largada (mundo do jogo (581.0, z 1564.4), z do remake = z - 1024).
+# É asfalto (COMMON_3 TARMAC), então ali a roda não treme.
+const SPAWN_XZ := Vector2(581.0, 540.4)
+const SPAWN_YAW := -114.9                 # graus, frente = +Z do carro
 
 const Car := preload("res://car.gd")
 const Terrain := preload("res://terrain.gd")
@@ -58,7 +62,7 @@ func _ready() -> void:
 	terrain = Terrain.new()
 	add_child(terrain)
 
-	spawn_vehicle(0, spawn_point(), deg_to_rad(90.0))
+	spawn_vehicle(0, spawn_point(), deg_to_rad(SPAWN_YAW))
 
 	cam = Camera3D.new()
 	cam.far = 4000.0
@@ -100,6 +104,7 @@ func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
 		car.FP_BACK = v.fp[1]
 		car.FP_PITCH = v.fp[2]
 	car.vehicle_name = "%s (%s)" % [v.name, v.id]
+	car.terrain = terrain
 	add_child(car)
 	car.manual = manual
 	car.reset_to(pos, yaw)
@@ -160,7 +165,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				car.reset_to(Vector3(p.x, terrain.height_at(p.x, p.z) + 1.5, p.z), car.global_rotation.y)
 				reset_camera()
 			KEY_T:
-				car.reset_to(spawn_point(), deg_to_rad(90.0))
+				car.reset_to(spawn_point(), deg_to_rad(SPAWN_YAW))
 				reset_camera()
 			KEY_V:
 				_swap_vehicle((veh_idx + 1) % VEHICLES.size())
@@ -243,6 +248,20 @@ func _process(delta: float) -> void:
 	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço: powerslide (freio de mão)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC: câmera (%s)   V: próximo carro   Tab: menu de carros   F: girar o modelo   Esc: sair" % [
 		int(kmh), int(kmh / 1.609), car.gear_label(), int(car.rpm), "MANUAL" if car.manual else "AUTO", car.vehicle_name, ("pneus portados do jogo" if car.use_ported else "pneus antigos") + (", lateral do jogo" if car.lateral_game else ", lateral remendo"), CAM_NAMES[cam_mode]]
 	hud.text += fp
+	hud.text += "\n\nchão: " + _chao()
+
+
+## material do chão embaixo de cada roda (FE FD TE TD) e o WheelJitter dele
+func _chao() -> String:
+	var o: Array = car.jit_order
+	if o.size() != 4:
+		return "?"
+	var out := []
+	for k in [[0, "FE"], [2, "FD"], [1, "TE"], [3, "TD"]]:
+		var w: Dictionary = car.wheels[o[k[0]]]
+		out.append("%s %s (%.1f)%s" % [k[1], terrain.material_name(w.mat),
+			terrain.wheel_jitter(w.mat, car.surface_jitter), "" if w.hit else " no ar"])
+	return "   ".join(out)
 
 
 const GameCamera := preload("res://game_camera.gd")

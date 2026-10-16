@@ -1,0 +1,114 @@
+<Root FileVersion="1.0000000" NOverrides="176">
+   <Material_1 Name="COMMON_1(DIRT/COMMON)*" SFX="Dirt" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="Medium" SkidmarkType="Medium" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.0000000" Sink="0.0500000" IsDirt="true" Rockiness="0.5000000" WheelDirtAlpha="0.8000000" WheelDirtRate="0.2000000" DirtKickupChance="0.5000000">
+      <DustColour R="0.6000000" G="0.5099999" B="0.4000000" A="0.5000000"/>
+      <DirtColour R="0.5299999" G="0.4600000" B="0.3499999" A="0.8000000"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.80" Override_2="FRICTION TYRE DIRT_PREMIUM 1.00" Override_3="FRICTION TYRE DIRT_PROTOTYPE 1.00" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.60" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.80" Override_6="FRICTION TYRE MUD_BUDGET 0.50" Override_7="FRICTION TYRE MUD_PREMIUM 0.69" Override_8="FRICTION TYRE SAND_BUDGET 0.50" Override_9="FRICTION TYRE SAND_PREMIUM 0.69" Override_10="FRICTION TYRE SNOW_BUDGET 0.40" Override_11="FRICTION TYRE SNOW_PREMIUM 0.60"/>
+   </Material_1>
+   <Material_2 Name="COMMON_2(DIRT/OFFTRACK2)*" SFX="Dirt" Friction="1.0000000" Hardness="1.0000000" Damping="0.2000000" DustType="Heavy" SkidmarkType="Medium" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.4000000" Sink="0.2000000" IsDirt="true" Rockiness="0.5000000" WheelDirtAlpha="0.8000000" WheelDirtRate="0.2000000" DirtKickupChance="0.5000000">
+      <DustColour R="0.6000000" G="0.5099999" B="0.4000000" A="0.6000000"/>
+      <DirtColour R="0.5000000" G="0.4000000" B="0.3000000" A="0.8999999"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.69" Override_2="FRICTION TYRE DIRT_PREMIUM 0.89" Override_3="FRICTION TYRE DIRT_PROTOTYPE 0.89" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.50" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.69" Override_6="FRICTION TYRE MUD_BUDGET 0.40" Override_7="FRICTION TYRE MUD_PREMIUM 0.60" Override_8="FRICTION TYRE SAND_BUDGET 0.40" Override_9="FRICTION TYRE SAND_PREMIUM 0.60" Override_10="FRICTION TYRE SNOW_BUDGET 0.30" Override_11="FRICTION TYRE SNOW_PREMIUM 0.50"/>
+   </Material_2>
+   <Material_3 Name="COMMON_3(TARMAC/COMMON)*" SFX="Tarmac" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="Medium" SkidmarkIndex="4" WheelJitter="0.0000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="false" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.2000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.4399999" G="0.3899999" B="0.3400000" A="0.5000000"/>
+      <DirtColour R="0.4499999" G="0.4300000" B="0.4199999" A="0.6000000"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 1.10" Override_2="FRICTION TYRE DIRT_PREMIUM 1.10" Override_3="FRICTION TYRE DIRT_PROTOTYPE 1.10" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 1.10" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 1.10" Override_6="FRICTION TYRE MUD_BUDGET 1.10" Override_7="FRICTION TYRE MUD_PREMIUM 1.10" Override_8="FRICTION TYRE SAND_BUDGET 1.10" Override_9="FRICTION TYRE SAND_PREMIUM 1.10" Override_10="FRICTION TYRE SNOW_BUDGET 1.10" Override_11="FRICTION TYRE SNOW_PREMIUM 1.10"/>
+   </Material_3>
+   <Material_4 Name="COMMON_4(TARMAC/DUSTY)*" SFX="Tarmac" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="Light" SkidmarkType="Medium" SkidmarkIndex="4" WheelJitter="0.0000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="false" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.2000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.5299999" G="0.4900000" B="0.4499999" A="0.4000000"/>
+      <DirtColour R="0.4600000" G="0.4199999" B="0.3799999" A="0.5000000"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 1.10" Override_2="FRICTION TYRE DIRT_PREMIUM 1.10" Override_3="FRICTION TYRE DIRT_PROTOTYPE 1.10" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 1.10" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 1.10" Override_6="FRICTION TYRE MUD_BUDGET 1.10" Override_7="FRICTION TYRE MUD_PREMIUM 1.10" Override_8="FRICTION TYRE SAND_BUDGET 1.10" Override_9="FRICTION TYRE SAND_PREMIUM 1.10" Override_10="FRICTION TYRE SNOW_BUDGET 1.10" Override_11="FRICTION TYRE SNOW_PREMIUM 1.10"/>
+   </Material_4>
+   <Material_5 Name="COMMON_5(DIRT/LOOSE)*" SFX="Dirt" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="Heavy" SkidmarkType="Medium" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.1500000" Sink="0.0500000" IsDirt="true" Rockiness="0.2000000" WheelDirtAlpha="0.8000000" WheelDirtRate="0.2000000" DirtKickupChance="0.5000000">
+      <DustColour R="0.3400000" G="0.2899999" B="0.2399999" A="0.5000000"/>
+      <DirtColour R="0.3000000" G="0.2399999" B="0.1800000" A="0.6000000"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.80" Override_2="FRICTION TYRE DIRT_PREMIUM 1.00" Override_3="FRICTION TYRE DIRT_PROTOTYPE 1.00" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.60" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.80" Override_6="FRICTION TYRE MUD_BUDGET 0.50" Override_7="FRICTION TYRE MUD_PREMIUM 0.69" Override_8="FRICTION TYRE SAND_BUDGET 0.50" Override_9="FRICTION TYRE SAND_PREMIUM 0.69" Override_10="FRICTION TYRE SNOW_BUDGET 0.40" Override_11="FRICTION TYRE SNOW_PREMIUM 0.60"/>
+   </Material_5>
+   <Material_6 Name="COMMON_6(GRAVEL/ROCK)*" SFX="Gravel" Friction="1.0000000" Hardness="1.0000000" Damping="0.1000000" DustType="Light" SkidmarkType="None" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.2000000" Sink="0.0000000" IsDirt="false" Rockiness="0.8000000" WheelDirtAlpha="0.6000000" WheelDirtRate="0.2000000" DirtKickupChance="0.6000000">
+      <DustColour R="0.2199999" G="0.1599999" B="0.1199999" A="0.6999999"/>
+      <DirtColour R="0.2199999" G="0.1299999" B="0.0900000" A="2.0000000"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.50" Override_2="FRICTION TYRE DIRT_PREMIUM 0.69" Override_3="FRICTION TYRE DIRT_PROTOTYPE 0.80" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.50" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.69" Override_6="FRICTION TYRE MUD_BUDGET 0.50" Override_7="FRICTION TYRE MUD_PREMIUM 0.69" Override_8="FRICTION TYRE SAND_BUDGET 0.50" Override_9="FRICTION TYRE SAND_PREMIUM 0.69" Override_10="FRICTION TYRE SNOW_BUDGET 0.50" Override_11="FRICTION TYRE SNOW_PREMIUM 0.69"/>
+   </Material_6>
+   <Material_7 Name="COMMON_7(DIRT/OFFTRACK2)*" SFX="Dirt" Friction="1.0000000" Hardness="1.0000000" Damping="0.2000000" DustType="Heavy" SkidmarkType="Medium" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.4000000" Sink="0.2000000" IsDirt="true" Rockiness="0.5000000" WheelDirtAlpha="0.8000000" WheelDirtRate="0.2000000" DirtKickupChance="0.5000000">
+      <DustColour R="0.6899999" G="0.6100000" B="0.5199999" A="0.6000000"/>
+      <DirtColour R="0.6200000" G="0.5400000" B="0.4300000" A="0.6999999"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.69" Override_2="FRICTION TYRE DIRT_PREMIUM 0.89" Override_3="FRICTION TYRE DIRT_PROTOTYPE 0.89" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.50" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.69" Override_6="FRICTION TYRE MUD_BUDGET 0.40" Override_7="FRICTION TYRE MUD_PREMIUM 0.60" Override_8="FRICTION TYRE SAND_BUDGET 0.40" Override_9="FRICTION TYRE SAND_PREMIUM 0.60" Override_10="FRICTION TYRE SNOW_BUDGET 0.30" Override_11="FRICTION TYRE SNOW_PREMIUM 0.50"/>
+   </Material_7>
+   <Material_8 Name="COMMON_8(DIRT/MOIST)*" SFX="Dirt" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="Medium" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.0000000" Sink="0.0500000" IsDirt="true" Rockiness="0.6000000" WheelDirtAlpha="1.0000000" WheelDirtRate="0.3000000" DirtKickupChance="0.8000000">
+      <DustColour R="0.3400000" G="0.3000000" B="0.2500000" A="0.6000000"/>
+      <DirtColour R="0.2700000" G="0.2199999" B="0.1700000" A="0.6999999"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.80" Override_2="FRICTION TYRE DIRT_PREMIUM 1.00" Override_3="FRICTION TYRE DIRT_PROTOTYPE 1.00" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.60" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.80" Override_6="FRICTION TYRE MUD_BUDGET 0.50" Override_7="FRICTION TYRE MUD_PREMIUM 0.69" Override_8="FRICTION TYRE SAND_BUDGET 0.50" Override_9="FRICTION TYRE SAND_PREMIUM 0.69" Override_10="FRICTION TYRE SNOW_BUDGET 0.40" Override_11="FRICTION TYRE SNOW_PREMIUM 0.60"/>
+   </Material_8>
+   <Material_9 Name="COMMON_9(GRAVEL/OFFTRACK1)*" SFX="Gravel" Friction="1.0000000" Hardness="1.0000000" Damping="0.1000000" DustType="Light" SkidmarkType="Medium" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.2000000" Sink="0.1000000" IsDirt="true" Rockiness="0.8000000" WheelDirtAlpha="0.6000000" WheelDirtRate="0.2000000" DirtKickupChance="0.6000000">
+      <DustColour R="0.4699999" G="0.4099999" B="0.3300000" A="0.6000000"/>
+      <DirtColour R="0.4199999" G="0.3400000" B="0.2300000" A="0.6999999"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.40" Override_2="FRICTION TYRE DIRT_PREMIUM 0.60" Override_3="FRICTION TYRE DIRT_PROTOTYPE 0.69" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.40" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.60" Override_6="FRICTION TYRE MUD_BUDGET 0.40" Override_7="FRICTION TYRE MUD_PREMIUM 0.60" Override_8="FRICTION TYRE SAND_BUDGET 0.40" Override_9="FRICTION TYRE SAND_PREMIUM 0.60" Override_10="FRICTION TYRE SNOW_BUDGET 0.40" Override_11="FRICTION TYRE SNOW_PREMIUM 0.60"/>
+   </Material_9>
+   <Material_10 Name="COMMON_10(DIRT/OFFTRACK1)*" SFX="Dirt" Friction="1.0000000" Hardness="1.0000000" Damping="0.1000000" DustType="Heavy" SkidmarkType="Medium" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.2000000" Sink="0.1500000" IsDirt="true" Rockiness="0.5000000" WheelDirtAlpha="0.8000000" WheelDirtRate="0.2000000" DirtKickupChance="0.5000000">
+      <DustColour R="0.4699999" G="0.4199999" B="0.3300000" A="0.6000000"/>
+      <DirtColour R="0.4399999" G="0.3799999" B="0.2899999" A="0.6999999"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.69" Override_2="FRICTION TYRE DIRT_PREMIUM 0.89" Override_3="FRICTION TYRE DIRT_PROTOTYPE 0.89" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.50" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.69" Override_6="FRICTION TYRE MUD_BUDGET 0.40" Override_7="FRICTION TYRE MUD_PREMIUM 0.60" Override_8="FRICTION TYRE SAND_BUDGET 0.40" Override_9="FRICTION TYRE SAND_PREMIUM 0.60" Override_10="FRICTION TYRE SNOW_BUDGET 0.30" Override_11="FRICTION TYRE SNOW_PREMIUM 0.50"/>
+   </Material_10>
+   <Material_11 Name="COMMON_11(DIRT/OFFTRACK2)*" SFX="Dirt" Friction="1.0000000" Hardness="1.0000000" Damping="0.2000000" DustType="Heavy" SkidmarkType="Medium" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.4000000" Sink="0.2000000" IsDirt="true" Rockiness="0.5000000" WheelDirtAlpha="0.8000000" WheelDirtRate="0.2000000" DirtKickupChance="0.5000000">
+      <DustColour R="0.6999999" G="0.6299999" B="0.5500000" A="0.6000000"/>
+      <DirtColour R="0.6600000" G="0.5899999" B="0.5000000" A="0.6999999"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.69" Override_2="FRICTION TYRE DIRT_PREMIUM 0.89" Override_3="FRICTION TYRE DIRT_PROTOTYPE 0.89" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.50" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.69" Override_6="FRICTION TYRE MUD_BUDGET 0.40" Override_7="FRICTION TYRE MUD_PREMIUM 0.60" Override_8="FRICTION TYRE SAND_BUDGET 0.40" Override_9="FRICTION TYRE SAND_PREMIUM 0.60" Override_10="FRICTION TYRE SNOW_BUDGET 0.30" Override_11="FRICTION TYRE SNOW_PREMIUM 0.50"/>
+   </Material_11>
+   <Material_12 Name="COMMON_12(GRAVEL/OFFTRACK2)*" SFX="Gravel" Friction="1.0000000" Hardness="1.0000000" Damping="0.2000000" DustType="Light" SkidmarkType="Medium" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.4000000" Sink="0.2000000" IsDirt="true" Rockiness="0.8000000" WheelDirtAlpha="0.6000000" WheelDirtRate="0.2000000" DirtKickupChance="0.6000000">
+      <DustColour R="0.5500000" G="0.5299999" B="0.4699999" A="0.6000000"/>
+      <DirtColour R="0.5000000" G="0.4699999" B="0.4199999" A="2.0000000"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.50" Override_2="FRICTION TYRE DIRT_PREMIUM 0.69" Override_3="FRICTION TYRE DIRT_PROTOTYPE 0.80" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.50" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.69" Override_6="FRICTION TYRE MUD_BUDGET 0.50" Override_7="FRICTION TYRE MUD_PREMIUM 0.69" Override_8="FRICTION TYRE SAND_BUDGET 0.50" Override_9="FRICTION TYRE SAND_PREMIUM 0.69" Override_10="FRICTION TYRE SNOW_BUDGET 0.50" Override_11="FRICTION TYRE SNOW_PREMIUM 0.69"/>
+   </Material_12>
+   <Material_13 Name="COMMON_13" SFX="Gravel" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="None" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="true" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.2000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.5500000" G="0.4900000" B="0.3899999" A="0.5000000"/>
+      <DirtColour R="0.0000000" G="0.0000000" B="0.0000000" A="1.0000000"/>
+   </Material_13>
+   <Material_14 Name="COMMON_14" SFX="Gravel" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="None" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="true" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.2000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.5500000" G="0.4900000" B="0.3899999" A="0.5000000"/>
+      <DirtColour R="0.0000000" G="0.0000000" B="0.0000000" A="1.0000000"/>
+   </Material_14>
+   <Material_15 Name="COMMON_15" SFX="Gravel" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="None" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="true" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.2000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.5500000" G="0.4900000" B="0.3899999" A="0.5000000"/>
+      <DirtColour R="0.0000000" G="0.0000000" B="0.0000000" A="1.0000000"/>
+   </Material_15>
+   <Material_16 Name="COMMON_16" SFX="Gravel" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="None" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="true" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.2000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.5500000" G="0.4900000" B="0.3899999" A="0.5000000"/>
+      <DirtColour R="0.0000000" G="0.0000000" B="0.0000000" A="1.0000000"/>
+   </Material_16>
+   <Material_17 Name="KDTDEFAULT(KDTDEFAULT/COMMON)" SFX="Gravel" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="None" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="false" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.2000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.5500000" G="0.4900000" B="0.3899999" A="0.5000000"/>
+      <DirtColour R="0.0000000" G="0.0000000" B="0.0000000" A="1.0000000"/>
+   </Material_17>
+   <Material_18 Name="METAL(METAL/COMMON)" SFX="Gravel" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="None" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="false" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.2000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.5500000" G="0.4900000" B="0.3899999" A="0.5000000"/>
+      <DirtColour R="0.0000000" G="0.0000000" B="0.0000000" A="1.0000000"/>
+   </Material_18>
+   <Material_19 Name="TARMAC(TARMAC/COMMON)" SFX="Tarmac" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="Medium" SkidmarkIndex="4" WheelJitter="0.0000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="false" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.2000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.5500000" G="0.4900000" B="0.3899999" A="0.5000000"/>
+      <DirtColour R="0.0000000" G="0.0000000" B="0.0000000" A="1.0000000"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 1.10" Override_2="FRICTION TYRE DIRT_PREMIUM 1.10" Override_3="FRICTION TYRE DIRT_PROTOTYPE 1.10" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 1.10" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 1.10" Override_6="FRICTION TYRE MUD_BUDGET 1.10" Override_7="FRICTION TYRE MUD_PREMIUM 1.10" Override_8="FRICTION TYRE SAND_BUDGET 1.10" Override_9="FRICTION TYRE SAND_PREMIUM 1.10" Override_10="FRICTION TYRE SNOW_BUDGET 1.10" Override_11="FRICTION TYRE SNOW_PREMIUM 1.10"/>
+   </Material_19>
+   <Material_20 Name="ICE(ICE/COMMON)" SFX="Snow" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="None" SkidmarkIndex="1" WheelJitter="0.0000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="false" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.5000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.5500000" G="0.4900000" B="0.3899999" A="0.5000000"/>
+      <DirtColour R="0.0000000" G="0.0000000" B="0.0000000" A="1.0000000"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.10" Override_2="FRICTION TYRE DIRT_PREMIUM 0.30" Override_3="FRICTION TYRE DIRT_PROTOTYPE 0.40" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.20" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.40" Override_6="FRICTION TYRE MUD_BUDGET 0.10" Override_7="FRICTION TYRE MUD_PREMIUM 0.30" Override_8="FRICTION TYRE SAND_BUDGET 0.10" Override_9="FRICTION TYRE SAND_PREMIUM 0.30" Override_10="FRICTION TYRE SNOW_BUDGET 0.50" Override_11="FRICTION TYRE SNOW_PREMIUM 0.69"/>
+   </Material_20>
+   <Material_21 Name="HOCKEYICE(ICE/HOCKEY)" SFX="Snow" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="None" SkidmarkIndex="1" WheelJitter="0.0000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="false" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.5000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.5500000" G="0.4900000" B="0.3899999" A="0.5000000"/>
+      <DirtColour R="0.0000000" G="0.0000000" B="0.0000000" A="1.0000000"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.00" Override_2="FRICTION TYRE DIRT_PREMIUM 0.00" Override_3="FRICTION TYRE DIRT_PROTOTYPE 0.00" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.00" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.00" Override_6="FRICTION TYRE MUD_BUDGET 0.00" Override_7="FRICTION TYRE MUD_PREMIUM 0.00" Override_8="FRICTION TYRE SAND_BUDGET 0.00" Override_9="FRICTION TYRE SAND_PREMIUM 0.00" Override_10="FRICTION TYRE SNOW_BUDGET 0.00" Override_11="FRICTION TYRE SNOW_PREMIUM 0.00"/>
+   </Material_21>
+   <Material_22 Name="GRASS(GRASS/MINIGAME)" SFX="Grass" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="Medium" SkidmarkType="None" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.0000000" Sink="0.2000000" IsDirt="true" Rockiness="0.4000000" WheelDirtAlpha="1.0000000" WheelDirtRate="0.3000000" DirtKickupChance="0.6999999">
+      <DustColour R="0.1763000" G="0.3215999" B="0.1688999" A="0.5000000"/>
+      <DirtColour R="0.0000000" G="0.0000000" B="0.0000000" A="1.0000000"/>
+      <Overrides NOverrides="11" Override_1="FRICTION TYRE DIRT_BUDGET 0.40" Override_2="FRICTION TYRE DIRT_PREMIUM 0.60" Override_3="FRICTION TYRE DIRT_PROTOTYPE 0.69" Override_4="FRICTION TYRE GENERAL_PURPOSE_BUDGET 0.40" Override_5="FRICTION TYRE GENERAL_PURPOSE_PREMIUM 0.60" Override_6="FRICTION TYRE MUD_BUDGET 0.40" Override_7="FRICTION TYRE MUD_PREMIUM 0.60" Override_8="FRICTION TYRE SAND_BUDGET 0.40" Override_9="FRICTION TYRE SAND_PREMIUM 0.60" Override_10="FRICTION TYRE SNOW_BUDGET 0.40" Override_11="FRICTION TYRE SNOW_PREMIUM 0.60"/>
+   </Material_22>
+   <Material_23 Name="ROCK(ROCK/COMMON)" SFX="Gravel" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="None" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="false" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.2000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.5500000" G="0.4900000" B="0.3899999" A="0.5000000"/>
+      <DirtColour R="0.0000000" G="0.0000000" B="0.0000000" A="1.0000000"/>
+   </Material_23>
+   <Material_24 Name="WOOD(WOOD/COMMON)" SFX="Gravel" Friction="1.0000000" Hardness="1.0000000" Damping="0.0000000" DustType="None" SkidmarkType="None" SkidmarkIndex="1" WheelJitter="0.3000000" Bounciness="0.0000000" Sink="0.0000000" IsDirt="false" Rockiness="0.6999999" WheelDirtAlpha="0.0000000" WheelDirtRate="0.2000000" DirtKickupChance="0.0000000">
+      <DustColour R="0.5500000" G="0.4900000" B="0.3899999" A="0.5000000"/>
+      <DirtColour R="0.0000000" G="0.0000000" B="0.0000000" A="1.0000000"/>
+   </Material_24>
+</Root>
