@@ -684,7 +684,8 @@ func driver_eye() -> Vector3:
 # Calibrado pelos prints dos 12 carros contra a referência do Matheus (cockpit
 # do Dirt Rally 2.0: horizonte perto do meio, volante cortado embaixo, muita
 # estrada pelo para-brisa)
-var FP_FOV := 65.0            # graus na vertical (KEEP_HEIGHT)
+# Os valores abaixo são o padrão; cada carro tem os seus em main.gd VEHICLES "fp".
+var FP_FOV := 65.0            # graus na vertical (KEEP_HEIGHT), igual em todos
 var FP_PITCH := 0.10          # quanto olha pra baixo (componente -y da direção, ~6°)
 var FP_NEAR := 0.05
 var FP_UP := 0.35             # olho acima do centro do volante (m)

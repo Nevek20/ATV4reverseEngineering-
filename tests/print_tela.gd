@@ -110,6 +110,10 @@ func _spawn(i: int) -> void:
 		c.wheel_front_file = OS.get_environment("RODA_F")
 	if OS.has_environment("RODA_T"):
 		c.wheel_rear_file = OS.get_environment("RODA_T")
+	if v.has("fp"):
+		c.FP_UP = v.fp[0]
+		c.FP_BACK = v.fp[1]
+		c.FP_PITCH = v.fp[2]
 	c.vehicle_name = "%s (%s)" % [v.name, v.id]
 	main.add_child(c)
 	main.car = c
