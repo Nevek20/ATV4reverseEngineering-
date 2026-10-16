@@ -282,16 +282,13 @@ func _update_camera(delta: float) -> void:
 
 	if cam_mode == 4:
 		# primeira pessoa (não é do jogo): nos olhos do piloto
-		var eye: Vector3 = car.driver_eye()
-		var b: Basis = car.get_global_transform_interpolated().basis
-		var turn: float = car.steer / car.MAX_STEER
-		var look_dir: Vector3 = (b.z + b.x * turn * 0.25 - b.y * 0.08).normalized()
 		cam.keep_aspect = Camera3D.KEEP_HEIGHT
-		cam.global_position = eye
-		cam.look_at(eye + look_dir * 10.0, b.y)
-		cam.fov = 70.0
+		cam.global_transform = car.first_person_xf()
+		cam.fov = car.FP_FOV
+		cam.near = car.FP_NEAR
 		return
 
+	cam.near = 0.1
 	# MountOnHood / MountOnFront: presa no carro, PosOffset no frame do modelo,
 	# Orientation.X = inclinação em graus, FOV = zoom fixo
 	var g = gcams[cam_mode]

@@ -419,8 +419,7 @@ func _load_physics() -> void:
 	wheels.clear()
 	var pts := _load_points(points_file)
 	points = pts
-	if pts.has("ARSE"):
-		DRIVER_EYE = pts["ARSE"] + EYE_FROM_ARSE
+	update_eye()
 	var wpos := {}
 	for k in ["FRONT_LEFT", "FRONT_RIGHT", "REAR_LEFT", "REAR_RIGHT"]:
 		if pts.has("WHEEL_" + k):
@@ -676,6 +675,37 @@ func _load_steering_wheel() -> void:
 
 func driver_eye() -> Vector3:
 	return model_root.get_global_transform_interpolated() * (model_offset + DRIVER_EYE)
+
+
+# câmera de primeira pessoa (não existe no jogo; é do remake). O olho fica
+# centralizado atrás do volante de cada carro (pecas.json, tools/volante.py):
+# FP_UP acima e FP_BACK atrás do centro do aro. Sem volante, usa o banco
+# (ponto ARSE + EYE_FROM_ARSE, medido no Renegade).
+var FP_FOV := 70.0            # graus na vertical (KEEP_HEIGHT)
+var FP_PITCH := 0.08          # quanto olha pra baixo (componente -y da direção)
+var FP_NEAR := 0.1
+var FP_UP := 0.44
+var FP_BACK := 0.61
+var FP_VOLANTE := true        # olho pelo volante (false = pelo banco)
+
+
+## posição do olho no frame do modelo (chame de novo se mudar FP_*)
+func update_eye() -> void:
+	var vol: Dictionary = pecas.get("volante", {})
+	if FP_VOLANTE and vol.has("centro"):
+		var c := Vector3(vol.centro[0], vol.centro[1], vol.centro[2])
+		DRIVER_EYE = c + Vector3(0.0, FP_UP, -FP_BACK)
+	elif points.has("ARSE"):
+		DRIVER_EYE = points["ARSE"] + EYE_FROM_ARSE
+
+
+## transform da câmera de primeira pessoa (mundo, interpolado)
+func first_person_xf() -> Transform3D:
+	var eye: Vector3 = driver_eye()
+	var b: Basis = get_global_transform_interpolated().basis
+	var turn: float = steer / MAX_STEER
+	var look_dir: Vector3 = (b.z + b.x * turn * 0.25 - b.y * FP_PITCH).normalized()
+	return Transform3D(Basis.looking_at(look_dir, b.y), eye)
 
 
 func flip_model() -> void:

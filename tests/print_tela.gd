@@ -149,6 +149,34 @@ func _camera(v: String) -> void:
 			ch.visible = corpo
 		v = v.trim_suffix("_sc")
 	var t := car.global_transform
+	if v.begins_with("piloto"):
+		# a mesma câmera de primeira pessoa do jogo (car.first_person_xf),
+		# em 16:9 como no F5. FP_FOV/FP_PITCH/FP_UP/FP_BACK/FP_VOLANTE no
+		# ambiente trocam os parâmetros (teste de calibração)
+		for k in ["FP_FOV", "FP_PITCH", "FP_UP", "FP_BACK"]:
+			if OS.has_environment(k):
+				car.set(k, float(OS.get_environment(k)))
+		if OS.has_environment("FP_VOLANTE"):
+			car.FP_VOLANTE = OS.get_environment("FP_VOLANTE") == "1"
+		# vista "piloto:UP:BACK:PITCH:FOV" testa uma variante por vista
+		var pv := v.split(":")
+		if pv.size() == 5:
+			car.FP_UP = float(pv[1])
+			car.FP_BACK = float(pv[2])
+			car.FP_PITCH = float(pv[3])
+			car.FP_FOV = float(pv[4])
+		car.update_eye()
+		var camp: Camera3D = root.get_node_or_null("CamPrint")
+		if camp == null:
+			camp = Camera3D.new()
+			camp.name = "CamPrint"
+			root.add_child(camp)
+		camp.keep_aspect = Camera3D.KEEP_HEIGHT
+		camp.global_transform = car.first_person_xf()
+		camp.fov = car.FP_FOV
+		camp.near = car.FP_NEAR
+		camp.current = true
+		return
 	if v == "volante":
 		# de trás do banco, olhando o volante (pinta ele se pedir)
 		var c: Vector3 = car.model_offset + car.SW_CENTER
@@ -266,7 +294,7 @@ func _process_multi() -> bool:
 		return false
 	wait -= 1
 	if wait == 0:
-		var path := "%s_%s_%s.png" % [out.get_basename(), s[0], s[1]]
+		var path := "%s_%s_%s.png" % [out.get_basename(), s[0], s[1].replace(":", "_")]
 		root.get_viewport().get_texture().get_image().save_png(path)
 		print("print salvo em ", path)
 		shot_i += 1
