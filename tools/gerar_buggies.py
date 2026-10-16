@@ -33,6 +33,10 @@ import re
 import subprocess
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import pingu2obj  # noqa: E402
+import volante  # noqa: E402
+
 AQUI = os.path.dirname(os.path.abspath(__file__))
 PROJ = os.path.dirname(AQUI)
 
@@ -41,9 +45,10 @@ NOMES = ["Mosquito", "Inferno", "Trident", "Sphinx", "Bulldog", "Phantom",
          "Kraken V8", "McKenzies", "Viper", "Renegade", "Hurricane", "Storm"]
 # pasta em assets/ (Renegade e Sphinx mantêm as pastas antigas)
 PASTA = {4: "sphinx", 10: "renegade"}
-# volante separado (peça móvel), tiras medidas na malha 4K do Renegade
-# (cubo 43,46,47 e aro 144[16-28],145-150; mesmo círculo do 5K)
-SPLIT = {10: ["volante:43,46,47,144[16-28],145-150"]}
+# o volante vem grudado na carroceria no jogo; o tools/volante.py acha as
+# tiras dele e o pingu2obj separa num .obj próprio (melhoria do remake: ele
+# gira com a direção). No Renegade dá o mesmo que a marcação manual
+# (43,46-47,144[16-28],145-150).
 LOD = "Models_4K"
 
 
@@ -171,8 +176,17 @@ def main():
         n = c["n"]
         out = os.path.join(a.assets, PASTA.get(n, "buggy_%02d" % n))
         os.makedirs(out, exist_ok=True)
+        vol = None
+        corpo = os.path.join(a.unpacked, "other", "%d_bloco.bin" % c["pecas"]["Body"])
+        pts = volante.pontos(os.path.join(a.unpacked, "other", "%d_bloco.bin" % c["pontos"]))
+        if "ARSE" in pts:
+            strips = pingu2obj.parse(open(corpo, "rb").read())
+            vol = volante.achar(strips, pts["ARSE"])
         for pos, b in c["pecas"].items():
-            pingu(a.unpacked, a.texturas, b, out, SPLIT.get(n, ()) if pos == "Body" else ())
+            split = ()
+            if pos == "Body" and vol:
+                split = (volante.split_spec(strips, vol["pedacos"]),)
+            pingu(a.unpacked, a.texturas, b, out, split)
         for b in c["rodas"].values():
             if b not in feitas:
                 pingu(a.unpacked, a.texturas, b, rodas_dir)
@@ -189,6 +203,10 @@ def main():
             "rally": any(p.endswith("Wheel") and "Frame" not in p for p in pos_rodas),
             "estepe": [p for p in pos_rodas if p.startswith("SpareWheel")],
         }
+        if vol:
+            info["volante"] = {"centro": [round(v, 4) for v in vol["centro"]],
+                               "eixo": [round(v, 4) for v in vol["eixo"]],
+                               "raio": round(vol["raio"], 4)}
         json.dump(info, open(os.path.join(out, "pecas.json"), "w"), indent=1)
         # física e pontos (dados pequenos, ficam no git). O XML vai com fim de
         # linha LF, igual ao git, senão no Windows aparece como modificado

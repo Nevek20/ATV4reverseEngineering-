@@ -16,6 +16,8 @@ extends SceneTree
 ##   MEDIR=1                    imprime as medidas de cada canto em cada curso e
 ##                              salva <saida>_medidas.json (ver _medir/_estatico)
 ##   CORPO=0                    esconde a carroceria em todas as vistas
+##   VIRA=1                     direção forçada (-1..1) antes dos prints
+##   VOLANTE_COR=1              pinta o volante solto de vermelho (vista "volante")
 ##   PASTA=res://assets/buggy_02 (pasta com o pecas.json)  PONTOS=res://...
 ##   RODA_F=res://...  RODA_T=res://...
 ##                              troca pasta/pontos/rodas sem mexer no main.gd
@@ -147,6 +149,27 @@ func _camera(v: String) -> void:
 			ch.visible = corpo
 		v = v.trim_suffix("_sc")
 	var t := car.global_transform
+	if v == "volante":
+		# de trás do banco, olhando o volante (pinta ele se pedir)
+		var c: Vector3 = car.model_offset + car.SW_CENTER
+		if OS.get_environment("VOLANTE_COR") == "1" and car.sw_pivot:
+			for mi in car.sw_pivot.get_children():
+				var m := StandardMaterial3D.new()
+				m.albedo_color = Color(1, 0, 0)
+				m.cull_mode = BaseMaterial3D.CULL_DISABLED
+				for i in mi.mesh.get_surface_count():
+					mi.set_surface_override_material(i, m)
+		var camv: Camera3D = root.get_node_or_null("CamPrint")
+		if camv == null:
+			camv = Camera3D.new()
+			camv.name = "CamPrint"
+			root.add_child(camv)
+		camv.fov = 55.0
+		camv.near = 0.02
+		camv.global_position = t * (c + Vector3(0.25, 0.45, -0.75))
+		camv.look_at(t * c, Vector3.UP)
+		camv.current = true
+		return
 	var off: Vector3 = OFFS.get(v, Vector3(4.5, 1.2, 0.0))
 	var alvo := Vector3(0, 0.7, 0)
 	if v.ends_with("0"):

@@ -73,9 +73,13 @@ const WHEEL_X := 1.0
 const WHEEL_Z := 1.75
 const WHEEL_Y := 0.45         # altura do cubo com o carro parado
 
-# volante do modelo (medido na malha: centro do aro e eixo da coluna)
-const SW_CENTER := Vector3(-0.434, 1.351, 0.396)
-const SW_AXIS := Vector3(0.0, 0.684, -0.729)
+# volante: no jogo ele é parte da carroceria e NÃO gira. Girar é melhoria do
+# remake (tools/volante.py acha o aro em cada carro e o gerar_buggies.py
+# separa; centro e eixo vêm do pecas.json). VOLANTE_GIRA = false deixa igual
+# ao jogo.
+const VOLANTE_GIRA := true
+var SW_CENTER := Vector3(-0.434, 1.351, 0.396)    # Renegade, se faltar no pecas.json
+var SW_AXIS := Vector3(0.0, 0.684, -0.729)
 const SW_TURNS := 2.6
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
@@ -625,6 +629,10 @@ func _load_steering_wheel() -> void:
 	var path := model_path.get_basename() + "_volante.obj"
 	if not ResourceLoader.exists(path):
 		return
+	var vol: Dictionary = pecas.get("volante", {})
+	if vol.has("centro"):
+		SW_CENTER = Vector3(vol.centro[0], vol.centro[1], vol.centro[2])
+		SW_AXIS = Vector3(vol.eixo[0], vol.eixo[1], vol.eixo[2])
 	var mesh := load(path) as Mesh
 	if mesh == null:
 		return
@@ -1578,7 +1586,7 @@ func _update_visuals(dt: float, v_f: float) -> void:
 		w.pivot.rotation.y = steer * P.vis_steer if w.front else 0.0
 		w.spin += v_f / w.r * dt
 		w.spin_node.rotation.x = w.spin
-	if sw_pivot:
+	if sw_pivot and VOLANTE_GIRA:
 		sw_pivot.basis = Basis(SW_AXIS.normalized(), steer * SW_TURNS)
 	if susp_vis:
 		susp_vis.update(steer * P.vis_steer)
