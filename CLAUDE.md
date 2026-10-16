@@ -146,6 +146,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Som do motor (00002/00004/00005 xml: bancos e faders por buggy).
 - Piloto sentado e animado (MALE_*.srd + InGame_Mid.skl + STEER_LEFT.bac,
   docs/engenharia_reversa.md "Piloto"): falta parser dos 3 formatos.
+  Melhoria nossa depois: mãos tremendo no volante em alta velocidade.
+- Câmera do piloto: referência do Matheus = cockpit do Dirt Rally 2.0
+  (horizonte perto do meio, volante cortado embaixo, muita estrada).
 - Material do chão por triângulo (Materials.xml: atrito, WheelJitter 0 no
   asfalto da largada do RX_01). Hoje o terreno é todo terra.
 - Sinal do giro/direção visual: falta save state andando com volante virado.
