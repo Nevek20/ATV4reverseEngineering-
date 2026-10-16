@@ -30,7 +30,6 @@ import argparse
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 
@@ -126,6 +125,13 @@ def mapear(unpacked):
     return carros
 
 
+def copiar(dados, dst):
+    """grava só se mudou (não mexe na data do arquivo à toa)"""
+    if os.path.exists(dst) and open(dst, "rb").read() == dados:
+        return
+    open(dst, "wb").write(dados)
+
+
 def pingu(unpacked, tex, bloco_, out, split=()):
     cmd = [sys.executable, os.path.join(AQUI, "pingu2obj.py"),
            os.path.join(unpacked, "other", "%d_bloco.bin" % bloco_),
@@ -184,11 +190,12 @@ def main():
             "estepe": [p for p in pos_rodas if p.startswith("SpareWheel")],
         }
         json.dump(info, open(os.path.join(out, "pecas.json"), "w"), indent=1)
-        # física e pontos (dados pequenos, ficam no git)
-        shutil.copy(os.path.join(a.unpacked, "xml", "%d_root.xml" % (15144 + n)),
-                    os.path.join(dados, "buggy_%02d.xml" % n))
-        shutil.copy(os.path.join(a.unpacked, "other", "%d_bloco.bin" % c["pontos"]),
-                    os.path.join(dados, "buggy_%02d_points.bin" % n))
+        # física e pontos (dados pequenos, ficam no git). O XML vai com fim de
+        # linha LF, igual ao git, senão no Windows aparece como modificado
+        xml = open(os.path.join(a.unpacked, "xml", "%d_root.xml" % (15144 + n)), "rb").read()
+        copiar(xml.replace(b"\r\n", b"\n"), os.path.join(dados, "buggy_%02d.xml" % n))
+        pts = open(os.path.join(a.unpacked, "other", "%d_bloco.bin" % c["pontos"]), "rb").read()
+        copiar(pts, os.path.join(dados, "buggy_%02d_points.bin" % n))
         print("[+] %s em %s" % (c["nome"], out))
     print("Abra o projeto no Godot uma vez pra ele importar os .obj novos.")
 
