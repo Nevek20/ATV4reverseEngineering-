@@ -23,6 +23,7 @@ Referências (o que o jogo de verdade faz):
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -35,6 +36,9 @@ REF_SPHINX = {"20": 1.45, "38": 2.55, "57": 3.95, "75": 5.95}
 
 def rodar(sc, veh, extra):
     godot = os.environ.get("GODOT", "godot")
+    if not shutil.which(godot) and not os.path.isfile(godot):
+        sys.exit("Não achei o Godot (%s). No cmd, antes de rodar:\n"
+                 "  set GODOT=C:\\caminho\\Godot_v4.x-stable_win64_console.exe" % godot)
     env = dict(os.environ, SC=sc, VEH=str(veh), LDT=extra.get("ldt", "0.05"))
     for k in ("tune", "mu", "st"):
         if extra.get(k):
