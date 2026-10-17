@@ -64,7 +64,12 @@ const REAR_DRIVE := true      # tração só atrás (o XML não diz; buggy de mo
 # aderência do chão (TireBehaviour do jogo, nota 0-10): terra com pneu de fábrica
 # (DIRT_BUDGET) = 8. Os XMLs trazem cada valor pra atrito máximo (1.0) e mínimo
 # (0.1); o jogo interpola entre os dois conforme o chão.
-var SURFACE_MU := 0.8          # pneu DIRT_BUDGET na terra (4 estrelas). DIRT_PREMIUM = 1.0
+# atrito do chão: cada roda pega o do material embaixo dela pro pneu do carro
+# (terrain.atrito, 0x20d568 -> corpo+0x750+12i); a média das rodas no chão é
+# o 0x780. Sem terreno (teste no plano) vale SURFACE_MU.
+var SURFACE_MU := 0.8          # pneu DIRT_BUDGET na terra comum do RX_01
+var pneu := "DIRT_BUDGET"      # classe do pneu (vehicles.xml DefaultConfig Tire)
+var mu_medio := 0.8            # 0x780: atrito médio das rodas no chão
 var TUNE_FRONT_BIAS := 0.5    # DefaultConfig/CustomTunings FrontBrakeBias
 
 # geometria medida no modelo (o XML não traz a posição das rodas)
@@ -234,6 +239,7 @@ func _load_tuning() -> void:
 		return
 	var t := VehicleData.factory_tuning("res://data/vehicles.xml", "res://data/upgrades.xml", vehicle_id)
 	TUNE_ENGINE = t.engine
+	pneu = String(t.config.get("Tire", pneu))
 	TUNE_BRAKE = t.brake
 	TUNE_SUSP = t.susp
 	TUNE_UNDERSTEER = t.understeer
@@ -389,6 +395,7 @@ func _load_physics() -> void:
 	P.understeer_raw = d.tuned("BasicSteering", "Understeer_coefficient", TUNE_UNDERSTEER)
 	P.width_scale = d.tuned("FrictionEllipse", "Width_scale", 0.0)
 	P.height_scale = d.tuned("FrictionEllipse", "Height_scale", 0.0)
+	P.ell_disable = d.f("FrictionEllipse", "Disabling_friction", 2.0)   # params+0x43c
 	for ax in ["FrontWheels", "RearWheels"]:
 		var fe: String = "FrictionEllipse/" + ax
 		P["ell_" + ax] = {"w": d.ftriple(fe + "/HalfWidth", "half_width"),
@@ -500,6 +507,7 @@ func _load_physics() -> void:
 		w.normal = Vector3.UP
 		w.spin = 0.0
 		w.grip = 1.0                        # escala da elipse (encolhe patinando)
+		w.mu = SURFACE_MU                   # atrito do chão nesta roda (0x750)
 		w.slip = 0.0                        # patinada (0x610): + girando, - travando (até -1)
 		w.abs = false                       # ABS soltando o freio desta roda (0x620)
 		w.sat = false
@@ -927,6 +935,7 @@ func _physics_process(dt: float) -> void:
 		w.normal = hn
 		if terrain:
 			w.mat = terrain.material_at(hp.x, hp.z)
+			w.mu = terrain.atrito(w.mat, pneu)
 		grounded += 1
 		n_sum += hn
 		if not w.front:
@@ -1098,7 +1107,15 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 	var v_l := v.dot(left)                  # 0x410 (+ = esquerda)
 	var v_p := sqrt(v_f * v_f + v_l * v_l)  # 0x440 velocidade no plano do chão
 	var mph := v_p / MPH_G
-	var mu := SURFACE_MU                    # 0x780 atrito médio das rodas no chão
+	# 0x780: média do atrito das rodas no chão (0x20d568)
+	var mu := 0.0
+	var n_mu := 0
+	for w in wheels:
+		if w.hit:
+			mu += w.mu
+			n_mu += 1
+	mu = mu / n_mu if n_mu > 0 else 0.0
+	mu_medio = mu
 	var yaw := angular_velocity.dot(n)      # + = virando pra esquerda
 	var sgn_v := -1.0 if v_f < 0.0 else 1.0
 	stf_blend = 0.0
@@ -1279,8 +1296,14 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 	var lat_got := 0.0
 	for w in wheels:
 		var e: Dictionary = P.ell_FrontWheels if w.front else P.ell_RearWheels
-		var W: float = w.grip * VehicleData.triple(e.w, mu) * P.width_scale * 1000.0
-		var H: float = w.grip * VehicleData.triple(e.h, mu) * P.height_scale * 1000.0
+		# a elipse usa o atrito da própria roda, no máximo 1 (0x2101e0), e
+		# desliga com atrito >= Disabling_friction
+		var mu_w: float = minf(w.mu, 1.0)
+		var W: float = w.grip * VehicleData.triple(e.w, mu_w) * P.width_scale * 1000.0
+		var H: float = w.grip * VehicleData.triple(e.h, mu_w) * P.height_scale * 1000.0
+		if w.mu >= P.ell_disable:
+			W = INF
+			H = INF
 		var fx: float = w.fx
 		var fz: float = w.fz
 		var clamped := false
@@ -1300,7 +1323,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 				w.fx = fx * k
 				w.fz = fz * k
 				clamped = true
-		var min_scale: float = VehicleData.triple(e.ms, mu)
+		var min_scale: float = VehicleData.triple(e.ms, mu_w)
 		if handbrake and not w.front:
 			min_scale *= P.ps_ellipse
 			clamped = true                    # powerslide: traseira escorrega

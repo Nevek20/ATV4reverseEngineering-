@@ -174,8 +174,7 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Melhoria nossa depois: mãos tremendo no volante em alta velocidade.
 - Câmera do piloto: referência do Matheus = cockpit do Dirt Rally 2.0
   (horizonte perto do meio, volante cortado embaixo, muita estrada).
-- Atrito por material do chão (Friction/Overrides do data/materials_rx01.xml).
-  O material por roda já existe (terrain.material_at, w.mat); hoje só a
-  tremida usa.
+- Do material do chão ainda faltam Damping (arrasto), Hardness, Bounciness
+  e Sink (o atrito por roda já está: terrain.atrito, w.mu, car.mu_medio).
 - Sinal do giro/direção visual: falta save state andando com volante virado.
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).

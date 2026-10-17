@@ -229,7 +229,8 @@ def conferir_ram(caminho, tiles):
               f"material stream {mat} / RAM W+0x140 {rd(W + 0x140)} veh+0xa88 {rd(veh + 0xA88 + 4 * i)} "
               f"| altura stream {h:.4f} (dif {h - y:+.4f})")
         rodas.append({"roda": nome, "x": round(x, 5), "y": round(y, 5), "z": round(z, 5),
-                      "mat": rd(W + 0x140)})
+                      "mat": rd(W + 0x140),
+                      "atrito": round(struct.unpack_from("<f", r, (corpo + 0x750 + 12 * i) & 0x1FFFFFF)[0], 5)})
     return rodas
 
 

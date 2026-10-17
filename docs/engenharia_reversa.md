@@ -238,9 +238,22 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   tests/teste_chao.gd + tests/ref_ram_chao.json.
 - Largada: centro das rodas no jogo (580.8, z 1564.3), frente a −115,1°;
   no remake (540.3, 580.8) e −154,9° (main.gd SPAWN_XZ/SPAWN_YAW).
-- Por material o XML também tem Friction, Damping, Bounciness, Sink e os
-  Overrides "FRICTION TYRE <pneu> <valor>" (DIRT_BUDGET 0,80 na terra e
-  1,10 no asfalto do RX_01). Atrito por material ainda não portado.
+- Atrito por material (0x20d568): cada roda no chão copia 3 campos do
+  registro do material embaixo dela (veículo+0xd0 + idx·0x60, montado na
+  carga pro pneu do carro) pra corpo+0x750+12i: atrito, Hardness, Damping;
+  material −1 dá (1, 0, 0). A média das rodas no chão vai pra 0x780.
+  Registro (conferido na RAM, 13 materiais): +0x00 atrito = override
+  "FRICTION TYRE <classe> <valor>" do Materials.xml (DIRT_BUDGET: 0.80
+  terra, 0.69 fora da pista, 1.10 asfalto), +0x04 Hardness, +0x08 Damping,
+  +0x10..0x2c cores de poeira e sujeira, +0x3c WheelJitter, +0x40
+  Bounciness, +0x44 Sink, +0x4c Rockiness. Classe do pneu =
+  vehicles.xml DefaultConfig Tire (todos os buggies: DIRT_BUDGET).
+- Quem usa: a elipse (0x2101e0) e a tração (0x20e8d8, só com
+  TractionControl ligado, desligado nos buggies) usam o atrito da roda com
+  min(·, 1); a elipse desliga com atrito ≥ Disabling_friction (2.0,
+  params+0x43c). Freio, derrapagem e o resto usam a média 0x780, que acima
+  de 1 cai no valor "Special" do trio. Hardness, Damping, Bounciness e Sink
+  ainda não portados.
 
 ## Mão (espelho)
 

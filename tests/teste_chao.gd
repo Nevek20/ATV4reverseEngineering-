@@ -9,7 +9,10 @@ extends SceneTree
 ##     com a balança (até ~11 cm do contato no Inferno), por isso a folga dele
 ##     é maior;
 ##  3. Renegade na largada (asfalto, WheelJitter 0) não treme; numa terra
-##     plana ali perto (COMMON_2 DIRT/OFFTRACK2, 0.3) treme.
+##     plana ali perto (COMMON_2 DIRT/OFFTRACK2, 0.3) treme;
+##  4. atrito de cada roda e a média (corpo+0x750 / 0x780): na largada igual
+##     à RAM (1.10, pneu DIRT_BUDGET no asfalto); na terra 0.69 (override do
+##     COMMON_2 no Materials.xml).
 ## Uso: godot --headless --path . -s res://tests/teste_chao.gd
 
 const Car := preload("res://car.gd")
@@ -71,10 +74,10 @@ func _physics_process(dt: float) -> bool:
 					Main.SPAWN_XZ.y), deg_to_rad(Main.SPAWN_YAW))
 			t += dt
 			if absf(t - 2.0) < dt * 0.5:
-				_tremida("largada (asfalto)", 0.0)
+				_tremida("largada (asfalto)", 0.0, _atrito_ram())
 				car.reset_to(Vector3(TERRA.x, terrain.height_at(TERRA.x, TERRA.y) + 0.8, TERRA.y), 0.0)
 			if absf(t - 4.0) < dt * 0.5:
-				_tremida("terra", 0.3)
+				_tremida("terra", 0.3, 0.69)
 				print("teste_chao: %s" % ("ok" if falhas == 0 else "%d falhas" % falhas))
 				quit(1 if falhas else 0)
 	return false
@@ -179,7 +182,16 @@ func _conferir_rodas() -> void:
 
 ## força 20 m/s no plano do chão e sorteia uma vez: só a roda no chão de
 ## material com WheelJitter > 0 treme
-func _tremida(onde: String, wj: float) -> void:
+## atrito das rodas do Renegade na RAM (todas iguais na largada)
+func _atrito_ram() -> float:
+	var a: float = ref.carros.renegade[0].atrito
+	for r in ref.carros.renegade:
+		if absf(r.atrito - a) > 1e-6:
+			push_error("atrito diferente entre as rodas na RAM")
+	return a
+
+
+func _tremida(onde: String, wj: float, mu: float) -> void:
 	car.spd_ground = 20.0
 	car._wheel_jitter()
 	var txt := []
@@ -194,6 +206,11 @@ func _tremida(onde: String, wj: float) -> void:
 	var ok := max_j == 0.0 if wj == 0.0 else max_j > 0.0
 	# câmera: veículo+0xac0 = média do WheelJitter embaixo de FL, RL, FR
 	ok = ok and absf(car.jitter_chao - wj) < 1e-6
+	# atrito por roda e a média (só depois de um passo de pneu com as 4 no chão)
+	for w in car.wheels:
+		ok = ok and absf(w.mu - mu) < 1e-6
+	ok = ok and absf(car.mu_medio - mu) < 1e-6
 	if not ok:
 		falhas += 1
-	print("%s: %s  maior tremida %.1f mm %s" % [onde, ", ".join(txt), max_j * 1000.0, "ok" if ok else "FALHOU"])
+	print("%s: %s  maior tremida %.1f mm, atrito %.2f (esperado %.2f)  %s" % [onde, ", ".join(txt),
+		max_j * 1000.0, car.mu_medio, mu, "ok" if ok else "FALHOU"])

@@ -69,23 +69,33 @@ func _transpor(dados: PackedByteArray, formato: Image.Format) -> PackedByteArray
 	return img.get_data()
 
 
-## Material_1..N do Materials.xml da pista, em ordem (só os atributos)
+## Material_1..N do Materials.xml da pista, em ordem: os atributos e, em
+## "pneu", o atrito de cada classe de pneu ("FRICTION TYRE <classe> <valor>"
+## do <Overrides>)
 static func load_materials(path: String) -> Array:
 	var out := []
 	var x := XMLParser.new()
 	if x.open(path) != OK:
 		push_error("Não achei %s" % path)
 		return out
+	var i := -1
 	while x.read() == OK:
-		if x.get_node_type() != XMLParser.NODE_ELEMENT or not x.get_node_name().begins_with("Material_"):
+		if x.get_node_type() != XMLParser.NODE_ELEMENT:
 			continue
-		var i := x.get_node_name().trim_prefix("Material_").to_int() - 1
-		var at := {}
-		for k in x.get_attribute_count():
-			at[x.get_attribute_name(k)] = x.get_attribute_value(k)
-		while out.size() <= i:
-			out.append({})
-		out[i] = at
+		var nome := x.get_node_name()
+		if nome.begins_with("Material_"):
+			i = nome.trim_prefix("Material_").to_int() - 1
+			var at := {"pneu": {}}
+			for k in x.get_attribute_count():
+				at[x.get_attribute_name(k)] = x.get_attribute_value(k)
+			while out.size() <= i:
+				out.append({"pneu": {}})
+			out[i] = at
+		elif nome == "Overrides" and i >= 0:
+			for k in x.get_attribute_count():
+				var p := x.get_attribute_value(k).split(" ", false)
+				if p.size() == 4 and p[0] == "FRICTION" and p[1] == "TYRE":
+					out[i].pneu[p[2]] = p[3].to_float()
 	return out
 
 
@@ -120,6 +130,19 @@ func wheel_jitter(m: int, fallback: float) -> float:
 	if m < 0 or m >= materials.size():
 		return fallback
 	return float(materials[m].get("WheelJitter", fallback))
+
+
+## atrito do pneu no material (registro veículo+0xd0+i*0x60, campo 0; conferido
+## na RAM: DIRT_BUDGET dá 0.80 na terra, 0.69 fora da pista e 1.10 no
+## asfalto). Sem override da classe vale o Friction do material (1.0 em todos
+## do RX_01). Roda sem material (-1): 1.0 (0x20d568).
+func atrito(m: int, pneu: String) -> float:
+	if m < 0 or m >= materials.size():
+		return 1.0
+	var mat: Dictionary = materials[m]
+	if mat.pneu.has(pneu):
+		return mat.pneu[pneu]
+	return float(mat.get("Friction", 1.0))
 
 
 ## nome curto do material: "COMMON_3(TARMAC/COMMON)*" -> "TARMAC/COMMON"

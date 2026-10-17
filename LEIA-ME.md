@@ -87,7 +87,8 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
 ## O que ainda é provisório
 
 - Troca de pneu e aro (peças compradas): por enquanto só as de fábrica
-- Atrito por tipo de chão (o jogo muda a aderência na terra, lama, água...)
+- Do chão ainda faltam o arrasto (Damping), afundar (Sink) e quicar
+  (Bounciness). O atrito por tipo de chão já é o do jogo
 - Giro da roda por torque (o jogo integra o giro de cada roda; aqui sai da
   patinada). Patinada por roda, ABS e trava já são do jogo
 - Tremida da câmera na batida ainda não portada (a por velocidade já é a do
