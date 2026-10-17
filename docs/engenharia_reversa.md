@@ -101,11 +101,31 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   descolar/recolar 0x384ef8 (MAX_POS_CHANGE 1, BEGIN 2 s, REATTACH 2 s) →
   altura mínima do chão 0x384c80 (1.45 m, taxa 30) → mira 0x37f2f8
   (LOOK_OFFSET; y da mira some com mph/LOOK_MAX_SPEED) → tremida 0x380418
-  (não portada) → zoom 0x3806a0 (FOV_MIN/MAX_ZOOM por mph, fração dt).
+  (camera_jitter.gd, abaixo) → zoom 0x3806a0 (FOV_MIN/MAX_ZOOM por mph,
+  fração dt).
 - Final 0x387320: pos = ant + min(taxa·dt,1)·(nova + dir·0.2 − ant), taxa
   10 subindo 5/s até 40.
 - Projeção 0x390a80 / 0x64f0a0: meia-largura 0.5/zoom, meia-altura
   0.375/zoom (4:3). Zoom menor = mais aberto.
+- Tremida (vtable 0x5b4fb8: update 0x380418, aplica 0x380170; construtor
+  0x380348/0x380090, loader 0x38cc48). Parâmetros só do GenericCameraData
+  pelo tipo da câmera (os Jitter* dos CameraSet são ignorados: conferido nos
+  componentes vivos na RAM). Defaults: SpeedStart 0, SpeedMax 1, Perlin 0,
+  Decay 0.95, CollSpeed 10/30, CollMass 0.01/0.1.
+  Velocidade: f = clamp((|v| − Start·0.44694445)/((Max − Start)·0.44694445)),
+  a = veículo+0xac0·f², e veículo+0xac0 = média do WheelJitter embaixo de
+  FL, RL, FR no chão (0x202760). Duas ondas Perlin (Amp/4, Freq) e
+  (Amp, Freq·1.05), fase sorteada; n = tabela(fase)·amp·a, fase += dt·freq
+  mod 1 (0x3aa668/0x3aa6e0, tabela de 257 floats em RAM 0xd0e7f0 =
+  data/ruido_camera.bin). Direção nova = dir + direita·n1 + cima·n2,
+  matriz refeita (0x61e010). Órbita: 70 a 100 mph, Amp 0.03, Freq 0.3;
+  capô/para-choque: 0 a 75 mph, Amp 0.04, Freq 0.25.
+  Batida (NÃO portada, falta o sistema de colisão): última colisão do corpo
+  (corpo+0x7a0 + idx·0x40, idx = corpo+0x860, −1 sem) dá c = rampa da
+  velocidade (CollisionSpeedFor*) × rampa da massa do outro (+0x60 → +0x78,
+  CollisionMassFor*) × CollisionJitterMagMax; amp = max(c, amp)·Decay por
+  passo (com trava por veículo+0xa74/0xa78), somando sorteio uniforme
+  [−amp, amp) nas duas componentes (x·31415821+1 mod 2^30, semente 0x8383a8).
 - Câmeras montadas (MountOnHood/Front): PosOffset no frame do modelo,
   Orientation.X em graus, FOV fixo. MountOnFront fica dentro da carroceria
   (não desenha o carro).

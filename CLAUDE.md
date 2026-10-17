@@ -26,6 +26,7 @@ desmontado no Ghidra. Nada de "parece certo": cada número tem que ter fonte
 ```
 car.gd               física do carro (portada do exe), visual das rodas
 game_camera.gd       câmera de corrida do jogo (componentes do exe, 1/60 s)
+camera_jitter.gd     tremida da câmera (Perlin por velocidade, só na terra)
 suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
 main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V)
@@ -58,6 +59,7 @@ python tools/ler_savestate.py arquivo.p2s
 %GODOT% --headless --path . -s res://tests/teste_tremida.gd
 %GODOT% --headless --path . -s res://tests/teste_chao.gd
 %GODOT% --headless --path . -s res://tests/teste_mao.gd     :: espelho (lado das peças, esterço)
+%GODOT% --headless --path . -s res://tests/teste_tremida_camera.gd
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
 python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materiais <dados>/unpacked/xml/12280
@@ -160,7 +162,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 
 - Pneu e aro comprados (hipótese: troca de textura, ver docs/assets.md).
 - Decalques e número na pintura (camadas Decal/Text do XML 150xx).
-- Tremida da câmera (jitter e batida), componente 0x380418 + 0x380170.
+- Tremida da câmera na BATIDA (a por velocidade já está, camera_jitter.gd):
+  precisa do sistema de colisão do corpo (corpo+0x7a0); fórmula em
+  docs/engenharia_reversa.md, Câmera.
 - Roda travando no freio (0x210908).
 - Som do motor (00002/00004/00005 xml: bancos e faders por buggy).
 - Piloto sentado e animado (MALE_*.srd + InGame_Mid.skl + STEER_LEFT.bac,

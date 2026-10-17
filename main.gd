@@ -271,6 +271,10 @@ const CAM_XML := "res://data/cameras.xml"
 const CAM_NAMES := ["perto", "longe", "capô", "para-choque", "piloto"]
 var gcams := []                           # câmeras do jogo, uma por modo (0..3)
 var cam_ready := false
+# a câmera do piloto não existe no jogo; tremer igual à do capô é melhoria nossa
+const TREMIDA_PILOTO := true
+var jit_piloto
+var jit_acc := 0.0                        # passos de 1/60 das câmeras presas
 
 
 func _make_cameras() -> void:
@@ -291,6 +295,7 @@ func cam_state() -> Dictionary:
 	var v: Vector3 = car.linear_velocity
 	return {
 		"tp": tp, "basis": b, "vel": v, "v_f": v.dot(b.z),
+		"speed": v.length(), "chao": car.jitter_chao,
 		"air_time": car.air_time, "grounded": car.grounded,
 		"ground_n": ground_normal(tp.x, tp.z),
 	}
@@ -333,7 +338,14 @@ func _update_camera(delta: float) -> void:
 	if cam_mode == 4:
 		# primeira pessoa (não é do jogo): nos olhos do piloto
 		cam.keep_aspect = Camera3D.KEEP_HEIGHT
-		cam.global_transform = car.first_person_xf()
+		var fp: Transform3D = car.first_person_xf()
+		if TREMIDA_PILOTO:
+			if jit_piloto == null:
+				jit_piloto = GameCamera.CameraJitter.carregar(CAM_XML, "MountOnHood")
+			_passo_tremida(delta, jit_piloto, s)
+			var d: Vector3 = GameCamera.CameraJitter.aplicar(-fp.basis.z, jit_piloto.n)
+			fp.basis = Basis.looking_at(d, fp.basis.y)
+		cam.global_transform = fp
 		cam.fov = car.FP_FOV
 		cam.near = car.FP_NEAR
 		return
@@ -342,12 +354,22 @@ func _update_camera(delta: float) -> void:
 	# MountOnHood / MountOnFront: presa no carro, PosOffset no frame do modelo,
 	# Orientation.X = inclinação em graus, FOV = zoom fixo
 	var g = gcams[cam_mode]
+	_passo_tremida(delta, g.jit, s)
 	var xf: Transform3D = car.get_global_transform_interpolated()
 	var bb := xf.basis.orthonormalized()
 	var pos: Vector3 = xf * (car.corpo(Vector3.ZERO) + g.pos_off)
 	var o: Vector3 = g.p.get("orient", Vector3.ZERO)
 	var fwd := bb.z.rotated(bb.x, deg_to_rad(-o.x))
+	fwd = GameCamera.CameraJitter.aplicar(fwd, g.jit.n)
 	cam.keep_aspect = Camera3D.KEEP_HEIGHT
 	cam.global_position = pos
 	cam.look_at(pos + fwd * 10.0, bb.y)
 	cam.fov = g.fov_deg(g.p.FOV)
+
+
+## tremida das câmeras presas no passo de 1/60 do jogo
+func _passo_tremida(delta: float, j, s: Dictionary) -> void:
+	jit_acc += minf(delta, 0.25)
+	while jit_acc >= GameCamera.STEP:
+		jit_acc -= GameCamera.STEP
+		j.passo(GameCamera.STEP, s.speed, s.chao)

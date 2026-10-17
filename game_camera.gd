@@ -6,10 +6,11 @@ extends RefCounted
 ##   altura por velocidade (0x383418) -> offset no frame do carro (0x383588)
 ##   -> amortecimento em Y (0x383cf8/0x384168) -> subida em descida (0x385238)
 ##   -> órbita (0x386950) -> descolar/recolar (0x384ef8) -> altura mínima do
-##   chão (0x384c80) -> mira (0x37f2f8) -> zoom por velocidade (0x3806a0)
-##   -> suavização final (0x387320).
+##   chão (0x384c80) -> mira (0x37f2f8) -> tremida (0x380418, camera_jitter.gd)
+##   -> zoom por velocidade (0x3806a0) -> suavização final (0x387320).
 ## Parâmetros: data/cameras.xml (14880), defaults de 0x38d498.
 
+const CameraJitter := preload("res://camera_jitter.gd")
 const STEP := 1.0 / 60.0
 const MPH := 2.2374146          # m/s -> mph, mesma constante do exe
 
@@ -41,6 +42,7 @@ var p := {}
 var pos_off := Vector3(0, 2.5, -5)
 var look_off := Vector3(0, 2.2, 0)
 var mount := false              # MountOnHood/MountOnFront: presa no carro
+var jit                         # tremida (camera_jitter.gd), parâmetros genéricos do tipo
 
 # estado (o que o jogo guarda nos componentes)
 var pos := Vector3.ZERO         # posição final (cam+0x10)
@@ -70,6 +72,7 @@ var _pz := 0.5
 static func load_set(path: String, set_name: String, cam_name: String):
 	var c = new()
 	c._parse(path, set_name, cam_name)
+	c.jit = CameraJitter.carregar(path, cam_name)
 	return c
 
 
@@ -312,6 +315,9 @@ func _step(dt: float, s: Dictionary, terrain) -> void:
 	ld.y *= 1.0 - lf
 	if ld.length() > 1e-5:
 		dir = ld.normalized()
+
+	# 0x380418 tremida: só na terra (WheelJitter) e acima de JitterSpeedStart
+	dir = CameraJitter.aplicar(dir, jit.passo(dt, s.get("speed", 0.0), s.get("chao", 0.0)))
 
 	# 0x3806a0 zoom por velocidade, aproxima com fração dt por passo
 	var zf := 0.0

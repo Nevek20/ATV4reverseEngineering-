@@ -165,6 +165,7 @@ var jit_seed := 0
 var jit_acc := 0.0
 var spd_ground := 0.0         # corpo+0x440: velocidade no plano do chão (m/s)
 var jit_order := []           # índices das rodas na ordem do jogo: FL, RL, FR, RR
+var jitter_chao := 0.0        # veículo+0xac0: média do WheelJitter embaixo de FL, RL, FR no chão (câmera)
 
 var lateral_game := true     # L alterna: força lateral por eixo (jogo) x remendo antigo
 var use_ported := true      # P alterna: física portada do jogo x modelo antigo
@@ -1040,17 +1041,23 @@ func _physics_process(dt: float) -> void:
 func _wheel_jitter() -> void:
 	for w in wheels:
 		w.jit = 0.0
+	jitter_chao = 0.0
 	if jit_order.size() != 4:
 		return
+	var no_chao := 0
 	for k in 3:
 		var w: Dictionary = wheels[jit_order[k]]
 		if not w.hit:
 			continue
 		var wj: float = terrain.wheel_jitter(w.mat, surface_jitter) if terrain else surface_jitter
+		jitter_chao += wj
+		no_chao += 1
 		var amp := minf(wj * JIT_K * spd_ground, 1.0)
 		jit_seed = (jit_seed * 31415821 + 1) & 0x3FFFFFFF
 		w.jit = amp * (float(jit_seed) * 0.075 / 1073741824.0 - 0.0375)
 	wheels[jit_order[3]].jit = wheels[jit_order[1]].jit
+	if no_chao > 0:
+		jitter_chao /= no_chao
 
 
 # ------------------------------------------------------------------ pneus

@@ -192,6 +192,8 @@ func _tremida(onde: String, wj: float) -> void:
 		if not w.hit or absf(terrain.wheel_jitter(w.mat, -1.0) - wj) > 1e-6:
 			falhas += 1
 	var ok := max_j == 0.0 if wj == 0.0 else max_j > 0.0
+	# câmera: veículo+0xac0 = média do WheelJitter embaixo de FL, RL, FR
+	ok = ok and absf(car.jitter_chao - wj) < 1e-6
 	if not ok:
 		falhas += 1
 	print("%s: %s  maior tremida %.1f mm %s" % [onde, ", ".join(txt), max_j * 1000.0, "ok" if ok else "FALHOU"])
