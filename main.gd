@@ -6,40 +6,47 @@ extends Node3D
 # assets ("dir", com o pecas.json do gerar_buggies.py: modelo, peças, rodas).
 # "id" é o nome no vehicles.xml (posição na lista do jogo, contando do 1).
 # Os 3 primeiros ficam fixos (os testes usam --veh 0/1/2).
+# "fp" = câmera do piloto [altura, distância, inclinação] em relação ao volante
+# (car.gd FP_UP/FP_BACK/FP_PITCH), ajustada pelo Matheus carro a carro no jogo.
 const VEHICLES := [
 	{"name": "Renegade", "id": "BUGGY_10", "cams": "BuggyCamSet_10", "dir": "res://assets/renegade",
-		"data": "res://data/vehicles/buggy_10.xml", "points": "res://data/vehicles/buggy_10_points.bin"},
+		"data": "res://data/vehicles/buggy_10.xml", "points": "res://data/vehicles/buggy_10_points.bin", "fp": [0.39, 0.52, 0.00]},
 	{"name": "Sphinx", "id": "BUGGY_04", "cams": "BuggyCamSet_04", "dir": "res://assets/sphinx",
-		"data": "res://data/vehicles/buggy_04.xml", "points": "res://data/vehicles/buggy_04_points.bin"},
+		"data": "res://data/vehicles/buggy_04.xml", "points": "res://data/vehicles/buggy_04_points.bin", "fp": [0.35, 0.48, 0.00]},
 	# o Sphinx do speedrun tem peças compradas: com motor 0.81, BodyMass L2 e
 	# Clutch L2 as trocas (38/57/75 mph) caem no mesmo tempo do vídeo
 	{"name": "Sphinx speedrun", "id": "BUGGY_04", "cams": "BuggyCamSet_04", "dir": "res://assets/sphinx",
-		"data": "res://data/vehicles/buggy_04.xml", "points": "res://data/vehicles/buggy_04_points.bin",
+		"data": "res://data/vehicles/buggy_04.xml", "points": "res://data/vehicles/buggy_04_points.bin", "fp": [0.35, 0.48, 0.00],
 		"livery": "pintura_speedrun.png", "tune": {"engine": 0.81, "mass": 1.0, "shift": 1.0}},
 	# os outros buggies, na ordem da lista do jogo (tools/gerar_buggies.py)
 	{"name": "Mosquito", "id": "BUGGY_01", "cams": "BuggyCamSet_01", "dir": "res://assets/buggy_01",
-		"data": "res://data/vehicles/buggy_01.xml", "points": "res://data/vehicles/buggy_01_points.bin"},
+		"data": "res://data/vehicles/buggy_01.xml", "points": "res://data/vehicles/buggy_01_points.bin", "fp": [0.35, 0.46, 0.00]},
 	{"name": "Inferno", "id": "BUGGY_02", "cams": "BuggyCamSet_02", "dir": "res://assets/buggy_02",
-		"data": "res://data/vehicles/buggy_02.xml", "points": "res://data/vehicles/buggy_02_points.bin"},
+		"data": "res://data/vehicles/buggy_02.xml", "points": "res://data/vehicles/buggy_02_points.bin", "fp": [0.37, 0.50, 0.00]},
 	{"name": "Trident", "id": "BUGGY_03", "cams": "BuggyCamSet_03", "dir": "res://assets/buggy_03",
-		"data": "res://data/vehicles/buggy_03.xml", "points": "res://data/vehicles/buggy_03_points.bin"},
+		"data": "res://data/vehicles/buggy_03.xml", "points": "res://data/vehicles/buggy_03_points.bin", "fp": [0.37, 0.56, -0.06]},
 	{"name": "Bulldog", "id": "BUGGY_05", "cams": "BuggyCamSet_05", "dir": "res://assets/buggy_05",
-		"data": "res://data/vehicles/buggy_05.xml", "points": "res://data/vehicles/buggy_05_points.bin"},
+		"data": "res://data/vehicles/buggy_05.xml", "points": "res://data/vehicles/buggy_05_points.bin", "fp": [0.27, 0.40, -0.08]},
 	{"name": "Phantom", "id": "BUGGY_06", "cams": "BuggyCamSet_06", "dir": "res://assets/buggy_06",
-		"data": "res://data/vehicles/buggy_06.xml", "points": "res://data/vehicles/buggy_06_points.bin"},
+		"data": "res://data/vehicles/buggy_06.xml", "points": "res://data/vehicles/buggy_06_points.bin", "fp": [0.37, 0.44, -0.04]},
 	{"name": "Kraken V8", "id": "BUGGY_07", "cams": "BuggyCamSet_07", "dir": "res://assets/buggy_07",
-		"data": "res://data/vehicles/buggy_07.xml", "points": "res://data/vehicles/buggy_07_points.bin"},
+		"data": "res://data/vehicles/buggy_07.xml", "points": "res://data/vehicles/buggy_07_points.bin", "fp": [0.35, 0.44, 0.00]},
 	{"name": "McKenzies", "id": "BUGGY_08", "cams": "BuggyCamSet_08", "dir": "res://assets/buggy_08",
-		"data": "res://data/vehicles/buggy_08.xml", "points": "res://data/vehicles/buggy_08_points.bin"},
+		"data": "res://data/vehicles/buggy_08.xml", "points": "res://data/vehicles/buggy_08_points.bin", "fp": [0.37, 0.40, 0.02]},
 	{"name": "Viper", "id": "BUGGY_09", "cams": "BuggyCamSet_09", "dir": "res://assets/buggy_09",
-		"data": "res://data/vehicles/buggy_09.xml", "points": "res://data/vehicles/buggy_09_points.bin"},
+		"data": "res://data/vehicles/buggy_09.xml", "points": "res://data/vehicles/buggy_09_points.bin", "fp": [0.25, 0.46, -0.10]},
 	{"name": "Hurricane", "id": "BUGGY_11", "cams": "BuggyCamSet_11", "dir": "res://assets/buggy_11",
-		"data": "res://data/vehicles/buggy_11.xml", "points": "res://data/vehicles/buggy_11_points.bin"},
+		"data": "res://data/vehicles/buggy_11.xml", "points": "res://data/vehicles/buggy_11_points.bin", "fp": [0.37, 0.48, 0.00]},
 	{"name": "Storm", "id": "BUGGY_12", "cams": "LanciaCam", "dir": "res://assets/buggy_12",
-		"data": "res://data/vehicles/buggy_12.xml", "points": "res://data/vehicles/buggy_12_points.bin"},
+		"data": "res://data/vehicles/buggy_12.xml", "points": "res://data/vehicles/buggy_12_points.bin", "fp": [0.33, 0.46, 0.00]},
 ]
 var veh_idx := 0
-const SPAWN_XZ := Vector2(400.0, 340.0)   # em cima da reta de cima da pista
+# largada do RX_01: centro das 4 rodas e direção do carro nos 6 save states
+# parados na largada (tests/ref_ram_chao.json), passados pro remake por
+# Terrain.do_jogo (jogo (580.8, z 1564.3), frente a -115.1° no jogo).
+# É asfalto (COMMON_3 TARMAC), então ali a roda não treme.
+const SPAWN_XZ := Vector2(540.3, 580.8)
+const SPAWN_YAW := -154.9                 # graus, frente = +Z do carro
 
 const Car := preload("res://car.gd")
 const Terrain := preload("res://terrain.gd")
@@ -56,7 +63,7 @@ func _ready() -> void:
 	terrain = Terrain.new()
 	add_child(terrain)
 
-	spawn_vehicle(0, spawn_point(), deg_to_rad(90.0))
+	spawn_vehicle(0, spawn_point(), deg_to_rad(SPAWN_YAW))
 
 	cam = Camera3D.new()
 	cam.far = 4000.0
@@ -93,7 +100,12 @@ func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
 	car.vehicle_id = v.id
 	car.tune_override = v.get("tune", {})
 	car.livery_file = v.get("livery", "pintura.png")
+	if v.has("fp"):
+		car.FP_UP = v.fp[0]
+		car.FP_BACK = v.fp[1]
+		car.FP_PITCH = v.fp[2]
 	car.vehicle_name = "%s (%s)" % [v.name, v.id]
+	car.terrain = terrain
 	add_child(car)
 	car.manual = manual
 	car.reset_to(pos, yaw)
@@ -125,7 +137,8 @@ func _make_environment() -> void:
 	add_child(we)
 
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-50, -35, 0)   # mesma ideia do XML: sol vindo de +X, de cima
+	# Sun Dir do Environment.xml do RX_01 (12282), passado pro remake
+	sun.basis = Basis.looking_at(Terrain.dir_do_jogo(Vector3(0.396, -0.780, 0.483)))
 	sun.light_energy = 1.2
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 150.0
@@ -154,12 +167,17 @@ func _unhandled_input(event: InputEvent) -> void:
 				car.reset_to(Vector3(p.x, terrain.height_at(p.x, p.z) + 1.5, p.z), car.global_rotation.y)
 				reset_camera()
 			KEY_T:
-				car.reset_to(spawn_point(), deg_to_rad(90.0))
+				car.reset_to(spawn_point(), deg_to_rad(SPAWN_YAW))
 				reset_camera()
 			KEY_V:
 				_swap_vehicle((veh_idx + 1) % VEHICLES.size())
 			KEY_F:
 				car.flip_model()
+			# ajuste ao vivo da câmera do piloto (1/2 altura, 3/4 distância,
+			# 5/6 inclinação, 7/8 campo de visão); os valores aparecem no HUD
+			KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8:
+				if cam_mode == 4:
+					_ajusta_piloto(event.physical_keycode)
 			KEY_ESCAPE:
 				get_tree().quit()
 
@@ -207,13 +225,45 @@ func _swap_vehicle(i: int) -> void:
 	spawn_vehicle(i, Vector3(p.x, terrain.height_at(p.x, p.z) + 1.5, p.z), car.global_rotation.y)
 
 
+func _ajusta_piloto(k: int) -> void:
+	match k:
+		KEY_1: car.FP_UP -= 0.02
+		KEY_2: car.FP_UP += 0.02
+		KEY_3: car.FP_BACK -= 0.02
+		KEY_4: car.FP_BACK += 0.02
+		KEY_5: car.FP_PITCH -= 0.02
+		KEY_6: car.FP_PITCH += 0.02
+		KEY_7: car.FP_FOV -= 2.0
+		KEY_8: car.FP_FOV += 2.0
+	car.update_eye()
+
+
 func _process(delta: float) -> void:
 	if car == null:
 		return
 	_update_camera(delta)
 	var kmh: float = car.linear_velocity.length() * 3.6
+	var fp := ""
+	if cam_mode == 4:
+		fp = "\n\npiloto: altura %.2f (1/2)  distância %.2f (3/4)  inclinação %.2f (5/6)  campo de visão %.0f° (7/8)" % [
+			car.FP_UP, car.FP_BACK, car.FP_PITCH, car.FP_FOV]
 	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço: powerslide (freio de mão)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC: câmera (%s)   V: próximo carro   Tab: menu de carros   F: girar o modelo   Esc: sair" % [
 		int(kmh), int(kmh / 1.609), car.gear_label(), int(car.rpm), "MANUAL" if car.manual else "AUTO", car.vehicle_name, ("pneus portados do jogo" if car.use_ported else "pneus antigos") + (", lateral do jogo" if car.lateral_game else ", lateral remendo"), CAM_NAMES[cam_mode]]
+	hud.text += fp
+	hud.text += "\n\nchão: " + _chao()
+
+
+## material do chão embaixo de cada roda (FE FD TE TD) e o WheelJitter dele
+func _chao() -> String:
+	var o: Array = car.jit_order
+	if o.size() != 4:
+		return "?"
+	var out := []
+	for k in [[0, "FE"], [2, "FD"], [1, "TE"], [3, "TD"]]:
+		var w: Dictionary = car.wheels[o[k[0]]]
+		out.append("%s %s (%.1f)%s" % [k[1], terrain.material_name(w.mat),
+			terrain.wheel_jitter(w.mat, car.surface_jitter), "" if w.hit else " no ar"])
+	return "   ".join(out)
 
 
 const GameCamera := preload("res://game_camera.gd")
@@ -221,6 +271,10 @@ const CAM_XML := "res://data/cameras.xml"
 const CAM_NAMES := ["perto", "longe", "capô", "para-choque", "piloto"]
 var gcams := []                           # câmeras do jogo, uma por modo (0..3)
 var cam_ready := false
+# a câmera do piloto não existe no jogo; tremer igual à do capô é melhoria nossa
+const TREMIDA_PILOTO := true
+var jit_piloto
+var jit_acc := 0.0                        # passos de 1/60 das câmeras presas
 
 
 func _make_cameras() -> void:
@@ -237,10 +291,11 @@ func cam_state() -> Dictionary:
 	# transform interpolado: é o que aparece na tela (física roda a 120 Hz)
 	var xf: Transform3D = car.get_global_transform_interpolated()
 	var b := xf.basis.orthonormalized()
-	var tp: Vector3 = xf * car.model_offset
+	var tp: Vector3 = xf * car.corpo(Vector3.ZERO)   # origem do modelo
 	var v: Vector3 = car.linear_velocity
 	return {
 		"tp": tp, "basis": b, "vel": v, "v_f": v.dot(b.z),
+		"speed": v.length(), "chao": car.jitter_chao,
 		"air_time": car.air_time, "grounded": car.grounded,
 		"ground_n": ground_normal(tp.x, tp.z),
 	}
@@ -282,25 +337,39 @@ func _update_camera(delta: float) -> void:
 
 	if cam_mode == 4:
 		# primeira pessoa (não é do jogo): nos olhos do piloto
-		var eye: Vector3 = car.driver_eye()
-		var b: Basis = car.get_global_transform_interpolated().basis
-		var turn: float = car.steer / car.MAX_STEER
-		var look_dir: Vector3 = (b.z + b.x * turn * 0.25 - b.y * 0.08).normalized()
 		cam.keep_aspect = Camera3D.KEEP_HEIGHT
-		cam.global_position = eye
-		cam.look_at(eye + look_dir * 10.0, b.y)
-		cam.fov = 70.0
+		var fp: Transform3D = car.first_person_xf()
+		if TREMIDA_PILOTO:
+			if jit_piloto == null:
+				jit_piloto = GameCamera.CameraJitter.carregar(CAM_XML, "MountOnHood")
+			_passo_tremida(delta, jit_piloto, s)
+			var d: Vector3 = GameCamera.CameraJitter.aplicar(-fp.basis.z, jit_piloto.n)
+			fp.basis = Basis.looking_at(d, fp.basis.y)
+		cam.global_transform = fp
+		cam.fov = car.FP_FOV
+		cam.near = car.FP_NEAR
 		return
 
+	cam.near = 0.1
 	# MountOnHood / MountOnFront: presa no carro, PosOffset no frame do modelo,
 	# Orientation.X = inclinação em graus, FOV = zoom fixo
 	var g = gcams[cam_mode]
+	_passo_tremida(delta, g.jit, s)
 	var xf: Transform3D = car.get_global_transform_interpolated()
 	var bb := xf.basis.orthonormalized()
-	var pos: Vector3 = xf * (car.model_offset + g.pos_off)
+	var pos: Vector3 = xf * (car.corpo(Vector3.ZERO) + g.pos_off)
 	var o: Vector3 = g.p.get("orient", Vector3.ZERO)
 	var fwd := bb.z.rotated(bb.x, deg_to_rad(-o.x))
+	fwd = GameCamera.CameraJitter.aplicar(fwd, g.jit.n)
 	cam.keep_aspect = Camera3D.KEEP_HEIGHT
 	cam.global_position = pos
 	cam.look_at(pos + fwd * 10.0, bb.y)
 	cam.fov = g.fov_deg(g.p.FOV)
+
+
+## tremida das câmeras presas no passo de 1/60 do jogo
+func _passo_tremida(delta: float, j, s: Dictionary) -> void:
+	jit_acc += minf(delta, 0.25)
+	while jit_acc >= GameCamera.STEP:
+		jit_acc -= GameCamera.STEP
+		j.passo(GameCamera.STEP, s.speed, s.chao)

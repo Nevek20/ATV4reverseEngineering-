@@ -16,10 +16,16 @@ extends SceneTree
 ##   MEDIR=1                    imprime as medidas de cada canto em cada curso e
 ##                              salva <saida>_medidas.json (ver _medir/_estatico)
 ##   CORPO=0                    esconde a carroceria em todas as vistas
+##   VIRA=1                     direção forçada (-1..1, + = esquerda) antes dos
+##                              prints (só no print simples, sem VISTAS)
+##   VOLANTE_COR=1              pinta o volante solto de vermelho (vista "volante")
 ##   PASTA=res://assets/buggy_02 (pasta com o pecas.json)  PONTOS=res://...
 ##   RODA_F=res://...  RODA_T=res://...
 ##                              troca pasta/pontos/rodas sem mexer no main.gd
 ##                              (teste de hipótese)
+## Frames: as vistas (OFFS) e as medidas (MEDIR) estão no frame do carro do
+## JOGO (mão esquerda, esquerda do jogo = x < 0); o car.gd põe no Godot pelo
+## espelho (car.corpo / car.jogo), onde a esquerda do jogo é +X.
 ## Exemplo (Inferno, 3 vistas x 4 cursos, com medidas):
 ##   VISTAS=lado0,frente0,tras0,lado0_sc CURSOS=nat,0,max,min MEDIR=1 xvfb-run -a $GODOT --path . \
 ##     --rendering-driver opengl3 -s res://tests/print_tela.gd -- /tmp/inf.png lado 4
@@ -46,13 +52,14 @@ var medidas := {}
 var vcache := {}                # Mesh -> PackedVector3Array (frame do modelo)
 var body_v := PackedVector3Array()
 
+# posição da câmera em volta do carro, frame do jogo (x > 0 = direita do jogo)
 const OFFS := {"lado": Vector3(4.5, 1.2, 0.0), "tras": Vector3(0.0, 1.6, -6.0),
 	"frente": Vector3(2.5, 1.0, 5.0), "outro_lado": Vector3(-4.5, 1.2, 0.0),
 	"cima": Vector3(0.01, 7.0, 0.0), "tras_baixo": Vector3(1.5, 0.6, -4.0),
 	"roda_tras": Vector3(-2.6, 1.0, -0.6), "persegue": Vector3(0.0, 2.3, -6.5),
 	"frente_esq": Vector3(-3.5, 2.0, 4.5), "garagem_lado": Vector3(-5.0, 1.0, 0.6),
 	"garagem_tras": Vector3(-3.2, 1.3, -4.6), "roda_tras_dentro": Vector3(0.0, 0.3, -0.8),
-	# diagnóstico: lado (x > 0 = direita do jogo), frente e trás retos e baixos
+	# diagnóstico: lado (direita do jogo), frente e trás retos e baixos
 	"lado0": Vector3(6.2, 0.7, 0.0), "outro_lado0": Vector3(-6.2, 0.7, 0.0),
 	"frente0": Vector3(0.0, 0.7, 5.6), "tras0": Vector3(0.0, 0.7, -5.6)}
 
@@ -108,10 +115,15 @@ func _spawn(i: int) -> void:
 		c.wheel_front_file = OS.get_environment("RODA_F")
 	if OS.has_environment("RODA_T"):
 		c.wheel_rear_file = OS.get_environment("RODA_T")
+	if v.has("fp"):
+		c.FP_UP = v.fp[0]
+		c.FP_BACK = v.fp[1]
+		c.FP_PITCH = v.fp[2]
 	c.vehicle_name = "%s (%s)" % [v.name, v.id]
+	c.terrain = main.terrain
 	main.add_child(c)
 	main.car = c
-	c.reset_to(main.spawn_point(), deg_to_rad(90.0))
+	c.reset_to(main.spawn_point(), deg_to_rad(main.SPAWN_YAW))
 	main.gcams.clear()
 	main.cam_ready = false
 
@@ -123,9 +135,11 @@ func _process(_dt: float) -> bool:
 			_spawn(veh)
 		else:
 			main.car.queue_free()
-			main.spawn_vehicle(veh, main.spawn_point(), deg_to_rad(90.0))
+			main.spawn_vehicle(veh, main.spawn_point(), deg_to_rad(main.SPAWN_YAW))
 	if multi:
 		return _process_multi()
+	if frames == 3 and OS.has_environment("VIRA"):
+		main.car.test_input = {"thr": 0.0, "brk": 0.0, "steer": float(OS.get_environment("VIRA"))}
 	if frames == 90 and view != "jogo":
 		_camera(view)
 	if frames == 94:
@@ -147,21 +161,71 @@ func _camera(v: String) -> void:
 			ch.visible = corpo
 		v = v.trim_suffix("_sc")
 	var t := car.global_transform
+	if v.begins_with("piloto"):
+		# a mesma câmera de primeira pessoa do jogo (car.first_person_xf),
+		# em 16:9 como no F5. FP_FOV/FP_PITCH/FP_UP/FP_BACK/FP_VOLANTE no
+		# ambiente trocam os parâmetros (teste de calibração)
+		for k in ["FP_FOV", "FP_PITCH", "FP_UP", "FP_BACK"]:
+			if OS.has_environment(k):
+				car.set(k, float(OS.get_environment(k)))
+		if OS.has_environment("FP_VOLANTE"):
+			car.FP_VOLANTE = OS.get_environment("FP_VOLANTE") == "1"
+		# vista "piloto:UP:BACK:PITCH:FOV" testa uma variante por vista
+		var pv := v.split(":")
+		if pv.size() == 5:
+			car.FP_UP = float(pv[1])
+			car.FP_BACK = float(pv[2])
+			car.FP_PITCH = float(pv[3])
+			car.FP_FOV = float(pv[4])
+		car.update_eye()
+		var camp: Camera3D = root.get_node_or_null("CamPrint")
+		if camp == null:
+			camp = Camera3D.new()
+			camp.name = "CamPrint"
+			root.add_child(camp)
+		camp.keep_aspect = Camera3D.KEEP_HEIGHT
+		camp.global_transform = car.first_person_xf()
+		camp.fov = car.FP_FOV
+		camp.near = car.FP_NEAR
+		camp.current = true
+		return
+	if v == "volante":
+		# de trás do banco, olhando o volante (pinta ele se pedir)
+		var c: Vector3 = car.corpo(car.SW_CENTER)
+		if OS.get_environment("VOLANTE_COR") == "1" and car.sw_pivot:
+			for mi in car.sw_pivot.get_children():
+				var m := StandardMaterial3D.new()
+				m.albedo_color = Color(1, 0, 0)
+				m.cull_mode = BaseMaterial3D.CULL_DISABLED
+				for i in mi.mesh.get_surface_count():
+					mi.set_surface_override_material(i, m)
+		var camv: Camera3D = root.get_node_or_null("CamPrint")
+		if camv == null:
+			camv = Camera3D.new()
+			camv.name = "CamPrint"
+			root.add_child(camv)
+		camv.fov = 55.0
+		camv.near = 0.02
+		camv.global_position = t * (c + Vector3(0.25, 0.45, -0.75) * car.ESPELHO)
+		camv.look_at(t * c, Vector3.UP)
+		camv.current = true
+		return
 	var off: Vector3 = OFFS.get(v, Vector3(4.5, 1.2, 0.0))
 	var alvo := Vector3(0, 0.7, 0)
 	if v.ends_with("0"):
 		alvo = Vector3(0, 0.5, 0)
 	if v.begins_with("roda_tras"):
+		alvo *= car.ESPELHO
 		for w in car.wheels:
-			if not w.front and w.px < 0.0:
-				alvo = w.pivot.position
+			if not w.front and w.left:
+				alvo = t.affine_inverse() * w.pivot.global_position
 	var cam: Camera3D = root.get_node_or_null("CamPrint")
 	if cam == null:
 		cam = Camera3D.new()
 		cam.name = "CamPrint"
 		root.add_child(cam)
 	cam.fov = 45.0
-	cam.global_position = t * off
+	cam.global_position = t * (off * car.ESPELHO)
 	cam.look_at(t * alvo, Vector3.UP)
 	cam.current = true
 
@@ -178,7 +242,7 @@ func _chao() -> Dictionary:
 		q.exclude = [c.get_rid()]
 		var hit := space.intersect_ray(q)
 		var r: float = mi.get_aabb().size.y * 0.5
-		var lp: Vector3 = c.global_transform.affine_inverse() * p - c.model_offset
+		var lp: Vector3 = c.jogo(c.global_transform.affine_inverse() * p)
 		var nome := _canto(w)
 		print("roda %s modelo (%.4f, %.4f, %.4f) curso %.4f" % [nome, lp.x, lp.y, lp.z, w.x])
 		var d := {"curso": w.x, "r_modelo": r, "r_fisica": w.r, "min": w.min, "max": w.max}
@@ -193,10 +257,9 @@ func _chao() -> Dictionary:
 	return res
 
 
-## canto no padrão do jogo: E = x < 0 no modelo (car.gd chama x > 0 de Left)
+## canto no padrão do jogo (E = esquerda do jogo = w.left do car.gd)
 func _canto(w: Dictionary) -> String:
-	var x: float = w.px - main.car.model_offset.x
-	return ("F" if w.front else "T") + ("E" if x < 0.0 else "D")
+	return ("F" if w.front else "T") + ("E" if w.left else "D")
 
 
 func _process_multi() -> bool:
@@ -243,7 +306,7 @@ func _process_multi() -> bool:
 		return false
 	wait -= 1
 	if wait == 0:
-		var path := "%s_%s_%s.png" % [out.get_basename(), s[0], s[1]]
+		var path := "%s_%s_%s.png" % [out.get_basename(), s[0], s[1].replace(":", "_")]
 		root.get_viewport().get_texture().get_image().save_png(path)
 		print("print salvo em ", path)
 		shot_i += 1
@@ -335,7 +398,6 @@ func _estatico() -> Dictionary:
 	var car = main.car
 	var susp = car.susp_vis
 	var res := {}
-	var off: Vector3 = car.model_offset
 	for w in car.wheels:
 		var nome := _canto(w)
 		var d := {}
@@ -343,7 +405,7 @@ func _estatico() -> Dictionary:
 		var ab := mi.get_aabb()
 		var r := ab.size.y * 0.5
 		var hw := ab.size.x * 0.5
-		var c := Vector3(w.px, w.y0, w.pz) - off
+		var c: Vector3 = car.jogo(Vector3(w.px, w.y0, w.pz))
 		d.ponto_roda = [c.x, c.y, c.z]
 		d.r_modelo = r
 		d.r_fisica = w.r
@@ -414,8 +476,8 @@ func _medir() -> Dictionary:
 	var res := {}
 	for w in car.wheels:
 		var nome := _canto(w)
-		var c: Vector3 = w.pivot.position - off
-		var c0 := Vector3(w.px, w.y0, w.pz) - off
+		var c: Vector3 = w.pivot.position - off       # pivô no frame do jogo (espelho)
+		var c0: Vector3 = car.jogo(Vector3(w.px, w.y0, w.pz))
 		var dd := c - c0
 		var side := signf(c0.x)
 		var d := {"x": w.x, "centro": [c.x, c.y, c.z],

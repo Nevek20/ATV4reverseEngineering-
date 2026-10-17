@@ -5,7 +5,7 @@ extends Node3D
 ## Quem lê a saída é o tests/rodar_testes.py.
 ##
 ## Variáveis:
-##   SC    roteiro: accel (padrão), coast, man, s50, half, hs, turn, turnslow,
+##   SC    roteiro: accel (padrão), coast, man, s50, half, hs, turn, turnslow, freio, freiocurva,
 ##         mid, hb, reverse
 ##   VEH   índice do carro em main.gd VEHICLES (0 Renegade, 1 Sphinx, 2 Sphinx speedrun)
 ##   TUNE  JSON sobrescrevendo peças, ex.: {"engine":0.81,"mass":1.0}
@@ -94,6 +94,12 @@ func _physics_process(d):
 		ti.thr = 1.0 if t > 1.0 else 0.0
 		ti.steer = 1.0 if t > 5.0 and t < 8.0 else 0.0
 		ti.hb = t > 5.0 and t < 6.0
+	elif sc == "freio" or sc == "freiocurva":
+		# acelera até ~7 s e pisa no freio (curva: virando metade)
+		ti.thr = 1.0 if t > 1.0 and t < 7.0 else 0.0
+		ti.brk = 1.0 if t >= 7.0 else 0.0
+		if sc == "freiocurva":
+			ti.steer = 0.5 if t >= 7.0 else 0.0
 	elif sc == "reverse":
 		ti.brk = 1.0 if t > 1.0 and t < 6 else 0.0
 	log_t += d

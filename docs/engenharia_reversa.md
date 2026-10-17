@@ -72,7 +72,27 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - No ar **0x2129c0**: guinada (alvo direção·máx, acel direção·acc·dt),
   empurrão lateral (Maximum_force 2.5 kN, cauda de 2 s), arfagem com freio /
   sem acelerador.
-- Não portado: **0x210908** (roda travada gira a força quando slip < −0.25).
+- Patinada por roda **0x610+4i** (0x2101e0, 2ª volta): roda saturada na
+  elipse com força·v_f > 0 cresce Growth_rate_during_wheel_spin até o limite
+  do motor (giro de referência, Maximum); com força contra o movimento e
+  pedal (0x390) > 0.1 desce Growth_rate_during_wheel_lock até −1. Fora da
+  elipse volta pra 0 (Recovery_rate_during_wheel_lock / _spin). Sem
+  condição de acelerador nem de marcha (vale em ré).
+- **ABS 0x20eb98** (flag 0x620+4i): Enable_ABS do Footbrake; patinada <
+  ABS_engagement_slip_ratio (−0.2) solta o freio da roda, ≥
+  ABS_disengagement_slip_ratio (−0.01) volta. Todos os buggies têm ABS
+  (conferido na RAM). Roda fora do chão zera a flag.
+- **Trava 0x210908** (depois da elipse, antes do 0x210ce0; globais
+  0x5506a4..b4 = ligado, 2 mph, −0.25, −1, rampa linear): roda sem ABS
+  soltando, com patinada < −0.25, tem a força (mesmo tamanho) virada pra
+  contra o deslize do contato: velocidade local do corpo (0x410, global
+  0x550680 = 0) com a frente trocada por −v_f·patinada (0x630, 0x20df58).
+  Em −1 fica toda contra. Com o ABS dos buggies não chega a agir.
+- Aproximação do remake: o jogo usa a patinada medida do giro real da roda
+  (0x600 = ω·R/v − 1, ω = W+0x48 integrado por torque em 0x2484c8 /
+  0x249930, não portado); aqui 0x600 = 0x610. O giro da roda na tela e o
+  giro do motor usam v·(1 + patinada). O ABS fica fora do freio de mão do
+  remake (que não é o do jogo).
 
 ## Pontos do modelo
 
@@ -101,11 +121,31 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   descolar/recolar 0x384ef8 (MAX_POS_CHANGE 1, BEGIN 2 s, REATTACH 2 s) →
   altura mínima do chão 0x384c80 (1.45 m, taxa 30) → mira 0x37f2f8
   (LOOK_OFFSET; y da mira some com mph/LOOK_MAX_SPEED) → tremida 0x380418
-  (não portada) → zoom 0x3806a0 (FOV_MIN/MAX_ZOOM por mph, fração dt).
+  (camera_jitter.gd, abaixo) → zoom 0x3806a0 (FOV_MIN/MAX_ZOOM por mph,
+  fração dt).
 - Final 0x387320: pos = ant + min(taxa·dt,1)·(nova + dir·0.2 − ant), taxa
   10 subindo 5/s até 40.
 - Projeção 0x390a80 / 0x64f0a0: meia-largura 0.5/zoom, meia-altura
   0.375/zoom (4:3). Zoom menor = mais aberto.
+- Tremida (vtable 0x5b4fb8: update 0x380418, aplica 0x380170; construtor
+  0x380348/0x380090, loader 0x38cc48). Parâmetros só do GenericCameraData
+  pelo tipo da câmera (os Jitter* dos CameraSet são ignorados: conferido nos
+  componentes vivos na RAM). Defaults: SpeedStart 0, SpeedMax 1, Perlin 0,
+  Decay 0.95, CollSpeed 10/30, CollMass 0.01/0.1.
+  Velocidade: f = clamp((|v| − Start·0.44694445)/((Max − Start)·0.44694445)),
+  a = veículo+0xac0·f², e veículo+0xac0 = média do WheelJitter embaixo de
+  FL, RL, FR no chão (0x202760). Duas ondas Perlin (Amp/4, Freq) e
+  (Amp, Freq·1.05), fase sorteada; n = tabela(fase)·amp·a, fase += dt·freq
+  mod 1 (0x3aa668/0x3aa6e0, tabela de 257 floats em RAM 0xd0e7f0 =
+  data/ruido_camera.bin). Direção nova = dir + direita·n1 + cima·n2,
+  matriz refeita (0x61e010). Órbita: 70 a 100 mph, Amp 0.03, Freq 0.3;
+  capô/para-choque: 0 a 75 mph, Amp 0.04, Freq 0.25.
+  Batida (NÃO portada, falta o sistema de colisão): última colisão do corpo
+  (corpo+0x7a0 + idx·0x40, idx = corpo+0x860, −1 sem) dá c = rampa da
+  velocidade (CollisionSpeedFor*) × rampa da massa do outro (+0x60 → +0x78,
+  CollisionMassFor*) × CollisionJitterMagMax; amp = max(c, amp)·Decay por
+  passo (com trava por veículo+0xa74/0xa78), somando sorteio uniforme
+  [−amp, amp) nas duas componentes (x·31415821+1 mod 2^30, semente 0x8383a8).
 - Câmeras montadas (MountOnHood/Front): PosOffset no frame do modelo,
   Orientation.X em graus, FOV fixo. MountOnFront fica dentro da carroceria
   (não desenha o carro).
@@ -138,9 +178,95 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   até o SHOCK_PISTON girado (x original). atan, não atan2.
 - Rally (0x220528 / 0x220cf0): roda = WHEEL + x·dir, sem balança.
   Estepe/LIGHTRIG/BUMPER (0x221a88..): matriz e posição do ponto, fixos.
-- Tremida 0x202760 (não portada): roda no chão, ±0.0375·min(1, rug·0.0639·v).
-- Conferido: tests/teste_pecas.gd compara as 36 matrizes (Renegade e
-  Sphinx) com a RAM, erro < 0.01 mm.
+- Tremida 0x202760 (portada, car.gd _wheel_jitter): uma vez por passo de
+  física (50 Hz no PAL: FUN_00172778, obj+0x70 = 50 se 0x7f3e8c == 3),
+  todos os veículos. Zera as 5 entradas; pra FL, RL, FR (pula a RR) no chão
+  (corpo+0x898+4i = W+0x10c): amp = min(1, WheelJitter·0.06392613·v), com
+  v = corpo+0x440 (m/s no plano do chão, 0x20d568) e 0.06392613 =
+  2.2374146/35; x = (x·31415821 + 1) mod 2^30 (gerador do piloto, semente =
+  relógio em ms + índice); tremida = amp·(x·0.075/2^30 − 0.0375). Depois
+  RR = RL (vem do eixo rígido dos ATVs, cCompPlace_RearFreeAxle 0x21ee00).
+  WheelJitter = Materials.xml da pista (+0x3c, loader 0x3a9608): RX_01 0.3
+  na terra/cascalho/grama, 0 no asfalto e gelo; material da roda = do
+  triângulo do contato (W+0x140). A largada do RX_01 é asfalto. Entra em
+  0x222078 (curso visual, sem clamp depois), então mexe balança, cubo,
+  freio e amortecedor. tests/teste_tremida.gd.
+- Conferido: tests/teste_pecas.gd compara 100 matrizes de 6 carros
+  (Renegade, Sphinx, Inferno, Bulldog, Phantom, Storm) com a RAM dos save
+  states parados na largada, erro < 0.01 mm. Classes das rodas de rally:
+  método +0x1c 0x1fd1c0 FL, 0x1fd248 FR, 0x1fd2d0 RL, 0x1fd358 RR; estepe
+  0x1fd730. Os caminhos carregados na RAM (Models_4K/Chassis/..., Wheel/...)
+  são os mesmos do pecas.json de cada carro.
+
+## Piloto e volante
+
+- O volante NÃO gira no jogo: faz parte do BODY.pingu, desenhado com a
+  matriz do carro (cCompPlace_Body +0x1c = 0x1fc100, identidade). Nenhum
+  .pingu tem índice de matriz por vértice. O volante girando do remake é
+  melhoria (car.gd VOLANTE_GIRA; tools/volante.py acha o aro).
+- Quem mexe com a direção é o piloto: Driver="Seated" ->
+  cDriverComponentFactory_Seated (0x1fe918, 0x1b1508) -> AObjectRider
+  (0x1829c8), sentado no ponto ARSE (rider+0x2f0; origem = ARSE −
+  (0, 1.1315, 0.3032)). Modelo MALE_HIGH/MID/LOW.srd (other/00514..00516),
+  esqueleto InGame_Mid.skl (00519, 47 ossos). Animação Truck_Riding
+  (Setup/RiderAnimation.xml): clip STEER_LEFT.bac (00312) tocado no tempo
+  |s|·(1/6 s), espelhado com s > 0 (0x190e50). s suavizado em 0x187060:
+  s += min(1/dt, 30)·(direção − s)·dt (o volante do remake usa a mesma
+  suavização com o sinal trocado: car.gd rider_s = −s, + = esquerda). mRiderMatchSteer = 0 nos buggies; IK das mãos só no ATV_Riding e
+  Bike_Riding (0x1a15a0/0x1a1650), não no Truck_Riding que o Seated usa.
+  Câmeras: mRenderRider = 0 em On_Front, On_Hood e Wheel (xml 14837).
+  Ainda não portado (faltam parsers de .srd/.skl/.bac).
+- Direção visual das rodas 0x21def8 / 0x20ede8: body+0x3c0 = direção ·
+  lerp(Max_visual_steer_zero, _full, mph/SpeedMax), SpeedMax = curva
+  BasicSteering/Angle_vs_speed (params+0x4e8 = 100); nos buggies 30°/30°.
+
+## Terreno (STREAMT/RX/RX01.000)
+
+- tools/extrair_material.py decodifica o stream (formato no cabeçalho do
+  script): 64 tiles de 128 m, patches 9x9 (FUN_0029bcb0, tabela 0x550c00),
+  altura = FUN_00299a60 com a diagonal (i+1, j)-(i, j+1). A mesma diagonal
+  do HeightMapShape3D do Godot (Godot Physics e Jolt, testado). Grade de
+  1 m em assets/terrain/rx01_height.bin; o .bin antigo errava 1,5 m em
+  média (até 32 m).
+- Material: entrada E do tile, uma a cada 2 m, byte0 & 0xF = índice i ->
+  Material_(i+1) do Levels/RX_01/Env/Materials.xml (unpacked/xml/12280,
+  copiado em data/materials_rx01.xml). Mapa em rx01_material.bin.
+- Os .bin ficam no layout do jogo (linha = z, coluna = x); terrain.gd
+  transpõe na carga (ver Mão abaixo).
+- Conferido: contato das rodas (W+0x130) e material (W+0x140) dos 6 save
+  states da largada: altura a 0,1 mm, material 2 (COMMON_3 TARMAC) igual.
+  tests/teste_chao.gd + tests/ref_ram_chao.json.
+- Largada: centro das rodas no jogo (580.8, z 1564.3), frente a −115,1°;
+  no remake (540.3, 580.8) e −154,9° (main.gd SPAWN_XZ/SPAWN_YAW).
+- Por material o XML também tem Friction, Damping, Bounciness, Sink e os
+  Overrides "FRICTION TYRE <pneu> <valor>" (DIRT_BUDGET 0,80 na terra e
+  1,10 no asfalto do RX_01). Atrito por material ainda não portado.
+
+## Mão (espelho)
+
+- O jogo é mão esquerda: x direita, y cima, z frente; WHEEL_*_LEFT em x < 0
+  no modelo e, no mundo, FL - FR aponta pra -(cima x frente) se lido como
+  mão direita. O Godot é mão direita, então copiar os números direto
+  espelha tudo (foi assim até out/2026; o Matheus confirmou no jogo).
+- Carro: S = diag(-1, 1, 1). car.gd põe malha, suspensão (cCompPlace),
+  rodas e volante embaixo de um nó com escala S, em frame do jogo (o
+  teste_pecas continua comparando direto com a RAM). Física no frame do
+  Godot: ponto do jogo -> car.corpo(p) = (p + model_offset)·S; esquerda do
+  jogo = +X (w.left). Rotação em y e z troca de sinal sob S (em x não): o
+  ângulo das rodas no jogo é -steer·vis_steer (steer + = esquerda no
+  remake, então no jogo ângulo + = direita, como o STEER_LEFT espelhado com
+  s > 0 do piloto). Volante: -rider_s.
+- Mundo: W = transposição, remake (X, Y, Z) = (z − 1024, y, x) do jogo
+  (Terrain.do_jogo / dir_do_jogo / pro_jogo). Inverter só o x também
+  resolveria a mão, mas trocaria a diagonal das células do terreno.
+  Pose de um carro do jogo no remake: W·T_jogo·T(−model_offset)·S, yaw do
+  remake = 90° − yaw do jogo.
+- Câmeras (cameras.xml): PosOffset/LOOK_OFFSET com x negado e Orientation
+  com y e z negados (pseudovetor), no game_camera._parse.
+- Sol: Sun Dir do Environment.xml do RX_01 (12282) passado por W.
+- Física: espelho exato (accel igual; curva pra esquerda nova = curva pra
+  direita antiga, Renegade e Mosquito com diferença zero; Sphinx igual até
+  uma derrapagem de 48° em 8,6 s, onde 1 rpm de ruído cresce).
 
 ## Archive
 

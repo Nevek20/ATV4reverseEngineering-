@@ -73,10 +73,15 @@ const WHEEL_X := 1.0
 const WHEEL_Z := 1.75
 const WHEEL_Y := 0.45         # altura do cubo com o carro parado
 
-# volante do modelo (medido na malha: centro do aro e eixo da coluna)
-const SW_CENTER := Vector3(-0.434, 1.351, 0.396)
-const SW_AXIS := Vector3(0.0, 0.684, -0.729)
-const SW_TURNS := 2.6
+# volante: no jogo ele é parte da carroceria e NÃO gira. Girar é melhoria do
+# remake (tools/volante.py acha o aro em cada carro e o gerar_buggies.py
+# separa; centro e eixo vêm do pecas.json). VOLANTE_GIRA = false deixa igual
+# ao jogo.
+const VOLANTE_GIRA := true
+var SW_CENTER := Vector3(-0.434, 1.351, 0.396)    # Renegade, se faltar no pecas.json
+var SW_AXIS := Vector3(0.0, 0.684, -0.729)
+const SW_TURNS := 2.6         # sem fonte no jogo (escolha do remake)
+var rider_s := 0.0            # direção suavizada do piloto (rider+0x2d8 com sinal trocado: + = esquerda)
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
 const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
@@ -85,8 +90,16 @@ const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
 # Modelos gerados com o pingu2obj antigo precisam de CULL_DISABLED.
 const MODEL_CULL := BaseMaterial3D.CULL_BACK
 
+# O jogo é mão esquerda (x direita, y cima, z frente; esquerda do jogo = x < 0
+# no modelo) e o Godot é mão direita. Tudo que vem do jogo em frame do modelo
+# (malhas, pontos, peças, volante, olho) fica em frame do JOGO embaixo do nó
+# espelho (escala (-1, 1, 1) na origem do corpo). A física roda no frame do
+# Godot (+X = esquerda): ponto do jogo entra nela por corpo(). Nunca converter
+# a mesma coisa nos dois lugares.
+const ESPELHO := Vector3(-1.0, 1.0, 1.0)
+var espelho: Node3D             # filhos em frame do jogo (model_root, susp_vis, rodas)
 var model_root: Node3D
-var model_offset := Vector3.ZERO
+var model_offset := Vector3.ZERO  # origem do modelo no frame do JOGO (dentro do espelho)
 var sw_pivot: Node3D
 
 # ---- parâmetros carregados do XML ----
@@ -133,19 +146,48 @@ var air_time := 0.0
 var air_lat_state := 0        # empurrão lateral no ar (0x6f4): 0 nada, 1 direita, 2 esquerda
 var air_lat_timer := 0.0
 var air_lat_scale := 1.0
-var sideslip := 0.0           # rad, + = bico à esquerda da trajetória
+var sideslip := 0.0           # rad, + = bico à direita da trajetória (0x6c0 do jogo com sinal trocado)
 var grounded := 0
+
+# tremida das rodas no chão (0x202760, só visual). A cada passo de física do
+# jogo (50 Hz no PAL) cada roda no chão sorteia um deslocamento do curso:
+# amp = min(1, WheelJitter * 0.06392613 * v) e tremida = amp * (U*0.075 - 0.0375),
+# com v a velocidade no plano do chão (m/s) e U do gerador do piloto
+# (x = x*31415821 + 1 mod 2^30). A traseira direita do jogo copia a esquerda.
+# WheelJitter vem do Materials.xml da pista, pelo material do chão embaixo de
+# cada roda (W+0x140, terrain.gd): 0.3 na terra/cascalho do RX_01, 0 no asfalto.
+# No ar a roda fica com o último material (o jogo não mexe no W+0x140).
+const JIT_K := 0.06392613     # 2.2374146 / 35: amplitude cheia a 35 mph com WheelJitter 1
+const JIT_HZ := 50.0          # passo de física do PAL (FUN_00172778)
+var surface_jitter := 0.3     # sem terreno (teste no plano): terra (Material_1 DIRT/COMMON)
+var terrain = null            # terrain.gd (main.gd põe): material do chão por roda
+var jit_seed := 0
+var jit_acc := 0.0
+var spd_ground := 0.0         # corpo+0x440: velocidade no plano do chão (m/s)
+var jit_order := []           # índices das rodas na ordem do jogo: FL, RL, FR, RR
+var jitter_chao := 0.0        # veículo+0xac0: média do WheelJitter embaixo de FL, RL, FR no chão (câmera)
 
 var lateral_game := true     # L alterna: força lateral por eixo (jogo) x remendo antigo
 var use_ported := true      # P alterna: física portada do jogo x modelo antigo
 var stf_blend := 0.0          # 0x474: quanto da força pra frente veio da derrapagem
-var drive_slip := 0.0         # patinada das rodas de tração (0x610 no jogo)
+var drive_slip := 0.0         # maior patinada das rodas de tração (vai pro giro do motor)
+# roda travando (0x210908, globais 0x5506a4..b4): acima de 2 mph, roda sem ABS
+# segurando com patinada abaixo de -0.25 tem a força virada contra o deslize
+# do contato (rampa linear até -1, aí fica toda contra). Nos buggies o ABS
+# (Enable_ABS) solta o freio em -0.2, então o pedal não chega a travar.
+const TRAVA_MPH := 2.0
+const TRAVA_INI := -0.25
+const TRAVA_FIM := -1.0
 var test_input = null         # {thr, brk, steer} pra testes automáticos
 
 
 func _ready() -> void:
+	espelho = Node3D.new()
+	espelho.name = "Espelho"
+	espelho.scale = ESPELHO
+	add_child(espelho)
 	model_root = Node3D.new()
-	add_child(model_root)
+	espelho.add_child(model_root)
 	_load_pecas()
 	_load_model()                 # antes da física: define model_offset
 	_load_physics()
@@ -159,7 +201,7 @@ func _ready() -> void:
 		_make_wheel_mesh(w)
 	if suspension and not pecas.is_empty() and not points.is_empty():
 		susp_vis = preload("res://suspension_visual.gd").new()
-		add_child(susp_vis)
+		espelho.add_child(susp_vis)
 		var spare_mesh: Mesh = null
 		if ResourceLoader.exists(wheel_rear_file):
 			spare_mesh = load(wheel_rear_file) as Mesh
@@ -234,8 +276,8 @@ func _load_physics() -> void:
 		d.f("Stability/General/Centre_of_mass", "Z"))
 	# o centro de massa do XML está nas coordenadas do modelo (no jogo, a origem
 	# do modelo fica em corpo - CoM, 0x20ca88); aqui o modelo foi deslocado
-	# por model_offset, então o CoM anda junto
-	com += model_offset
+	# por model_offset, então o CoM anda junto (e passa pro frame do Godot)
+	com = corpo(com)
 	center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
 	center_of_mass = com
 
@@ -369,6 +411,13 @@ func _load_physics() -> void:
 	P.slip_grow = d.f("SlipRatio", "Growth_rate_during_wheel_spin", 3.0)
 	P.slip_recover = d.f("SlipRatio", "Recovery_rate_during_wheel_spin", 4.0)
 	P.slip_max = d.f("SlipRatio", "Maximum", 10.0)
+	P.lock_grow = d.f("SlipRatio", "Growth_rate_during_wheel_lock", 2.0)
+	P.lock_recover = d.f("SlipRatio", "Recovery_rate_during_wheel_lock", 2.0)
+	# ABS (0x20eb98): solta o freio da roda com patinada < engagement e volta
+	# com patinada >= disengagement
+	P.abs_on = d.f("Footbrake", "Enable_ABS", 0.0) != 0.0
+	P.abs_eng = d.f("Footbrake", "ABS_engagement_slip_ratio", -0.2)
+	P.abs_dis = d.f("Footbrake", "ABS_disengagement_slip_ratio", -0.01)
 
 	# estabilidade e ar
 	P.h_long = d.f("Stability/WheelForceHeightScales", "Longitudinal_scale_std", 0.5)
@@ -394,19 +443,17 @@ func _load_physics() -> void:
 	P.ap_acc = d.f("Stability/AntiPitch", "Acceleration", 0.0)
 
 	# rodas: esquerda = +X (o carro anda pra +Z). Com o arquivo de pontos do
-	# jogo, a roda fica onde o jogo põe (WHEEL_FRONT_LEFT...); sem ele, no chute.
-	# O modelo não é espelhado aqui, então o lado "esquerdo" do jogo (x < 0)
-	# aparece no -X do Godot; a física só precisa saber de que lado cada roda fica.
+	# jogo, a roda fica onde o jogo põe (WHEEL_FRONT_LEFT...), passada pro frame
+	# do Godot por corpo(): a esquerda do jogo (x < 0) vira +X. Sem ele, no chute.
 	wheels.clear()
 	var pts := _load_points(points_file)
 	points = pts
-	if pts.has("ARSE"):
-		DRIVER_EYE = pts["ARSE"] + EYE_FROM_ARSE
+	update_eye()
 	var wpos := {}
 	for k in ["FRONT_LEFT", "FRONT_RIGHT", "REAR_LEFT", "REAR_RIGHT"]:
 		if pts.has("WHEEL_" + k):
-			var pp: Vector3 = pts["WHEEL_" + k] + model_offset
-			var side := "Left" if pp.x > 0.0 else "Right"
+			var pp: Vector3 = corpo(pts["WHEEL_" + k])
+			var side := "Left" if k.ends_with("LEFT") else "Right"
 			var key: String = ("Front" if k.begins_with("FRONT") else "Rear") + side
 			wpos[key] = pp
 	var from_points := wpos.size() == 4
@@ -420,6 +467,7 @@ func _load_physics() -> void:
 		var path: String = "Wheels/" + info[0]
 		var w := {}
 		w.front = info[2] > 0
+		w.left = info[1] > 0                # esquerda do jogo = +X no Godot
 		w.px = WHEEL_X * info[1]
 		w.pz = WHEEL_Z * info[2]
 		if from_points:
@@ -446,15 +494,27 @@ func _load_physics() -> void:
 		w.v = 0.0                           # velocidade do curso (0x0f4)
 		w.f = 0.0                           # força da mola no carro (N, 0x0fc)
 		w.hit = false
+		w.jit = 0.0                         # tremida visual do curso (m)
+		w.mat = -1                          # material do chão embaixo da roda (W+0x140)
 		w.point = Vector3.ZERO
 		w.normal = Vector3.UP
 		w.spin = 0.0
 		w.grip = 1.0                        # escala da elipse (encolhe patinando)
+		w.slip = 0.0                        # patinada (0x610): + girando, - travando (até -1)
+		w.abs = false                       # ABS soltando o freio desta roda (0x620)
 		w.sat = false
 		w.fx = 0.0                          # força lateral do passo (N, + = esquerda)
 		w.fz = 0.0                          # força longitudinal do passo (N)
 		wheels.append(w)
 	P.wheel_r = wheels[2].r
+	# ordem do jogo (corpo+0x254): FL, RL, FR, RR
+	jit_order = []
+	for fl in [[true, true], [false, true], [true, false], [false, false]]:
+		for i in wheels.size():
+			var w: Dictionary = wheels[i]
+			if w.front == fl[0] and w.left == fl[1]:
+				jit_order.append(i)
+	jit_seed = Time.get_ticks_msec() & 0x3FFFFFFF   # o jogo semeia com o relógio
 	# 0x20bf58: o jogo mede os eixos a partir da ORIGEM DO MODELO, não do CoM
 	# (a média do z das rodas, antes de descontar o centro de massa). Esses
 	# valores entram na curvatura, na divisão da força lateral entre os eixos e
@@ -531,8 +591,8 @@ func _solve_static(w: Dictionary, f_load: float) -> float:
 
 # ------------------------------------------------------------------ visual
 func _make_wheel_mesh(w: Dictionary) -> void:
-	var pivot := Node3D.new()
-	add_child(pivot)
+	var pivot := Node3D.new()       # frame do jogo (dentro do espelho)
+	espelho.add_child(pivot)
 	var spin := Node3D.new()
 	pivot.add_child(spin)
 	w.pivot = pivot
@@ -548,9 +608,9 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 				var m2: StandardMaterial3D = m.duplicate()
 				m2.cull_mode = MODEL_CULL
 				mi.set_surface_override_material(i, m2)
-		# component map (14881): Mirror="1" nas rodas da esquerda do jogo,
-		# que é o x < 0 do modelo (aqui o modelo não é espelhado)
-		if w.px < 0.0:
+		# component map (14881): Mirror="1" nas rodas da esquerda do jogo
+		# (o pivô está no frame do jogo, dentro do espelho)
+		if w.left:
 			mi.scale.x = -1.0
 		# centro do modelo = centro da roda (sem deslocamento: matriz da RAM)
 		spin.add_child(mi)
@@ -625,6 +685,10 @@ func _load_steering_wheel() -> void:
 	var path := model_path.get_basename() + "_volante.obj"
 	if not ResourceLoader.exists(path):
 		return
+	var vol: Dictionary = pecas.get("volante", {})
+	if vol.has("centro"):
+		SW_CENTER = Vector3(vol.centro[0], vol.centro[1], vol.centro[2])
+		SW_AXIS = Vector3(vol.eixo[0], vol.eixo[1], vol.eixo[2])
 	var mesh := load(path) as Mesh
 	if mesh == null:
 		return
@@ -646,6 +710,51 @@ func driver_eye() -> Vector3:
 	return model_root.get_global_transform_interpolated() * (model_offset + DRIVER_EYE)
 
 
+## ponto do modelo do jogo -> frame do corpo no Godot (física, câmera)
+func corpo(p: Vector3) -> Vector3:
+	return (p + model_offset) * ESPELHO
+
+
+## frame do corpo no Godot -> ponto do modelo do jogo
+func jogo(q: Vector3) -> Vector3:
+	return q * ESPELHO - model_offset
+
+
+# câmera de primeira pessoa (não existe no jogo; é do remake). O olho fica
+# centralizado atrás do volante de cada carro (pecas.json, tools/volante.py):
+# FP_UP acima e FP_BACK atrás do centro do aro. Sem volante, usa o banco
+# (ponto ARSE + EYE_FROM_ARSE, medido no Renegade).
+# Calibrado pelos prints dos 12 carros contra a referência do Matheus (cockpit
+# do Dirt Rally 2.0: horizonte perto do meio, volante cortado embaixo, muita
+# estrada pelo para-brisa)
+# Os valores abaixo são o padrão; cada carro tem os seus em main.gd VEHICLES "fp".
+var FP_FOV := 65.0            # graus na vertical (KEEP_HEIGHT), igual em todos
+var FP_PITCH := 0.10          # quanto olha pra baixo (componente -y da direção, ~6°)
+var FP_NEAR := 0.05
+var FP_UP := 0.35             # olho acima do centro do volante (m)
+var FP_BACK := 0.50           # olho atrás do centro do volante (m)
+var FP_VOLANTE := true        # olho pelo volante (false = pelo banco)
+
+
+## posição do olho no frame do modelo (chame de novo se mudar FP_*)
+func update_eye() -> void:
+	var vol: Dictionary = pecas.get("volante", {})
+	if FP_VOLANTE and vol.has("centro"):
+		var c := Vector3(vol.centro[0], vol.centro[1], vol.centro[2])
+		DRIVER_EYE = c + Vector3(0.0, FP_UP, -FP_BACK)
+	elif points.has("ARSE"):
+		DRIVER_EYE = points["ARSE"] + EYE_FROM_ARSE
+
+
+## transform da câmera de primeira pessoa (mundo, interpolado)
+func first_person_xf() -> Transform3D:
+	var eye: Vector3 = driver_eye()
+	var b: Basis = get_global_transform_interpolated().basis
+	var turn: float = steer / MAX_STEER
+	var look_dir: Vector3 = (b.z + b.x * turn * 0.25 - b.y * FP_PITCH).normalized()
+	return Transform3D(Basis.looking_at(look_dir, b.y), eye)
+
+
 func flip_model() -> void:
 	model_root.rotation.y = PI - model_root.rotation.y
 
@@ -664,6 +773,9 @@ func reset_to(pos: Vector3, yaw: float) -> void:
 
 func reset_drivetrain() -> void:
 	drive_slip = 0.0
+	for w in wheels:
+		w.slip = 0.0
+		w.abs = false
 	gear = 1
 	shift_to = 1
 	rpm = P.get("idle", 1000.0)
@@ -813,6 +925,8 @@ func _physics_process(dt: float) -> void:
 		var hn: Vector3 = hit.normal
 		w.point = hp
 		w.normal = hn
+		if terrain:
+			w.mat = terrain.material_at(hp.x, hp.z)
 		grounded += 1
 		n_sum += hn
 		if not w.front:
@@ -835,6 +949,8 @@ func _physics_process(dt: float) -> void:
 	var v := linear_velocity
 	var v_f := v.dot(fwd)
 	var spd := v.length()
+	if grounded > 0:
+		spd_ground = (v - ground_n * v.dot(ground_n)).length()   # no ar fica o último
 
 	# ---- motor e câmbio
 	var driven_g := rear_g if REAR_DRIVE else grounded
@@ -933,7 +1049,34 @@ func _physics_process(dt: float) -> void:
 	if grounded > 0 and v_f < -P.rev_limit * MPH:
 		linear_velocity -= fwd * (v_f + P.rev_limit * MPH)
 
+	jit_acc += dt
+	while jit_acc >= 1.0 / JIT_HZ:
+		jit_acc -= 1.0 / JIT_HZ
+		_wheel_jitter()
 	_update_visuals(dt, v_f)
+
+
+## 0x202760: sorteia a tremida das rodas no chão (FL, RL, FR; RR = RL)
+func _wheel_jitter() -> void:
+	for w in wheels:
+		w.jit = 0.0
+	jitter_chao = 0.0
+	if jit_order.size() != 4:
+		return
+	var no_chao := 0
+	for k in 3:
+		var w: Dictionary = wheels[jit_order[k]]
+		if not w.hit:
+			continue
+		var wj: float = terrain.wheel_jitter(w.mat, surface_jitter) if terrain else surface_jitter
+		jitter_chao += wj
+		no_chao += 1
+		var amp := minf(wj * JIT_K * spd_ground, 1.0)
+		jit_seed = (jit_seed * 31415821 + 1) & 0x3FFFFFFF
+		w.jit = amp * (float(jit_seed) * 0.075 / 1073741824.0 - 0.0375)
+	wheels[jit_order[3]].jit = wheels[jit_order[1]].jit
+	if no_chao > 0:
+		jitter_chao /= no_chao
 
 
 # ------------------------------------------------------------------ pneus
@@ -1011,7 +1154,17 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			dec_front = 0.0                 # freio de mão só atrás
 		for w in wheels:
 			if not w.hit:
+				w.abs = false
 				continue
+			# o ABS é do pedal (0x390); o freio de mão do remake passa por aqui
+			# mas não é o do jogo, então fica fora dele
+			if P.abs_on and not handbrake:
+				if w.slip < P.abs_eng:
+					w.abs = true
+				elif w.slip >= P.abs_dis:
+					w.abs = false
+			if w.abs:
+				continue                    # ABS: sem freio nesta roda agora
 			if w.front:
 				w.fz += mass * dec_front / nf_s
 			else:
@@ -1160,24 +1313,66 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			w.grip = minf(w.grip + e.recover * dt, 1.0)
 
 
-	# ---- 0x2101e0: patinada. Roda de tração saturada acelerando: a patinada cresce
-	# (Growth_rate_during_wheel_spin) até onde o motor consegue girar; roda dentro
-	# da elipse: volta (Recovery_rate_during_wheel_spin)
-	var spin_sat := false
-	for w in wheels:
-		if w.hit and (not w.front or not REAR_DRIVE) and w.sat and w.fz * v_f > 0.0 and throttle > 0.05:
-			spin_sat = true
-	if spin_sat and gear >= 1 and absf(v_f) > 0.5:
+	# ---- 0x2101e0: patinada de cada roda (0x610). Roda saturada na elipse:
+	# empurrando pra frente, cresce (Growth_rate_during_wheel_spin) até onde o
+	# motor consegue girar; freando (força contra o movimento, pedal > 0.1),
+	# desce (Growth_rate_during_wheel_lock) até -1 (travada). Roda dentro da
+	# elipse: volta pra 0 (Recovery_rate_during_wheel_spin / _lock).
+	var lim_slip := -INF                    # sem marcha ou parado: não cresce
+	if absf(_ratio(gear)) > 1e-6 and absf(v_f) > 0.5:
 		# giro de referência do jogo: o máximo da curva do motor (9000); virando
 		# forte abaixo de 40 mph, 95% do limitador
 		var ref_rpm: float = drive_curve["max"]
 		if absf(steer) > 0.5 and absf(v_f) < 40.0 * MPH:
 			ref_rpm = P.lim_on * 0.95
-		var lim_slip: float = ref_rpm * RPM2RAD * P.wheel_r / (absf(_ratio(gear)) * absf(v_f)) - 1.0
-		drive_slip = minf(drive_slip + P.slip_grow * dt, minf(lim_slip, P.slip_max))
-	else:
-		drive_slip = maxf(drive_slip - P.slip_recover * dt, 0.0)
-	drive_slip = maxf(drive_slip, 0.0)
+		lim_slip = minf(ref_rpm * RPM2RAD * P.wheel_r / (absf(_ratio(gear)) * absf(v_f)) - 1.0, P.slip_max)
+	drive_slip = -INF
+	for w in wheels:
+		if w.sat:
+			var fl: float = w.fz * v_f
+			if fl > 1e-6:
+				if lim_slip > -INF:
+					w.slip = minf(w.slip + P.slip_grow * dt, lim_slip)
+			elif fl < -1e-6 and brake_in > 0.1:
+				w.slip = maxf(w.slip - P.lock_grow * dt, -1.0)
+		elif w.slip < 0.0:
+			w.slip = minf(w.slip + P.lock_recover * dt, 0.0)
+		else:
+			w.slip = maxf(w.slip - P.slip_recover * dt, 0.0)
+		if not w.front or not REAR_DRIVE:
+			drive_slip = maxf(drive_slip, w.slip)
+
+	# ---- 0x210908: roda travando. A força da roda (mesmo tamanho) vira contra
+	# o deslize do contato: velocidade do corpo com a frente trocada por
+	# -v_f * patinada (0x630, 0x20df58)
+	if v_p > TRAVA_MPH * MPH_G:
+		var v_up := v.dot(n)
+		for w in wheels:
+			if w.abs:
+				continue
+			var f := 0.0
+			if w.slip < TRAVA_FIM:
+				f = 1.0
+			elif w.slip < TRAVA_INI:
+				f = (w.slip - TRAVA_INI) / (TRAVA_FIM - TRAVA_INI)
+			if f <= 0.0:
+				continue
+			var fv := Vector3(w.fx, 0.0, w.fz)
+			var tam := fv.length()
+			var desl := Vector3(v_l, v_up, -v_f * w.slip)
+			if tam < 1e-6 or desl.length() < 1e-6:
+				continue
+			var fh := fv / tam
+			var contra := -desl.normalized()
+			var d := contra
+			if f < 1.0:
+				d = fh * (1.0 - f) + contra * f
+				if d.length() > 1e-6:
+					d = d.normalized()
+				else:
+					d = fh if f < 0.5 else contra
+			w.fx = d.x * tam
+			w.fz = d.z * tam
 
 	# ---- 0x210ce0: limite da velocidade de derrapagem. Com as forças que
 	# sobraram depois da elipse, calcula quão rápido o ângulo de derrapagem vai
@@ -1572,13 +1767,20 @@ func _down_speed(g: int) -> float:
 
 
 func _update_visuals(dt: float, v_f: float) -> void:
+	# o visual fica no frame do jogo (espelho): rotação em y troca de sinal
+	# (S Ry(a) S = Ry(-a)), em x não. a_jogo = ângulo das rodas no jogo
+	var a_jogo: float = -steer * P.vis_steer
 	for w in wheels:
-		var x: float = clampf(w.x, w.min, w.max)
-		w.pivot.position = Vector3(w.px, w.y0 + x, w.pz)
-		w.pivot.rotation.y = steer * P.vis_steer if w.front else 0.0
-		w.spin += v_f / w.r * dt
+		var x: float = clampf(w.x, w.min, w.max) + w.jit   # 0x222078: sem clamp depois
+		w.pivot.position = Vector3(w.px, w.y0 + x, w.pz) * ESPELHO
+		w.pivot.rotation.y = a_jogo if w.front else 0.0
+		w.spin += v_f * (1.0 + w.slip) / w.r * dt   # giro com a patinada da roda
 		w.spin_node.rotation.x = w.spin
-	if sw_pivot:
-		sw_pivot.basis = Basis(SW_AXIS.normalized(), steer * SW_TURNS)
+	# direção suavizada do piloto (0x187060: s += min(1/dt, 30)·(direção - s)·dt):
+	# é o que move os braços dele no jogo, então o volante anda junto
+	if dt > 0.0:
+		rider_s = clampf(rider_s + minf(1.0 / dt, 30.0) * (steer - rider_s) * dt, -1.0, 1.0)
+	if sw_pivot and VOLANTE_GIRA:
+		sw_pivot.basis = Basis(SW_AXIS.normalized(), -rider_s * SW_TURNS)
 	if susp_vis:
-		susp_vis.update(steer * P.vis_steer)
+		susp_vis.update(a_jogo)

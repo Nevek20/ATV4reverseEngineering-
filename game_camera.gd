@@ -6,10 +6,11 @@ extends RefCounted
 ##   altura por velocidade (0x383418) -> offset no frame do carro (0x383588)
 ##   -> amortecimento em Y (0x383cf8/0x384168) -> subida em descida (0x385238)
 ##   -> órbita (0x386950) -> descolar/recolar (0x384ef8) -> altura mínima do
-##   chão (0x384c80) -> mira (0x37f2f8) -> zoom por velocidade (0x3806a0)
-##   -> suavização final (0x387320).
+##   chão (0x384c80) -> mira (0x37f2f8) -> tremida (0x380418, camera_jitter.gd)
+##   -> zoom por velocidade (0x3806a0) -> suavização final (0x387320).
 ## Parâmetros: data/cameras.xml (14880), defaults de 0x38d498.
 
+const CameraJitter := preload("res://camera_jitter.gd")
 const STEP := 1.0 / 60.0
 const MPH := 2.2374146          # m/s -> mph, mesma constante do exe
 
@@ -41,6 +42,7 @@ var p := {}
 var pos_off := Vector3(0, 2.5, -5)
 var look_off := Vector3(0, 2.2, 0)
 var mount := false              # MountOnHood/MountOnFront: presa no carro
+var jit                         # tremida (camera_jitter.gd), parâmetros genéricos do tipo
 
 # estado (o que o jogo guarda nos componentes)
 var pos := Vector3.ZERO         # posição final (cam+0x10)
@@ -70,6 +72,7 @@ var _pz := 0.5
 static func load_set(path: String, set_name: String, cam_name: String):
 	var c = new()
 	c._parse(path, set_name, cam_name)
+	c.jit = CameraJitter.carregar(path, cam_name)
 	return c
 
 
@@ -96,12 +99,14 @@ func _parse(path: String, set_name: String, cam_name: String) -> void:
 					p[k] = 1.0 if v == "true" else (0.0 if v == "false" else v.to_float())
 				if x.is_empty():
 					in_cam = false
+			# o XML é frame do carro do jogo (mão esquerda): passa pro Godot aqui,
+			# um lugar só. Posição: x negado. Ângulos (pseudovetor): y e z negados
 			elif in_cam and (n == "POS_OFFSET" or n == "PosOffset"):
-				pos_off = _vec(x)
+				pos_off = _vec(x) * Vector3(-1.0, 1.0, 1.0)
 			elif in_cam and n == "LOOK_OFFSET":
-				look_off = _vec(x)
+				look_off = _vec(x) * Vector3(-1.0, 1.0, 1.0)
 			elif in_cam and n == "Orientation":
-				p["orient"] = _vec(x)
+				p["orient"] = _vec(x) * Vector3(1.0, -1.0, -1.0)
 		elif t == XMLParser.NODE_ELEMENT_END:
 			var n := x.get_node_name()
 			if in_set and n == cam_name:
@@ -195,13 +200,14 @@ func _step(dt: float, s: Dictionary, terrain) -> void:
 		h += (p.MAX_Y_OFFSET - pos_off.y) * _c01((spd - p.MAX_Y_SPEED_MIN) / (p.MAX_Y_SPEED_MAX - p.MAX_Y_SPEED_MIN))
 
 	# 0x383588 offset no frame do carro, só com a guinada (up do mundo)
+	# lado = +X do carro no Godot (esquerda); pos_off já está no frame do Godot
 	var fz: Vector3 = b.z
-	var right := Vector3.UP.cross(fz)
-	if right.length() < 1e-5:
-		right = b.x
-	right = right.normalized()
-	var ffl := right.cross(Vector3.UP)
-	var c := tp + right * pos_off.x + Vector3.UP * h + ffl * pos_off.z
+	var lado := Vector3.UP.cross(fz)
+	if lado.length() < 1e-5:
+		lado = b.x
+	lado = lado.normalized()
+	var ffl := lado.cross(Vector3.UP)
+	var c := tp + lado * pos_off.x + Vector3.UP * h + ffl * pos_off.z
 
 	# 0x383cf8 + 0x384168 amortecimento em Y. Subindo (vy > 1) usa a taxa de
 	# subida; a taxa cai na hora mas volta devagar.
@@ -309,6 +315,9 @@ func _step(dt: float, s: Dictionary, terrain) -> void:
 	ld.y *= 1.0 - lf
 	if ld.length() > 1e-5:
 		dir = ld.normalized()
+
+	# 0x380418 tremida: só na terra (WheelJitter) e acima de JitterSpeedStart
+	dir = CameraJitter.aplicar(dir, jit.passo(dt, s.get("speed", 0.0), s.get("chao", 0.0)))
 
 	# 0x3806a0 zoom por velocidade, aproxima com fração dt por passo
 	var zf := 0.0

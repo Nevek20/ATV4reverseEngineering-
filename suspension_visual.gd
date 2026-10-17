@@ -19,16 +19,22 @@ extends Node3D
 ##   levada até o SHOCK_PISTON girado (com o x original).
 ## rally (Storm, 0x220528 / 0x220cf0): roda = WHEEL + x, sem balança no meio.
 ## estepe (0x221a88): fixo, matriz e posição do ponto SpareWheel01Centre.
+## O curso usado em tudo isso já tem a tremida das rodas no chão (car.gd,
+## 0x202760), então balança, cubo, freio e amortecedor tremem juntos.
 ##
 ## Convenção: o jogo usa vetor-linha (v' = v*R + t, linhas = eixos). No Godot
 ## as colunas do Basis são as linhas do jogo: EixoAngulo(a, u) = Basis(u, a),
 ## Rx/Ry/Rz = Basis(RIGHT/UP/BACK, a), t = p - B*p pra girar em volta de p.
-## "Esquerda" do jogo é x < 0 no modelo.
+## "Esquerda" do jogo é x < 0 no modelo. Este nó fica dentro do espelho do
+## carro (car.gd, escala (-1, 1, 1)): tudo aqui é frame do JOGO e o espelho
+## põe no Godot, onde a esquerda do jogo vira +X. O ângulo de esterço que
+## chega em update() já é o do jogo (car.gd a_jogo).
 
 var car                      # car.gd
 var off := Vector3.ZERO      # model_offset do carro
 var corners := []            # um por roda
 var rally := false
+var spares := []             # transform de cada estepe (frame do modelo)
 
 
 func build(c, pts: Dictionary, rot: Dictionary, dir: String, pecas: Dictionary,
@@ -41,9 +47,9 @@ func build(c, pts: Dictionary, rot: Dictionary, dir: String, pecas: Dictionary,
 			var left: bool = side == "LEFT"
 			var front: bool = axle == "FRONT"
 			var k := {"left": left, "front": front}
-			# roda da física do mesmo canto (car.gd chama de Left o lado x > 0)
+			# roda da física do mesmo canto (w.left = esquerda do jogo)
 			for w in c.wheels:
-				if w.front == front and (w.px - off.x < 0.0) == left:
+				if w.front == front and w.left == left:
 					k.wheel = w
 			var piv_name := "A_FRAME_%s_%s" % [axle, side]
 			var end_name := "A_FRAME_END_%s_%s" % [axle, side]
@@ -52,7 +58,7 @@ func build(c, pts: Dictionary, rot: Dictionary, dir: String, pecas: Dictionary,
 				continue
 			k.pivot = pts[piv_name]
 			k.end = pts[end_name]
-			k.w0 = pts.get(wheel_name, Vector3(k.wheel.px, k.wheel.y0, k.wheel.pz) - off)
+			k.w0 = pts.get(wheel_name, c.jogo(Vector3(k.wheel.px, k.wheel.y0, k.wheel.pz)))
 			k.u = (rot[piv_name] as Basis).z          # linha 2 do jogo
 			var d: Vector3 = pts[end_name] - k.pivot
 			k.r = absf(d.x * k.u.z + d.z * k.u.x)
@@ -81,7 +87,9 @@ func build(c, pts: Dictionary, rot: Dictionary, dir: String, pecas: Dictionary,
 		var pn: String = s + "Centre"
 		if spare_mesh and pts.has(pn):
 			var mi := _mesh_instance(spare_mesh)
-			_place(mi, Transform3D(rot.get(pn, Basis()), pts[pn]))
+			var xf := Transform3D(rot.get(pn, Basis()), pts[pn])
+			_place(mi, xf)
+			spares.append(xf)
 
 
 func _part(dir: String, file: String) -> MeshInstance3D:
@@ -117,8 +125,9 @@ func _place(mi: MeshInstance3D, xf: Transform3D) -> void:
 		mi.transform = Transform3D(Basis(), off) * xf
 
 
-## matrizes de todas as peças pro curso x de cada canto (frame do modelo).
-## Separado do update pra o teste comparar com a RAM.
+## matrizes de todas as peças pro curso x de cada canto (frame do modelo do
+## jogo). steer = ângulo do jogo (Ry no frame do jogo). Separado do update pra
+## o teste comparar com a RAM.
 func pose(k: Dictionary, x: float, steer: float) -> Dictionary:
 	var out := {}
 	var b := Basis(k.u, atan(x / k.r)) if k.r > 1e-6 else Basis()
@@ -153,10 +162,12 @@ func pose(k: Dictionary, x: float, steer: float) -> Dictionary:
 	return out
 
 
+## steer_angle: ângulo das rodas no frame do jogo (car.gd a_jogo)
 func update(steer_angle: float) -> void:
 	for k in corners:
 		var w: Dictionary = k.wheel
-		var x: float = clampf(w.x, w.min, w.max)
+		# curso visual do jogo (0x222078) = curso + tremida (car.gd)
+		var x: float = clampf(w.x, w.min, w.max) + w.get("jit", 0.0)
 		var p := pose(k, x, steer_angle)
 		_place(k.frame, p.frame)
 		w.pivot.position = off + p.hub

@@ -50,13 +50,18 @@ roda a física sem tela. Comandos: `/teste` e `/entrega`.
 | Tab | menu de carros (os 12 buggies + Sphinx do speedrun): clique ou Enter |
 | V | próximo carro da lista |
 | F | girar o modelo 180° (se ele parecer andar de ré) |
+| 1/2, 3/4, 5/6, 7/8 | na câmera do piloto: altura, distância, inclinação e campo de visão (valores no HUD) |
 | Esc | sair |
 
 Controle de videogame também funciona (gatilhos e analógico esquerdo).
 
 ## O que já é do jogo
 
-- Chão: relevo e textura da pista RX01 (tiles do STREAMT)
+- Mão certa: o jogo usa outra convenção de eixos e até out/2026 o remake
+  saía espelhado (pista e carro). Agora carro e pista ficam como no jogo
+- Chão: relevo, textura e material da pista RX01 (tiles do STREAMT). A
+  roda só treme na terra e no cascalho (no asfalto não), como no jogo; o HUD
+  mostra o chão embaixo de cada roda. O carro larga na largada do jogo
 - Carros: os 12 buggies, modelo, suspensão, rodas e pintura de fábrica do jogo
 - Física: os XMLs do próprio jogo em `data/vehicles` (`buggy_base.xml` é a
   base da classe e `buggy_NN.xml` o veículo (Renegade = buggy_10 = 15154). Os arquivos
@@ -83,5 +88,7 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
 
 - Troca de pneu e aro (peças compradas): por enquanto só as de fábrica
 - Atrito por tipo de chão (o jogo muda a aderência na terra, lama, água...)
-- Roda travando no freio (função 0x210908 do jogo, ainda não portada)
-- Tremida da câmera (jitter e batida) ainda não portada
+- Giro da roda por torque (o jogo integra o giro de cada roda; aqui sai da
+  patinada). Patinada por roda, ABS e trava já são do jogo
+- Tremida da câmera na batida ainda não portada (a por velocidade já é a do
+  jogo: só na terra e acima da velocidade de cada câmera)
