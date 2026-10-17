@@ -1,6 +1,7 @@
 extends SceneTree
 ## Confere patinada por roda, ABS e roda travando (car.gd, 0x2101e0 /
-## 0x20eb98 / 0x210908), no Renegade num plano: acelera até ~135 km/h e
+## 0x20eb98 / 0x210908; ABS e trava leem a patinada medida 0x600, w.sr,
+## que vem do giro da roda), no Renegade num plano: acelera até ~135 km/h e
 ## freia com o volante todo virado (rodas no limite da elipse; virando só
 ## metade elas não chegam no limite).
 ##  1. com o ABS do XML (Enable_ABS = true nos buggies): o ABS solta alguma
@@ -65,14 +66,14 @@ func _physics_process(dt: float) -> bool:
 		var v_f := v.dot(b.z)
 		var v_l := v.dot(b.x)
 		for w in car.wheels:
-			min_slip = minf(min_slip, w.slip)
+			min_slip = minf(min_slip, w.sr)
 			abs_viu = abs_viu or w.abs
-			if w.slip < car.TRAVA_INI and not w.abs and v.length() > car.TRAVA_MPH * car.MPH_G:
+			if w.sr < car.TRAVA_INI and not w.abs and v.length() > car.TRAVA_MPH * car.MPH_G:
 				travou = true
-			if w.slip <= -1.0 and not w.abs and v.length() > car.TRAVA_MPH * car.MPH_G:
+			if w.sr <= -1.0 + 1e-6 and not w.abs and v.length() > car.TRAVA_MPH * car.MPH_G:
 				travou = true
 				var f := Vector2(w.fx, w.fz)
-				var d := Vector2(v_l, -v_f * w.slip)
+				var d := Vector2(v_l, -v_f * w.sr)
 				if f.length() > 1.0 and d.length() > 0.1:
 					pior_cos = maxf(pior_cos, f.normalized().dot(d.normalized()))
 	if t > 9.0:

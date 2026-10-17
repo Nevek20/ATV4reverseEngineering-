@@ -47,6 +47,7 @@ set GODOT=C:\caminho\Godot_v4.x-stable_win64_console.exe
 python tests/rodar_testes.py                  :: aceleração dos 3 carros
 python tests/rodar_testes.py hs --veh 0       :: curva em alta no Renegade
 python tests/rodar_testes.py accel --veh 1 --tune "{\"engine\":0.81}"
+python tests/rodar_testes.py accel --veh 0 --mu 0.69 --amort 0.2   :: fora da pista
 
 :: save state do PCSX2 -> valores reais do jogo
 python tools/ler_savestate.py arquivo.p2s
@@ -61,6 +62,7 @@ python tools/ler_savestate.py arquivo.p2s
 %GODOT% --headless --path . -s res://tests/teste_mao.gd     :: espelho (lado das peças, esterço)
 %GODOT% --headless --path . -s res://tests/teste_tremida_camera.gd
 %GODOT% --headless --path . -s res://tests/teste_freio.gd   :: patinada, ABS e trava
+%GODOT% --headless --path . -s res://tests/teste_roda.gd    :: giro das rodas por torque (no ar, preso)
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
 python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materiais <dados>/unpacked/xml/12280
@@ -155,6 +157,13 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Alturas e material saem do stream (tools/extrair_material.py), conferidos
   com a RAM (tests/teste_chao.gd). Diagonal da célula (i+1, j)-(i, j+1) = a
   do HeightMapShape3D. Material i = Material_(i+1) do data/materials_rx01.xml.
+- Material do chão: só o atrito (pneu) e o Damping (arrasto do chão,
+  0x20e5e8) mexem na física do buggy. Hardness, Sink e Bounciness o jogo
+  carrega e não lê (varredura do exe, docs Terreno). Não "portar" eles.
+- Giro da roda (0x2113e0): no chão ω = v_prevista·(1 + 0x610)/R, então o
+  0x600 (ω·R/v − 1, que ABS/trava/embreagem leem) é a 0x610 do passo
+  anterior. 0x3cc = rodas de TRÁS no chão (não "tração no chão"). O
+  "torque" do freio ali não tem a massa (×1000 com inércia em kg·m²).
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto, que ainda não temos.
@@ -166,16 +175,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Tremida da câmera na BATIDA (a por velocidade já está, camera_jitter.gd):
   precisa do sistema de colisão do corpo (corpo+0x7a0); fórmula em
   docs/engenharia_reversa.md, Câmera.
-- Giro real da roda por torque (W+0x48, 0x2484c8/0x249930): hoje a patinada
-  0x610 faz o papel do 0x600 (docs, Pneus). Patinada, ABS e trava já estão.
 - Som do motor (00002/00004/00005 xml: bancos e faders por buggy).
 - Piloto sentado e animado (MALE_*.srd + InGame_Mid.skl + STEER_LEFT.bac,
   docs/engenharia_reversa.md "Piloto"): falta parser dos 3 formatos.
   Melhoria nossa depois: mãos tremendo no volante em alta velocidade.
 - Câmera do piloto: referência do Matheus = cockpit do Dirt Rally 2.0
   (horizonte perto do meio, volante cortado embaixo, muita estrada).
-- Atrito por material do chão (Friction/Overrides do data/materials_rx01.xml).
-  O material por roda já existe (terrain.material_at, w.mat); hoje só a
-  tremida usa.
 - Sinal do giro/direção visual: falta save state andando com volante virado.
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).

@@ -10,6 +10,7 @@ extends Node3D
 ##   VEH   índice do carro em main.gd VEHICLES (0 Renegade, 1 Sphinx, 2 Sphinx speedrun)
 ##   TUNE  JSON sobrescrevendo peças, ex.: {"engine":0.81,"mass":1.0}
 ##   MU    aderência do chão (padrão 0.8)
+##   AMORT Damping do chão (arrasto, padrão 0 = terra comum; fora da pista 0.2)
 ##   ST    direção no roteiro hs (padrão 1)
 ##   LDT   intervalo do log em s (padrão 0.25)
 ##   LEG=1 pneus antigos   LAT=0 lateral remendo
@@ -43,6 +44,8 @@ func _ready():
 		car.tune_override = JSON.parse_string(OS.get_environment("TUNE"))
 	if OS.get_environment("MU") != "":
 		car.SURFACE_MU = OS.get_environment("MU").to_float()   # antes do _ready
+	if OS.get_environment("AMORT") != "":
+		car.SURFACE_AMORT = OS.get_environment("AMORT").to_float()
 	add_child(car)
 	car.reset_to(Vector3(0, 1.0, -1500), 0.0)
 	car.test_input = {"thr": 0.0, "brk": 0.0, "steer": 0.0}

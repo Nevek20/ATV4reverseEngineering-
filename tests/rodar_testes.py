@@ -23,20 +23,24 @@ Referências (o que o jogo de verdade faz):
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 PROJ = os.path.dirname(AQUI)
 LINHA = re.compile(r"t=\s*([\d.]+) v=\s*(-?[\d.]+)km/h g=(\S+) rpm=\s*(\d+) cl=([\d.]+) thr=([\d.]+)"
-                   r".*?pitch=\s*(-?[\d.]+).*?x=\[([^\]]*)\] grd=(\d) sl=([\d.]+)")
+                   r".*?pitch=\s*(-?[\d.]+).*?x=\[([^\]]*)\] grd=(\d) sl=(-?[\d.]+)")
 REF_SPHINX = {"20": 1.45, "38": 2.55, "57": 3.95, "75": 5.95}
 
 
 def rodar(sc, veh, extra):
     godot = os.environ.get("GODOT", "godot")
+    if not shutil.which(godot) and not os.path.isfile(godot):
+        sys.exit("Não achei o Godot (%s). No cmd, antes de rodar:\n"
+                 "  set GODOT=C:\\caminho\\Godot_v4.x-stable_win64_console.exe" % godot)
     env = dict(os.environ, SC=sc, VEH=str(veh), LDT=extra.get("ldt", "0.05"))
-    for k in ("tune", "mu", "st"):
+    for k in ("tune", "mu", "st", "amort"):
         if extra.get(k):
             env[k.upper()] = extra[k]
     cmd = [godot, "--headless", "--path", PROJ, "res://tests/flattest.tscn"]
@@ -59,7 +63,8 @@ def resumo_accel(rows):
         for r in rows:
             if r["kmh"] >= kmh:
                 return round(r["t"], 2)
-        return None
+        return "-"
+
     mph = lambda v: v * 1.609344
     trocas, g0 = [], None
     for r in rows:
@@ -74,6 +79,19 @@ def resumo_accel(rows):
     return out
 
 
+def resumo_coast(rows):
+    """acelera até 13 s e solta: velocidade na hora e quanto tempo leva pra
+    perder metade"""
+    solta = next((r for r in rows if r["t"] >= 13.0), None)
+    if not solta:
+        return ["(log curto)"]
+    meio = next((r for r in rows if r["t"] > solta["t"] and r["kmh"] <= solta["kmh"] / 2), None)
+    out = [f'solta o acelerador a {solta["kmh"]:.0f} km/h']
+    out.append(f'metade ({solta["kmh"] / 2:.0f} km/h) em {meio["t"] - solta["t"]:.1f} s' if meio
+               else f'{rows[-1]["t"] - solta["t"]:.1f} s depois: {rows[-1]["kmh"]:.0f} km/h')
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("sc", nargs="?", default="")
@@ -81,9 +99,10 @@ def main():
     ap.add_argument("--tune")
     ap.add_argument("--mu")
     ap.add_argument("--st")
+    ap.add_argument("--amort", help="Damping do chão (fora da pista do RX01: 0.2, com --mu 0.69)")
     ap.add_argument("--bruto", action="store_true")
     a = ap.parse_args()
-    extra = {"tune": a.tune, "mu": a.mu, "st": a.st}
+    extra = {"tune": a.tune, "mu": a.mu, "st": a.st, "amort": a.amort}
     casos = [(a.sc, a.veh if a.veh is not None else 0)] if a.sc else [("accel", 0), ("accel", 1), ("accel", 2)]
     for sc, veh in casos:
         log = rodar(sc, veh, extra)
@@ -103,6 +122,9 @@ def main():
                 print("  " + l)
             if veh == 2:
                 print(f"  vídeo do speedrun (mph): {REF_SPHINX}")
+        elif sc == "coast" and rows:
+            for l in resumo_coast(rows):
+                print("  " + l)
         elif rows:
             r = rows[-1]
             print(f'  fim: t {r["t"]:.1f}s {r["kmh"]:.0f} km/h marcha {r["g"]} rpm {r["rpm"]} x {r["x"]}')

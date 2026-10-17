@@ -34,8 +34,13 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - Força de tração: 0x310/(r·n_tração) por roda de tração no chão (contagem
   estática 0x3a8). Ré: Speed_limit / Drive_cut_speed_threshold; 0x20c278
   limita a velocidade de ré.
-- **Arrasto 0x20e5e8**: ar = Air_drag·v²·0.00065 kN. Atrito interno só com
-  acelerador zero.
+- **Arrasto 0x20e5e8** (na força 0x1a0, contra a velocidade 0x90, |v| =
+  0xe0): kN = (Air_drag_coefficient·0.00065 + Damping médio 0x788 ·
+  Ground_drag_coefficient·0.01)·v² + água (veículo+0xae8 ligado: média de
+  veículo+0xaec+4i, Water_drag_*; não portado), no máximo massa·v/dt.
+  Params+0x3e0..0x3fc = Misc (Air 1.25, Ground 2.0, água 0.5/0.1, atrito
+  interno 5/80/3/5; iguais nos 6 save states). Atrito interno só com
+  acelerador (0x380) zero e roda no chão.
 - **Slip alvo 0x2101e0**: usa RpmMax da curva (9000), ou 0.95×limitador
   quando |direção| > 0.5 e < 40 mph.
 
@@ -78,21 +83,60 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   pedal (0x390) > 0.1 desce Growth_rate_during_wheel_lock até −1. Fora da
   elipse volta pra 0 (Recovery_rate_during_wheel_lock / _spin). Sem
   condição de acelerador nem de marcha (vale em ré).
-- **ABS 0x20eb98** (flag 0x620+4i): Enable_ABS do Footbrake; patinada <
+- **ABS 0x20eb98** (flag 0x620+4i): Enable_ABS do Footbrake; patinada medida
+  (0x600) <
   ABS_engagement_slip_ratio (−0.2) solta o freio da roda, ≥
   ABS_disengagement_slip_ratio (−0.01) volta. Todos os buggies têm ABS
   (conferido na RAM). Roda fora do chão zera a flag.
 - **Trava 0x210908** (depois da elipse, antes do 0x210ce0; globais
   0x5506a4..b4 = ligado, 2 mph, −0.25, −1, rampa linear): roda sem ABS
-  soltando, com patinada < −0.25, tem a força (mesmo tamanho) virada pra
+  soltando, com patinada medida (0x600) < −0.25, tem a força (mesmo tamanho) virada pra
   contra o deslize do contato: velocidade local do corpo (0x410, global
   0x550680 = 0) com a frente trocada por −v_f·patinada (0x630, 0x20df58).
   Em −1 fica toda contra. Com o ABS dos buggies não chega a agir.
-- Aproximação do remake: o jogo usa a patinada medida do giro real da roda
-  (0x600 = ω·R/v − 1, ω = W+0x48 integrado por torque em 0x2484c8 /
-  0x249930, não portado); aqui 0x600 = 0x610. O giro da roda na tela e o
-  giro do motor usam v·(1 + patinada). O ABS fica fora do freio de mão do
-  remake (que não é o do jogo).
+- O ABS fica fora do freio de mão do remake (que não é o do jogo).
+
+## Giro das rodas
+
+- Ordem do passo (0x1727a0): motor/câmbio 0x209e38 (0x20c0d0 guarda a
+  posição em 0x880, 0x20c558 giro do motor) → integra corpo e rodas → pneus
+  0x20a0b0 (0x20df58 patinada medida, ABS, forças, 0x20cea0: 0x2101e0
+  patinada, 0x210908 trava, 0x210ce0, **0x2113e0 torque das rodas**,
+  0x211b58).
+- Roda (vtable 0x585cc0): raio W+0x30, inércia W+0x3c = Mass·R²/2 (RAM
+  0.00625 / 0.0060025 t·m²), flags W+0x40 (2 = tração, 4 = frente), torque
+  W+0x44, giro W+0x48, ângulo W+0x4c. **0x2484c8** integra: ω += T·dt/I,
+  ângulo += ω·dt (mod 2π). 0x249930 é de outra classe de contato de pneu que
+  os buggies não usam (sem instância na RAM).
+- **0x20df58** patinada medida 0x600 = ω·R/v_f − 1 (v_f = 0x418; 0x550680 =
+  0, não usa a velocidade do ponto da roda); |v_f| ≤ 1e-6 → 0.1·ω (0x550684);
+  roda no ar → 0. Quem lê: ABS, trava, 0x630, 0x20c558, partículas/vibração.
+- **0x211e48** v_ref = v_f + (Σ forças pra frente das rodas 0x5c8 + força
+  0x1a0 · frente) · dt / massa: a velocidade prevista no fim do passo.
+- **0x2113e0** torque por roda. Contagens 0x3a0 (frente), 0x3a4 (trás), 0x3a8
+  (tração), 0x3cc = rodas de TRÁS no chão (W+0x18 < 0, 0x20d568).
+  Motor na roda = embreagem 0x2ec · relação total 0x300 · torque 0x2b4 ·
+  0x720 (=1) / 0x3a8. "Torque" do freio = pedal·0.447·Maximum_deceleration·
+  escala(atrito médio 0x780)·(Front_bias ou 1 − bias)/rodas do eixo·R, SEM a
+  massa. Roda solta no chão: T = I·(v_ref·(1 + 0x610)/R − ω)/dt (ω vira o
+  alvo exato). Solta no ar: perde max(180°/s² 0x5506c4, freio/I). Tração
+  com 0x3cc ≥ 1: igual à solta no chão (ou, preso, giro do motor·embreagem/
+  relação). Tração com 0x3cc = 0: embreagem travada (0x314 = 3) → giro do
+  motor/relação; senão motor − sinal(ω)·freio, com freio maior parando a
+  roda e motor maior sem passar do giro do motor.
+- Preso (0x890/0x894/0x870): acelerador 0x37c > 0, sem freio de mão 0x388,
+  |v_f| < 0.5 e o corpo dentro de 3 cm (0.0009 m²) por mais de 0.33 s. Aí
+  v_ref = deslocamento do passo (0x70 − 0x880)·frente/dt e o giro do motor
+  não vem das rodas.
+- **0x20c558** (motor): 0x304 = ω da roda de tração mais rápida·9.549;
+  embreagem travada, não preso e 0x3cc ≥ 1 → rpm = 0x304·relação (mín.
+  marcha lenta). Embreagem forçada aberta 0x31c: 0x5ac, freio de mão > 0.1,
+  mais de 1 s no ar (0x3d0) abaixo de câmbio+0x90 (1050 rpm), ou pedal >
+  0.9 com roda de tração em 0x600 < −0.9 (0x55067c).
+- No chão o 0x600 de um passo sai igual à 0x610 do anterior (por isso a
+  aproximação antiga dava os mesmos números); muda em derrapagem (v_ref não
+  conta o giro do carro), no ar (tração gira com o motor, frente perde
+  giro), parado contra um muro e na roda da tela. tests/teste_roda.gd.
 
 ## Pontos do modelo
 
@@ -238,9 +282,32 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   tests/teste_chao.gd + tests/ref_ram_chao.json.
 - Largada: centro das rodas no jogo (580.8, z 1564.3), frente a −115,1°;
   no remake (540.3, 580.8) e −154,9° (main.gd SPAWN_XZ/SPAWN_YAW).
-- Por material o XML também tem Friction, Damping, Bounciness, Sink e os
-  Overrides "FRICTION TYRE <pneu> <valor>" (DIRT_BUDGET 0,80 na terra e
-  1,10 no asfalto do RX_01). Atrito por material ainda não portado.
+- Atrito por material (0x20d568): cada roda no chão copia 3 campos do
+  registro do material embaixo dela (veículo+0xd0 + idx·0x60, montado na
+  carga pro pneu do carro) pra corpo+0x750+12i: atrito, Hardness, Damping;
+  material −1 dá (1, 0, 0) e não soma. Médias 0x780/0x784/0x788 = soma das
+  rodas com material / rodas no chão (0x3c8); no ar, 0. Tabela do carro =
+  24 registros (o loader 0x3a9608 aloca 0x900), igual nos 6 save states
+  (tests/ref_ram_chao.json "tabela").
+  Registro (conferido na RAM, 13 materiais): +0x00 atrito = override
+  "FRICTION TYRE <classe> <valor>" do Materials.xml (DIRT_BUDGET: 0.80
+  terra, 0.69 fora da pista, 1.10 asfalto), +0x04 Hardness, +0x08 Damping,
+  +0x10..0x2c cores de poeira e sujeira, +0x3c WheelJitter, +0x40
+  Bounciness, +0x44 Sink, +0x4c Rockiness. Classe do pneu =
+  vehicles.xml DefaultConfig Tire (todos os buggies: DIRT_BUDGET).
+- Quem usa: a elipse (0x2101e0) e a tração (0x20e8d8, só com
+  TractionControl ligado, desligado nos buggies) usam o atrito da roda com
+  min(·, 1); a elipse desliga com atrito ≥ Disabling_friction (2.0,
+  params+0x43c). Freio, derrapagem e o resto usam a média 0x780, que acima
+  de 1 cai no valor "Special" do trio. Damping médio = arrasto do chão
+  (0x20e5e8): 0.2 fora da pista, 0.1 cascalho, 0 terra comum e asfalto.
+- Não usados pelo buggy (varri 0x100000..0x480000 decompilado): a média da
+  Hardness (0x784) não tem leitor; Bounciness (+0x40) e Sink (+0x44) são
+  carregados e copiados mas ninguém lê (nem da tabela global DAT_007f4bf8,
+  que só é lida pra nomes, IsDirt +0x48 e WheelDirtRate +0x54). A função
+  0x238e08 que lê +0x754 é de outra classe de veículo. Os outros leitores
+  do material (veículo+0xa88) são poeira, som, marca de pneu e sujeira da
+  roda (esta usa o giro W+0x48 e a patinada 0x600).
 
 ## Mão (espelho)
 

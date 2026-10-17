@@ -61,7 +61,9 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
   saía espelhado (pista e carro). Agora carro e pista ficam como no jogo
 - Chão: relevo, textura e material da pista RX01 (tiles do STREAMT). A
   roda só treme na terra e no cascalho (no asfalto não), como no jogo; o HUD
-  mostra o chão embaixo de cada roda. O carro larga na largada do jogo
+  mostra o chão embaixo de cada roda. Atrito do pneu e arrasto por tipo de
+  chão são os do jogo (fora da pista o carro perde muita velocidade). O
+  carro larga na largada do jogo
 - Carros: os 12 buggies, modelo, suspensão, rodas e pintura de fábrica do jogo
 - Física: os XMLs do próprio jogo em `data/vehicles` (`buggy_base.xml` é a
   base da classe e `buggy_NN.xml` o veículo (Renegade = buggy_10 = 15154). Os arquivos
@@ -73,7 +75,9 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
   `data/upgrades.xml` (efeito de cada peça, 14889). Conferido no save state
 - Código de física portado do executável (SCES_546.88): pneus e derrapagem
   (parte 1), motor, embreagem, câmbio e roda patinando (parte 3), suspensão,
-  anti-pitch e controles no ar (parte 4), arrasto do ar e atrito interno
+  anti-pitch e controles no ar (parte 4), arrasto do ar e atrito interno,
+  giro de cada roda por torque (no ar a de tração gira com o motor e a da
+  frente vai parando; contra um muro as rodas patinam com o motor)
 - Câmera: `data/cameras.xml` (o 14880 do unpacked, CameraSet `BuggyCamSet_10`)
   com o código da câmera do exe portado em `game_camera.gd`: órbita que segue
   a direção da velocidade, distância e zoom por velocidade, amortecimento de
@@ -87,8 +91,5 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
 ## O que ainda é provisório
 
 - Troca de pneu e aro (peças compradas): por enquanto só as de fábrica
-- Atrito por tipo de chão (o jogo muda a aderência na terra, lama, água...)
-- Giro da roda por torque (o jogo integra o giro de cada roda; aqui sai da
-  patinada). Patinada por roda, ABS e trava já são do jogo
 - Tremida da câmera na batida ainda não portada (a por velocidade já é a do
   jogo: só na terra e acima da velocidade de cada câmera)
