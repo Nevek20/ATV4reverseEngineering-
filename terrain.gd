@@ -145,6 +145,15 @@ func atrito(m: int, pneu: String) -> float:
 	return float(mat.get("Friction", 1.0))
 
 
+## Damping do material (registro veículo+0xd0+i*0x60, +0x08; conferido na
+## RAM): entra no arrasto do chão (0x20e5e8). 0.2 fora da pista, 0.1 no
+## cascalho, 0 na terra comum e no asfalto. Roda sem material (-1): 0.
+func amortecimento(m: int) -> float:
+	if m < 0 or m >= materials.size():
+		return 0.0
+	return float(materials[m].get("Damping", 0.0))
+
+
 ## nome curto do material: "COMMON_3(TARMAC/COMMON)*" -> "TARMAC/COMMON"
 func material_name(m: int) -> String:
 	if m < 0 or m >= materials.size():

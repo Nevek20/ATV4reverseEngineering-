@@ -230,8 +230,21 @@ def conferir_ram(caminho, tiles):
               f"| altura stream {h:.4f} (dif {h - y:+.4f})")
         rodas.append({"roda": nome, "x": round(x, 5), "y": round(y, 5), "z": round(z, 5),
                       "mat": rd(W + 0x140),
-                      "atrito": round(struct.unpack_from("<f", r, (corpo + 0x750 + 12 * i) & 0x1FFFFFF)[0], 5)})
+                      "atrito": round(struct.unpack_from("<f", r, (corpo + 0x750 + 12 * i) & 0x1FFFFFF)[0], 5),
+                      "amort": round(struct.unpack_from("<f", r, (corpo + 0x758 + 12 * i) & 0x1FFFFFF)[0], 5)})
     return rodas
+
+
+def tabela_ram(caminho):
+    """tabela de materiais do carro (veículo+0xd0, registros de 0x60, um por
+    Material_N da pista): atrito do pneu (+0x00) e Damping (+0x08)"""
+    r = open(caminho, "rb").read()
+    veh = 0xC7EB00
+    out = []
+    for i in range(24):                 # o loader (0x3a9608) aloca 0x900 = 24 registros
+        a, _, d = struct.unpack_from("<3f", r, (veh + 0xD0 + i * 0x60) & 0x1FFFFFF)
+        out.append({"atrito": round(a, 5), "amort": round(d, 5)})
+    return out
 
 
 def main():
@@ -323,14 +336,21 @@ def main():
     print(f"gravei {sai} (min {min(alt):.3f}, max {max(alt):.3f})")
 
     ref = {}
+    tabela = None
     for r in a.ram:
         nome, _, arq = r.rpartition("=")
         ref[nome or os.path.basename(arq)] = conferir_ram(arq, tiles)
+        t = tabela_ram(arq)
+        if tabela is not None and t != tabela:
+            sys.exit(f"tabela de materiais diferente em {arq}")
+        tabela = t
     if a.ref:
         with open(a.ref, "w", encoding="utf-8") as f:
-            json.dump({"fonte": "contato das rodas (W+0x130) e material (W+0x140) nos save states "
-                                "parados na largada, mundo do jogo (tools/extrair_material.py --ref)",
-                       "carros": ref}, f, indent=1, ensure_ascii=False)
+            json.dump({"fonte": "contato das rodas (W+0x130), material (W+0x140), atrito e Damping "
+                                "(corpo+0x750/0x758+12i) nos save states parados na largada, mundo do "
+                                "jogo; tabela = materiais do carro (veículo+0xd0+i*0x60: atrito do "
+                                "pneu e Damping), igual nos save states (tools/extrair_material.py --ref)",
+                       "carros": ref, "tabela": tabela}, f, indent=1, ensure_ascii=False)
         print(f"gravei {a.ref}")
 
 

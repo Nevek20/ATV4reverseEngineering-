@@ -1,5 +1,5 @@
 {
- "fonte": "contato das rodas (W+0x130) e material (W+0x140) nos save states parados na largada, mundo do jogo (tools/extrair_material.py --ref)",
+ "fonte": "contato das rodas (W+0x130), material (W+0x140), atrito e Damping (corpo+0x750/0x758+12i) nos save states parados na largada, mundo do jogo; tabela = materiais do carro (veículo+0xd0+i*0x60: atrito do pneu e Damping), igual nos save states (tools/extrair_material.py --ref)",
  "carros": {
   "renegade": [
    {
@@ -8,7 +8,8 @@
     "y": 201.32719,
     "z": 1562.59631,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "RL",
@@ -16,7 +17,8 @@
     "y": 201.22719,
     "z": 1564.07666,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "FR",
@@ -24,7 +26,8 @@
     "y": 201.32875,
     "z": 1564.76892,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "RR",
@@ -32,7 +35,8 @@
     "y": 201.23007,
     "z": 1566.2439,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    }
   ],
   "sphinx": [
@@ -42,7 +46,8 @@
     "y": 201.33562,
     "z": 1562.55017,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "RL",
@@ -50,7 +55,8 @@
     "y": 201.23093,
     "z": 1564.12769,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "FR",
@@ -58,7 +64,8 @@
     "y": 201.33632,
     "z": 1564.51697,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "RR",
@@ -66,7 +73,8 @@
     "y": 201.23396,
     "z": 1566.07935,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    }
   ],
   "storm": [
@@ -76,7 +84,8 @@
     "y": 201.32761,
     "z": 1562.70813,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "RL",
@@ -84,7 +93,8 @@
     "y": 201.24338,
     "z": 1563.91431,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "FR",
@@ -92,7 +102,8 @@
     "y": 201.32832,
     "z": 1564.52783,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "RR",
@@ -100,7 +111,8 @@
     "y": 201.24481,
     "z": 1565.91846,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    }
   ],
   "phantom": [
@@ -110,7 +122,8 @@
     "y": 201.3429,
     "z": 1562.50427,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "RL",
@@ -118,7 +131,8 @@
     "y": 201.24225,
     "z": 1563.97009,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "FR",
@@ -126,7 +140,8 @@
     "y": 201.34383,
     "z": 1564.30786,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "RR",
@@ -134,7 +149,8 @@
     "y": 201.24417,
     "z": 1566.01709,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    }
   ],
   "inferno": [
@@ -144,7 +160,8 @@
     "y": 201.33412,
     "z": 1562.64624,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "RL",
@@ -152,7 +169,8 @@
     "y": 201.24324,
     "z": 1563.81116,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "FR",
@@ -160,7 +178,8 @@
     "y": 201.33452,
     "z": 1564.49609,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "RR",
@@ -168,7 +187,8 @@
     "y": 201.24551,
     "z": 1566.12646,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    }
   ],
   "bulldog": [
@@ -178,7 +198,8 @@
     "y": 201.33818,
     "z": 1562.47754,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "RL",
@@ -186,7 +207,8 @@
     "y": 201.23827,
     "z": 1564.04749,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "FR",
@@ -194,7 +216,8 @@
     "y": 201.33884,
     "z": 1564.43396,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    },
    {
     "roda": "RR",
@@ -202,8 +225,107 @@
     "y": 201.24066,
     "z": 1565.94287,
     "mat": 2,
-    "atrito": 1.1
+    "atrito": 1.1,
+    "amort": 0.0
    }
   ]
- }
+ },
+ "tabela": [
+  {
+   "atrito": 0.8,
+   "amort": 0.0
+  },
+  {
+   "atrito": 0.69,
+   "amort": 0.2
+  },
+  {
+   "atrito": 1.1,
+   "amort": 0.0
+  },
+  {
+   "atrito": 1.1,
+   "amort": 0.0
+  },
+  {
+   "atrito": 0.8,
+   "amort": 0.0
+  },
+  {
+   "atrito": 0.5,
+   "amort": 0.1
+  },
+  {
+   "atrito": 0.69,
+   "amort": 0.2
+  },
+  {
+   "atrito": 0.8,
+   "amort": 0.0
+  },
+  {
+   "atrito": 0.4,
+   "amort": 0.1
+  },
+  {
+   "atrito": 0.69,
+   "amort": 0.1
+  },
+  {
+   "atrito": 0.69,
+   "amort": 0.2
+  },
+  {
+   "atrito": 0.5,
+   "amort": 0.2
+  },
+  {
+   "atrito": 1.0,
+   "amort": 0.0
+  },
+  {
+   "atrito": 1.0,
+   "amort": 0.0
+  },
+  {
+   "atrito": 1.0,
+   "amort": 0.0
+  },
+  {
+   "atrito": 1.0,
+   "amort": 0.0
+  },
+  {
+   "atrito": 1.0,
+   "amort": 0.0
+  },
+  {
+   "atrito": 1.0,
+   "amort": 0.0
+  },
+  {
+   "atrito": 1.1,
+   "amort": 0.0
+  },
+  {
+   "atrito": 0.1,
+   "amort": 0.0
+  },
+  {
+   "atrito": 0.0,
+   "amort": 0.0
+  },
+  {
+   "atrito": 0.4,
+   "amort": 0.0
+  },
+  {
+   "atrito": 1.0,
+   "amort": 0.0
+  },
+  {
+   "atrito": 1.0,
+   "amort": 0.0
+  }
+ ]
 }

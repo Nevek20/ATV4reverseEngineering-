@@ -10,9 +10,12 @@ extends SceneTree
 ##     é maior;
 ##  3. Renegade na largada (asfalto, WheelJitter 0) não treme; numa terra
 ##     plana ali perto (COMMON_2 DIRT/OFFTRACK2, 0.3) treme;
-##  4. atrito de cada roda e a média (corpo+0x750 / 0x780): na largada igual
-##     à RAM (1.10, pneu DIRT_BUDGET no asfalto); na terra 0.69 (override do
-##     COMMON_2 no Materials.xml).
+##  4. atrito e Damping de cada roda e as médias (corpo+0x750/0x758, 0x780/
+##     0x788): na largada iguais à RAM (1.10 e 0, pneu DIRT_BUDGET no
+##     asfalto); na terra 0.69 e 0.2 (COMMON_2 no Materials.xml);
+##     O arrasto (0x20e5e8) a 20 m/s confere com Air 1.25 / Ground 2.0 da RAM;
+##  5. a tabela de materiais do carro na RAM (veículo+0xd0, 24 registros:
+##     atrito do pneu e Damping) = terrain.atrito / terrain.amortecimento.
 ## Uso: godot --headless --path . -s res://tests/teste_chao.gd
 
 const Car := preload("res://car.gd")
@@ -47,6 +50,7 @@ func _physics_process(dt: float) -> bool:
 	match etapa:
 		"ram":
 			_conferir_ram()
+			_conferir_tabela()
 			etapa = "pose"
 		"pose":
 			if car == null:
@@ -74,10 +78,10 @@ func _physics_process(dt: float) -> bool:
 					Main.SPAWN_XZ.y), deg_to_rad(Main.SPAWN_YAW))
 			t += dt
 			if absf(t - 2.0) < dt * 0.5:
-				_tremida("largada (asfalto)", 0.0, _atrito_ram())
+				_tremida("largada (asfalto)", 0.0, _atrito_ram(), _amort_ram())
 				car.reset_to(Vector3(TERRA.x, terrain.height_at(TERRA.x, TERRA.y) + 0.8, TERRA.y), 0.0)
 			if absf(t - 4.0) < dt * 0.5:
-				_tremida("terra", 0.3, 0.69)
+				_tremida("terra", 0.3, 0.69, 0.2)
 				print("teste_chao: %s" % ("ok" if falhas == 0 else "%d falhas" % falhas))
 				quit(1 if falhas else 0)
 	return false
@@ -180,18 +184,42 @@ func _conferir_rodas() -> void:
 	print("%-9s rodas x RAM (cm, física/visual): %s  %s" % [nome, "  ".join(txt), "ok" if ok else "FALHOU"])
 
 
-## força 20 m/s no plano do chão e sorteia uma vez: só a roda no chão de
-## material com WheelJitter > 0 treme
-## atrito das rodas do Renegade na RAM (todas iguais na largada)
+## atrito / Damping das rodas do Renegade na RAM (todas iguais na largada)
 func _atrito_ram() -> float:
-	var a: float = ref.carros.renegade[0].atrito
+	return _igual_nas_rodas("atrito")
+
+
+func _amort_ram() -> float:
+	return _igual_nas_rodas("amort")
+
+
+func _igual_nas_rodas(campo: String) -> float:
+	var a: float = ref.carros.renegade[0][campo]
 	for r in ref.carros.renegade:
-		if absf(r.atrito - a) > 1e-6:
-			push_error("atrito diferente entre as rodas na RAM")
+		if absf(r[campo] - a) > 1e-6:
+			push_error("%s diferente entre as rodas na RAM" % campo)
 	return a
 
 
-func _tremida(onde: String, wj: float, mu: float) -> void:
+## tabela de materiais do carro na RAM x Materials.xml da pista
+func _conferir_tabela() -> void:
+	var ruins := []
+	for i in ref.tabela.size():
+		var r: Dictionary = ref.tabela[i]
+		var a: float = terrain.atrito(i, "DIRT_BUDGET")
+		var d: float = terrain.amortecimento(i)
+		if absf(a - r.atrito) > 1e-4 or absf(d - r.amort) > 1e-4:
+			ruins.append("%d %s: atrito %.2f/%.2f Damping %.2f/%.2f" % [i, terrain.material_name(i), a,
+				r.atrito, d, r.amort])
+	if not ruins.is_empty():
+		falhas += 1
+	print("tabela de materiais x RAM (%d, atrito e Damping): %s" % [ref.tabela.size(),
+		"ok" if ruins.is_empty() else "FALHOU " + "; ".join(ruins)])
+
+
+## força 20 m/s no plano do chão e sorteia uma vez: só a roda no chão de
+## material com WheelJitter > 0 treme
+func _tremida(onde: String, wj: float, mu: float, amort: float) -> void:
 	car.spd_ground = 20.0
 	car._wheel_jitter()
 	var txt := []
@@ -206,11 +234,15 @@ func _tremida(onde: String, wj: float, mu: float) -> void:
 	var ok := max_j == 0.0 if wj == 0.0 else max_j > 0.0
 	# câmera: veículo+0xac0 = média do WheelJitter embaixo de FL, RL, FR
 	ok = ok and absf(car.jitter_chao - wj) < 1e-6
-	# atrito por roda e a média (só depois de um passo de pneu com as 4 no chão)
+	# atrito e Damping por roda e as médias (com as 4 no chão)
 	for w in car.wheels:
-		ok = ok and absf(w.mu - mu) < 1e-6
-	ok = ok and absf(car.mu_medio - mu) < 1e-6
+		ok = ok and absf(w.mu - mu) < 1e-6 and absf(w.amort - amort) < 1e-6
+	ok = ok and absf(car.mu_medio - mu) < 1e-6 and absf(car.amort_medio - amort) < 1e-6
+	# arrasto a 20 m/s (0x20e5e8) com Air 1.25 e Ground 2.0 (params+0x3e0/0x3e4 na RAM)
+	var arr: float = car._arrasto(20.0, 1.0 / 120.0)
+	var arr_esp: float = (1.25 * 0.65 + amort * 2.0 * 10.0) * 400.0
+	ok = ok and car.P.air_drag == 1.25 and car.P.ground_drag == 2.0 and absf(arr - arr_esp) < 1e-3
 	if not ok:
 		falhas += 1
-	print("%s: %s  maior tremida %.1f mm, atrito %.2f (esperado %.2f)  %s" % [onde, ", ".join(txt),
-		max_j * 1000.0, car.mu_medio, mu, "ok" if ok else "FALHOU"])
+	print("%s: %s  maior tremida %.1f mm, atrito %.2f (esperado %.2f), Damping %.2f (esperado %.2f), arrasto a 20 m/s %.0f N  %s" % [
+		onde, ", ".join(txt), max_j * 1000.0, car.mu_medio, mu, car.amort_medio, amort, arr, "ok" if ok else "FALHOU"])

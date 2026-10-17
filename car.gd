@@ -66,10 +66,16 @@ const REAR_DRIVE := true      # tração só atrás (o XML não diz; buggy de mo
 # (0.1); o jogo interpola entre os dois conforme o chão.
 # atrito do chão: cada roda pega o do material embaixo dela pro pneu do carro
 # (terrain.atrito, 0x20d568 -> corpo+0x750+12i); a média das rodas no chão é
-# o 0x780. Sem terreno (teste no plano) vale SURFACE_MU.
+# o 0x780. O Damping do material (+0x08, corpo+0x758+12i) é o arrasto do chão:
+# a média (0x788) entra no 0x20e5e8. Sem terreno (teste no plano) vale o
+# material de reserva: terra comum do RX_01 (COMMON_1, DIRT/COMMON).
+# Hardness, Sink e Bounciness o jogo carrega mas nenhum código do buggy lê
+# (docs/engenharia_reversa.md, Terreno).
 var SURFACE_MU := 0.8          # pneu DIRT_BUDGET na terra comum do RX_01
+var SURFACE_AMORT := 0.0       # Damping da terra comum (COMMON_1)
 var pneu := "DIRT_BUDGET"      # classe do pneu (vehicles.xml DefaultConfig Tire)
 var mu_medio := 0.8            # 0x780: atrito médio das rodas no chão
+var amort_medio := 0.0         # 0x788: Damping médio das rodas no chão
 var TUNE_FRONT_BIAS := 0.5    # DefaultConfig/CustomTunings FrontBrakeBias
 
 # geometria medida no modelo (o XML não traz a posição das rodas)
@@ -348,6 +354,7 @@ func _load_physics() -> void:
 
 	# arrasto e freio
 	P.air_drag = d.f("Misc", "Air_drag_coefficient", 1.0)
+	P.ground_drag = d.f("Misc", "Ground_drag_coefficient", 2.0)
 	P.ifd_lo_speed = d.f("Misc", "Internal_friction_drag_lower_speed", 5.0)
 	P.ifd_hi_speed = d.f("Misc", "Internal_friction_drag_upper_speed", 80.0)
 	P.ifd_lo = d.f("Misc", "Internal_friction_drag_lower_speed_decel", 3.0)
@@ -522,6 +529,7 @@ func _load_physics() -> void:
 		w.sr = 0.0                          # patinada medida (0x600)
 		w.grip = 1.0                        # escala da elipse (encolhe patinando)
 		w.mu = SURFACE_MU                   # atrito do chão nesta roda (0x750)
+		w.amort = SURFACE_AMORT             # Damping do chão nesta roda (0x758)
 		w.slip = 0.0                        # patinada (0x610): + girando, - travando (até -1)
 		w.abs = false                       # ABS soltando o freio desta roda (0x620)
 		w.sat = false
@@ -956,6 +964,7 @@ func _physics_process(dt: float) -> void:
 		if terrain:
 			w.mat = terrain.material_at(hp.x, hp.z)
 			w.mu = terrain.atrito(w.mat, pneu)
+			w.amort = terrain.amortecimento(w.mat)
 		grounded += 1
 		n_sum += hn
 		if not w.front:
@@ -972,6 +981,7 @@ func _physics_process(dt: float) -> void:
 		w.f = f_s
 		apply_force(hn * f_s, attach - global_position)
 
+	_material_medio()
 	var ground_n := up if grounded == 0 else n_sum.normalized()
 	var fwd := (fwd_body - ground_n * fwd_body.dot(ground_n)).normalized()
 	var left := ground_n.cross(fwd)
@@ -1011,7 +1021,6 @@ func _physics_process(dt: float) -> void:
 	else:
 		# no ar (0x20e160 gravidade, 0x2100a0 torque de arfagem, 0x2129c0 controles)
 		air_time += dt
-		mu_medio = 0.0                      # 0x780 zera sem roda no chão (0x20d568)
 		gravity_scale = P.grav_up if v.dot(Vector3.UP) > 0.0 else P.grav_down
 		apply_torque(b.x * P.air_pitch_torque)
 		var wl := b.transposed() * angular_velocity
@@ -1058,13 +1067,17 @@ func _physics_process(dt: float) -> void:
 	var res_loc: Vector3 = -Vector3(inertia.x * P.ang_res.x * w_loc.x, inertia.y * P.ang_res.y * w_loc.y, inertia.z * P.ang_res.z * w_loc.z)
 	apply_torque(b * res_loc)
 
-	# arrasto do ar
-	apply_central_force(-v * spd * P.air_drag * 0.65)
+	# 0x20e5e8: arrasto do ar + do chão, contra a velocidade
+	var f_arr := 0.0
+	if spd > 1e-6:
+		f_arr = _arrasto(spd, dt)
+		apply_central_force(-v / spd * f_arr)
 
 	# 0x211e48: velocidade pra frente prevista no fim do passo = a de agora +
 	# (forças pra frente) x dt / massa. Com ela o giro da roda no chão fica
 	# v_ref x (1 + 0x610) / raio e o 0x600 do passo seguinte sai igual à 0x610
-	var a_f: float = (f_fwd - v_f * spd * P.air_drag * 0.65) / mass + get_gravity().dot(fwd) * gravity_scale
+	var f_arr_f: float = f_arr * v_f / spd if spd > 1e-6 else 0.0
+	var a_f: float = (f_fwd - f_arr_f) / mass + get_gravity().dot(fwd) * gravity_scale
 	v_ref = v_f + a_f * dt
 	_giro_rodas(dt, v_f, rear_g, handbrake)
 
@@ -1094,6 +1107,31 @@ func _physics_process(dt: float) -> void:
 		jit_acc -= 1.0 / JIT_HZ
 		_wheel_jitter()
 	_update_visuals(dt, v_f)
+
+
+## 0x20e5e8: tamanho do arrasto (N). Em kN = (Air_drag_coefficient x 0.00065 +
+## Damping médio (0x788) x Ground_drag_coefficient x 0.01) x v², nunca mais do
+## que para o carro neste passo. O de água (veículo+0xae8, Water_drag_*) não
+## está portado.
+func _arrasto(spd: float, dt: float) -> float:
+	return minf((P.air_drag * 0.65 + amort_medio * P.ground_drag * 10.0) * spd * spd, mass * spd / dt)
+
+
+## 0x20d568: médias do atrito (0x780) e do Damping (0x788) das rodas no chão.
+## O jogo soma só as rodas com material e divide por todas as rodas no chão
+## (roda sem material, -1, puxa a média pra baixo); sem roda no chão, 0. Sem
+## terreno vale o material de reserva em todas.
+func _material_medio() -> void:
+	mu_medio = 0.0
+	amort_medio = 0.0
+	if grounded == 0:
+		return
+	for w in wheels:
+		if w.hit and (terrain == null or w.mat >= 0):
+			mu_medio += w.mu
+			amort_medio += w.amort
+	mu_medio /= grounded
+	amort_medio /= grounded
 
 
 ## 0x202760: sorteia a tremida das rodas no chão (FL, RL, FR; RR = RL)
@@ -1138,15 +1176,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 	var v_l := v.dot(left)                  # 0x410 (+ = esquerda)
 	var v_p := sqrt(v_f * v_f + v_l * v_l)  # 0x440 velocidade no plano do chão
 	var mph := v_p / MPH_G
-	# 0x780: média do atrito das rodas no chão (0x20d568)
-	var mu := 0.0
-	var n_mu := 0
-	for w in wheels:
-		if w.hit:
-			mu += w.mu
-			n_mu += 1
-	mu = mu / n_mu if n_mu > 0 else 0.0
-	mu_medio = mu
+	var mu := mu_medio                      # 0x780 (_material_medio)
 	var yaw := angular_velocity.dot(n)      # + = virando pra esquerda
 	var sgn_v := -1.0 if v_f < 0.0 else 1.0
 	stf_blend = 0.0

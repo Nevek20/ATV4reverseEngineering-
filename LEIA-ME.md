@@ -61,7 +61,9 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
   saía espelhado (pista e carro). Agora carro e pista ficam como no jogo
 - Chão: relevo, textura e material da pista RX01 (tiles do STREAMT). A
   roda só treme na terra e no cascalho (no asfalto não), como no jogo; o HUD
-  mostra o chão embaixo de cada roda. O carro larga na largada do jogo
+  mostra o chão embaixo de cada roda. Atrito do pneu e arrasto por tipo de
+  chão são os do jogo (fora da pista o carro perde muita velocidade). O
+  carro larga na largada do jogo
 - Carros: os 12 buggies, modelo, suspensão, rodas e pintura de fábrica do jogo
 - Física: os XMLs do próprio jogo em `data/vehicles` (`buggy_base.xml` é a
   base da classe e `buggy_NN.xml` o veículo (Renegade = buggy_10 = 15154). Os arquivos
@@ -89,7 +91,5 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
 ## O que ainda é provisório
 
 - Troca de pneu e aro (peças compradas): por enquanto só as de fábrica
-- Do chão ainda faltam o arrasto (Damping), afundar (Sink) e quicar
-  (Bounciness). O atrito por tipo de chão já é o do jogo
 - Tremida da câmera na batida ainda não portada (a por velocidade já é a do
   jogo: só na terra e acima da velocidade de cada câmera)

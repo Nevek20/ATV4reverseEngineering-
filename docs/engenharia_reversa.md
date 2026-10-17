@@ -34,8 +34,13 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - Força de tração: 0x310/(r·n_tração) por roda de tração no chão (contagem
   estática 0x3a8). Ré: Speed_limit / Drive_cut_speed_threshold; 0x20c278
   limita a velocidade de ré.
-- **Arrasto 0x20e5e8**: ar = Air_drag·v²·0.00065 kN. Atrito interno só com
-  acelerador zero.
+- **Arrasto 0x20e5e8** (na força 0x1a0, contra a velocidade 0x90, |v| =
+  0xe0): kN = (Air_drag_coefficient·0.00065 + Damping médio 0x788 ·
+  Ground_drag_coefficient·0.01)·v² + água (veículo+0xae8 ligado: média de
+  veículo+0xaec+4i, Water_drag_*; não portado), no máximo massa·v/dt.
+  Params+0x3e0..0x3fc = Misc (Air 1.25, Ground 2.0, água 0.5/0.1, atrito
+  interno 5/80/3/5; iguais nos 6 save states). Atrito interno só com
+  acelerador (0x380) zero e roda no chão.
 - **Slip alvo 0x2101e0**: usa RpmMax da curva (9000), ou 0.95×limitador
   quando |direção| > 0.5 e < 40 mph.
 
@@ -280,7 +285,10 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - Atrito por material (0x20d568): cada roda no chão copia 3 campos do
   registro do material embaixo dela (veículo+0xd0 + idx·0x60, montado na
   carga pro pneu do carro) pra corpo+0x750+12i: atrito, Hardness, Damping;
-  material −1 dá (1, 0, 0). A média das rodas no chão vai pra 0x780.
+  material −1 dá (1, 0, 0) e não soma. Médias 0x780/0x784/0x788 = soma das
+  rodas com material / rodas no chão (0x3c8); no ar, 0. Tabela do carro =
+  24 registros (o loader 0x3a9608 aloca 0x900), igual nos 6 save states
+  (tests/ref_ram_chao.json "tabela").
   Registro (conferido na RAM, 13 materiais): +0x00 atrito = override
   "FRICTION TYRE <classe> <valor>" do Materials.xml (DIRT_BUDGET: 0.80
   terra, 0.69 fora da pista, 1.10 asfalto), +0x04 Hardness, +0x08 Damping,
@@ -291,8 +299,15 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   TractionControl ligado, desligado nos buggies) usam o atrito da roda com
   min(·, 1); a elipse desliga com atrito ≥ Disabling_friction (2.0,
   params+0x43c). Freio, derrapagem e o resto usam a média 0x780, que acima
-  de 1 cai no valor "Special" do trio. Hardness, Damping, Bounciness e Sink
-  ainda não portados.
+  de 1 cai no valor "Special" do trio. Damping médio = arrasto do chão
+  (0x20e5e8): 0.2 fora da pista, 0.1 cascalho, 0 terra comum e asfalto.
+- Não usados pelo buggy (varri 0x100000..0x480000 decompilado): a média da
+  Hardness (0x784) não tem leitor; Bounciness (+0x40) e Sink (+0x44) são
+  carregados e copiados mas ninguém lê (nem da tabela global DAT_007f4bf8,
+  que só é lida pra nomes, IsDirt +0x48 e WheelDirtRate +0x54). A função
+  0x238e08 que lê +0x754 é de outra classe de veículo. Os outros leitores
+  do material (veículo+0xa88) são poeira, som, marca de pneu e sujeira da
+  roda (esta usa o giro W+0x48 e a patinada 0x600).
 
 ## Mão (espelho)
 

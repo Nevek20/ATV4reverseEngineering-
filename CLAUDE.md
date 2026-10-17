@@ -47,6 +47,7 @@ set GODOT=C:\caminho\Godot_v4.x-stable_win64_console.exe
 python tests/rodar_testes.py                  :: aceleração dos 3 carros
 python tests/rodar_testes.py hs --veh 0       :: curva em alta no Renegade
 python tests/rodar_testes.py accel --veh 1 --tune "{\"engine\":0.81}"
+python tests/rodar_testes.py accel --veh 0 --mu 0.69 --amort 0.2   :: fora da pista
 
 :: save state do PCSX2 -> valores reais do jogo
 python tools/ler_savestate.py arquivo.p2s
@@ -156,6 +157,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Alturas e material saem do stream (tools/extrair_material.py), conferidos
   com a RAM (tests/teste_chao.gd). Diagonal da célula (i+1, j)-(i, j+1) = a
   do HeightMapShape3D. Material i = Material_(i+1) do data/materials_rx01.xml.
+- Material do chão: só o atrito (pneu) e o Damping (arrasto do chão,
+  0x20e5e8) mexem na física do buggy. Hardness, Sink e Bounciness o jogo
+  carrega e não lê (varredura do exe, docs Terreno). Não "portar" eles.
 - Giro da roda (0x2113e0): no chão ω = v_prevista·(1 + 0x610)/R, então o
   0x600 (ω·R/v − 1, que ABS/trava/embreagem leem) é a 0x610 do passo
   anterior. 0x3cc = rodas de TRÁS no chão (não "tração no chão"). O
@@ -177,7 +181,5 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Melhoria nossa depois: mãos tremendo no volante em alta velocidade.
 - Câmera do piloto: referência do Matheus = cockpit do Dirt Rally 2.0
   (horizonte perto do meio, volante cortado embaixo, muita estrada).
-- Do material do chão ainda faltam Damping (arrasto), Hardness, Bounciness
-  e Sink (o atrito por roda já está: terrain.atrito, w.mu, car.mu_medio).
 - Sinal do giro/direção visual: falta save state andando com volante virado.
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).

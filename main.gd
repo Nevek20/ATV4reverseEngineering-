@@ -253,8 +253,8 @@ func _process(delta: float) -> void:
 	hud.text += "\n\nchão: " + _chao()
 
 
-## material do chão embaixo de cada roda (FE FD TE TD), o WheelJitter e o
-## atrito do pneu nele
+## material do chão embaixo de cada roda (FE FD TE TD), o WheelJitter, o
+## atrito do pneu e o Damping (arrasto do chão) nele
 func _chao() -> String:
 	var o: Array = car.jit_order
 	if o.size() != 4:
@@ -262,8 +262,8 @@ func _chao() -> String:
 	var out := []
 	for k in [[0, "FE"], [2, "FD"], [1, "TE"], [3, "TD"]]:
 		var w: Dictionary = car.wheels[o[k[0]]]
-		out.append("%s %s (tremida %.1f, atrito %.2f)%s" % [k[1], terrain.material_name(w.mat),
-			terrain.wheel_jitter(w.mat, car.surface_jitter), w.mu, "" if w.hit else " no ar"])
+		out.append("%s %s (tremida %.1f, atrito %.2f, arrasto %.1f)%s" % [k[1], terrain.material_name(w.mat),
+			terrain.wheel_jitter(w.mat, car.surface_jitter), w.mu, w.amort, "" if w.hit else " no ar"])
 	return "   ".join(out)
 
 
