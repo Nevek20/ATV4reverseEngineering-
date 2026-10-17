@@ -30,7 +30,7 @@ import sys
 AQUI = os.path.dirname(os.path.abspath(__file__))
 PROJ = os.path.dirname(AQUI)
 LINHA = re.compile(r"t=\s*([\d.]+) v=\s*(-?[\d.]+)km/h g=(\S+) rpm=\s*(\d+) cl=([\d.]+) thr=([\d.]+)"
-                   r".*?pitch=\s*(-?[\d.]+).*?x=\[([^\]]*)\] grd=(\d) sl=([\d.]+)")
+                   r".*?pitch=\s*(-?[\d.]+).*?x=\[([^\]]*)\] grd=(\d) sl=(-?[\d.]+)")
 REF_SPHINX = {"20": 1.45, "38": 2.55, "57": 3.95, "75": 5.95}
 
 
