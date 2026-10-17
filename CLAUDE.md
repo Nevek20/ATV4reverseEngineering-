@@ -107,9 +107,13 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   CoM (0, 0.639, -0.4), marchas 18.2/11.9/8.9/7.1/5.9, final 1.1636,
   embreagem máx 0.6127, rpm 6582, torque -0.094 kN·m, curso frente
   ~0.22-0.25 / trás ~0.11-0.13, câmera (longe) zoom 0.41, suavização 40/s.
-- **Speedrun do Sphinx** (vídeo, HUD em mph): 20 mph em 1.45 s; trocas a
-  38 mph (2.55 s), 57 mph (3.95 s), 75 mph (5.95 s). Bate com
-  "Sphinx speedrun" (motor 0.81, BodyMass L2, Clutch L2, final 0.61).
+- **Speedrun do Sphinx** (atv4-dados/videos, parte_00_00, largada em 25 s;
+  relógio da corrida + HUD em mph lidos quadro a quadro): 20 mph @ 1.53 s,
+  38 @ 2.67, 57 @ 4.05, 75 @ 5.92. Carro pela ficha da tela de opções:
+  DIRT PREMIUM, 269.9 HP (motor 1.0), 2204 lbs (BodyMass L2), embreagem L2
+  (troca 2->3 para 0.28 s). Na 1ª ele larga em 8º colado num buggy da IA:
+  vale a aceleração em marcha, 2ª 41->56 mph em 0.85 s, 3ª 58->75 em 1.52 s
+  (remake: 0.89 e 1.40). Falta referência limpa da 1ª (patinando).
 - **Gravação PCSX2 do Renegade**: carro ocupa ~27% da largura (em 4:3) a
   122 km/h na câmera perto; bate com a câmera portada.
 

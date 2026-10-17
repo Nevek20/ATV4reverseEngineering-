@@ -13,11 +13,14 @@ const VEHICLES := [
 		"data": "res://data/vehicles/buggy_10.xml", "points": "res://data/vehicles/buggy_10_points.bin", "fp": [0.39, 0.52, 0.00]},
 	{"name": "Sphinx", "id": "BUGGY_04", "cams": "BuggyCamSet_04", "dir": "res://assets/sphinx",
 		"data": "res://data/vehicles/buggy_04.xml", "points": "res://data/vehicles/buggy_04_points.bin", "fp": [0.35, 0.48, 0.00]},
-	# o Sphinx do speedrun tem peças compradas: com motor 0.81, BodyMass L2 e
-	# Clutch L2 as trocas (38/57/75 mph) caem no mesmo tempo do vídeo
+	# Sphinx do speedrun, pela ficha da tela de opções do vídeo (0:00): pneu
+	# DIRT PREMIUM; 269,9 HP = Drive_torque 1,08 x 250 (0x1f5e90), ou seja,
+	# motor todo Prototype + câmbio Prototype (soma 1.0); 2204 lbs = 1,0 t
+	# (BodyMass L2). Embreagem L2: na troca 2->3 do vídeo a velocidade para
+	# 0,28 s (L2 dá 0,30, L1 0,40)
 	{"name": "Sphinx speedrun", "id": "BUGGY_04", "cams": "BuggyCamSet_04", "dir": "res://assets/sphinx",
 		"data": "res://data/vehicles/buggy_04.xml", "points": "res://data/vehicles/buggy_04_points.bin", "fp": [0.35, 0.48, 0.00],
-		"livery": "pintura_speedrun.png", "tune": {"engine": 0.81, "mass": 1.0, "shift": 1.0}},
+		"livery": "pintura_speedrun.png", "tune": {"engine": 1.0, "mass": 1.0, "shift": 1.0, "tire": "DIRT_PREMIUM"}},
 	# os outros buggies, na ordem da lista do jogo (tools/gerar_buggies.py)
 	{"name": "Mosquito", "id": "BUGGY_01", "cams": "BuggyCamSet_01", "dir": "res://assets/buggy_01",
 		"data": "res://data/vehicles/buggy_01.xml", "points": "res://data/vehicles/buggy_01_points.bin", "fp": [0.35, 0.46, 0.00]},

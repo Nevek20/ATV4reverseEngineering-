@@ -268,7 +268,10 @@ func _load_tuning() -> void:
 	TUNE_GEARS = t.gears
 	TUNE_FRONT_BIAS = t.front_bias
 	for k in tune_override:
-		set("TUNE_" + String(k).to_upper(), tune_override[k])
+		if String(k) == "tire":
+			pneu = String(tune_override[k])     # classe do pneu (override de atrito do chão)
+		else:
+			set("TUNE_" + String(k).to_upper(), tune_override[k])
 
 
 func _load_physics() -> void:

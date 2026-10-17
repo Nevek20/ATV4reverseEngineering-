@@ -16,8 +16,10 @@ Uso (na pasta do projeto):
 Referências (o que o jogo de verdade faz):
     Renegade, save state PCSX2 a 151 km/h em 4ª sem acelerar: rpm 6582,
         torque do motor -0.094 kN·m, curso frente ~0.22-0.25 / trás ~0.11-0.13
-    Sphinx do speedrun (vídeo, HUD em mph): 20 mph em 1.45 s, trocas
-        38 mph @ 2.55 s, 57 mph @ 3.95 s, 75 mph @ 5.95 s
+    Sphinx do speedrun (vídeo, relógio da corrida e HUD em mph, lidos quadro
+        a quadro): 20 mph @ 1.53 s, 38 @ 2.67, 57 @ 4.05, 75 @ 5.92. Na 1ª ele
+        larga em 8º colado num buggy da IA, então o que vale é a aceleração
+        dentro da marcha: 2ª 41->56 mph em 0.85 s, 3ª 58->75 mph em 1.52 s.
 """
 
 import argparse
@@ -31,7 +33,9 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 PROJ = os.path.dirname(AQUI)
 LINHA = re.compile(r"t=\s*([\d.]+) v=\s*(-?[\d.]+)km/h g=(\S+) rpm=\s*(\d+) cl=([\d.]+) thr=([\d.]+)"
                    r".*?pitch=\s*(-?[\d.]+).*?x=\[([^\]]*)\] grd=(\d) sl=(-?[\d.]+)")
-REF_SPHINX = {"20": 1.45, "38": 2.55, "57": 3.95, "75": 5.95}
+REF_SPHINX = {"20": 1.53, "38": 2.67, "57": 4.05, "75": 5.92}
+# (marcha, de mph, até mph, segundos no vídeo)
+REF_MARCHA = [("2", 41, 56, 0.85), ("3", 58, 75, 1.52)]
 
 
 def rodar(sc, veh, extra):
@@ -79,6 +83,22 @@ def resumo_accel(rows):
     return out
 
 
+def em_marcha(rows):
+    """tempo pra ir de uma velocidade a outra sem trocar de marcha x vídeo"""
+    def cruza(g, mph):
+        for a, b in zip(rows, rows[1:]):
+            va, vb = a["kmh"] / 1.609344, b["kmh"] / 1.609344
+            if b["g"] == g and va <= mph <= vb and vb > va:
+                return a["t"] + (b["t"] - a["t"]) * (mph - va) / (vb - va)
+        return None
+    out = []
+    for g, de, ate, ref in REF_MARCHA:
+        t0, t1 = cruza(g, de), cruza(g, ate)
+        dt = f"{t1 - t0:.2f}" if t0 is not None and t1 is not None else "-"
+        out.append(f"{g}ª {de}->{ate} mph {dt} s (vídeo {ref:.2f})")
+    return "em marcha: " + ", ".join(out)
+
+
 def resumo_coast(rows):
     """acelera até 13 s e solta: velocidade na hora e quanto tempo leva pra
     perder metade"""
@@ -121,7 +141,8 @@ def main():
             for l in resumo_accel(rows):
                 print("  " + l)
             if veh == 2:
-                print(f"  vídeo do speedrun (mph): {REF_SPHINX}")
+                print(f"  vídeo do speedrun (mph): {REF_SPHINX} (1ª atrás de um carro da IA)")
+                print("  " + em_marcha(rows))
         elif sc == "coast" and rows:
             for l in resumo_coast(rows):
                 print("  " + l)

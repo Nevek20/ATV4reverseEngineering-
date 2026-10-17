@@ -12,6 +12,20 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - Interpolação "tunada": valor = lerp(non_tuned, fully_tuned, t), com t das
   peças (data/upgrades.xml, efeitos somados por tipo).
 
+## Ficha do carro (tela de opções da corrida)
+
+- **0x1f5e90** monta a ficha a partir dos parâmetros já com as peças
+  (0x21d618: para cada slot i, (1-t)·P[0x1350+8i] + t·P[0x1354+8i]; slot 1 =
+  Drive_torque -> P+0x58). Power HP = P+0x58 · 250 (classes 2 e 3) ou · 264
+  (0 e 1); Weight lbs = massa (t, P+4) · 2204.6; Cornering = 10·(1 - (P+0x53c
+  - mín)/(máx - mín)). Faixas por classe em 0x847cd0 (6 floats): classes 0/1
+  potência 0.05..0.25, peso 0.07..0.18 t; classes 2/3 potência 0..3.8, peso
+  0..2.4 t, cornering 16..27. O texto trunca: 1.08·250 em float dá 269.99997
+  e aparece "269.9" (motor todo preparado).
+- Peças de motor do buggy (upgrades.xml <Buggy>): Internals até 0.35,
+  Management 0.2, Header 0.1, Exhaust 0.1, Intake 0.2 e o câmbio Prototype
+  soma mais 0.05: máximo 1.0.
+
 ## Motor e câmbio
 
 - **0x246858 motor** (struct E em obj+0x2ac): E[1] acelerador, E[2] torque,
