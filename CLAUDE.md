@@ -63,6 +63,8 @@ python tools/ler_savestate.py arquivo.p2s
 %GODOT% --headless --path . -s res://tests/teste_tremida_camera.gd
 %GODOT% --headless --path . -s res://tests/teste_freio.gd   :: patinada, ABS e trava
 %GODOT% --headless --path . -s res://tests/teste_roda.gd    :: giro das rodas por torque (no ar, preso)
+%GODOT% --headless --path . -s res://tests/teste_camera_passo.gd  :: câmera de órbita sem vai e volta
+%GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
 python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materiais <dados>/unpacked/xml/12280
@@ -142,6 +144,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Física roda a 120 Hz com interpolação ligada; câmera em passos de 1/60
   interpolando no frame do carro (senão aparece "fantasma"). O passo de
   física do jogo no PAL é 1/50 (a tremida das rodas sorteia a 50 Hz).
+  Cada passo da câmera de órbita usa o carro NO TEMPO DELE (posição de agora
+  menos velocidade x o que sobrou do acumulador). Sem isso, a 60 Hz saem
+  quadros com 0 e 2 passos e o carro vai e volta na tela (14 cm a 60 km/h,
+  42 cm a 180; tests/teste_camera_passo.gd).
 - MÃO: o jogo é mão esquerda (esquerda do jogo = x < 0 no modelo), o Godot
   mão direita. Até out/2026 o remake saía todo ESPELHADO. Agora: carro =
   nó `espelho` (escala (-1,1,1)) com tudo do jogo em frame do jogo dentro

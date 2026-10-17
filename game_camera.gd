@@ -160,8 +160,15 @@ func update(delta: float, s: Dictionary, terrain) -> void:
 		_po = _co
 		_pd = dir
 		_pz = zoom
-		_step(STEP, s, terrain)
-		_co = pos - s.tp
+		# este passo foi `acc` s antes deste quadro: o carro estava lá atrás.
+		# Sem isso, num quadro com 2 passos (60 Hz quase nunca bate certinho
+		# com o 1/60) os dois usam o carro de agora e a câmera vai e volta
+		var sp := s
+		if acc > 0.0:
+			sp = s.duplicate()
+			sp.tp = s.tp - s.vel * acc
+		_step(STEP, sp, terrain)
+		_co = pos - sp.tp
 
 
 func apply(cam: Camera3D, tp: Vector3) -> void:
