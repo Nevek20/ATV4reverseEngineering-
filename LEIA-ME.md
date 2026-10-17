@@ -88,6 +88,7 @@ Controle de videogame também funciona (gatilhos e analógico esquerdo).
 
 - Troca de pneu e aro (peças compradas): por enquanto só as de fábrica
 - Atrito por tipo de chão (o jogo muda a aderência na terra, lama, água...)
-- Roda travando no freio (função 0x210908 do jogo, ainda não portada)
+- Giro da roda por torque (o jogo integra o giro de cada roda; aqui sai da
+  patinada). Patinada por roda, ABS e trava já são do jogo
 - Tremida da câmera na batida ainda não portada (a por velocidade já é a do
   jogo: só na terra e acima da velocidade de cada câmera)

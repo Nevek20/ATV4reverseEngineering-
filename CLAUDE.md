@@ -60,6 +60,7 @@ python tools/ler_savestate.py arquivo.p2s
 %GODOT% --headless --path . -s res://tests/teste_chao.gd
 %GODOT% --headless --path . -s res://tests/teste_mao.gd     :: espelho (lado das peças, esterço)
 %GODOT% --headless --path . -s res://tests/teste_tremida_camera.gd
+%GODOT% --headless --path . -s res://tests/teste_freio.gd   :: patinada, ABS e trava
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
 python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materiais <dados>/unpacked/xml/12280
@@ -165,7 +166,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Tremida da câmera na BATIDA (a por velocidade já está, camera_jitter.gd):
   precisa do sistema de colisão do corpo (corpo+0x7a0); fórmula em
   docs/engenharia_reversa.md, Câmera.
-- Roda travando no freio (0x210908).
+- Giro real da roda por torque (W+0x48, 0x2484c8/0x249930): hoje a patinada
+  0x610 faz o papel do 0x600 (docs, Pneus). Patinada, ABS e trava já estão.
 - Som do motor (00002/00004/00005 xml: bancos e faders por buggy).
 - Piloto sentado e animado (MALE_*.srd + InGame_Mid.skl + STEER_LEFT.bac,
   docs/engenharia_reversa.md "Piloto"): falta parser dos 3 formatos.

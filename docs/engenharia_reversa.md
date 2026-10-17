@@ -72,7 +72,27 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - No ar **0x2129c0**: guinada (alvo direção·máx, acel direção·acc·dt),
   empurrão lateral (Maximum_force 2.5 kN, cauda de 2 s), arfagem com freio /
   sem acelerador.
-- Não portado: **0x210908** (roda travada gira a força quando slip < −0.25).
+- Patinada por roda **0x610+4i** (0x2101e0, 2ª volta): roda saturada na
+  elipse com força·v_f > 0 cresce Growth_rate_during_wheel_spin até o limite
+  do motor (giro de referência, Maximum); com força contra o movimento e
+  pedal (0x390) > 0.1 desce Growth_rate_during_wheel_lock até −1. Fora da
+  elipse volta pra 0 (Recovery_rate_during_wheel_lock / _spin). Sem
+  condição de acelerador nem de marcha (vale em ré).
+- **ABS 0x20eb98** (flag 0x620+4i): Enable_ABS do Footbrake; patinada <
+  ABS_engagement_slip_ratio (−0.2) solta o freio da roda, ≥
+  ABS_disengagement_slip_ratio (−0.01) volta. Todos os buggies têm ABS
+  (conferido na RAM). Roda fora do chão zera a flag.
+- **Trava 0x210908** (depois da elipse, antes do 0x210ce0; globais
+  0x5506a4..b4 = ligado, 2 mph, −0.25, −1, rampa linear): roda sem ABS
+  soltando, com patinada < −0.25, tem a força (mesmo tamanho) virada pra
+  contra o deslize do contato: velocidade local do corpo (0x410, global
+  0x550680 = 0) com a frente trocada por −v_f·patinada (0x630, 0x20df58).
+  Em −1 fica toda contra. Com o ABS dos buggies não chega a agir.
+- Aproximação do remake: o jogo usa a patinada medida do giro real da roda
+  (0x600 = ω·R/v − 1, ω = W+0x48 integrado por torque em 0x2484c8 /
+  0x249930, não portado); aqui 0x600 = 0x610. O giro da roda na tela e o
+  giro do motor usam v·(1 + patinada). O ABS fica fora do freio de mão do
+  remake (que não é o do jogo).
 
 ## Pontos do modelo
 

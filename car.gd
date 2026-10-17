@@ -170,7 +170,14 @@ var jitter_chao := 0.0        # veículo+0xac0: média do WheelJitter embaixo de
 var lateral_game := true     # L alterna: força lateral por eixo (jogo) x remendo antigo
 var use_ported := true      # P alterna: física portada do jogo x modelo antigo
 var stf_blend := 0.0          # 0x474: quanto da força pra frente veio da derrapagem
-var drive_slip := 0.0         # patinada das rodas de tração (0x610 no jogo)
+var drive_slip := 0.0         # maior patinada das rodas de tração (vai pro giro do motor)
+# roda travando (0x210908, globais 0x5506a4..b4): acima de 2 mph, roda sem ABS
+# segurando com patinada abaixo de -0.25 tem a força virada contra o deslize
+# do contato (rampa linear até -1, aí fica toda contra). Nos buggies o ABS
+# (Enable_ABS) solta o freio em -0.2, então o pedal não chega a travar.
+const TRAVA_MPH := 2.0
+const TRAVA_INI := -0.25
+const TRAVA_FIM := -1.0
 var test_input = null         # {thr, brk, steer} pra testes automáticos
 
 
@@ -404,6 +411,13 @@ func _load_physics() -> void:
 	P.slip_grow = d.f("SlipRatio", "Growth_rate_during_wheel_spin", 3.0)
 	P.slip_recover = d.f("SlipRatio", "Recovery_rate_during_wheel_spin", 4.0)
 	P.slip_max = d.f("SlipRatio", "Maximum", 10.0)
+	P.lock_grow = d.f("SlipRatio", "Growth_rate_during_wheel_lock", 2.0)
+	P.lock_recover = d.f("SlipRatio", "Recovery_rate_during_wheel_lock", 2.0)
+	# ABS (0x20eb98): solta o freio da roda com patinada < engagement e volta
+	# com patinada >= disengagement
+	P.abs_on = d.f("Footbrake", "Enable_ABS", 0.0) != 0.0
+	P.abs_eng = d.f("Footbrake", "ABS_engagement_slip_ratio", -0.2)
+	P.abs_dis = d.f("Footbrake", "ABS_disengagement_slip_ratio", -0.01)
 
 	# estabilidade e ar
 	P.h_long = d.f("Stability/WheelForceHeightScales", "Longitudinal_scale_std", 0.5)
@@ -486,6 +500,8 @@ func _load_physics() -> void:
 		w.normal = Vector3.UP
 		w.spin = 0.0
 		w.grip = 1.0                        # escala da elipse (encolhe patinando)
+		w.slip = 0.0                        # patinada (0x610): + girando, - travando (até -1)
+		w.abs = false                       # ABS soltando o freio desta roda (0x620)
 		w.sat = false
 		w.fx = 0.0                          # força lateral do passo (N, + = esquerda)
 		w.fz = 0.0                          # força longitudinal do passo (N)
@@ -757,6 +773,9 @@ func reset_to(pos: Vector3, yaw: float) -> void:
 
 func reset_drivetrain() -> void:
 	drive_slip = 0.0
+	for w in wheels:
+		w.slip = 0.0
+		w.abs = false
 	gear = 1
 	shift_to = 1
 	rpm = P.get("idle", 1000.0)
@@ -1135,7 +1154,17 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			dec_front = 0.0                 # freio de mão só atrás
 		for w in wheels:
 			if not w.hit:
+				w.abs = false
 				continue
+			# o ABS é do pedal (0x390); o freio de mão do remake passa por aqui
+			# mas não é o do jogo, então fica fora dele
+			if P.abs_on and not handbrake:
+				if w.slip < P.abs_eng:
+					w.abs = true
+				elif w.slip >= P.abs_dis:
+					w.abs = false
+			if w.abs:
+				continue                    # ABS: sem freio nesta roda agora
 			if w.front:
 				w.fz += mass * dec_front / nf_s
 			else:
@@ -1284,24 +1313,66 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			w.grip = minf(w.grip + e.recover * dt, 1.0)
 
 
-	# ---- 0x2101e0: patinada. Roda de tração saturada acelerando: a patinada cresce
-	# (Growth_rate_during_wheel_spin) até onde o motor consegue girar; roda dentro
-	# da elipse: volta (Recovery_rate_during_wheel_spin)
-	var spin_sat := false
-	for w in wheels:
-		if w.hit and (not w.front or not REAR_DRIVE) and w.sat and w.fz * v_f > 0.0 and throttle > 0.05:
-			spin_sat = true
-	if spin_sat and gear >= 1 and absf(v_f) > 0.5:
+	# ---- 0x2101e0: patinada de cada roda (0x610). Roda saturada na elipse:
+	# empurrando pra frente, cresce (Growth_rate_during_wheel_spin) até onde o
+	# motor consegue girar; freando (força contra o movimento, pedal > 0.1),
+	# desce (Growth_rate_during_wheel_lock) até -1 (travada). Roda dentro da
+	# elipse: volta pra 0 (Recovery_rate_during_wheel_spin / _lock).
+	var lim_slip := -INF                    # sem marcha ou parado: não cresce
+	if absf(_ratio(gear)) > 1e-6 and absf(v_f) > 0.5:
 		# giro de referência do jogo: o máximo da curva do motor (9000); virando
 		# forte abaixo de 40 mph, 95% do limitador
 		var ref_rpm: float = drive_curve["max"]
 		if absf(steer) > 0.5 and absf(v_f) < 40.0 * MPH:
 			ref_rpm = P.lim_on * 0.95
-		var lim_slip: float = ref_rpm * RPM2RAD * P.wheel_r / (absf(_ratio(gear)) * absf(v_f)) - 1.0
-		drive_slip = minf(drive_slip + P.slip_grow * dt, minf(lim_slip, P.slip_max))
-	else:
-		drive_slip = maxf(drive_slip - P.slip_recover * dt, 0.0)
-	drive_slip = maxf(drive_slip, 0.0)
+		lim_slip = minf(ref_rpm * RPM2RAD * P.wheel_r / (absf(_ratio(gear)) * absf(v_f)) - 1.0, P.slip_max)
+	drive_slip = -INF
+	for w in wheels:
+		if w.sat:
+			var fl: float = w.fz * v_f
+			if fl > 1e-6:
+				if lim_slip > -INF:
+					w.slip = minf(w.slip + P.slip_grow * dt, lim_slip)
+			elif fl < -1e-6 and brake_in > 0.1:
+				w.slip = maxf(w.slip - P.lock_grow * dt, -1.0)
+		elif w.slip < 0.0:
+			w.slip = minf(w.slip + P.lock_recover * dt, 0.0)
+		else:
+			w.slip = maxf(w.slip - P.slip_recover * dt, 0.0)
+		if not w.front or not REAR_DRIVE:
+			drive_slip = maxf(drive_slip, w.slip)
+
+	# ---- 0x210908: roda travando. A força da roda (mesmo tamanho) vira contra
+	# o deslize do contato: velocidade do corpo com a frente trocada por
+	# -v_f * patinada (0x630, 0x20df58)
+	if v_p > TRAVA_MPH * MPH_G:
+		var v_up := v.dot(n)
+		for w in wheels:
+			if w.abs:
+				continue
+			var f := 0.0
+			if w.slip < TRAVA_FIM:
+				f = 1.0
+			elif w.slip < TRAVA_INI:
+				f = (w.slip - TRAVA_INI) / (TRAVA_FIM - TRAVA_INI)
+			if f <= 0.0:
+				continue
+			var fv := Vector3(w.fx, 0.0, w.fz)
+			var tam := fv.length()
+			var desl := Vector3(v_l, v_up, -v_f * w.slip)
+			if tam < 1e-6 or desl.length() < 1e-6:
+				continue
+			var fh := fv / tam
+			var contra := -desl.normalized()
+			var d := contra
+			if f < 1.0:
+				d = fh * (1.0 - f) + contra * f
+				if d.length() > 1e-6:
+					d = d.normalized()
+				else:
+					d = fh if f < 0.5 else contra
+			w.fx = d.x * tam
+			w.fz = d.z * tam
 
 	# ---- 0x210ce0: limite da velocidade de derrapagem. Com as forças que
 	# sobraram depois da elipse, calcula quão rápido o ângulo de derrapagem vai
@@ -1703,7 +1774,7 @@ func _update_visuals(dt: float, v_f: float) -> void:
 		var x: float = clampf(w.x, w.min, w.max) + w.jit   # 0x222078: sem clamp depois
 		w.pivot.position = Vector3(w.px, w.y0 + x, w.pz) * ESPELHO
 		w.pivot.rotation.y = a_jogo if w.front else 0.0
-		w.spin += v_f / w.r * dt
+		w.spin += v_f * (1.0 + w.slip) / w.r * dt   # giro com a patinada da roda
 		w.spin_node.rotation.x = w.spin
 	# direção suavizada do piloto (0x187060: s += min(1/dt, 30)·(direção - s)·dt):
 	# é o que move os braços dele no jogo, então o volante anda junto
