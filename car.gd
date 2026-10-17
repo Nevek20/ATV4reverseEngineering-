@@ -146,7 +146,7 @@ var air_time := 0.0
 var air_lat_state := 0        # empurrão lateral no ar (0x6f4): 0 nada, 1 direita, 2 esquerda
 var air_lat_timer := 0.0
 var air_lat_scale := 1.0
-var sideslip := 0.0           # rad, + = bico à esquerda da trajetória
+var sideslip := 0.0           # rad, + = bico à direita da trajetória (0x6c0 do jogo com sinal trocado)
 var grounded := 0
 
 # tremida das rodas no chão (0x202760, só visual). A cada passo de física do

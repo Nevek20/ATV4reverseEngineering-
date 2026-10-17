@@ -57,6 +57,7 @@ python tools/ler_savestate.py arquivo.p2s
 %GODOT% --headless --path . -s res://tests/teste_pecas.gd
 %GODOT% --headless --path . -s res://tests/teste_tremida.gd
 %GODOT% --headless --path . -s res://tests/teste_chao.gd
+%GODOT% --headless --path . -s res://tests/teste_mao.gd     :: espelho (lado das peças, esterço)
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
 python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materiais <dados>/unpacked/xml/12280
@@ -145,7 +146,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   terreno). Ângulo de esterço no frame do jogo = -steer (car.gd a_jogo).
   Câmeras do XML: x negado no _parse. Nunca converter a mesma coisa duas
   vezes. tests/teste_chao.gd põe os 6 carros na pose da RAM e confere roda
-  por roda (lado trocado = 2,4 m de erro).
+  por roda (lado trocado = 2,4 m de erro); tests/teste_mao.gd confere
+  carroceria, volante, olho, peças, espelho da roda e sinal do esterço.
 - Terreno RX01: .bin no layout do jogo, transposto na carga (terrain.gd).
   Alturas e material saem do stream (tools/extrair_material.py), conferidos
   com a RAM (tests/teste_chao.gd). Diagonal da célula (i+1, j)-(i, j+1) = a
