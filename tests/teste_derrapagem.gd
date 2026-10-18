@@ -23,6 +23,8 @@ var n := 0
 var alvo := 0
 var e0: Dictionary
 var imprime := false
+var ok_fim := false
+var seq := []
 
 
 func _initialize() -> void:
@@ -63,9 +65,13 @@ func _physics_process(_dt: float) -> bool:
 		n = 0
 		fase = "sim"
 		print("\n== drr_3 -> drr_2: %d passos (%.2f s), volante e acelerador como na RAM" % [alvo, alvo * PASSO])
+	if fase == "emb":
+		_clutch_turn()
+		return false
 	if n >= alvo:
 		_comparar_fim(ref.estados["drr_2"])
-		quit()
+		fase = "emb"
+		n = 0
 		return false
 	if imprime and n % 5 == 0 and n > 0:
 		var s := _medir()
@@ -168,5 +174,38 @@ func _comparar_fim(e: Dictionary) -> void:
 	print("  derrapagem   jogo %5.1f  remake %5.1f°" % [rad_to_deg(atan2(vel.dot(dir), vel.dot(fj))), s.beta])
 	print("  giro         jogo %5.1f  remake %5.1f°/s" % [rad_to_deg(w.dot(cima)), s.giro])
 	print("  posição: remake a %.1f m da RAM  marcha jogo %d remake %s" % [(p_r - p_j).length(), int(e.marcha), car.gear_label()])
-	var ok := (p_r - p_j).length() < 1.5 and absf(wrapf(rumo_r - rumo_j, -180.0, 180.0)) < 10.0
-	print("teste_derrapagem: %s" % ("ok" if ok else "FALHA (mais de 1.5 m ou 10° do jogo)"))
+	ok_fim = (p_r - p_j).length() < 1.5 and absf(wrapf(rumo_r - rumo_j, -180.0, 180.0)) < 10.0
+	if not ok_fim:
+		print("  FALHA: mais de 1.5 m ou 10° do jogo")
+
+
+## Clutch Turn (0x214610) a partir do drr_3, já de lado: botão da embreagem
+## 3 passos e solta (0 -> 1 -> 2), segura em 2 com a elipse de trás no
+## mínimo x 0.8, solta o acelerador (-> 3) e some a Decay_rate (1/s)
+func _clutch_turn() -> void:
+	if n == 0:
+		_por_no_estado(ref.estados["drr_3"])
+		print("\n== Clutch Turn no drr_3: embreagem 3 passos e solta, acelerador solto em 0.12 s")
+	var ti: Dictionary = car.test_input
+	ti.emb = 1.0 if n < 3 else 0.0
+	ti.thr = 1.0 if n < 6 else 0.0
+	car._physics_process(PASSO)
+	seq.append([car.ps_estado, car.ps_qtd])
+	n += 1
+	if n < 60:
+		return
+	var estados := []
+	for x in seq:
+		if estados.is_empty() or estados[-1] != x[0]:
+			estados.append(x[0])
+	var q_fim: float = seq[-1][1]
+	# solta a embreagem no 4º passo (-> 1), cresce no 5º (-> 2); o acelerador
+	# suavizado zera 0.5 s depois de soltar (-> 3) e aí some a 1/s
+	var i3 := 0
+	while seq[i3][0] != 3:
+		i3 += 1
+	var esperado := 1.0 - (seq.size() - i3) * PASSO
+	var ok: bool = estados == [0, 1, 2, 3] and absf(q_fim - esperado) < 0.03 and seq[3][0] == 1 and seq[4][0] == 2
+	print("  estados %s  (3 a partir do passo %d)  quantidade no fim %.2f (esperado %.2f)" % [estados, i3 + 1, q_fim, esperado])
+	print("teste_derrapagem: %s" % ("ok" if ok and ok_fim else "FALHA"))
+	quit()

@@ -100,7 +100,7 @@ func _physics_process(d):
 	elif sc == "hb":
 		ti.thr = 1.0 if t > 1.0 else 0.0
 		ti.steer = 1.0 if t > 5.0 and t < 8.0 else 0.0
-		ti.hb = t > 5.0 and t < 6.0
+		ti.hb = t > 5.0 and t < 6.0      # botão da embreagem (o jogo não tem freio de mão)
 	elif sc == "freio" or sc == "freiocurva":
 		# acelera até ~7 s e pisa no freio (curva: virando metade)
 		ti.thr = 1.0 if t > 1.0 and t < 7.0 else 0.0

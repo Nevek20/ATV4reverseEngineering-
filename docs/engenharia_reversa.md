@@ -73,7 +73,7 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   travada; travada, Σ "torque" do freio/relação (sem massa; só pesa com as
   rodas de trás fora do chão, não portado).
 - **Pedais (corpo+0x368)**: cada comando tem cru e suavizado (InputRates):
-  direção 0x36c/0x370, acelerador 0x37c/0x380, freio de mão 0x384/0x388,
+  direção 0x36c/0x370, acelerador 0x37c/0x380, embreagem 0x384/0x388 (InputRates/Clutch; o jogo não tem freio de mão),
   freio 0x38c/0x390, flags 0x394. O motor (E[1] = 0x2b0) e o arrasto
   usam o suavizado; câmbio e "preso" usam o cru.
 - **0x202df0** pedais do jogador no AutoManual (veículo+0xb14 = 1), mph =
@@ -117,6 +117,25 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   de volta. No ar, Pitch_torque constante (−0.5 kN·m).
 
 ## Pneus e derrapagem
+
+- **Powerslide = "Clutch Turn"** (0x214610, chamado em 0x20cea0 antes do
+  0x2101e0 só se Powerslide/Growth_rate P+0xf64 > 0; treino: "Tap ... to
+  initiate a clutch turn"). Estado corpo+0x74c, quantidade 0x744, escala
+  0x748 = Scale_vs_speed(mph do 0x440), embreagem do passo anterior 0x740.
+  0 -> 1: direção suavizada 0x370 != 0, acelerador 0x380 > 0 e a embreagem
+  0x388 SOLTANDO (< 0x740). 1: quantidade += Growth_rate·dt até 1 (-> 2);
+  embreagem subindo ou acelerador 0 -> 3. 2: embreagem subindo -> 0 (a
+  quantidade fica); acelerador 0 ou direção·derrapagem 0x6c0 >= 0 -> 3. 3:
+  quantidade −= Decay_rate·dt até 0 (-> 0). No ar > Maximum_air_time (0.1)
+  zera. Efeitos: em 1/2 a elipse 0x670 das rodas de tração vai pro mínimo
+  da curva × Scale_of_min_friction_ellipse_scale (0x214610 e 0x2101e0); em
+  qualquer estado != 0 o Side_deceleration_to_fwd vira o do Powerslide
+  (P+0xf70, 1.0 x 0.75; 0x20efa0); quantidade·escala mistura a curva de
+  taxa de subida da derrapagem com Maximum_sideslip_rate_vs_sideslip do
+  Powerslide (P+0xecc; 0x210ce0). Estado 3 escala a tração por
+  Decay_drive_force_scale (1 nos buggies) e soma Decay_boost_acceleration
+  (0 nos buggies). Nos 4 save states de derrapagem o estado era 0: a
+  derrapagem "natural" de virar forte não usa o powerslide.
 
 - **Conferido com save states** (tests/teste_derrapagem.gd, tests/
   ref_derrapagem.json; Renegade no RX01 a ~120 km/h, volante todo e
@@ -176,7 +195,6 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   contra o deslize do contato: velocidade local do corpo (0x410, global
   0x550680 = 0) com a frente trocada por −v_f·patinada (0x630, 0x20df58).
   Em −1 fica toda contra. Com o ABS dos buggies não chega a agir.
-- O ABS fica fora do freio de mão do remake (que não é o do jogo).
 
 ## Giro das rodas
 
@@ -206,13 +224,13 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   relação). Tração com 0x3cc = 0: embreagem travada (0x314 = 3) → giro do
   motor/relação; senão motor − sinal(ω)·freio, com freio maior parando a
   roda e motor maior sem passar do giro do motor.
-- Preso (0x890/0x894/0x870): acelerador 0x37c > 0, sem freio de mão 0x388,
+- Preso (0x890/0x894/0x870): acelerador 0x37c > 0, botão da embreagem 0x388 = 0,
   |v_f| < 0.5 e o corpo dentro de 3 cm (0.0009 m²) por mais de 0.33 s. Aí
   v_ref = deslocamento do passo (0x70 − 0x880)·frente/dt e o giro do motor
   não vem das rodas.
 - **0x20c558** (motor): 0x304 = ω da roda de tração mais rápida·9.549;
   embreagem travada, não preso e 0x3cc ≥ 1 → rpm = 0x304·relação (mín.
-  marcha lenta). Embreagem forçada aberta 0x31c: 0x5ac, freio de mão > 0.1,
+  marcha lenta). Embreagem forçada aberta 0x31c: 0x5ac, botão da embreagem 0x388 > 0.1,
   mais de 1 s no ar (0x3d0) abaixo de câmbio+0x90 (1050 rpm), ou pedal >
   0.9 com roda de tração em 0x600 < −0.9 (0x55067c).
 - No chão o 0x600 de um passo sai igual à 0x610 do anterior (por isso a

@@ -200,6 +200,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   freio 1.0 sozinho (0x202df0): a barra vermelha cheia na largada não é o
   jogador freando. Freio parado vira ré na hora (0.1 s se vinha andando);
   no ar o acelerador corta até ser solto uma vez. car.gd _pedais_auto.
+- O jogo NÃO tem freio de mão. O botão (corpo+0x384/0x388) é a EMBREAGEM:
+  segurando abre a embreagem (> 0.1, 0x20c558); um toque virando e
+  acelerando faz a "Clutch Turn" (powerslide 0x214610, car.gd
+  _powerslide). O freio só tem o pedal (0x390). No remake é o Espaço.
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto, que ainda não temos.

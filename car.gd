@@ -159,6 +159,17 @@ var thr_cx := 0.0
 var brk_cx := 0.0
 var rev_timer := 0.0          # veículo+0xb2c: espera do freio virar ré quando vinha andando
 var ar_libera := false        # veículo+0xb30: soltou o acelerador nesse voo
+# botão da embreagem (corpo+0x384 cru / +0x388 suavizado, InputRates/Clutch).
+# O jogo não tem freio de mão: segurar abre a embreagem (0x20c558) e dar um
+# toque virando e acelerando faz a "Clutch Turn" (powerslide, 0x214610)
+var emb_in := 0.0
+# powerslide (0x214610): estado corpo+0x74c (0 nada, 1 crescendo, 2 ativo,
+# 3 sumindo), quantidade 0x744, escala pela velocidade 0x748 e a embreagem do
+# passo anterior 0x740
+var ps_estado := 0
+var ps_qtd := 0.0
+var ps_esc := 0.0
+var ps_emb_ant := 0.0
 var air_time := 0.0
 var air_lat_state := 0        # empurrão lateral no ar (0x6f4): 0 nada, 1 direita, 2 esquerda
 var air_lat_timer := 0.0
@@ -440,6 +451,11 @@ func _load_physics() -> void:
 	P.cs_scale = d.f("BasicSteering/MaximumYawAcceleration", "Counter_steer_maximum_scale", 1.0)
 	P.cs_scale_ss = d.f("BasicSteering/MaximumYawAcceleration", "Counter_steer_maximum_scale_sideslip", 60.0)
 	P.ps_side_to_fwd = d.f("Powerslide", "Side_deceleration_to_fwd_acceleration", 1.0)
+	P.ps_growth = d.f("Powerslide", "Growth_rate", 60.0)
+	P.ps_decay = d.f("Powerslide", "Decay_rate", 1.0)
+	P.ps_air = d.f("Powerslide", "Maximum_air_time", 0.1)
+	P.emb_up = d.f("InputRates/Clutch", "Digital_increase_rate", 8.0)
+	P.emb_down = d.f("InputRates/Clutch", "Digital_decrease_rate", 8.0)
 	P.ss_rate_inc = d.fcurves("Sideslip/MaximumRate/Maximum_increase_rate_vs_sideslip", "rate_vs_sideslip")
 	P.ss_rate_dec = d.fcurves("Sideslip/MaximumRate/Maximum_decrease_rate_vs_sideslip", "rate_vs_sideslip")
 	P.slip_grow = d.f("SlipRatio", "Growth_rate_during_wheel_spin", 3.0)
@@ -839,6 +855,11 @@ func reset_drivetrain() -> void:
 	brk_cx = 0.0
 	rev_timer = 0.0
 	ar_libera = false
+	emb_in = 0.0
+	ps_estado = 0
+	ps_qtd = 0.0
+	ps_esc = 0.0
+	ps_emb_ant = 0.0
 
 
 func gear_label() -> String:
@@ -882,12 +903,12 @@ func _physics_process(dt: float) -> void:
 	var thr_raw := 0.0
 	var brk_raw := 0.0
 	var st_raw := 0.0
-	var handbrake := false
+	var emb_btn := 0.0
 	if test_input != null:
 		thr_raw = test_input.get("thr", 0.0)
 		brk_raw = test_input.get("brk", 0.0)
 		st_raw = test_input.get("steer", 0.0)
-		handbrake = test_input.get("hb", false)
+		emb_btn = test_input.get("emb", 1.0 if test_input.get("hb", false) else 0.0)
 	else:
 		if Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP):
 			thr_raw = 1.0
@@ -897,7 +918,7 @@ func _physics_process(dt: float) -> void:
 			st_raw += 1.0
 		if Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT):
 			st_raw -= 1.0
-		handbrake = Input.is_physical_key_pressed(KEY_SPACE)
+		emb_btn = 1.0 if Input.is_physical_key_pressed(KEY_SPACE) else 0.0
 		if Input.get_connected_joypads().size() > 0:
 			thr_raw = maxf(thr_raw, Input.get_joy_axis(0, JOY_AXIS_TRIGGER_RIGHT))
 			brk_raw = maxf(brk_raw, Input.get_joy_axis(0, JOY_AXIS_TRIGGER_LEFT))
@@ -938,6 +959,7 @@ func _physics_process(dt: float) -> void:
 
 	throttle = move_toward(throttle, thr_raw, dt * (P.thr_up if thr_raw > throttle else P.thr_down))
 	brake_in = move_toward(brake_in, brk_raw, dt * (P.brk_up if brk_raw > brake_in else P.brk_down))
+	emb_in = move_toward(emb_in, emb_btn, dt * (P.emb_up if emb_btn > emb_in else P.emb_down))
 	var st_rate: float = P.st_up
 	if st_raw == 0.0 or absf(st_raw) < absf(steer):
 		st_rate = P.st_down
@@ -1012,7 +1034,7 @@ func _physics_process(dt: float) -> void:
 
 	# ---- motor e câmbio
 	var driven_g := rear_g if REAR_DRIVE else grounded
-	var drive := _drivetrain(dt, v_f, driven_g > 0, handbrake)
+	var drive := _drivetrain(dt, v_f, driven_g > 0, emb_in > 0.1)   # 0x20c558: embreagem > 0.1 abre
 	_razao_patinada(v_f)
 
 	var f_fwd := 0.0                        # forças das rodas pra frente (0x5c8) + atrito interno
@@ -1022,9 +1044,9 @@ func _physics_process(dt: float) -> void:
 		air_lat_scale = 1.0
 		gravity_scale = 1.0
 		if use_ported:
-			f_fwd = _tires(dt, v, fwd, left, ground_n, com_w, h_sum / grounded, drive, handbrake)
+			f_fwd = _tires(dt, v, fwd, left, ground_n, com_w, h_sum / grounded, drive)
 		else:
-			_tires_legacy(dt, v, fwd, left, ground_n, com_w, h_sum / grounded, drive, handbrake)
+			_tires_legacy(dt, v, fwd, left, ground_n, com_w, h_sum / grounded, drive, false)
 		# 0x20e160: no chão o jogo anula a parte da gravidade que puxa o carro
 		# de lado num barranco, aplicada na altura do chão (vira rolagem)
 		var g_side: float = mass * G * Vector3.DOWN.dot(left)
@@ -1098,7 +1120,7 @@ func _physics_process(dt: float) -> void:
 	var f_arr_f: float = f_arr * v_f / spd if spd > 1e-6 else 0.0
 	var a_f: float = (f_fwd - f_arr_f) / mass + get_gravity().dot(fwd) * gravity_scale
 	v_ref = v_f + a_f * dt
-	_giro_rodas(dt, v_f, rear_g, handbrake)
+	_giro_rodas(dt, v_f, rear_g)
 
 	# 0x2484c8: curso de cada roda anda com a massa dela. No ar a mola e o
 	# amortecedor levam a roda de volta pro meio (x = 0)
@@ -1190,7 +1212,7 @@ const MPH_G := 0.44694445
 const DEG := 0.017453294
 
 func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_w: Vector3,
-		h: float, drive: float, handbrake: bool) -> float:
+		h: float, drive: float) -> float:
 	var v_f := v.dot(fwd)                   # 0x418
 	var v_l := v.dot(left)                  # 0x410 (+ = esquerda)
 	var v_p := sqrt(v_f * v_f + v_l * v_l)  # 0x440 velocidade no plano do chão
@@ -1245,7 +1267,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 	# velocidade PREVISTA (0x211e48): a de agora + (tração já somada nas rodas
 	# + gravidade e arrasto do 0x1a0) x dt / massa. Assim o freio segura o
 	# carro parado contra a tração (o freio automático da largada).
-	var brk := brake_in if not handbrake else maxf(brake_in, 0.4)
+	var brk := brake_in                     # só o pedal (0x390): o jogo não tem freio de mão
 	if brk > 0.0 and (nf + nr) > 0:
 		var dmax: float = brk * MPH_G * P.brake_decel * VehicleData.triple(P.brake_fscale, mu)
 		var f_prev: float = mass * get_gravity().dot(fwd) * gravity_scale
@@ -1257,15 +1279,12 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 		var v_prev := v_f + f_prev * dt / mass
 		var dec: float = -v_prev / dt if absf(v_prev) < dmax * dt else dmax * -signf(v_prev)
 		var dec_front: float = P.front_bias * dec
-		if handbrake:
-			dec_front = 0.0                 # freio de mão só atrás
 		for w in wheels:
 			if not w.hit:
 				w.abs = false
 				continue
-			# o ABS é do pedal (0x390) e lê a patinada medida (0x600); o freio de
-			# mão do remake passa por aqui mas não é o do jogo, então fica fora dele
-			if P.abs_on and not handbrake:
+			# o ABS é do pedal (0x390) e lê a patinada medida (0x600)
+			if P.abs_on:
 				if w.sr < P.abs_eng:
 					w.abs = true
 				elif w.sr >= P.abs_dis:
@@ -1381,6 +1400,9 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			w.fx += (a_f / span) * (f_lat - torque / a_f) / nr_s
 		w.fz += f_fwd / n_all
 
+	# ---- 0x20cea0 -> 0x214610: powerslide (antes da elipse)
+	_powerslide(dt, v_p)
+
 	# ---- 0x2101e0: elipse de atrito por roda
 	var lat_dem := 0.0
 	var lat_got := 0.0
@@ -1414,9 +1436,8 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 				w.fz = fz * k
 				clamped = true
 		var min_scale: float = VehicleData.triple(e.ms, mu_w)
-		if handbrake and not w.front:
-			min_scale *= P.ps_ellipse
-			clamped = true                    # powerslide: traseira escorrega
+		if _motriz(w) and (ps_estado == 1 or ps_estado == 2):
+			min_scale *= P.ps_ellipse          # powerslide: elipse de trás encolhe mais
 		w.sat = clamped
 		lat_dem += absf(fx)
 		lat_got += absf(w.fx)
@@ -1516,8 +1537,10 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			var ss_d: float = absf(sideslip) / DEG
 			var growing: bool = beta_rate * sideslip > 0.0
 			var mr: float = VehicleData.fcurve_eval(P.ss_rate_inc if growing else P.ss_rate_dec, mu, ss_d)
-			if handbrake and growing:
-				mr = VehicleData.sample(ps_rate, ss_d)     # powerslide: curva própria
+			# powerslide: mistura com a curva própria pela quantidade x escala
+			var a_ps := ps_qtd * ps_esc
+			if a_ps > 0.0 and growing:
+				mr = (1.0 - a_ps) * mr + a_ps * VehicleData.sample(ps_rate, ss_d)
 			if absf(beta_rate) > mr * DEG:
 				var ex: float = beta_rate - signf(beta_rate) * mr * DEG
 				if ex * yaw_now > 0.0:
@@ -1664,6 +1687,55 @@ func _tires_legacy(dt: float, v: Vector3, fwd: Vector3, left: Vector3, ground_n:
 	apply_torque(ground_n * inertia.y * step / dt * (grounded / 4.0))
 
 
+## 0x214610: powerslide ("Clutch Turn" do treino: "tap ... to initiate a
+## clutch turn"). Só com Powerslide/Growth_rate > 0 (todos os buggies).
+##  0 nada: virando (direção suavizada != 0), acelerando e a embreagem
+##    SOLTANDO (menor que no passo anterior) -> 1;
+##  1 crescendo: quantidade += Growth_rate x dt até 1 (-> 2); apertou a
+##    embreagem de novo ou soltou o acelerador -> 3;
+##  2 ativo: apertou a embreagem de novo -> 0 (a quantidade fica); soltou o
+##    acelerador ou contra-esterçou (direção x derrapagem >= 0) -> 3;
+##  3 sumindo: quantidade -= Decay_rate x dt até 0 (-> 0).
+## Mais de Maximum_air_time no ar zera tudo. Em 1 e 2 a elipse das rodas de
+## tração vai pro mínimo dela x Scale_of_min_friction_ellipse_scale. A
+## quantidade x Scale_vs_speed (0x748) mistura a curva de taxa de derrapagem
+## (0x210ce0). Decay_drive_force_scale e Decay_boost_acceleration (estado 3)
+## são 1 e 0 nos buggies: sem efeito, não portados.
+func _powerslide(dt: float, v_p: float) -> void:
+	if air_time > P.ps_air:
+		ps_qtd = 0.0
+		ps_estado = 0
+	elif ps_estado == 0:
+		if absf(steer) > 0.0 and throttle > 0.0 and emb_in < ps_emb_ant:
+			ps_estado = 1
+	elif ps_estado == 1:
+		if ps_emb_ant < emb_in or throttle == 0.0:
+			ps_estado = 3
+		else:
+			ps_qtd += P.ps_growth * dt
+			if ps_qtd > 1.0:
+				ps_qtd = 1.0
+				ps_estado = 2
+	elif ps_estado == 2:
+		# direção e derrapagem têm o sinal trocado nos dois no remake: o produto é o do jogo
+		if ps_emb_ant < emb_in:
+			ps_estado = 0
+		elif throttle == 0.0 or steer * sideslip >= 0.0:
+			ps_estado = 3
+	elif ps_estado == 3:
+		ps_qtd -= P.ps_decay * dt
+		if ps_qtd < 0.0:
+			ps_qtd = 0.0
+			ps_estado = 0
+	ps_esc = VehicleData.sample(ps_scale, v_p / MPH_G)
+	ps_emb_ant = emb_in
+	if ps_estado == 1 or ps_estado == 2:
+		for w in wheels:
+			if _motriz(w):
+				var e: Dictionary = P.ell_FrontWheels if w.front else P.ell_RearWheels
+				w.grip = VehicleData.triple(e.ms, minf(w.mu, 1.0)) * P.ps_ellipse
+
+
 func _side_to_fwd(f_side: float, ss_deg: float) -> float:
 	# parte da desaceleração lateral vira aceleração pra frente (com acelerador)
 	var frac := 0.0
@@ -1673,8 +1745,10 @@ func _side_to_fwd(f_side: float, ss_deg: float) -> float:
 		frac = (ss_deg - P.side_to_fwd_min) / (P.side_to_fwd_max - P.side_to_fwd_min)
 	if frac <= 0.0:
 		return 0.0
-	stf_blend = throttle * frac * P.side_to_fwd     # 0x474: muda a altura da força longitudinal
-	return throttle * absf(f_side) * frac * P.side_to_fwd
+	# no powerslide (qualquer estado) vale o Side_deceleration_to_fwd dele
+	var k: float = P.side_to_fwd if ps_estado == 0 else P.ps_side_to_fwd
+	stf_blend = throttle * frac * k     # 0x474: muda a altura da força longitudinal
+	return throttle * absf(f_side) * frac * k
 
 
 
@@ -1760,7 +1834,7 @@ func _pedais_auto(dt: float, v_f: float, thr_raw: float, brk_raw: float) -> void
 ## Marchas aqui: -1 = ré (0 no jogo), 0 = neutro (6 no jogo), 1..5.
 func _drivetrain(dt: float, v_f: float, driven_on_ground: bool, forced_open: bool) -> float:
 	var ratio := _ratio(gear)
-	# ---- 0x20c558: embreagem forçada aberta (0x31c): freio de mão; mais de 1 s
+	# ---- 0x20c558: embreagem forçada aberta (0x31c): botão da embreagem > 0.1; mais de 1 s
 	# no ar abaixo do giro de desengate (câmbio+0x90); ou pedal de freio > 0.9
 	# com roda de tração travando (0x600 < DAT_0055067c = -0.9)
 	var forced := forced_open
@@ -1844,12 +1918,12 @@ func _razao_patinada(v_f: float) -> void:
 ## O "torque" do freio aqui é desaceleração x parte do eixo / rodas x raio, sem
 ## a massa (o jogo divide pela inércia em t·m²; com a inércia em kg·m² entra
 ## x1000). 0x720 = 1 (RAM, multiplica o motor).
-func _giro_rodas(dt: float, v_f: float, rear_g: int, handbrake: bool) -> void:
-	# 0x2113e0: preso. Acelerando (sem freio de mão) a menos de 0,5 m/s e o
+func _giro_rodas(dt: float, v_f: float, rear_g: int) -> void:
+	# 0x2113e0: preso. Acelerando (botão da embreagem em 0) a menos de 0,5 m/s e o
 	# carro não sai de 3 cm (0.0009 m²) por 0,33 s
 	preso = false
 	var v_r := v_ref
-	if thr_cx > 0.0 and not handbrake and absf(v_f) < 0.5:
+	if thr_cx > 0.0 and emb_in == 0.0 and absf(v_f) < 0.5:
 		if preso_t == 0.0:
 			preso_t = dt
 			preso_pos = global_position
@@ -1876,9 +1950,8 @@ func _giro_rodas(dt: float, v_f: float, rear_g: int, handbrake: bool) -> void:
 			n_tr += 1
 	var ratio := _ratio(gear)
 	var w_mot := rpm * RPM2RAD / ratio if ratio != 0.0 else 0.0     # giro do motor na roda
-	var brk := brake_in if not handbrake else maxf(brake_in, 0.4)
-	var dmax: float = brk * MPH_G * P.brake_decel * VehicleData.triple(P.brake_fscale, mu_medio)
-	var d_fr: float = 0.0 if handbrake else P.front_bias * dmax
+	var dmax: float = brake_in * MPH_G * P.brake_decel * VehicleData.triple(P.brake_fscale, mu_medio)
+	var d_fr: float = P.front_bias * dmax
 	for w in wheels:
 		var I: float = w.inercia
 		var t_mot := clutch * ratio * eng_torque / n_tr if _motriz(w) else 0.0
