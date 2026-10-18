@@ -81,7 +81,7 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 %GODOT% --headless --path . --check-only --script res://car.gd
 
 :: piloto (malha, esqueleto, animação da direção, textura) -> assets/piloto
-python tools/piloto.py <unpacked> <texturas>
+python tools/piloto.py <unpacked>
 
 :: assets dos 12 buggies (modelo, peças, freios, rodas, pintura)
 python tools/gerar_buggies.py <unpacked> <texturas>

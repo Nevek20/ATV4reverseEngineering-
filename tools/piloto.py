@@ -40,19 +40,20 @@ O jogo (0x190e50) toca o STEER_LEFT no tempo |s| x duração, com s a direção
 suavizada do piloto (0x187060), e espelha quando s > 0 (direita).
 
 Uso:
-    python tools/piloto.py <unpacked> <texturas> [--out assets/piloto]
+    python tools/piloto.py <unpacked> [--out assets/piloto]
+    (a textura sai direto do gob do unpacked, pelo gob_tex2png)
 """
 
 import argparse
 import json
 import os
-import shutil
 import struct
+import sys
 
 SKL = "other/00519_bloco.bin"          # Characters/Skeletons/InGame_Mid.skl
 SRD = "other/00514_bloco.bin"          # MALE_HIGH.srd
 BAC = "other/00312_bloco.bin"          # Truck/Controls STEER_LEFT.bac
-TEXTURA = "00970_rider_fury.png"       # Characters/Textures/Template/rider_fury.bog
+TEXTURA = "gob/00970_rider_fury.gob"   # Characters/Textures/Template/rider_fury.bog
 
 
 # ------------------------------------------------------------ esqueleto .skl
@@ -171,7 +172,6 @@ def ler_bac(d):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("unpacked")
-    ap.add_argument("texturas")
     ap.add_argument("--out", default="assets/piloto")
     a = ap.parse_args()
     ler = lambda p: open(os.path.join(a.unpacked, p), "rb").read()
@@ -193,7 +193,12 @@ def main():
     }
     os.makedirs(a.out, exist_ok=True)
     json.dump(out, open(os.path.join(a.out, "piloto.json"), "w"), separators=(",", ":"))
-    shutil.copy(os.path.join(a.texturas, TEXTURA), os.path.join(a.out, "piloto.png"))
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from gob_tex2png import convert
+    im, info = convert(os.path.join(a.unpacked, TEXTURA))
+    if im is None:
+        sys.exit("textura %s: %s" % (TEXTURA, info))
+    im.convert("RGB").save(os.path.join(a.out, "piloto.png"))
     print("[+] %s: %d ossos, %d vértices, %d triângulos, STEER_LEFT %d quadros em %.3f s" % (
         a.out, len(nomes), len(m["pos"]), len(m["tris"]), len(anim["tempos"]), anim["dur"]))
 
