@@ -38,7 +38,7 @@ assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas (fo
 tests/               teste de física sem tela + rodar_testes.py
 tools/               scripts Python de extração (pingu2obj, pintura, savestate)
 re/                  engenharia reversa: scripts do Ghidra, exe_util, dumps
-docs/                engenharia_reversa.md (mapa do exe), derrapagem.md (código da derrapagem legível), assets.md
+docs/                engenharia_reversa.md (mapa do exe), derrapagem.md (código da derrapagem legível), assets.md, som_motor.md
 ```
 
 ## Comandos
@@ -293,9 +293,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   crossfade + pitch entre os 2 samples vizinhos e mistura acelerando/
   soltando pelo acelerador. RPM: opção (b), o 1000-8000 do jogo (igual nos
   12) esticado pra faixa real de cada motor. Constante pra voltar ao som do
-  jogo quando ele for portado. Nomes internos dos buggies no vehicles.xml
-  ajudam a escolher o motor (BUGGY_01 "Manx", 07 "Unlimited V8", 12
-  "Lancia"...).
+  jogo quando ele for portado. Motor proposto por buggy (nome interno do
+  vehicles.xml + base real + HP de fábrica, com fontes) e o jeito de
+  gravar: docs/som_motor.md.
 - Piloto: montar a textura dele como o jogo (5 camadas por parte + cores do
   perfil; hoje usa o rider_fury pronto), LOD MID/LOW, piloto feminino.
   Melhoria nossa depois: mãos tremendo no volante em alta velocidade.
