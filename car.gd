@@ -93,6 +93,9 @@ var SW_CENTER := Vector3(-0.434, 1.351, 0.396)    # Renegade, se faltar no pecas
 var SW_AXIS := Vector3(0.0, 0.684, -0.729)
 const SW_TURNS := 2.6         # sem fonte no jogo (escolha do remake)
 var rider_s := 0.0            # direção suavizada do piloto (rider+0x2d8 com sinal trocado: + = esquerda)
+# piloto do jogo (piloto.gd, tools/piloto.py): sentado no ponto ARSE, braços pela rider_s
+const PILOTO_DIR := "res://assets/piloto"
+var piloto: Node3D = null
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
 const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
@@ -237,6 +240,7 @@ func _ready() -> void:
 	_load_pecas()
 	_load_model()                 # antes da física: define model_offset
 	_load_physics()
+	_load_piloto()                # depois da física: precisa do ponto ARSE
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = Vector3(2.1, 0.8, 4.8)
@@ -751,6 +755,22 @@ func _load_model() -> void:
 	mi.position = model_offset
 	model_root.add_child(mi)
 	_load_steering_wheel()
+
+
+## piloto (piloto.gd): o osso ROOT da animação fica em cima do ponto ARSE
+## (rider+0x2f0; no Renegade origem = ARSE - (0, 1.1315, 0.3032)), sem girar
+## com a matriz do ponto
+func _load_piloto() -> void:
+	if not points.has("ARSE"):
+		return
+	piloto = preload("res://piloto.gd").new()
+	if not piloto.carregar(PILOTO_DIR, MODEL_CULL):
+		piloto.free()
+		piloto = null
+		return
+	piloto.name = "Piloto"
+	piloto.position = model_offset + points["ARSE"] - piloto.root_pos
+	model_root.add_child(piloto)
 
 
 func _load_steering_wheel() -> void:
@@ -2217,5 +2237,7 @@ func _update_visuals(dt: float, _v_f: float) -> void:
 		rider_s = clampf(rider_s + minf(1.0 / dt, 30.0) * (steer - rider_s) * dt, -1.0, 1.0)
 	if sw_pivot and VOLANTE_GIRA:
 		sw_pivot.basis = Basis(SW_AXIS.normalized(), -rider_s * SW_TURNS)
+	if piloto:
+		piloto.pose(rider_s)
 	if susp_vis:
 		susp_vis.update(a_jogo)

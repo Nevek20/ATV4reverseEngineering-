@@ -334,6 +334,10 @@ func _update_camera(delta: float) -> void:
 	car.model_root.visible = cam_mode != 3
 	if car.susp_vis:
 		car.susp_vis.visible = cam_mode != 3
+	# mRenderRider (xml 14837): 0 em On_Hood e On_Front; na nossa câmera do
+	# piloto a cabeça dele tapa a visão
+	if car.piloto:
+		car.piloto.visible = cam_mode <= 1
 
 	if cam_mode <= 1:
 		gcams[cam_mode].apply(cam, s.tp)

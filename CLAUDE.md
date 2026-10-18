@@ -30,6 +30,7 @@ camera_jitter.gd     tremida da câmera (Perlin por velocidade, só na terra)
 suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
 main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V)
+piloto.gd            piloto do jogo sentado no ARSE, braços pela direção (STEER_LEFT)
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas (fora do git)
@@ -78,6 +79,9 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 
 :: checar um script sem abrir o editor
 %GODOT% --headless --path . --check-only --script res://car.gd
+
+:: piloto (malha, esqueleto, animação da direção, textura) -> assets/piloto
+python tools/piloto.py <unpacked> <texturas>
 
 :: assets dos 12 buggies (modelo, peças, freios, rodas, pintura)
 python tools/gerar_buggies.py <unpacked> <texturas>
@@ -223,9 +227,14 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Testamos um ajuste NOSSO pro teclado por cima (cortar também abaixo dos
   12°, out/2026): o Matheus comparou lado a lado e ficou pior. O fiel é o
   certo; não "afrouxar" a derrapagem no chute.
+- Piloto (piloto.gd, tools/piloto.py): .skl/.srd/.bac decifrados
+  (docs Piloto). ROOT da animação em cima do ARSE, sem a rotação do ponto.
+  STEER_LEFT no tempo |s|/6, espelhado com s > 0 do jogo (= rider_s < 0 no
+  remake). Índice de osso no .srd vem x4. Só aparece nas câmeras perto e
+  longe (mRenderRider 0 no capô e para-choque; na nossa do piloto taparia).
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
-  são os braços do piloto, que ainda não temos.
+  são os braços do piloto (piloto.gd).
 
 ## Pendente / ideias
 
@@ -235,8 +244,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   precisa do sistema de colisão do corpo (corpo+0x7a0); fórmula em
   docs/engenharia_reversa.md, Câmera.
 - Som do motor (00002/00004/00005 xml: bancos e faders por buggy).
-- Piloto sentado e animado (MALE_*.srd + InGame_Mid.skl + STEER_LEFT.bac,
-  docs/engenharia_reversa.md "Piloto"): falta parser dos 3 formatos.
+- Piloto: montar a textura dele como o jogo (5 camadas por parte + cores do
+  perfil; hoje usa o rider_fury pronto), LOD MID/LOW, piloto feminino.
   Melhoria nossa depois: mãos tremendo no volante em alta velocidade.
 - Câmera do piloto: referência do Matheus = cockpit do Dirt Rally 2.0
   (horizonte perto do meio, volante cortado embaixo, muita estrada).

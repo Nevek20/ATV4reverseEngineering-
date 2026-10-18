@@ -395,7 +395,57 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   suavização com o sinal trocado: car.gd rider_s = −s, + = esquerda). mRiderMatchSteer = 0 nos buggies; IK das mãos só no ATV_Riding e
   Bike_Riding (0x1a15a0/0x1a1650), não no Truck_Riding que o Seated usa.
   Câmeras: mRenderRider = 0 em On_Front, On_Hood e Wheel (xml 14837).
-  Ainda não portado (faltam parsers de .srd/.skl/.bac).
+  Portado: tools/piloto.py -> assets/piloto/piloto.json, piloto.gd.
+- Formatos (out/2026, tools/piloto.py tem o detalhe):
+  - .skl "cstfd": 0x0c nº de ossos, offsets em 0x10..0x30: pai (int16),
+    osso espelho (int16, direito <-> esquerdo), matriz inversa de repouso,
+    matriz de repouso, 2 tabelas de quaternions (identidade no InGame_Mid),
+    posição local (x com sinal trocado em relação às matrizes), nomes.
+    Pose T, 1.69 m, direita do piloto = x > 0 (mão esquerda do jogo).
+  - .srd "SKRDPS2 ": 0x10 nº de ossos, 0x14 matrizes inversas de repouso,
+    0x4c material ("WHITE" = textura montada), 0x48 geometria: 1ª palavra
+    = tamanho em qwords (& 0xffffff), depois lotes VIF de até 51 vértices:
+    V3-32 posição, V4-5 normal ((v − 15.5)/15.5 em x, y, z; bit 15 = ADC,
+    não fecha triângulo), V2-16 UV (/4096), V4-8 ossos (índice x 4, 255 =
+    nenhum), V4-8 pesos (/255), MSCNT. Triângulos virados pela normal do
+    jogo (o PS2 desenha os dois lados). MALE_HIGH 3761 vértices, MID 1579,
+    LOW 778, FEMALE_HIGH 3536, ARMS_POV 1461 (26 ossos), PONYTAIL 183.
+  - .bac "BAC 2.07" (loader 0x22f090 pelo tipo em +0x44; tipo 1 =
+    0x2340f8, amostrador 0x234750): +0x40 duração, +0x48 bloco D com
+    ponteiros relativos: D+4 posições, D+8 índice de posição por quadro e
+    osso, D+0xc nº de rotações, D+0x10 rotações (x, y, z, w), D+0x14 índice
+    de rotação, D+0x24 nº de quadros, D+0x28 tempos, D+0x2c/0x2d largura do
+    índice (8 = byte). osso b no quadro k = tabela[índice[k·nº_ossos + b]];
+    entre quadros interpola (ou pega o mais perto). STEER_LEFT: 6 quadros a
+    30/s em 1/6 s; o Buggy/Controls e o Truck/Controls são o mesmo arquivo.
+- 0x187060 lê corpo+0x3c4 = direção suavizada (igual ao 0x370 nos 11 save
+  states). 0x190e50: tempo = |s|·duração, espelha com s > 0 (flag 2 no
+  0x22f200). Espelho no remake: cada osso pega o do outro lado (tabela do
+  .skl), posição com x trocado e rotação (x, −y, −z, w). O quadro 0 do
+  STEER_LEFT já é simétrico assim.
+- O ROOT da animação fica em (0, 1.1315, 0.3032) do piloto: é a origem =
+  ARSE − isso do doc. O ARSE tem matriz (90° em y na maioria dos buggies),
+  mas o piloto não gira com ela.
+- Textura: material único "WHITE" num atlas 512x512 (braços, camisa,
+  calça, capacete, luvas, óculos, rosto, botas; o UV da malha cai no
+  Characters/Textures/Template/Rider_Template.bog). O jogo monta o atlas com
+  as 5 camadas de cada parte (Characters/Textures/#hash/<parte>/
+  RIDER_NN_{BASE,DETAIL,PRIMARY,SECONDARY,WRINKLE}_<parte>, 12 roupas) e as
+  cores do piloto; isso ainda não foi portado. O remake usa o
+  rider_fury.bog (00970, roupa "Fury" pronta, 256x256).
+- Material em camadas (0x1a6300 escolhe a parte pelo nome, 0x1a69c8 monta):
+  4 camadas da tabela 0x838a40 com textura RIDER_%02d_<camada>_<parte> e
+  cor RGBA do perfil (perfil+8 → +0x20 + camada·0x10, gravada no +0x30 do
+  nó), mais RIDER_%02d_DETAIL/WRINKLE/SPEC_<parte>; sem peça usa
+  /Setup/Init_White e Init_Seethru. A peça (RIDER_NN) vem do byte +0x1c do
+  item (0x1a4610). Nas camadas o que importa está no ALFA (converter com
+  gob_tex2png --alpha): BASE opaco, PRIMARY e SECONDARY = máscaras (o logo
+  SINISALO do RIDER_04 está no alfa do PRIMARY), DETAIL = desenho com alfa
+  até 180, WRINKLE = sombra cinza (alfa 136..254). Falta: a conta da mistura
+  e onde ficam as 4 cores do perfil na RAM.
+- Piloto do Matheus (RAM dos save states, objetos de textura em 0xd27490):
+  roupa, braços, calça e capacete RIDER_04, óculos RIDER_05, botas e luvas
+  RIDER_03, rosto FACE_MALE_FACE05; na foto dele: verde, branco e preto.
 - Direção visual das rodas 0x21def8 / 0x20ede8: body+0x3c0 = direção ·
   lerp(Max_visual_steer_zero, _full, mph/SpeedMax), SpeedMax = curva
   BasicSteering/Angle_vs_speed (params+0x4e8 = 100); nos buggies 30°/30°.
