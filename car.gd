@@ -95,12 +95,11 @@ const SW_TURNS := 2.6         # sem fonte no jogo (escolha do remake); com o pil
 # melhoria nossa: as mãos do piloto ficam presas no aro (piloto.gd); o volante
 # gira o quanto as mãos giram no STEER_LEFT do jogo (~50°), não SW_TURNS
 const MAOS_NO_VOLANTE := true
-# melhoria nossa: o aro do volante do jogo é um polígono de 6 a 12 lados; com
-# VOLANTE_LISO ele vira um anel liso (mesmo centro, raio, largura, espessura e
-# material, UV e cor do vértice do jogo mais perto). Raios e cubo ficam os do jogo.
-const VOLANTE_LISO := true
-const ARO_SEGMENTOS := 48
-const ARO_LADOS := 12
+# melhoria nossa: o volante do jogo (aro de 6 a 12 lados, raios tortos) vira um
+# de 3 raios centralizado (volante_3raios.gd), no mesmo centro, raio e
+# inclinação. false = malha do jogo.
+const VOLANTE_NOSSO := true
+const Volante3Raios := preload("res://volante_3raios.gd")
 var rider_s := 0.0            # direção suavizada do piloto (rider+0x2d8 com sinal trocado: + = esquerda)
 # piloto do jogo (piloto.gd, tools/piloto.py): sentado no ponto ARSE, braços pela rider_s
 const PILOTO_DIR := "res://assets/piloto"
@@ -794,15 +793,17 @@ func _load_steering_wheel() -> void:
 	if vol.has("centro"):
 		SW_CENTER = Vector3(vol.centro[0], vol.centro[1], vol.centro[2])
 		SW_AXIS = Vector3(vol.eixo[0], vol.eixo[1], vol.eixo[2])
-	var mesh := load(path) as Mesh
-	if mesh == null:
-		return
-	if VOLANTE_LISO and vol.has("raio"):
-		mesh = _alisar_aro(mesh, SW_CENTER, SW_AXIS.normalized(), vol.raio)
 	sw_pivot = Node3D.new()
 	sw_pivot.position = model_offset + SW_CENTER
 	model_root.add_child(sw_pivot)
 	var mi := MeshInstance3D.new()
+	if VOLANTE_NOSSO:
+		mi.mesh = Volante3Raios.montar(vol.get("raio", 0.19), SW_AXIS)
+		sw_pivot.add_child(mi)
+		return
+	var mesh := load(path) as Mesh
+	if mesh == null:
+		return
 	mi.mesh = mesh
 	mi.position = -SW_CENTER
 	for i in mesh.get_surface_count():
@@ -811,115 +812,6 @@ func _load_steering_wheel() -> void:
 		m2.cull_mode = MODEL_CULL
 		mi.set_surface_override_material(i, m2)
 	sw_pivot.add_child(mi)
-
-
-## troca o aro poligonal do volante (triângulos com os 3 vértices além de 75%
-## do raio) por um anel liso de seção elíptica do mesmo tamanho
-func _alisar_aro(mesh: Mesh, c: Vector3, n: Vector3, raio: float) -> ArrayMesh:
-	var out := ArrayMesh.new()
-	var e1 := Vector3.UP - n * n.dot(Vector3.UP)
-	e1 = e1.normalized()
-	var e2 := n.cross(e1)
-	for si in mesh.get_surface_count():
-		var arr: Array = mesh.surface_get_arrays(si)
-		var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
-		var idx: PackedInt32Array = arr[Mesh.ARRAY_INDEX] if arr[Mesh.ARRAY_INDEX] != null else PackedInt32Array(range(vs.size()))
-		var nrm: PackedVector3Array = arr[Mesh.ARRAY_NORMAL] if arr[Mesh.ARRAY_NORMAL] != null else PackedVector3Array()
-		var uvs: PackedVector2Array = arr[Mesh.ARRAY_TEX_UV] if arr[Mesh.ARRAY_TEX_UV] != null else PackedVector2Array()
-		var cores: PackedColorArray = arr[Mesh.ARRAY_COLOR] if arr[Mesh.ARRAY_COLOR] != null else PackedColorArray()
-		var r := PackedFloat32Array()
-		var h := PackedFloat32Array()
-		for v in vs:
-			var d := v - c
-			h.append(d.dot(n))
-			r.append((d - n * d.dot(n)).length())
-		# sentido dos triângulos do importador (pra fazer o anel igual)
-		var sinal := 0.0
-		var resto := PackedInt32Array()
-		var aro := {}
-		for t in idx.size() / 3:
-			var a := idx[3 * t]
-			var b := idx[3 * t + 1]
-			var cc := idx[3 * t + 2]
-			if not nrm.is_empty():
-				sinal += signf((vs[b] - vs[a]).cross(vs[cc] - vs[a]).dot(nrm[a] + nrm[b] + nrm[cc]))
-			if minf(r[a], minf(r[b], r[cc])) > raio * 0.75:
-				aro[a] = true
-				aro[b] = true
-				aro[cc] = true
-			else:
-				resto.append_array([a, b, cc])
-		if aro.size() < 6:
-			out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
-			out.surface_set_material(out.get_surface_count() - 1, mesh.surface_get_material(si))
-			continue
-		# tamanho do aro do jogo: raio médio, meia largura (75% da faixa radial,
-		# que nos cantos do polígono é maior) e meia espessura
-		var rmin := INF
-		var rmax := -INF
-		var hmin := INF
-		var hmax := -INF
-		var rsoma := 0.0
-		for i in aro:
-			rmin = minf(rmin, r[i])
-			rmax = maxf(rmax, r[i])
-			hmin = minf(hmin, h[i])
-			hmax = maxf(hmax, h[i])
-			rsoma += r[i]
-		var rc := rsoma / aro.size()
-		var la := (rmax - rmin) * 0.5 * 0.75
-		var lb := (hmax - hmin) * 0.5
-		var hc := (hmax + hmin) * 0.5
-		var base := vs.size()
-		for i in ARO_SEGMENTOS:
-			var th := TAU * i / ARO_SEGMENTOS
-			var radial := e1 * cos(th) + e2 * sin(th)
-			for j in ARO_LADOS:
-				var ph := TAU * j / ARO_LADOS
-				var p := c + radial * (rc + la * cos(ph)) + n * (hc + lb * sin(ph))
-				vs.append(p)
-				if not nrm.is_empty():
-					nrm.append((radial * (lb * cos(ph)) + n * (la * sin(ph))).normalized())
-				# UV e cor do vértice do aro do jogo mais perto
-				var perto := -1
-				var dmin := INF
-				for k in aro:
-					var dd := vs[k].distance_squared_to(p)
-					if dd < dmin:
-						dmin = dd
-						perto = k
-				if not uvs.is_empty():
-					uvs.append(uvs[perto])
-				if not cores.is_empty():
-					cores.append(cores[perto])
-		for i in ARO_SEGMENTOS:
-			for j in ARO_LADOS:
-				var a := base + i * ARO_LADOS + j
-				var b := base + ((i + 1) % ARO_SEGMENTOS) * ARO_LADOS + j
-				var cc := base + i * ARO_LADOS + (j + 1) % ARO_LADOS
-				var d := base + ((i + 1) % ARO_SEGMENTOS) * ARO_LADOS + (j + 1) % ARO_LADOS
-				for tri in [[a, b, d], [a, d, cc]]:
-					var nm := (vs[tri[0]] - c) - n * (vs[tri[0]] - c).dot(n)
-					var fora := (vs[tri[0]] - (c + nm.normalized() * rc + n * hc))
-					var g := (vs[tri[1]] - vs[tri[0]]).cross(vs[tri[2]] - vs[tri[0]]).dot(fora)
-					if (g > 0.0) != (sinal >= 0.0):
-						resto.append_array([tri[0], tri[2], tri[1]])
-					else:
-						resto.append_array(tri)
-		arr[Mesh.ARRAY_VERTEX] = vs
-		arr[Mesh.ARRAY_INDEX] = resto
-		if not nrm.is_empty():
-			arr[Mesh.ARRAY_NORMAL] = nrm
-		if not uvs.is_empty():
-			arr[Mesh.ARRAY_TEX_UV] = uvs
-		if not cores.is_empty():
-			arr[Mesh.ARRAY_COLOR] = cores
-		for k in [Mesh.ARRAY_TANGENT, Mesh.ARRAY_TEX_UV2, Mesh.ARRAY_CUSTOM0, Mesh.ARRAY_CUSTOM1,
-				Mesh.ARRAY_CUSTOM2, Mesh.ARRAY_CUSTOM3, Mesh.ARRAY_BONES, Mesh.ARRAY_WEIGHTS]:
-			arr[k] = null
-		out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
-		out.surface_set_material(out.get_surface_count() - 1, mesh.surface_get_material(si))
-	return out
 
 
 func driver_eye() -> Vector3:

@@ -31,6 +31,7 @@ suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
 main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V)
 piloto.gd            piloto do jogo sentado no ARSE, braços pela direção (STEER_LEFT)
+volante_3raios.gd    volante de 3 raios gerado (melhoria nossa, no lugar do do jogo)
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas (fora do git)
@@ -241,11 +242,13 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   aro por IK de dois ossos. Em 5 carros (Sphinx, Inferno, Kraken, McKenzies,
   Storm) o volante fica além do braço esticado (até 108%): a clavícula avança
   até 35°. tests/teste_volante.gd: 0.0 cm nos 13 carros.
-- Aro liso (melhoria nossa, car.gd VOLANTE_LISO): o aro do jogo é polígono
-  (6 lados em 7 carros, 8 em 4, 12 no Renegade). Na carga, os triângulos com
-  os 3 vértices além de 75% do raio viram um anel de 48 x 12 com seção
-  elíptica do mesmo tamanho e o mesmo material (UV e cor do vértice do jogo
-  mais perto). Raios e cubo continuam os do jogo; assets não mudam.
+- Volante de 3 raios (melhoria nossa, car.gd VOLANTE_NOSSO,
+  volante_3raios.gd): o do jogo tem aro de 6 a 12 lados e raios tortos. No
+  lugar dele vai um gerado (fotos do Matheus: aro preto mais grosso nos
+  raios, 3 raios de alumínio com rasgos em 9h/3h/6h, dish, tampa cromada,
+  marca amarela no topo), no centro, raio e eixo do pecas.json. O aro fica
+  no mesmo raio, então a IK das mãos não muda. Alisar o aro do jogo
+  (VOLANTE_LISO) quebrou no Renegade e no Bulldog: não voltar.
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto (piloto.gd).
