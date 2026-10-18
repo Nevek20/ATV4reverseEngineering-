@@ -241,6 +241,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   aro por IK de dois ossos. Em 5 carros (Sphinx, Inferno, Kraken, McKenzies,
   Storm) o volante fica além do braço esticado (até 108%): a clavícula avança
   até 35°. tests/teste_volante.gd: 0.0 cm nos 13 carros.
+- Aro liso (melhoria nossa, car.gd VOLANTE_LISO): o aro do jogo é polígono
+  (6 lados em 7 carros, 8 em 4, 12 no Renegade). Na carga, os triângulos com
+  os 3 vértices além de 75% do raio viram um anel de 48 x 12 com seção
+  elíptica do mesmo tamanho e o mesmo material (UV e cor do vértice do jogo
+  mais perto). Raios e cubo continuam os do jogo; assets não mudam.
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto (piloto.gd).
