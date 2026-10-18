@@ -244,7 +244,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   até 35°. tests/teste_volante.gd: 0.0 cm nos 13 carros.
   No quadro 0 do STEER_LEFT a mão direita pega a 22° do topo e a esquerda a
   44° (braços tortos na câmera do piloto): a direita agora é o espelho da
-  esquerda no plano do volante (±44°, piloto.gd prender_no_volante).
+  esquerda no plano do volante (±44°, piloto.gd prender_no_volante). A mão
+  também gira até a linha dos nós (indicador -> anelar) ficar ao longo do
+  aro: na animação ela fica 25° a 43° torta e o aro saía de lado do punho
+  ("mão mal encostando"). O ponto do punho (média dos vértices da mão) cai no
+  buraco dos dedos dobrados, a ~5 mm do centro dele (corte da malha).
 - Volantes gerados (melhoria nossa, car.gd VOLANTE_NOSSO, volantes.gd): o
   do jogo tem aro de 6 a 12 lados e raios tortos; 8 carros usam o mesmo X
   furado girado ~20°. No lugar vai um volante redondo e centralizado, no

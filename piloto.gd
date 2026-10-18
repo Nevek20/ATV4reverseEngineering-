@@ -193,7 +193,15 @@ func prender_no_volante(centro: Vector3, eixo: Vector3, raio: float) -> void:
 	var rel := c_esq - _vc
 	rel -= _ve * rel.dot(_ve)
 	var no_aro := _vc + rel.normalized() * raio
-	var pega_esq: Transform3D = g0[esq].translated(no_aro - c_esq)
+	# a mão gira (o mínimo) até a linha dos nós dos dedos (indicador ->
+	# anelar) ficar ao longo do aro: na animação ela fica 25° a 43° torta e o
+	# aro saía de lado do punho (mão "mal encostando")
+	var nos: Vector3 = g0[skel.find_bone("left_ring_01")].origin - g0[skel.find_bone("left_index_01")].origin
+	var tang := _ve.cross(rel.normalized())
+	if tang.dot(nos) < 0.0:
+		tang = -tang
+	var b_esq: Basis = Basis(Quaternion(nos.normalized(), tang)) * g0[esq].basis
+	var pega_esq := Transform3D(b_esq, no_aro - b_esq * _punho[esq])
 	# reflexão no plano do volante (normal = lado do carro) e, nos ossos, a
 	# troca de lado do esqueleto (x negado, como o espelho da animação)
 	var nl := _ve.cross(Vector3.UP).normalized()
