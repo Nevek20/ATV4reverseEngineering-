@@ -91,7 +91,10 @@ const WHEEL_Y := 0.45         # altura do cubo com o carro parado
 const VOLANTE_GIRA := true
 var SW_CENTER := Vector3(-0.434, 1.351, 0.396)    # Renegade, se faltar no pecas.json
 var SW_AXIS := Vector3(0.0, 0.684, -0.729)
-const SW_TURNS := 2.6         # sem fonte no jogo (escolha do remake)
+const SW_TURNS := 2.6         # sem fonte no jogo (escolha do remake); com o piloto, o giro sai da animação dele
+# melhoria nossa: as mãos do piloto ficam presas no aro (piloto.gd); o volante
+# gira o quanto as mãos giram no STEER_LEFT do jogo (~50°), não SW_TURNS
+const MAOS_NO_VOLANTE := true
 var rider_s := 0.0            # direção suavizada do piloto (rider+0x2d8 com sinal trocado: + = esquerda)
 # piloto do jogo (piloto.gd, tools/piloto.py): sentado no ponto ARSE, braços pela rider_s
 const PILOTO_DIR := "res://assets/piloto"
@@ -771,6 +774,10 @@ func _load_piloto() -> void:
 	piloto.name = "Piloto"
 	piloto.position = model_offset + points["ARSE"] - piloto.root_pos
 	model_root.add_child(piloto)
+	if MAOS_NO_VOLANTE and VOLANTE_GIRA and sw_pivot:
+		var vol: Dictionary = pecas.get("volante", {})
+		# aro no frame do esqueleto (o piloto não gira em relação ao modelo)
+		piloto.prender_no_volante(SW_CENTER - (points["ARSE"] - piloto.root_pos), SW_AXIS, vol.get("raio", 0.19))
 
 
 func _load_steering_wheel() -> void:
@@ -2236,7 +2243,10 @@ func _update_visuals(dt: float, _v_f: float) -> void:
 	if dt > 0.0:
 		rider_s = clampf(rider_s + minf(1.0 / dt, 30.0) * (steer - rider_s) * dt, -1.0, 1.0)
 	if sw_pivot and VOLANTE_GIRA:
-		sw_pivot.basis = Basis(SW_AXIS.normalized(), -rider_s * SW_TURNS)
+		var giro := -rider_s * SW_TURNS
+		if piloto and piloto.no_volante():
+			giro = piloto.giro_volante(rider_s)
+		sw_pivot.basis = Basis(SW_AXIS.normalized(), giro)
 	if piloto:
 		piloto.pose(rider_s)
 	if susp_vis:

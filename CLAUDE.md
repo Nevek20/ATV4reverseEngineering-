@@ -70,6 +70,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL e save states
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
 %GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda e 1.16 s de derrapagem
+%GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 13 carros (0 cm) e giro do volante
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
 :: + SOLTA=1.3 solta o volante (DEPOIS=-1 contra-esterça, ACEL=0 solta o acelerador), DUR=8 segundos depois de virar
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
@@ -234,6 +235,12 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   (mRenderRider 0); na nossa câmera do piloto aparece sem o capacete (osso
   head encolhido: o olho fica dentro da cabeça dele), com braços e mãos no
   volante.
+- Mãos no volante (melhoria nossa, car.gd MAOS_NO_VOLANTE): o volante gira o
+  quanto os punhos giram no STEER_LEFT do jogo (39° a 62° no volante todo,
+  por carro; antes era SW_TURNS = 149° sem fonte) e cada punho fica preso no
+  aro por IK de dois ossos. Em 5 carros (Sphinx, Inferno, Kraken, McKenzies,
+  Storm) o volante fica além do braço esticado (até 108%): a clavícula avança
+  até 35°. tests/teste_volante.gd: 0.0 cm nos 13 carros.
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto (piloto.gd).

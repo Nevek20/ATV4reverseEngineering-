@@ -23,6 +23,23 @@ var _tempos := PackedFloat32Array()
 var _dur := 0.0
 var _pos: Array = []              # [quadro][osso] Vector3
 var _rot: Array = []              # [quadro][osso] Quaternion
+var _pais := PackedInt32Array()
+var _lp: Array = []               # pose local de agora (posição, rotação)
+var _lr: Array = []
+
+# Mãos no volante (melhoria nossa, car.gd MAOS_NO_VOLANTE: no buggy do jogo o
+# volante não gira e o piloto não segue ele, mRiderMatchSteer = 0). O centro
+# do punho de cada mão fica preso num ponto do aro, que gira com o volante; o
+# braço chega lá por IK de dois ossos e o resto do corpo é a animação do jogo.
+# O giro do volante sai da própria animação: em cada quadro do STEER_LEFT, a
+# média do quanto os dois punhos giraram em volta do centro do aro.
+var _vol := false
+var _vc := Vector3.ZERO           # centro do aro (frame do esqueleto)
+var _ve := Vector3.UP             # eixo do aro
+var _giro := PackedFloat32Array() # giro do volante em cada quadro (rad, em volta de _ve)
+var _maos: Array = []             # {sup, inf, mao, cent (punho no frame da mão), pega}
+var _punho := {}                  # osso da mão -> centro do punho no frame dela
+var alcance := 0.0                # conferência: distância até o alvo / braço esticado (> 1 = não alcança)
 
 
 ## monta tudo a partir de dir/piloto.json; false se o asset não existe
@@ -45,6 +62,7 @@ func carregar(dir: String, cull: int) -> bool:
 		skin.add_bind(b, inv)
 		glob.append(inv.affine_inverse())
 		_esp.append(int(ossos[b].espelho))
+		_pais.append(int(ossos[b].pai))
 	for b in n:
 		var pai: int = ossos[b].pai
 		if pai >= 0:
@@ -112,8 +130,98 @@ func carregar(dir: String, cull: int) -> bool:
 	var raiz := skel.find_bone("ROOT")
 	var pai_raiz := skel.get_bone_parent(raiz)
 	root_pos = _pos[0][pai_raiz] + _rot[0][pai_raiz] * _pos[0][raiz]
+	_lp.resize(n)
+	_lr.resize(n)
+
+	# centro de cada punho = média dos vértices da mão (osso principal da mão
+	# ou dos dedos) no quadro 0, guardado no frame do osso da mão
+	var g0 := _globais_quadro(0)
+	var ov := PackedInt32Array(d.ossos_v)
+	for nome in ["right_hand", "left_hand"]:
+		var mao := skel.find_bone(nome)
+		var soma := Vector3.ZERO
+		var cnt := 0
+		for i in pos.size():
+			var o := ov[4 * i]
+			if pes[4 * i] < 0.5 or (o != mao and not _desce_de(o, mao)):
+				continue
+			var v := Vector3.ZERO
+			for k in 4:
+				if pes[4 * i + k] > 0.0:
+					var ob := ov[4 * i + k]
+					v += pes[4 * i + k] * (g0[ob] * (glob[ob].affine_inverse() * pos[i]))
+			soma += v
+			cnt += 1
+		if cnt > 0:
+			_punho[mao] = g0[mao].affine_inverse() * (soma / cnt)
 	pose(0.0)
 	return true
+
+
+func _desce_de(b: int, ancestral: int) -> bool:
+	while b >= 0:
+		b = _pais[b]
+		if b == ancestral:
+			return true
+	return false
+
+
+## transforms globais (frame do esqueleto) de todos os ossos num quadro da animação
+func _globais_quadro(k: int) -> Array:
+	var g: Array = []
+	g.resize(_pais.size())
+	for b in _pais.size():
+		var t := Transform3D(Basis(_rot[k][b]), _pos[k][b])
+		g[b] = t if _pais[b] < 0 else g[_pais[b]] * t
+	return g
+
+
+## liga as mãos no volante: centro, eixo e raio do aro no frame do esqueleto
+func prender_no_volante(centro: Vector3, eixo: Vector3, raio: float) -> void:
+	if _punho.size() < 2:
+		return
+	_vc = centro
+	_ve = eixo.normalized()
+	var g0 := _globais_quadro(0)
+	_maos.clear()
+	for lado in [["right_upper_arm", "right_lower_arm", "right_hand"], ["left_upper_arm", "left_lower_arm", "left_hand"]]:
+		var mao := skel.find_bone(lado[2])
+		var c: Vector3 = g0[mao] * _punho[mao]
+		var rel := c - _vc
+		rel -= _ve * rel.dot(_ve)
+		var no_aro := _vc + rel.normalized() * raio
+		_maos.append({"sup": skel.find_bone(lado[0]), "inf": skel.find_bone(lado[1]), "mao": mao,
+			"cent": _punho[mao], "pega": g0[mao].translated(no_aro - c)})
+	_giro.clear()
+	for k in _tempos.size():
+		var gk := _globais_quadro(k)
+		var soma := 0.0
+		for m in _maos:
+			var a0: Vector3 = g0[m.mao] * m.cent - _vc
+			var a1: Vector3 = gk[m.mao] * m.cent - _vc
+			soma += (a0 - _ve * a0.dot(_ve)).signed_angle_to(a1 - _ve * a1.dot(_ve), _ve)
+		_giro.append(soma / _maos.size())
+	_vol = true
+
+
+func no_volante() -> bool:
+	return _vol
+
+
+## giro do volante (rad, em volta do eixo do aro) pra direção suavizada s do
+## remake, o mesmo que as mãos fazem no STEER_LEFT (espelhado: sinal trocado)
+func giro_volante(s: float) -> float:
+	var kf := _quadro(absf(s) * _dur)
+	var g := lerpf(_giro[int(kf.x)], _giro[int(kf.x) + 1], kf.y)
+	return -g if -s > 0.0 else g
+
+
+## quadro e fração no tempo tm do STEER_LEFT
+func _quadro(tm: float) -> Vector2:
+	var k := 0
+	while k < _tempos.size() - 2 and tm > _tempos[k + 1]:
+		k += 1
+	return Vector2(k, clampf((tm - _tempos[k]) / maxf(_tempos[k + 1] - _tempos[k], 1e-6), 0.0, 1.0))
 
 
 func _textura(caminho: String) -> Texture2D:
@@ -129,12 +237,10 @@ func pose(s: float) -> void:
 	if skel == null:
 		return
 	var s_jogo := -s
-	var tm := absf(s_jogo) * _dur
 	var esp := s_jogo > 0.0
-	var k := 0
-	while k < _tempos.size() - 2 and tm > _tempos[k + 1]:
-		k += 1
-	var f := clampf((tm - _tempos[k]) / maxf(_tempos[k + 1] - _tempos[k], 1e-6), 0.0, 1.0)
+	var kf := _quadro(absf(s_jogo) * _dur)
+	var k := int(kf.x)
+	var f := kf.y
 	for b in skel.get_bone_count():
 		var src := _esp[b] if esp else b
 		var p: Vector3 = _pos[k][src].lerp(_pos[k + 1][src], f)
@@ -142,10 +248,96 @@ func pose(s: float) -> void:
 		if esp:
 			p.x = -p.x
 			r = Quaternion(r.x, -r.y, -r.z, r.w)
-		skel.set_bone_pose_position(b, p)
-		skel.set_bone_pose_rotation(b, r)
+		_lp[b] = p
+		_lr[b] = r
+	if _vol:
+		_segura_volante(giro_volante(s))
+	for b in skel.get_bone_count():
+		skel.set_bone_pose_position(b, _lp[b])
+		skel.set_bone_pose_rotation(b, _lr[b])
 	if _cabeca >= 0:
 		skel.set_bone_pose_scale(_cabeca, Vector3.ONE * (0.001 if sem_cabeca else 1.0))
+
+
+## cada punho no seu ponto do aro, girado com o volante; o braço (ombro ->
+## cotovelo -> pulso) chega lá por IK de dois ossos com o cotovelo no plano
+## que a animação dá, e a mão gira junto com o volante
+func _segura_volante(giro: float) -> void:
+	var g: Array = []
+	g.resize(_pais.size())
+	for b in _pais.size():
+		var t := Transform3D(Basis(_lr[b]), _lp[b])
+		g[b] = t if _pais[b] < 0 else g[_pais[b]] * t
+	var rot := Basis(_ve, giro)
+	var gira := Transform3D(rot, _vc - rot * _vc)
+	for m in _maos:
+		var alvo: Transform3D = gira * m.pega
+		var sup: int = m.sup
+		var inf: int = m.inf
+		var mao: int = m.mao
+		var a: Vector3 = g[sup].origin
+		var b0: Vector3 = g[inf].origin
+		var w0: Vector3 = g[mao].origin
+		var l1 := a.distance_to(b0)
+		var l2 := b0.distance_to(w0)
+		# volante longe (5 carros: braço esticado não chega): o ombro avança,
+		# girando a clavícula na direção do aro até o pulso alcançar (até 35°)
+		var omb: int = _pais[sup]
+		var s0: Vector3 = g[omb].origin
+		var alc := (l1 + l2) * 0.98
+		alcance = maxf(alcance, (alvo.origin - a).length() / (l1 + l2))
+		var eixo := (a - s0).cross(alvo.origin - s0)
+		if (alvo.origin - a).length() > alc and eixo.length_squared() > 1e-10:
+			eixo = eixo.normalized()
+			var lo := 0.0
+			var hi := deg_to_rad(35.0)
+			for it in 12:
+				var meio := (lo + hi) * 0.5
+				if (alvo.origin - (s0 + Basis(eixo, meio) * (a - s0))).length() > alc:
+					lo = meio
+				else:
+					hi = meio
+			var q := Basis(eixo, hi)
+			_lr[omb] = (g[_pais[omb]].basis.inverse() * (q * g[omb].basis)).get_rotation_quaternion()
+			for o in [omb, sup, inf, mao]:
+				g[o] = Transform3D(q * g[o].basis, s0 + q * (g[o].origin - s0))
+			a = g[sup].origin
+			b0 = g[inf].origin
+			w0 = g[mao].origin
+		var para := alvo.origin - a
+		var d := clampf(para.length(), absf(l1 - l2) + 1e-4, l1 + l2 - 1e-4)
+		var dir := para.normalized()
+		var polo := (b0 - a) - dir * (b0 - a).dot(dir)
+		if polo.length_squared() < 1e-10:
+			polo = dir.cross(_ve)
+		polo = polo.normalized()
+		var x := (l1 * l1 - l2 * l2 + d * d) / (2.0 * d)
+		var cot := a + dir * x + polo * sqrt(maxf(l1 * l1 - x * x, 0.0))
+		var r1 := Quaternion((b0 - a).normalized(), (cot - a).normalized())
+		var w1: Vector3 = cot + r1 * (w0 - b0)
+		var r2 := Quaternion((w1 - cot).normalized(), (a + dir * d - cot).normalized())
+		var b_sup: Basis = Basis(r1) * g[sup].basis
+		var b_inf: Basis = Basis(r2 * r1) * g[inf].basis
+		_lr[sup] = (g[_pais[sup]].basis.inverse() * b_sup).get_rotation_quaternion()
+		_lr[inf] = (b_sup.inverse() * b_inf).get_rotation_quaternion()
+		_lr[mao] = (b_inf.inverse() * alvo.basis).get_rotation_quaternion()
+
+
+## conferência (tests/teste_volante.gd): distância de cada punho até o seu
+## ponto no aro e do cotovelo até o da animação, na pose de agora (m)
+func erro_maos(s: float) -> Array:
+	var g: Array = []
+	g.resize(_pais.size())
+	for b in _pais.size():
+		var t := Transform3D(Basis(_lr[b]), _lp[b])
+		g[b] = t if _pais[b] < 0 else g[_pais[b]] * t
+	var rot := Basis(_ve, giro_volante(s))
+	var gira := Transform3D(rot, _vc - rot * _vc)
+	var out: Array = []
+	for m in _maos:
+		var alvo: Vector3 = (gira * m.pega) * m.cent
+		out.append((g[m.mao] * m.cent).distance_to(alvo))
+	return out
 
 
 ## posição do osso da cabeça no mundo (pra conferir a câmera do piloto)
