@@ -58,7 +58,10 @@ func _physics_process(d):
 			ti.thr = float(OS.get_environment("ACEL"))
 	if t_vira >= 0.0:
 		var tv := t - t_vira
-		var ss := absf(rad_to_deg(car.sideslip))
+		# ângulo de verdade (0 a 180°: passa de 90° quando o carro fica de ré);
+		# o 0x6c0 do jogo é asin e dobra em 90°
+		var bz: Basis = car.global_transform.basis
+		var ss := absf(rad_to_deg(atan2(car.linear_velocity.dot(bz.x), car.linear_velocity.dot(bz.z))))
 		if solto < 0.0 and ss > 20.0:
 			solto = tv
 			kmh_solto = kmh
@@ -75,8 +78,9 @@ func _physics_process(d):
 			for w in car.wheels:
 				t2.append("%5.1f %s g%.2f" % [-w.fx / 1000.0, "S" if w.sat else "-", w.grip])
 			print("  %.1f s  %5.1f km/h  derrapagem %5.1f°  giro %6.1f  marcha %s rpm %d chão %d | %s" % [tv, kmh, ss, rad_to_deg(car.angular_velocity.y), car.gear_label(), int(car.rpm), car.grounded, " | ".join(t2)])
-		if tv > 3.0:
-			print("VEL %d: passa de 20° em %s" % [int(alvo), ("%.2f s, a %.0f km/h" % [solto, kmh_solto]) if solto >= 0.0 else "nunca (3 s)"])
+		var dur := float(OS.get_environment("DUR")) if OS.get_environment("DUR") != "" else 3.0
+		if tv > dur:
+			print("VEL %d: passa de 20° em %s" % [int(alvo), ("%.2f s, a %.0f km/h" % [solto, kmh_solto]) if solto >= 0.0 else "nunca (%.0f s)" % dur])
 			get_tree().quit()
 	if t > 90.0:
 		print("VEL %d: não chegou na velocidade" % int(alvo))
