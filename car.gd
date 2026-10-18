@@ -153,6 +153,12 @@ var eng_torque := 0.0         # torque líquido do motor (N·m)
 var clutch_t := 0.0           # torque passando pela embreagem (N·m)
 var want_rev := false         # pedido de ré (o câmbio abre, engata a ré e fecha)
 var reverse_hold := 0.0
+# pedais crus depois do 0x202df0 (corpo+0x37c / +0x38c); o throttle e o
+# brake_in são os suavizados (+0x380 / +0x390). O câmbio e o "preso" leem o cru.
+var thr_cx := 0.0
+var brk_cx := 0.0
+var rev_timer := 0.0          # veículo+0xb2c: espera do freio virar ré quando vinha andando
+var ar_libera := false        # veículo+0xb30: soltou o acelerador nesse voo
 var air_time := 0.0
 var air_lat_state := 0        # empurrão lateral no ar (0x6f4): 0 nada, 1 direita, 2 esquerda
 var air_lat_timer := 0.0
@@ -829,6 +835,10 @@ func reset_drivetrain() -> void:
 	limiter = false
 	throttle = 0.0
 	brake_in = 0.0
+	thr_cx = 0.0
+	brk_cx = 0.0
+	rev_timer = 0.0
+	ar_libera = false
 
 
 func gear_label() -> String:
@@ -900,8 +910,12 @@ func _physics_process(dt: float) -> void:
 	var fwd_body := b.z
 	var v_body_f := linear_velocity.dot(fwd_body)
 
-	# ré: segurando freio parado engata a ré; na ré os pedais se invertem
-	if want_rev:
+	if not manual:
+		_pedais_auto(dt, v_body_f, thr_raw, brk_raw)
+		thr_raw = thr_cx
+		brk_raw = brk_cx
+	# manual (nosso): segurando freio parado engata a ré; na ré os pedais se invertem
+	elif want_rev:
 		if thr_raw > 0.1 and v_body_f > -0.5:
 			want_rev = false
 			if manual:
@@ -919,6 +933,8 @@ func _physics_process(dt: float) -> void:
 			reverse_hold = 0.0
 	else:
 		reverse_hold = 0.0
+	thr_cx = thr_raw
+	brk_cx = brk_raw
 
 	throttle = move_toward(throttle, thr_raw, dt * (P.thr_up if thr_raw > throttle else P.thr_down))
 	brake_in = move_toward(brake_in, brk_raw, dt * (P.brk_up if brk_raw > brake_in else P.brk_down))
@@ -1677,6 +1693,51 @@ func _start_shift(to: int) -> void:
 	shift_flag = true
 
 
+## 0x202df0: pedais do jogador no AutoManual (corpo+0x2d4 = 3, veículo+0xb14
+## ligado), velocidades em mph (x 2.2374146):
+##  - pra frente a mais de 1 mph: modo frente (corpo+0x2d8 = 0) e espera
+##    de 0.1 s (veículo+0xb2c) pro freio virar ré;
+##  - senão: soltar o freio zera a espera; freio apertado gasta a espera e
+##    depois engata a ré com o freio virando acelerador; acelerador volta pra
+##    frente (de ré a mais de 1 mph ele vira freio até parar);
+##  - sem pedal nenhum e |v| < 0.2 mph o jogo segura no freio (1.0). É a
+##    barra vermelha cheia na largada: ao acelerar o freio cai a 2/s;
+##  - no ar (corpo+0x4e4 > 0) o acelerador fica cortado até ser solto uma vez
+##    nesse voo (veículo+0xb30).
+func _pedais_auto(dt: float, v_f: float, thr_raw: float, brk_raw: float) -> void:
+	var v_mph := v_f / MPH_G
+	if v_mph > 1.0:
+		want_rev = false
+		rev_timer = 0.1
+	else:
+		if rev_timer > 0.0 and brk_raw == 0.0:
+			rev_timer = 0.0
+		if brk_raw > 0.0:
+			if rev_timer > 0.0:
+				rev_timer -= dt
+			else:
+				want_rev = true
+				thr_raw = brk_raw
+				brk_raw = 0.0
+		elif thr_raw > 0.0:
+			if v_mph < -1.0 and want_rev:
+				brk_raw = thr_raw
+				thr_raw = 0.0
+			else:
+				want_rev = false
+	if thr_raw == 0.0 and brk_raw == 0.0 and linear_velocity.length() / MPH_G < 0.2:
+		brk_raw = 1.0
+	if air_time == 0.0:
+		ar_libera = false
+	elif not ar_libera:
+		if thr_raw == 0.0:
+			ar_libera = true
+		else:
+			thr_raw = 0.0
+	thr_cx = thr_raw
+	brk_cx = brk_raw
+
+
 ## Motor e câmbio portados do executável:
 ##   0x20c558  giro vem das rodas (W+0x48) quando a embreagem está travada,
 ##             com roda de trás no chão e o carro não está preso; embreagem
@@ -1778,7 +1839,7 @@ func _giro_rodas(dt: float, v_f: float, rear_g: int, handbrake: bool) -> void:
 	# carro não sai de 3 cm (0.0009 m²) por 0,33 s
 	preso = false
 	var v_r := v_ref
-	if throttle > 0.0 and not handbrake and absf(v_f) < 0.5:
+	if thr_cx > 0.0 and not handbrake and absf(v_f) < 0.5:
 		if preso_t == 0.0:
 			preso_t = dt
 			preso_pos = global_position
@@ -1857,7 +1918,7 @@ func _freio_livre(w: Dictionary, a: float, dt: float) -> float:
 func _gearbox(dt: float, v_f: float, out_rpm: float, auto_ok: bool, forced: bool) -> float:
 	var n_g := gears.size() - 1
 	var rev_now := gear == -1
-	var t2 := throttle * throttle
+	var t2 := thr_cx * thr_cx              # câmbio+0xc = acelerador cru (0x20c7a8)
 	var dis: float = P.clutch_dis_rate
 	var eng: float = P.clutch_eng_rate
 	var rpm_thr: float = P.clutch_rpm_lo
@@ -1888,7 +1949,7 @@ func _gearbox(dt: float, v_f: float, out_rpm: float, auto_ok: bool, forced: bool
 				engage = true
 			elif cstate == 1 or cstate == 3:
 				engage = true
-			elif throttle < 0.01 and absf(v_f) > 5.0 * MPH:
+			elif thr_cx < 0.01 and absf(v_f) > 5.0 * MPH:
 				engage = true
 		else:
 			open_path = true
@@ -1928,7 +1989,7 @@ func _gearbox(dt: float, v_f: float, out_rpm: float, auto_ok: bool, forced: bool
 				shift_flag = false
 		# troca automática por velocidade (só com as rodas de tração no chão)
 		if cstate == 3 and not manual and not want_rev and auto_ok and gear >= 1:
-			var k: float = 1.0 + throttle * (P.up_thr_mod - 1.0)
+			var k: float = 1.0 + thr_cx * (P.up_thr_mod - 1.0)
 			if v_f > k * _up_speed(gear) and gear < n_g:
 				shift_to = gear + 1
 				cstate = 2

@@ -65,7 +65,8 @@ python tools/ler_savestate.py arquivo.p2s
 %GODOT% --headless --path . -s res://tests/teste_freio.gd   :: patinada, ABS e trava
 %GODOT% --headless --path . -s res://tests/teste_roda.gd    :: giro das rodas por torque (no ar, preso)
 %GODOT% --headless --path . -s res://tests/teste_camera_passo.gd  :: câmera de órbita sem vai e volta
-%GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL
+%GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL e save states
+%GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
@@ -113,11 +114,16 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   parte_00_00, largada em 25 s; relógio da corrida + HUD em mph lidos quadro
   a quadro, tabela em tests/rodar_testes.py). Carro pela ficha da tela de
   opções: DIRT PREMIUM, 269.9 HP (motor 1.0), 2204 lbs (BodyMass L2),
-  embreagem L2 (troca 2->3 para 0.28 s). A 60 Hz o remake fica a 1.7 mph.
+  embreagem L2 (troca 2->3 para 0.28 s). A 60 Hz o remake fica a 1.2 mph.
 - **Renegade PAL** (gravação do Matheus no RX01, sozinho na pista, de
   fábrica = 440.6 HP; tabela em tests/teste_largada.gd) + save state
   patinando a 48.7 km/h em 1ª: 6893 rpm, roda de trás 34.09 rad/s (0x600
   0.26, 0x610 0.32), 8.0 kN por roda traseira (elipse 8.17 x 0.98).
+  Mais 4 save states da largada (5_a_10, 15_a_20 e os _teste_2 do Matheus,
+  ainda fora do atv4-dados/savestates): patinada de trás / rpm 0.48 /
+  1379 a 8.6 km/h, 0.48 / 1568 a 9.8, 1.20 / 4763 a 19.8, 1.38 / 5766 a 22.1
+  (teste_largada imprime remake x jogo). No vídeo, as barrinhas do lado do
+  conta-giros são acelerador (verde) e freio (vermelho).
 - **Gravação PCSX2 do Renegade**: carro ocupa ~27% da largura (em 4:3) a
   122 km/h na câmera perto; bate com a câmera portada.
 
@@ -182,6 +188,12 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   0x600 (ω·R/v − 1, que ABS/trava/embreagem leem) é a 0x610 do passo
   anterior. 0x3cc = rodas de TRÁS no chão (não "tração no chão"). O
   "torque" do freio ali não tem a massa (×1000 com inércia em kg·m²).
+- Pedais: cada comando tem cru e suavizado (corpo+0x368; acelerador
+  0x37c/0x380, freio 0x38c/0x390). Motor usa o suavizado; o CÂMBIO
+  (0x20c7a8) e o "preso" usam o CRU. Parado sem pedal (< 0.2 mph) o jogo põe
+  freio 1.0 sozinho (0x202df0): a barra vermelha cheia na largada não é o
+  jogador freando. Freio parado vira ré na hora (0.1 s se vinha andando);
+  no ar o acelerador corta até ser solto uma vez. car.gd _pedais_auto.
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto, que ainda não temos.

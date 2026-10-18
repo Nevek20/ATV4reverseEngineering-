@@ -26,9 +26,16 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - Save state PAL patinando a 48.7 km/h (1ª): rodas de trás no limite da
   elipse (0x5c8 = 8.007 kN = 8.17 x 0.98; pedido 0x680 = 10.48), 6893 rpm,
   0x600 0.26, 0x610 0.32, limitador 1.0 naquele quadro.
-- Sobra: na arrancada (0 a 0.5 s) o remake do Renegade sai uns 4 km/h na
-  frente; no jogo o motor fica mais alto (~2300 rpm a 8 km/h), embreagem
-  patinando mais tempo.
+- Save states PAL da largada de fábrica (acelerador no fundo, embreagem já
+  travada): patinada 0x610 de trás / rpm = 0.48 / 1379 a 8.6 km/h, 0.48 /
+  1568 a 9.8, 1.20 / 4763 a 19.8, 1.38 / 5766 a 22.1. A força na roda
+  (0x5c8) bate com o remake na mesma patinada (7.03 kN em 0.48, 6.54 em
+  1.38): o que falta é a patinada começar mais cedo. Com os pedais do
+  0x202df0 e o câmbio no acelerador cru o remake dá 0.22/0.31/1.07/1.25
+  (antes 0.00/0.04/0.76/0.94). Sobra uns 0.09 s na frente entre 5 e 14
+  km/h: o motor do remake cai a 1036 rpm (< 1050 de desengate) a 2.8 km/h
+  e a embreagem abre por 4 passos; no jogo pelo jeito não abre. Falta um
+  save state a 2-4 km/h pra ver.
 
 ## Ficha do carro (tela de opções da corrida)
 
@@ -54,8 +61,25 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   corte, sobe a Rev_limiter_disengage_rate abaixo da de volta.
 - **0x20c558**: embreagem travada e rodas de tração no chão → rpm = rpm da
   roda × relação. Em troca (shift flag) o acelerador é multiplicado pela
-  embreagem. **0x20c7a8** entradas do câmbio. **0x20c808** carga = torque da
-  embreagem quando não travada.
+  embreagem. **0x20c7a8** entradas do câmbio: o acelerador do câmbio
+  (câmbio+0xc) é o CRU 0x37c, não o suavizado. Ele entra na rampa da
+  embreagem (2·(1 + t²) por s), na rpm de engate, no "engata solto acima de
+  5 mph" e na troca. **0x20c808** carga = torque da embreagem quando não
+  travada; travada, Σ "torque" do freio/relação (sem massa; só pesa com as
+  rodas de trás fora do chão, não portado).
+- **Pedais (corpo+0x368)**: cada comando tem cru e suavizado (InputRates):
+  direção 0x36c/0x370, acelerador 0x37c/0x380, freio de mão 0x384/0x388,
+  freio 0x38c/0x390, flags 0x394. O motor (E[1] = 0x2b0) e o arrasto
+  usam o suavizado; câmbio e "preso" usam o cru.
+- **0x202df0** pedais do jogador no AutoManual (veículo+0xb14 = 1), mph =
+  v pra frente·2.2374146: acima de 1 mph modo frente (corpo+0x2d8 = 0) e
+  espera 0.1 s (veículo+0xb2c). Senão: soltar o freio zera a espera; freio
+  gasta a espera e depois engata a ré (0x2d8 = 1) com o freio virando
+  acelerador; acelerador volta pra frente (de ré a mais de 1 mph vira
+  freio). Sem pedal e |v| < 0.2 mph (DAT_00550508): freio 1.0, a barra
+  vermelha cheia na largada. No ar (0x4e4 > 0) o acelerador fica cortado
+  até ser solto uma vez no voo (veículo+0xb30). car.gd _pedais_auto,
+  tests/teste_pedais.gd.
 - **Câmbio** (struct G em obj+0x2d0, params GP = P+0x138):
   0x2474a0 AutoManual (modo 3): troca por velocidade do carro.
   Velocidade de subir = up_rpm·r·rpm2rad/(relação·final); descer como

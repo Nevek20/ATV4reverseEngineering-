@@ -17,12 +17,15 @@ const Terrain := preload("res://terrain.gd")
 const VIDEO := [[0.2, 7], [0.4, 13], [0.6, 21], [0.8, 27], [1.0, 31], [1.2, 35], [1.4, 39], [1.6, 43],
 	[1.8, 49], [2.0, 54], [2.2, 60], [2.4, 65], [2.6, 65], [2.8, 69], [3.0, 78], [3.2, 87], [3.4, 95],
 	[3.6, 97], [3.8, 98], [4.0, 105], [4.2, 111], [4.4, 117]]
+# save states PAL da largada de fábrica (Matheus, out/2026, acelerador no
+# fundo): km/h, patinada 0x610 das rodas de trás, rpm (embreagem já travada)
+const RAM := [[8.6, 0.48, 1379], [9.8, 0.48, 1568], [19.8, 1.20, 4763], [22.1, 1.38, 5766]]
 
 var terrain
 var car
 var t := 0.0
 var t_anda := -1.0
-var curva := []                  # [tempo desde que anda, km/h, marcha]
+var curva := []                  # [tempo desde que anda, km/h, marcha, patinada, rpm]
 var imprime := false
 
 
@@ -58,7 +61,7 @@ func _physics_process(dt: float) -> bool:
 	if t_anda < 0.0 and t > 1.5 and kmh >= 1.0:
 		t_anda = t
 	if t_anda >= 0.0:
-		curva.append([t - t_anda, kmh, car.gear_label()])
+		curva.append([t - t_anda, kmh, car.gear_label(), car.drive_slip, car.rpm])
 		if imprime:
 			print("%.3f %.2f %s %d" % [t - t_anda, kmh, car.gear_label(), int(car.rpm)])
 		if t - t_anda > 4.6:
@@ -101,3 +104,14 @@ func _comparar() -> void:
 			t60 = c[0]
 	print("1ª de 30 a 60 km/h: %.2f s (vídeo 1.25)  2ª aparece em %.2f s (vídeo 2.60)  3ª em %.2f s (vídeo 3.70)  maior diferença %.1f km/h" % [
 		t60 - t30, _troca("2"), _troca("3"), pior])
+	# patinada e rpm na velocidade de cada save state
+	txt = []
+	for r in RAM:
+		for i in curva.size() - 1:
+			var a: Array = curva[i]
+			var b: Array = curva[i + 1]
+			if a[1] <= r[0] and r[0] < b[1]:
+				var f: float = (r[0] - a[1]) / maxf(b[1] - a[1], 1e-9)
+				txt.append("%.1f: %.2f/%.2f %d/%d" % [r[0], r[1], lerpf(a[3], b[3], f), r[2], lerpf(a[4], b[4], f)])
+				break
+	print("save states (km/h: patinada jogo/remake, rpm jogo/remake): %s" % "  ".join(txt))
