@@ -31,7 +31,7 @@ suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
 main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V)
 piloto.gd            piloto do jogo sentado no ARSE, braços pela direção (STEER_LEFT)
-volante_3raios.gd    volante de 3 raios gerado (melhoria nossa, no lugar do do jogo)
+volantes.gd          volantes gerados, um estilo por carro (melhoria nossa, no lugar do do jogo)
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas (fora do git)
@@ -242,13 +242,17 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   aro por IK de dois ossos. Em 5 carros (Sphinx, Inferno, Kraken, McKenzies,
   Storm) o volante fica além do braço esticado (até 108%): a clavícula avança
   até 35°. tests/teste_volante.gd: 0.0 cm nos 13 carros.
-- Volante de 3 raios (melhoria nossa, car.gd VOLANTE_NOSSO,
-  volante_3raios.gd): o do jogo tem aro de 6 a 12 lados e raios tortos. No
-  lugar dele vai um gerado (fotos do Matheus: aro preto mais grosso nos
-  raios, 3 raios de alumínio com rasgos em 9h/3h/6h, dish, tampa cromada,
-  marca amarela no topo), no centro, raio e eixo do pecas.json. O aro fica
-  no mesmo raio, então a IK das mãos não muda. Alisar o aro do jogo
-  (VOLANTE_LISO) quebrou no Renegade e no Bulldog: não voltar.
+- Volantes gerados (melhoria nossa, car.gd VOLANTE_NOSSO, volantes.gd): o
+  do jogo tem aro de 6 a 12 lados e raios tortos; 8 carros usam o mesmo X
+  furado girado ~20°. No lugar vai um volante redondo e centralizado, no
+  centro, raio e eixo do pecas.json (a IK das mãos não muda). Um estilo por
+  carro (Volantes.POR_CARRO): os únicos do jogo melhorados (Renegade barra
+  + losango, Bulldog barra larga, Inferno/Storm X de aço com rebites, Sphinx
+  o X furado) e os das fotos do Matheus (buggy no Phantom, Sparco preto no
+  Kraken, Sparco azul no Viper, Mountney no McKenzies, kart no Hurricane,
+  espuma no Trident, Fusca Itamar no Mosquito; couro sobra). B no jogo troca;
+  print_tela VOLANTE=nome PILOTO=0. Alisar o aro do jogo (VOLANTE_LISO)
+  quebrou no Renegade e no Bulldog: não voltar.
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto (piloto.gd).

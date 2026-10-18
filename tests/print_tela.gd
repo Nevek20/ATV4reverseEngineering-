@@ -19,6 +19,8 @@ extends SceneTree
 ##   VIRA=1                     direção forçada (-1..1, + = esquerda) antes dos
 ##                              prints (só no print simples, sem VISTAS)
 ##   VOLANTE_COR=1              pinta o volante solto de vermelho (vista "volante")
+##   VOLANTE=kart               troca o estilo do volante gerado (volantes.gd)
+##   PILOTO=0                   esconde o piloto (pra ver o volante)
 ##   PASTA=res://assets/buggy_02 (pasta com o pecas.json)  PONTOS=res://...
 ##   RODA_F=res://...  RODA_T=res://...
 ##                              troca pasta/pontos/rodas sem mexer no main.gd
@@ -161,6 +163,12 @@ func _camera(v: String) -> void:
 			ch.visible = corpo
 		v = v.trim_suffix("_sc")
 	var t := car.global_transform
+	if OS.has_environment("VOLANTE"):
+		car.trocar_volante(OS.get_environment("VOLANTE"))
+	if OS.get_environment("PILOTO") == "0" and car.piloto:
+		for ch in car.piloto.get_children():
+			if ch is Node3D:
+				ch.visible = false
 	if v.begins_with("piloto"):
 		# a mesma câmera de primeira pessoa do jogo (car.first_person_xf),
 		# em 16:9 como no F5. FP_FOV/FP_PITCH/FP_UP/FP_BACK/FP_VOLANTE no

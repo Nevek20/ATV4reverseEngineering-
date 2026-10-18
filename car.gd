@@ -96,10 +96,12 @@ const SW_TURNS := 2.6         # sem fonte no jogo (escolha do remake); com o pil
 # gira o quanto as mãos giram no STEER_LEFT do jogo (~50°), não SW_TURNS
 const MAOS_NO_VOLANTE := true
 # melhoria nossa: o volante do jogo (aro de 6 a 12 lados, raios tortos) vira um
-# de 3 raios centralizado (volante_3raios.gd), no mesmo centro, raio e
-# inclinação. false = malha do jogo.
+# gerado, redondo e centralizado (volantes.gd: um estilo por carro), no mesmo
+# centro, raio e inclinação. false = malha do jogo.
 const VOLANTE_NOSSO := true
-const Volante3Raios := preload("res://volante_3raios.gd")
+const Volantes := preload("res://volantes.gd")
+var volante_estilo := ""      # "" = o do carro (Volantes.POR_CARRO); B no jogo troca
+var sw_malha: MeshInstance3D
 var rider_s := 0.0            # direção suavizada do piloto (rider+0x2d8 com sinal trocado: + = esquerda)
 # piloto do jogo (piloto.gd, tools/piloto.py): sentado no ponto ARSE, braços pela rider_s
 const PILOTO_DIR := "res://assets/piloto"
@@ -798,8 +800,11 @@ func _load_steering_wheel() -> void:
 	model_root.add_child(sw_pivot)
 	var mi := MeshInstance3D.new()
 	if VOLANTE_NOSSO:
-		mi.mesh = Volante3Raios.montar(vol.get("raio", 0.19), SW_AXIS)
+		if volante_estilo == "":
+			volante_estilo = Volantes.do_carro(vehicle_id)
+		mi.mesh = Volantes.montar(vol.get("raio", 0.19), SW_AXIS, volante_estilo)
 		sw_pivot.add_child(mi)
+		sw_malha = mi
 		return
 	var mesh := load(path) as Mesh
 	if mesh == null:
@@ -812,6 +817,18 @@ func _load_steering_wheel() -> void:
 		m2.cull_mode = MODEL_CULL
 		mi.set_surface_override_material(i, m2)
 	sw_pivot.add_child(mi)
+
+
+## troca o volante gerado (nome = "" passa pro próximo estilo); devolve o nome
+func trocar_volante(nome := "") -> String:
+	if sw_malha == null:
+		return ""
+	if nome == "":
+		var lista := Volantes.nomes()
+		nome = lista[(lista.find(volante_estilo) + 1) % lista.size()]
+	volante_estilo = nome
+	sw_malha.mesh = Volantes.montar(pecas.get("volante", {}).get("raio", 0.19), SW_AXIS, nome)
+	return nome
 
 
 func driver_eye() -> Vector3:
