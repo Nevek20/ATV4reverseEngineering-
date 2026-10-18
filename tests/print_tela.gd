@@ -178,6 +178,15 @@ func _camera(v: String) -> void:
 			car.FP_PITCH = float(pv[3])
 			car.FP_FOV = float(pv[4])
 		car.update_eye()
+		# câmera do piloto do main (4): o piloto aparece sem o capacete
+		# (CABECA=1 deixa a cabeça, pra conferir onde o olho cai)
+		main.cam_mode = 0 if OS.get_environment("CABECA") == "1" else 4
+		if car.piloto:
+			car.piloto.sem_cabeca = main.cam_mode == 4
+			car.piloto.pose(car.rider_s)
+			print("olho da câmera x cabeça do piloto (frame do modelo): ",
+				car.model_root.global_transform.affine_inverse() * car.first_person_xf().origin, " x ",
+				car.model_root.global_transform.affine_inverse() * car.piloto.cabeca_global())
 		var camp: Camera3D = root.get_node_or_null("CamPrint")
 		if camp == null:
 			camp = Camera3D.new()

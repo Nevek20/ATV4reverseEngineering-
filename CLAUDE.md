@@ -230,8 +230,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Piloto (piloto.gd, tools/piloto.py): .skl/.srd/.bac decifrados
   (docs Piloto). ROOT da animação em cima do ARSE, sem a rotação do ponto.
   STEER_LEFT no tempo |s|/6, espelhado com s > 0 do jogo (= rider_s < 0 no
-  remake). Índice de osso no .srd vem x4. Só aparece nas câmeras perto e
-  longe (mRenderRider 0 no capô e para-choque; na nossa do piloto taparia).
+  remake). Índice de osso no .srd vem x4. Some no capô e no para-choque
+  (mRenderRider 0); na nossa câmera do piloto aparece sem o capacete (osso
+  head encolhido: o olho fica dentro da cabeça dele), com braços e mãos no
+  volante.
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto (piloto.gd).

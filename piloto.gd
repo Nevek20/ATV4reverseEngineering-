@@ -14,6 +14,10 @@ extends Node3D
 var skel: Skeleton3D
 var malha: MeshInstance3D
 var root_pos := Vector3.ZERO      # osso ROOT na animação: vai em cima do ARSE
+# câmera do piloto (nossa, não existe no buggy do jogo): o capacete some (osso
+# head encolhido) e ficam o corpo, os braços e as mãos no volante
+var sem_cabeca := false
+var _cabeca := -1
 var _esp := PackedInt32Array()
 var _tempos := PackedFloat32Array()
 var _dur := 0.0
@@ -104,6 +108,7 @@ func carregar(dir: String, cull: int) -> bool:
 		_pos.append(ps)
 		_rot.append(rs)
 	# ROOT no quadro 0 = MAIN_CONTROL x ROOT local (0, 1.1315, 0.3032 no Renegade)
+	_cabeca = skel.find_bone("head")
 	var raiz := skel.find_bone("ROOT")
 	var pai_raiz := skel.get_bone_parent(raiz)
 	root_pos = _pos[0][pai_raiz] + _rot[0][pai_raiz] * _pos[0][raiz]
@@ -139,3 +144,10 @@ func pose(s: float) -> void:
 			r = Quaternion(r.x, -r.y, -r.z, r.w)
 		skel.set_bone_pose_position(b, p)
 		skel.set_bone_pose_rotation(b, r)
+	if _cabeca >= 0:
+		skel.set_bone_pose_scale(_cabeca, Vector3.ONE * (0.001 if sem_cabeca else 1.0))
+
+
+## posição do osso da cabeça no mundo (pra conferir a câmera do piloto)
+func cabeca_global() -> Vector3:
+	return skel.global_transform * skel.get_bone_global_pose(_cabeca).origin
