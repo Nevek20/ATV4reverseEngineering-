@@ -151,6 +151,14 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   Screenshot.png do .p2s) o remake termina a 0.4 m: 29.4 x 30.7 km/h, girou
   124 x 120°, derrapagem −68 x −60°, giro 178 x 179°/s. No jogo o carro
   também roda segurando o volante todo.
+- **Segurando o R1** (botão da embreagem, 5 save states fm_* em
+  tests/ref_derrapagem.json, 30 a 148 km/h virando e acelerando): botão
+  0x384/0x388 = 1, embreagem 0x2ec = 0 (aberta pelo 0x20c558), motor no
+  limitador (8000 a 8100 rpm, 0x2c4 batendo 0.3/0.6), Clutch Turn 0x74c = 0.
+  O remake dá a mesma força por roda (0.13 kN no pior dos 11 estados) e o
+  mesmo rpm (±110). A RAM guarda o curso da roda do começo do passo e a pose
+  do fim: com o carro subindo (fm_2, 0.38 m/s) o teste desce a roda o quanto
+  o ponto dela subiu no passo.
 - **Corte de recuperação 0x2120c0** (Sideslip/RecoveryTorqueCutting P+0xb10,
   chamado no fim dos modos B e C do 0x20efa0; o modo A pula): devolve f e o
   torque de giro do modo vira torque·(1 − f). Só com FrictionEllipse Enabled

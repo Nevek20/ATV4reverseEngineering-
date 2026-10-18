@@ -110,6 +110,12 @@ func _por_no_estado(e: Dictionary) -> void:
 	car.lim_k = e.limitador
 	car.eng_torque = e.torque * 1000.0
 	car.air_time = e.ar
+	# botão da embreagem ("freio de mão") suavizado e o do passo anterior (Clutch Turn)
+	car.emb_in = e.mao[1]
+	var ps: Dictionary = e.get("powerslide", {})
+	car.ps_estado = int(ps.get("estado", 0))
+	car.ps_qtd = ps.get("qtd", 0.0)
+	car.ps_emb_ant = ps.get("emb_ant", e.mao[1])
 	# comandos: direção do jogo + = direita, no remake + = esquerda
 	car.steer = -float(e.direcao[1])
 	car.throttle = e.acelerador[1]
@@ -118,9 +124,17 @@ func _por_no_estado(e: Dictionary) -> void:
 	for i in 4:
 		var r: Dictionary = e.rodas[i]
 		var w: Dictionary = car.wheels[car.jit_order[i]]
-		# a RAM é do fim do passo, com o curso subido até o chão (pneu
-		# encostando, pen = 0); 1 mm a menos pra roda contar como no chão
-		w.x = r.curso - 0.001
+		# o curso da RAM é o do contato no começo do passo (pose de antes de
+		# integrar), subido até o chão (pen = 0). A pose da RAM é a do fim:
+		# a roda que estava no chão desce o quanto o ponto dela subiu no passo
+		# (carro subindo, fm_2), mais 1 mm pra contar como no chão
+		var sobe := 0.0
+		if absf(float(r.contato[0])) + absf(float(r.contato[2])) > 0.0:
+			var at: Vector3 = car.global_transform * Vector3(w.px, w.y0, w.pz)
+			var com_w: Vector3 = car.global_transform * car.center_of_mass
+			var vp: Vector3 = car.linear_velocity + car.angular_velocity.cross(at - com_w)
+			sobe = maxf(vp.dot(car.global_transform.basis.y) * PASSO, 0.0)
+		w.x = r.curso - 0.001 - sobe
 		w.v = r.curso_v
 		w.omega = r.giro
 		w.slip = r.patinada
@@ -136,6 +150,8 @@ func _por_no_estado(e: Dictionary) -> void:
 func _conferir_forca(e: Dictionary) -> void:
 	var s := _medir()
 	print("  remake %.1f km/h  derrapagem %.1f° (RAM %.1f°)  giro %.1f°/s  rodas no chão %d" % [s.kmh, s.beta, rad_to_deg(e.derrapagem), s.giro, car.grounded])
+	print("  motor: rpm jogo %d remake %d | limitador %.2f/%.2f | embreagem %.3f/%.3f | botão %.2f" % [
+		int(e.rpm), int(car.rpm), e.limitador, car.lim_k, e.embreagem, car.clutch, float(e.mao[0])])
 	var nomes := ["FL", "RL", "FR", "RR"]
 	for i in 4:
 		var r: Dictionary = e.rodas[i]

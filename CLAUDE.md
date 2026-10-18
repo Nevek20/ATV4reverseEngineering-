@@ -130,7 +130,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   conta-giros são acelerador (verde) e freio (vermelho).
 - **Derrapagem** (4 save states do Matheus a ~120 km/h na terra, volante
   todo e acelerador; tests/ref_derrapagem.json): forças por roda e 1.16 s
-  de derrapagem batem (tests/teste_derrapagem.gd: 0.13 kN por roda, 0.4 m no fim). Todo .p2s
+  de derrapagem batem (tests/teste_derrapagem.gd: 0.13 kN por roda, 0.4 m no fim).
+  Mais 5 segurando o R1 do controle (= botão da embreagem, "freio de mão"),
+  virando e acelerando: embreagem aberta (0x2ec = 0), motor batendo no
+  limitador (~8000 rpm), Clutch Turn em 0. O remake bate (rpm, embreagem e
+  força por roda). Segurar não faz Clutch Turn: ele só começa ao SOLTAR. Todo .p2s
   traz Screenshot.png: o relógio da corrida dá o tempo entre save states.
   Derrapagem natural ("SLIDE - Steer hard into turn" no treino): virando
   tudo a 173 km/h o remake chega no save state "170" (133 km/h, 35.7°,
