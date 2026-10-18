@@ -35,6 +35,7 @@ data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peça
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas (fora do git)
 tests/               teste de física sem tela + rodar_testes.py
 tools/               scripts Python de extração (pingu2obj, pintura, savestate)
+som/engine_sim/      um .mr do Engine Simulator por buggy (gerados por tools/gerar_motores.py)
 re/                  engenharia reversa: scripts do Ghidra, exe_util, dumps
 docs/                engenharia_reversa.md (mapa do exe), assets.md
 ```
@@ -74,6 +75,11 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 
 :: assets dos 12 buggies (modelo, peças, freios, rodas, pintura)
 python tools/gerar_buggies.py <unpacked> <texturas>
+
+:: motores do Engine Simulator (12 .mr) e dinamômetro sem tela (Linux)
+python tools/gerar_motores.py
+bash tools/engine_sim_dyno/preparar.sh
+tools/engine_sim_dyno/build/dyno som/engine_sim/08_mckenzies_gm_ls6.mr
 
 :: caçar coisas no exe
 python re/exe_util.py SCES_546.88 str NOME | jal 0xENDERECO | words 0xEND 32
@@ -181,7 +187,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Tremida da câmera na BATIDA (a por velocidade já está, camera_jitter.gd):
   precisa do sistema de colisão do corpo (corpo+0x7a0); fórmula em
   docs/engenharia_reversa.md, Câmera.
-- Som do motor (00002/00004/00005 xml: bancos e faders por buggy).
+- Som do motor (00002/00004/00005 xml: bancos e faders por buggy). Já tem um
+  .mr do Engine Simulator por buggy (som/engine_sim, LEIA-ME com cv e lenta
+  medidos); falta gravar o som e ligar no Godot.
 - Piloto sentado e animado (MALE_*.srd + InGame_Mid.skl + STEER_LEFT.bac,
   docs/engenharia_reversa.md "Piloto"): falta parser dos 3 formatos.
   Melhoria nossa depois: mãos tremendo no volante em alta velocidade.

@@ -10,3 +10,5 @@ re/decomp/
 SCES_546.88
 unpacked/
 __pycache__/
+tools/engine_sim_dyno/es/
+tools/engine_sim_dyno/build/

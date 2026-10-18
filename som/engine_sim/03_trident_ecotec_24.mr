@@ -1,0 +1,367 @@
+import "engine_sim.mr"
+
+// Trident (Snake): GM Ecotec 2.4 [I4, DOHC]
+// 2384 cc, taxa 10.4:1, marcha lenta ~900 rpm, corte 7000 rpm, alvo ~196 cv
+// ordem de ignicao 1-3-4-2, intervalos 180/180/180/180 graus
+// gerado por tools/gerar_motores.py (mexer la e gerar de novo)
+
+units units()
+constants constants()
+impulse_response_library ir_lib()
+label cycle(2 * 360 * units.deg)
+
+private node wires {
+    output wire1: ignition_wire();
+    output wire2: ignition_wire();
+    output wire3: ignition_wire();
+    output wire4: ignition_wire();
+}
+
+private node ecotec_24_head {
+    input intake_camshaft;
+    input exhaust_camshaft;
+    input chamber_volume: 63.4 * units.cc;
+    input intake_runner_volume: 149.6 * units.cc;
+    input intake_runner_cross_section_area: 1.4 * units.inch * 1.4 * units.inch;
+    input exhaust_runner_volume: 50.0 * units.cc;
+    input exhaust_runner_cross_section_area: 1.25 * units.inch * 1.25 * units.inch;
+
+    input flow_attenuation: 1.0;
+    input lift_scale: 1;
+    input flip_display: false;
+    alias output __out: head;
+
+    function intake_flow(50 * units.thou)
+    intake_flow
+        .add_flow_sample(0 * lift_scale, 0 * flow_attenuation)
+        .add_flow_sample(50 * lift_scale, 41 * flow_attenuation)
+        .add_flow_sample(100 * lift_scale, 73 * flow_attenuation)
+        .add_flow_sample(150 * lift_scale, 111 * flow_attenuation)
+        .add_flow_sample(200 * lift_scale, 152 * flow_attenuation)
+        .add_flow_sample(250 * lift_scale, 177 * flow_attenuation)
+        .add_flow_sample(300 * lift_scale, 191 * flow_attenuation)
+        .add_flow_sample(350 * lift_scale, 199 * flow_attenuation)
+        .add_flow_sample(400 * lift_scale, 199 * flow_attenuation)
+        .add_flow_sample(450 * lift_scale, 200 * flow_attenuation)
+        .add_flow_sample(500 * lift_scale, 200 * flow_attenuation)
+        .add_flow_sample(550 * lift_scale, 200 * flow_attenuation)
+        .add_flow_sample(600 * lift_scale, 200 * flow_attenuation)
+
+    function exhaust_flow(50 * units.thou)
+    exhaust_flow
+        .add_flow_sample(0 * lift_scale, 0 * flow_attenuation)
+        .add_flow_sample(50 * lift_scale, 22 * flow_attenuation)
+        .add_flow_sample(100 * lift_scale, 44 * flow_attenuation)
+        .add_flow_sample(150 * lift_scale, 68 * flow_attenuation)
+        .add_flow_sample(200 * lift_scale, 97 * flow_attenuation)
+        .add_flow_sample(250 * lift_scale, 119 * flow_attenuation)
+        .add_flow_sample(300 * lift_scale, 134 * flow_attenuation)
+        .add_flow_sample(350 * lift_scale, 142 * flow_attenuation)
+        .add_flow_sample(400 * lift_scale, 148 * flow_attenuation)
+        .add_flow_sample(450 * lift_scale, 149 * flow_attenuation)
+        .add_flow_sample(500 * lift_scale, 149 * flow_attenuation)
+        .add_flow_sample(550 * lift_scale, 149 * flow_attenuation)
+        .add_flow_sample(600 * lift_scale, 149 * flow_attenuation)
+
+    generic_cylinder_head head(
+        chamber_volume: chamber_volume,
+        intake_runner_volume: intake_runner_volume,
+        intake_runner_cross_section_area: intake_runner_cross_section_area,
+        exhaust_runner_volume: exhaust_runner_volume,
+        exhaust_runner_cross_section_area: exhaust_runner_cross_section_area,
+
+        intake_port_flow: intake_flow,
+        exhaust_port_flow: exhaust_flow,
+        valvetrain: standard_valvetrain(
+            intake_camshaft: intake_camshaft,
+            exhaust_camshaft: exhaust_camshaft
+        ),
+        flip_display: flip_display
+    )
+}
+
+private node ecotec_24_camshaft {
+    input lobe_profile;
+    input intake_lobe_profile: lobe_profile;
+    input exhaust_lobe_profile: lobe_profile;
+    input lobe_separation: 114 * units.deg;
+    input intake_lobe_center: lobe_separation;
+    input exhaust_lobe_center: lobe_separation;
+    input advance: 0 * units.deg;
+    input base_radius: 1.0 * units.inch;
+
+    output intake_cam_0: _intake_cam_0;
+    output exhaust_cam_0: _exhaust_cam_0;
+
+    camshaft_parameters params (
+        advance: advance,
+        base_radius: base_radius
+    )
+
+    camshaft _intake_cam_0(params, lobe_profile: intake_lobe_profile)
+    camshaft _exhaust_cam_0(params, lobe_profile: exhaust_lobe_profile)
+
+    label rot360(360 * units.deg)
+
+    _exhaust_cam_0
+        .add_lobe(rot360 - exhaust_lobe_center + 0 * units.deg) // 1
+        .add_lobe(rot360 - exhaust_lobe_center + 540 * units.deg) // 2
+        .add_lobe(rot360 - exhaust_lobe_center + 180 * units.deg) // 3
+        .add_lobe(rot360 - exhaust_lobe_center + 360 * units.deg) // 4
+    _intake_cam_0
+        .add_lobe(rot360 + intake_lobe_center + 0 * units.deg) // 1
+        .add_lobe(rot360 + intake_lobe_center + 540 * units.deg) // 2
+        .add_lobe(rot360 + intake_lobe_center + 180 * units.deg) // 3
+        .add_lobe(rot360 + intake_lobe_center + 360 * units.deg) // 4
+}
+
+public node ecotec_24 {
+    alias output __out: engine;
+
+    engine engine(
+        name: "GM Ecotec 2.4 [I4, DOHC]",
+        starter_torque: 70 * units.lb_ft,
+        starter_speed: 400 * units.rpm,
+        redline: 7000 * units.rpm,
+        fuel: fuel(
+            max_turbulence_effect: 2.5,
+            max_burning_efficiency: 0.8
+        ),
+        throttle_gamma: 2.0,
+        hf_gain: 0.01,
+        noise: 1.0,
+        jitter: 0.3,
+        simulation_frequency: 20000
+    )
+
+    wires wires()
+
+    label stroke(98 * units.mm)
+    label bore(88 * units.mm)
+    label rod_length(145.5 * units.mm)
+    label rod_mass(560 * units.g)
+    label compression_height(1.1 * units.inch)
+    label crank_mass(14 * units.kg)
+    label flywheel_mass(7 * units.kg)
+    label flywheel_radius(5.5 * units.inch)
+
+    label crank_moment(
+        disk_moment_of_inertia(mass: crank_mass, radius: stroke / 2)
+    )
+    label flywheel_moment(
+        disk_moment_of_inertia(mass: flywheel_mass, radius: flywheel_radius)
+    )
+    label other_moment( // comando, polias etc [estimado]
+        disk_moment_of_inertia(mass: 10 * units.kg, radius: 6.0 * units.cm)
+    )
+
+    crankshaft c0(
+        throw: stroke / 2,
+        flywheel_mass: flywheel_mass,
+        mass: crank_mass,
+        friction_torque: 2 * units.lb_ft,
+        moment_of_inertia:
+            crank_moment + flywheel_moment + other_moment,
+        position_x: 0.0,
+        position_y: 0.0,
+        tdc: 90 * units.deg
+    )
+
+    rod_journal rj0(angle: 0 * units.deg)
+    rod_journal rj1(angle: 180 * units.deg)
+    rod_journal rj2(angle: 180 * units.deg)
+    rod_journal rj3(angle: 0 * units.deg)
+    c0
+        .add_rod_journal(rj0)
+        .add_rod_journal(rj1)
+        .add_rod_journal(rj2)
+        .add_rod_journal(rj3)
+
+    piston_parameters piston_params(
+        mass: 420 * units.g,
+        compression_height: compression_height,
+        wrist_pin_position: 0.0,
+        displacement: 0.0
+    )
+
+    connecting_rod_parameters cr_params(
+        mass: rod_mass,
+        moment_of_inertia: rod_moment_of_inertia(
+            mass: rod_mass,
+            length: rod_length
+        ),
+        center_of_mass: 0.0,
+        length: rod_length
+    )
+
+    intake intake0(
+        plenum_volume: 1.3 * units.L,
+        plenum_cross_section_area: 20.0 * units.cm2,
+        intake_flow_rate: k_carb(637.5),
+        runner_flow_rate: k_carb(204),
+        runner_length: 9 * units.inch,
+        idle_flow_rate: k_carb(0.0),
+        idle_throttle_plate_position: 0.997961, // maior = marcha lenta mais baixa
+        velocity_decay: 0.5
+    )
+
+    exhaust_system_parameters es_params0(
+        outlet_flow_rate: k_carb(1000),
+        primary_tube_length: 14 * units.inch,
+        primary_flow_rate: k_carb(220),
+        velocity_decay: 1.0
+    )
+    exhaust_system exhaust0(
+        es_params0,
+        audio_volume: 6,
+        length: 90 * units.inch,
+        impulse_response: ir_lib.mild_exhaust_0
+    )
+
+    exhaust_system_parameters es_params1(
+        outlet_flow_rate: k_carb(1000),
+        primary_tube_length: 14 * units.inch,
+        primary_flow_rate: k_carb(220),
+        velocity_decay: 1.0
+    )
+    exhaust_system exhaust1(
+        es_params1,
+        audio_volume: 6,
+        length: 92 * units.inch,
+        impulse_response: ir_lib.mild_exhaust_0
+    )
+
+    cylinder_bank_parameters bank_params(
+        bore: bore,
+        deck_height: stroke / 2 + rod_length + compression_height
+    )
+
+    cylinder_bank b0(bank_params, angle: 0 * units.deg)
+    b0
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj0,
+            intake: intake0,
+            exhaust_system: exhaust0,
+            ignition_wire: wires.wire1,
+            primary_length: 4 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj1,
+            intake: intake0,
+            exhaust_system: exhaust1,
+            ignition_wire: wires.wire2,
+            primary_length: 4 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj2,
+            intake: intake0,
+            exhaust_system: exhaust1,
+            ignition_wire: wires.wire3,
+            primary_length: 4 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj3,
+            intake: intake0,
+            exhaust_system: exhaust0,
+            ignition_wire: wires.wire4,
+            primary_length: 4 * units.inch
+        )
+        .set_cylinder_head(
+            ecotec_24_head(
+                intake_camshaft: camshaft.intake_cam_0,
+                exhaust_camshaft: camshaft.exhaust_cam_0,
+                flip_display: false)
+        )
+
+    engine
+        .add_cylinder_bank(b0)
+
+    engine.add_crankshaft(c0)
+
+    harmonic_cam_lobe intake_lobe(
+        duration_at_50_thou: 226 * units.deg,
+        gamma: 1,
+        lift: 420 * units.thou,
+        steps: 100
+    )
+
+    harmonic_cam_lobe exhaust_lobe(
+        duration_at_50_thou: 222 * units.deg,
+        gamma: 1,
+        lift: 400 * units.thou,
+        steps: 100
+    )
+
+    ecotec_24_camshaft camshaft(
+        lobe_profile: "N/A",
+
+        intake_lobe_profile: intake_lobe,
+        exhaust_lobe_profile: exhaust_lobe,
+        intake_lobe_center: 112 * units.deg,
+        exhaust_lobe_center: 114 * units.deg,
+        base_radius: 0.65 * units.inch
+    )
+
+    function timing_curve(1000 * units.rpm)
+    timing_curve
+        .add_sample(0000 * units.rpm, 15 * units.deg)
+        .add_sample(1000 * units.rpm, 15 * units.deg)
+        .add_sample(2000 * units.rpm, 25 * units.deg)
+        .add_sample(3000 * units.rpm, 34 * units.deg)
+        .add_sample(4000 * units.rpm, 38 * units.deg)
+        .add_sample(7000 * units.rpm, 38 * units.deg)
+
+    ignition_module ignition_module(
+        timing_curve: timing_curve,
+        rev_limit: 7200 * units.rpm,
+        limiter_duration: 0.06)
+    ignition_module
+            .connect_wire(wires.wire1, 0 * units.deg)
+            .connect_wire(wires.wire3, 180 * units.deg)
+            .connect_wire(wires.wire4, 360 * units.deg)
+            .connect_wire(wires.wire2, 540 * units.deg)
+
+    engine.add_ignition_module(ignition_module)
+}
+
+private node ecotec_24_buggy {
+    alias output __out:
+        vehicle(
+            mass: 1100 * units.kg,
+            drag_coefficient: 0.45,
+            cross_sectional_area: (70 * units.inch) * (60 * units.inch),
+            diff_ratio: 5.91,
+            tire_radius: 15 * units.inch,
+            rolling_resistance: 300 * units.N
+        );
+}
+
+private node ecotec_24_transmission {
+    alias output __out:
+        transmission(
+            max_clutch_torque: 230 * units.lb_ft
+        )
+        .add_gear(3.085)
+        .add_gear(2.017)
+        .add_gear(1.508)
+        .add_gear(1.203)
+        .add_gear(1);
+}
+
+public node main {
+    run(
+        engine: ecotec_24(),
+        transmission: ecotec_24_transmission(),
+        vehicle: ecotec_24_buggy()
+    )
+}
+
+main()
