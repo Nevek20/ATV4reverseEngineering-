@@ -288,7 +288,7 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Som do motor (melhoria nossa, plano combinado com o Matheus): o jogo só
   tem 3 bancos de motor (02/03/04, XMLs 00002/00004/00005) repetidos nos 12
   buggies (o Mosquito soa igual ao Kraken V8). Plano: o Matheus monta cada
-  motor no Engine Simulator e grava loops de 1-2 s a cada 1000 rpm,
+  motor no Engine Simulator e grava loops de 1-2 s a cada 500 rpm,
   acelerando e soltando, cortados no zero da onda; no Godot um tocador faz
   crossfade + pitch entre os 2 samples vizinhos e mistura acelerando/
   soltando pelo acelerador. RPM: opção (b), o 1000-8000 do jogo (igual nos
