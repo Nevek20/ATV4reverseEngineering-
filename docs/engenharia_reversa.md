@@ -12,6 +12,24 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - Interpolação "tunada": valor = lerp(non_tuned, fully_tuned, t), com t das
   peças (data/upgrades.xml, efeitos somados por tipo).
 
+## Passo da física (PAL 50 Hz, NTSC 60 Hz)
+
+- O jogo integra uma vez por quadro: 1/50 no PAL (nosso exe), 1/60 no NTSC.
+  A física DEPENDE disso. Com a roda patinando em 1ª o giro vem da roda
+  (0x20c558) e bate no limitador (Rev_limiter_engage/disengage_rate 15/s),
+  enquanto a patinada 0x610 sobe a 3/s e volta a 4/s; o liga-desliga dessas
+  rampas depende do passo. Passo menor = corte mais raso = mais força média.
+- Conferido com dois vídeos: o Renegade PAL do Matheus (RX01) na 1ª vai de
+  30 a 60 km/h em 1.25 s; o remake dá 1.36 s a 50 Hz e 0.92 s a 120 Hz.
+  O speedrun do Sphinx (NTSC, mph) bate a 60 Hz em 1.7 mph do começo ao fim
+  (a 50 Hz fica até 3.8 mph abaixo; a 120 Hz até 7 acima).
+- Save state PAL patinando a 48.7 km/h (1ª): rodas de trás no limite da
+  elipse (0x5c8 = 8.007 kN = 8.17 x 0.98; pedido 0x680 = 10.48), 6893 rpm,
+  0x600 0.26, 0x610 0.32, limitador 1.0 naquele quadro.
+- Sobra: na arrancada (0 a 0.5 s) o remake do Renegade sai uns 4 km/h na
+  frente; no jogo o motor fica mais alto (~2300 rpm a 8 km/h), embreagem
+  patinando mais tempo.
+
 ## Ficha do carro (tela de opções da corrida)
 
 - **0x1f5e90** monta a ficha a partir dos parâmetros já com as peças

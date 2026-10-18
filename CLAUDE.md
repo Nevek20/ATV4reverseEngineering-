@@ -48,6 +48,7 @@ python tests/rodar_testes.py                  :: aceleração dos 3 carros
 python tests/rodar_testes.py hs --veh 0       :: curva em alta no Renegade
 python tests/rodar_testes.py accel --veh 1 --tune "{\"engine\":0.81}"
 python tests/rodar_testes.py accel --veh 0 --mu 0.69 --amort 0.2   :: fora da pista
+python tests/rodar_testes.py accel --veh 0 --hz 60                 :: passo NTSC (padrão 50 = PAL)
 
 :: save state do PCSX2 -> valores reais do jogo
 python tools/ler_savestate.py arquivo.p2s
@@ -64,6 +65,7 @@ python tools/ler_savestate.py arquivo.p2s
 %GODOT% --headless --path . -s res://tests/teste_freio.gd   :: patinada, ABS e trava
 %GODOT% --headless --path . -s res://tests/teste_roda.gd    :: giro das rodas por torque (no ar, preso)
 %GODOT% --headless --path . -s res://tests/teste_camera_passo.gd  :: câmera de órbita sem vai e volta
+%GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
@@ -107,13 +109,15 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   CoM (0, 0.639, -0.4), marchas 18.2/11.9/8.9/7.1/5.9, final 1.1636,
   embreagem máx 0.6127, rpm 6582, torque -0.094 kN·m, curso frente
   ~0.22-0.25 / trás ~0.11-0.13, câmera (longe) zoom 0.41, suavização 40/s.
-- **Speedrun do Sphinx** (atv4-dados/videos, parte_00_00, largada em 25 s;
-  relógio da corrida + HUD em mph lidos quadro a quadro): 20 mph @ 1.53 s,
-  38 @ 2.67, 57 @ 4.05, 75 @ 5.92. Carro pela ficha da tela de opções:
-  DIRT PREMIUM, 269.9 HP (motor 1.0), 2204 lbs (BodyMass L2), embreagem L2
-  (troca 2->3 para 0.28 s). Na 1ª ele larga em 8º colado num buggy da IA:
-  vale a aceleração em marcha, 2ª 41->56 mph em 0.85 s, 3ª 58->75 em 1.52 s
-  (remake: 0.89 e 1.40). Falta referência limpa da 1ª (patinando).
+- **Speedrun do Sphinx** (versão NTSC = física a 60 Hz; atv4-dados/videos,
+  parte_00_00, largada em 25 s; relógio da corrida + HUD em mph lidos quadro
+  a quadro, tabela em tests/rodar_testes.py). Carro pela ficha da tela de
+  opções: DIRT PREMIUM, 269.9 HP (motor 1.0), 2204 lbs (BodyMass L2),
+  embreagem L2 (troca 2->3 para 0.28 s). A 60 Hz o remake fica a 1.7 mph.
+- **Renegade PAL** (gravação do Matheus no RX01, sozinho na pista, de
+  fábrica = 440.6 HP; tabela em tests/teste_largada.gd) + save state
+  patinando a 48.7 km/h em 1ª: 6893 rpm, roda de trás 34.09 rad/s (0x600
+  0.26, 0x610 0.32), 8.0 kN por roda traseira (elipse 8.17 x 0.98).
 - **Gravação PCSX2 do Renegade**: carro ocupa ~27% da largura (em 4:3) a
   122 km/h na câmera perto; bate com a câmera portada.
 
@@ -145,9 +149,13 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Rodas sem escala (tamanho = modelo). Frente: centro gira com a balança em
   x/z e y = WHEEL.y + curso; trás: arco inteiro. O pneu afunda uns cm parado
   no jogo também.
-- Física roda a 120 Hz com interpolação ligada; câmera em passos de 1/60
-  interpolando no frame do carro (senão aparece "fantasma"). O passo de
-  física do jogo no PAL é 1/50 (a tremida das rodas sorteia a 50 Hz).
+- Física roda a 50 Hz = passo do PAL (nosso exe). O jogo DEPENDE do passo:
+  com a roda patinando o motor fica batendo no limitador (rampas de 15/s) e
+  a patinada sobe e desce (3/s, 4/s); com passo menor o corte é raso e a
+  força média sobe. A 120 Hz a 1ª saía 28% forte. Vídeo NTSC (EUA) = 60 Hz
+  (rodar_testes --hz 60; o veh=2 já roda assim). Interpolação ligada;
+  câmera em passos de 1/60 interpolando no frame do carro (senão aparece
+  "fantasma").
   Cada passo da câmera de órbita usa o carro NO TEMPO DELE (posição de agora
   menos velocidade x o que sobrou do acumulador). Sem isso, a 60 Hz saem
   quadros com 0 e 2 passos e o carro vai e volta na tela (14 cm a 60 km/h,

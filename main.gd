@@ -292,7 +292,7 @@ func _make_cameras() -> void:
 
 
 func cam_state() -> Dictionary:
-	# transform interpolado: é o que aparece na tela (física roda a 120 Hz)
+	# transform interpolado: é o que aparece na tela (física roda a 50 Hz)
 	var xf: Transform3D = car.get_global_transform_interpolated()
 	var b := xf.basis.orthonormalized()
 	var tp: Vector3 = xf * car.corpo(Vector3.ZERO)   # origem do modelo
