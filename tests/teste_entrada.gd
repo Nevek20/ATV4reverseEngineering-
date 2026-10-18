@@ -36,6 +36,9 @@ func _ready():
 	car.suspension = false
 	car.SURFACE_MU = float(OS.get_environment("MU")) if OS.get_environment("MU") != "" else 0.69
 	car.SURFACE_AMORT = float(OS.get_environment("AMORT")) if OS.get_environment("AMORT") != "" else 0.2
+	if OS.get_environment("SOLTO") != "":
+		car.solto = true
+		car.SOLTURA = float(OS.get_environment("SOLTO"))
 	add_child(car)
 	car.reset_to(Vector3(0, 1.0, -3500), 0.0)
 	car.test_input = {"thr": 0.0, "brk": 0.0, "steer": 0.0}

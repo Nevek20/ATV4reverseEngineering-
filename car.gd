@@ -89,6 +89,15 @@ const WHEEL_Y := 0.45         # altura do cubo com o carro parado
 # separa; centro e eixo vêm do pecas.json). VOLANTE_GIRA = false deixa igual
 # ao jogo.
 const VOLANTE_GIRA := true
+# Melhoria nossa (não é do jogo): no teclado o volante é tudo ou nada e um
+# toque dá derrapagem de menos de 12°, que o jogo endireita na hora (o corte de
+# recuperação 0x2120c0 só age acima do Threshold_angle). Com `solto` (tecla K),
+# abaixo do limiar o corte cresce com o ângulo até SOLTURA x acelerador e a
+# freada lateral do modo B cai na mesma proporção. main.gd liga; os testes
+# ficam no fiel.
+var SOLTURA := 0.7
+var solto := false
+var solto_f := 0.0            # parte do corte que é nossa (0 no fiel)
 var SW_CENTER := Vector3(-0.434, 1.351, 0.396)    # Renegade, se faltar no pecas.json
 var SW_AXIS := Vector3(0.0, 0.684, -0.729)
 const SW_TURNS := 2.6         # sem fonte no jogo (escolha do remake)
@@ -900,6 +909,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				use_ported = not use_ported
 			KEY_L:
 				lateral_game = not lateral_game
+			KEY_K:
+				solto = not solto
 			KEY_E, KEY_PAGEUP:
 				if manual:
 					if gear == -1:
@@ -1385,7 +1396,8 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			torque = inertia.y * step / dt
 		else:
 			# B) passou do alvo: segura a velocidade lateral no ângulo alvo
-			var decel: float = VehicleData.triple(P.side_std, mu) * MPH_G
+			var corte := _corte_recuperacao(dt, v_f, v_p, yaw)
+			var decel: float = VehicleData.triple(P.side_std, mu) * MPH_G * (1.0 - solto_f)
 			var vt := tan(target) * absf(v_f)
 			var a: float = (vt - v_l) / dt if absf(vt - v_l) < decel * dt else decel * -signf(v_l)
 			var f_side := mass * a
@@ -1394,7 +1406,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			var lim: float = dt * lerpf(VehicleData.fcurve_eval(P.yaw_dec_zero, mu, mph),
 				VehicleData.fcurve_eval(P.yaw_dec_full, mu, mph), throttle) * DEG
 			torque = inertia.y * clampf(w_err, -lim, lim) / dt
-			torque *= 1.0 - _corte_recuperacao(dt, v_f, v_p, yaw)
+			torque *= 1.0 - corte
 	else:
 		# C) derrapando pro lado contrário (contra-esterço)
 		var fc := f_cent
@@ -1777,6 +1789,7 @@ func _powerslide(dt: float, v_p: float) -> void:
 ## sem corte. Com corte > 0.01 a patinada de cada roda sobe (Growth_rate da
 ## SlipRatio) até Maximum_increased_*_slip_ratio x corte (trás 0.2, frente 0).
 func _corte_recuperacao(dt: float, v_f: float, v_p: float, yaw: float) -> float:
+	solto_f = 0.0
 	if not P.rtc_on or v_p / MPH_G <= P.ss_zero or v_f <= 0.0:
 		return 0.0
 	var ang := absf(sideslip) / DEG
@@ -1802,6 +1815,10 @@ func _corte_recuperacao(dt: float, v_f: float, v_p: float, yaw: float) -> float:
 			f = throttle
 		else:
 			f = (f - 1.0) * absf(steer) + 1.0
+	# melhoria nossa (SOLTURA): abaixo do limiar, volante solto ou pra dentro
+	if solto and ang <= th and (steer * sideslip < 0.0 or absf(steer) < 1e-6):
+		solto_f = SOLTURA * throttle * ang / th
+		f = maxf(f, solto_f)
 	if f > 0.01:
 		for w in wheels:
 			var lim: float = minf((P.rtc_front if w.front else P.rtc_rear) * f, P.slip_max)

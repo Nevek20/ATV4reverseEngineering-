@@ -43,6 +43,7 @@ roda a física sem tela. Comandos: `/teste` e `/entrega`.
 | M | câmbio automático / manual |
 | P | alterna pneus/derrapagem: portados do jogo x modelo antigo |
 | L | força lateral: por eixo como no jogo x remendo antigo (pra comparar) |
+| K | derrapagem solta (ajuste nosso, ligado) x fiel ao jogo: no teclado o toque no volante segura mais a derrapagem |
 | E / Q | sobe / desce marcha (manual; abaixo da 1ª vem a ré, como no jogo) |
 | R | desvirar o carro |
 | T | voltar para o início |
