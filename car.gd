@@ -1241,11 +1241,21 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 				w.fz += drive / n_drive
 
 	# ---- 0x20eb98: freio. Desaceleração máxima (mph/s) x escala do chão,
-	# nunca mais do que o necessário pra parar neste passo
+	# nunca mais do que o necessário pra parar neste passo. "Parar" é pela
+	# velocidade PREVISTA (0x211e48): a de agora + (tração já somada nas rodas
+	# + gravidade e arrasto do 0x1a0) x dt / massa. Assim o freio segura o
+	# carro parado contra a tração (o freio automático da largada).
 	var brk := brake_in if not handbrake else maxf(brake_in, 0.4)
 	if brk > 0.0 and (nf + nr) > 0:
 		var dmax: float = brk * MPH_G * P.brake_decel * VehicleData.triple(P.brake_fscale, mu)
-		var dec: float = -v_f / dt if absf(v_f) < dmax * dt else dmax * -sgn_v
+		var f_prev: float = mass * get_gravity().dot(fwd) * gravity_scale
+		var spd := v.length()
+		if spd > 1e-6:
+			f_prev -= _arrasto(spd, dt) * v_f / spd
+		for w in wheels:
+			f_prev += w.fz
+		var v_prev := v_f + f_prev * dt / mass
+		var dec: float = -v_prev / dt if absf(v_prev) < dmax * dt else dmax * -signf(v_prev)
 		var dec_front: float = P.front_bias * dec
 		if handbrake:
 			dec_front = 0.0                 # freio de mão só atrás

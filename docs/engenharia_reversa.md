@@ -32,10 +32,15 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   (0x5c8) bate com o remake na mesma patinada (7.03 kN em 0.48, 6.54 em
   1.38): o que falta é a patinada começar mais cedo. Com os pedais do
   0x202df0 e o câmbio no acelerador cru o remake dá 0.22/0.31/1.07/1.25
-  (antes 0.00/0.04/0.76/0.94). Sobra uns 0.09 s na frente entre 5 e 14
-  km/h: o motor do remake cai a 1036 rpm (< 1050 de desengate) a 2.8 km/h
-  e a embreagem abre por 4 passos; no jogo pelo jeito não abre. Falta um
-  save state a 2-4 km/h pra ver.
+  (antes 0.00/0.04/0.76/0.94). Save state a 7.7 km/h: embreagem ABRINDO
+  (0x314 = 2, de 1.0 pra 0.6; rpm 1013 < 1050), patinada 0.36, e o
+  0x320 (rpm − rpm da roda quando começou a engatar) = 755. Ou seja, o jogo
+  também cai abaixo de 1050 a ~3 km/h e reengata (remake: 786), igual ao
+  remake. A diferença é que no jogo a embreagem chega a 1.0 até 7.7 km/h
+  (remake 0.80): o carro anda mais devagar de 3 a 7.7 km/h. Hipótese: o
+  freio automático segura mais no jogo; no remake o ABS solta o freio
+  quando a roda para com o carro a ~1e-5 m/s (0x600 = −1) e o carro anda
+  de passo em passo. Sobra uns 0.09 s na frente entre 5 e 14 km/h.
 
 ## Ficha do carro (tela de opções da corrida)
 
@@ -139,6 +144,12 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   pedal (0x390) > 0.1 desce Growth_rate_during_wheel_lock até −1. Fora da
   elipse volta pra 0 (Recovery_rate_during_wheel_lock / _spin). Sem
   condição de acelerador nem de marcha (vale em ré).
+- **Freio 0x20eb98**: desaceleração = pedal 0x390·0.44694445·
+  Maximum_deceleration·escala(atrito 0x780), no máximo o que zera a
+  velocidade PREVISTA (0x211e48, com a tração 0x5c8 e o 0x1a0 já somados:
+  gravidade do 0x20e160 e arrasto). Ordem no passo (0x20cd2c): 0x20da90,
+  0x20df58, 0x20e160, 0x20e5e8, 0x20e8d8, 0x20eb98, 0x20ede8, 0x20efa0,
+  0x2100a0. Por isso o freio segura o carro parado contra a tração.
 - **ABS 0x20eb98** (flag 0x620+4i): Enable_ABS do Footbrake; patinada medida
   (0x600) <
   ABS_engagement_slip_ratio (−0.2) solta o freio da roda, ≥
