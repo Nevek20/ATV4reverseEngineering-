@@ -132,11 +132,13 @@ const ESTILOS := {
 		"emblema_cor": Color(0.1, 0.1, 0.1), "emblema_borda": Color(0.22, 0.22, 0.23),
 	},
 	# --- versões melhoradas dos volantes do jogo ---
-	# os 8 carros do X furado (aro de 6/8 lados prateado, X girado ~20°)
+	# os 8 carros do X furado (aro de 6/8 lados prateado, X girado ~20°). Os X
+	# daqui abrem a 60° do topo: as mãos pegam a 44° e a 45° o raio passava
+	# embaixo do dedão
 	"furado": {
 		"aro_cor": Color(0.78, 0.79, 0.8), "aro_metal": 0.9, "aro_rugo": 0.25,
 		"aro_a": 0.015, "aro_b": 0.015, "luva": 0.0,
-		"raios": [45, 135, 225, 315], "raio_larg": [0.036, 0.036],
+		"raios": [60, 120, 240, 300], "raio_larg": [0.036, 0.036],
 		"raio_cor": Color(0.8, 0.81, 0.83),
 		"furos": [[0.35, 0.5, 0.0065], [0.55, 0.5, 0.0065], [0.75, 0.5, 0.0065]],
 		"dish": 0.02, "placa": 0.0,
@@ -161,7 +163,7 @@ const ESTILOS := {
 	# Inferno: aro preto e X de chapa de aço escura com rebites
 	"inferno": {
 		"luva": 0.0,
-		"raios": [45, 135, 225, 315], "raio_larg": [0.042, 0.042], "raio_esp": 0.006,
+		"raios": [60, 120, 240, 300], "raio_larg": [0.042, 0.042], "raio_esp": 0.006,
 		"raio_cor": Color(0.2, 0.21, 0.22), "raio_metal": 0.6, "raio_rugo": 0.45,
 		"rebites": true, "dish": 0.015, "placa": 0.0,
 		"cubo": "parafusos", "cubo_r": 0.032, "n_parafusos": 4,
@@ -172,7 +174,7 @@ const ESTILOS := {
 	"storm": {
 		"aro_cor": Color(0.78, 0.79, 0.8), "aro_metal": 0.9, "aro_rugo": 0.25,
 		"aro_a": 0.014, "aro_b": 0.014, "luva": 0.0,
-		"raios": [45, 135, 225, 315], "raio_larg": [0.042, 0.042], "raio_esp": 0.006,
+		"raios": [60, 120, 240, 300], "raio_larg": [0.042, 0.042], "raio_esp": 0.006,
 		"raio_cor": Color(0.2, 0.21, 0.22), "raio_metal": 0.6, "raio_rugo": 0.45,
 		"rebites": true, "dish": 0.015, "placa": 0.0,
 		"cubo": "parafusos", "cubo_r": 0.032, "n_parafusos": 4,
@@ -204,6 +206,13 @@ static func do_carro(id: String) -> String:
 
 static func nomes() -> Array:
 	return ESTILOS.keys()
+
+
+## quanto o miolo (atrás da chapa do centro) fica atrás do plano do aro (m)
+static func fundo(nome: String) -> float:
+	var e: Dictionary = PADRAO.duplicate()
+	e.merge(ESTILOS.get(nome, {}), true)
+	return float(e.dish) + float(e.raio_esp) * 0.5
 
 
 static func montar(raio: float, eixo: Vector3, nome := "buggy") -> ArrayMesh:

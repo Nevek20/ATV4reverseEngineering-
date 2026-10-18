@@ -242,6 +242,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   aro por IK de dois ossos. Em 5 carros (Sphinx, Inferno, Kraken, McKenzies,
   Storm) o volante fica além do braço esticado (até 108%): a clavícula avança
   até 35°. tests/teste_volante.gd: 0.0 cm nos 13 carros.
+  No quadro 0 do STEER_LEFT a mão direita pega a 22° do topo e a esquerda a
+  44° (braços tortos na câmera do piloto): a direita agora é o espelho da
+  esquerda no plano do volante (±44°, piloto.gd prender_no_volante).
 - Volantes gerados (melhoria nossa, car.gd VOLANTE_NOSSO, volantes.gd): o
   do jogo tem aro de 6 a 12 lados e raios tortos; 8 carros usam o mesmo X
   furado girado ~20°. No lugar vai um volante redondo e centralizado, no
@@ -253,6 +256,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   espuma no Trident, Fusca Itamar no Mosquito; couro sobra). B no jogo troca;
   print_tela VOLANTE=nome PILOTO=0. Alisar o aro do jogo (VOLANTE_LISO)
   quebrou no Renegade e no Bulldog: não voltar.
+  A coluna de direção da carroceria termina 1.1 cm atrás do aro (Renegade
+  1.7, Storm 0.7 cm NA FRENTE) e atravessava o miolo recuado (dish): o
+  volante avança pro piloto até a coluna acabar atrás dele (car.gd
+  _montar_volante, de 0 a 5.6 cm no Kraken; teste_volante imprime). Os X
+  abrem a 60° do topo: a 45° o raio passava embaixo do dedão.
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto (piloto.gd).

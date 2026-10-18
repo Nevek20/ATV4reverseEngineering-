@@ -53,5 +53,6 @@ func _conferir() -> void:
 			ruins += " s=%+.1f (%.1f/%.1f cm)" % [s, es[0] * 100.0, es[1] * 100.0]
 	pior = maxf(pior, pior_carro)
 	feitos += 1
-	print("%-24s giro do volante no volante todo %5.1f°  punho fora do aro no pior caso %.1f cm  braço até %.0f%% esticado%s" % [
-		nome, rad_to_deg(car.piloto.giro_volante(1.0)), pior_carro * 100.0, car.piloto.alcance * 100.0, ruins])
+	print("%-24s giro do volante no volante todo %5.1f°  punho fora do aro no pior caso %.1f cm  braço até %.0f%% esticado  volante %s avançado %.1f cm (coluna %+.1f cm)%s" % [
+		nome, rad_to_deg(car.piloto.giro_volante(1.0)), pior_carro * 100.0, car.piloto.alcance * 100.0,
+		car.volante_estilo, car.sw_avanco * 100.0, car.sw_ponta_coluna * 100.0, ruins])

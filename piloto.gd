@@ -184,14 +184,27 @@ func prender_no_volante(centro: Vector3, eixo: Vector3, raio: float) -> void:
 	_ve = eixo.normalized()
 	var g0 := _globais_quadro(0)
 	_maos.clear()
-	for lado in [["right_upper_arm", "right_lower_arm", "right_hand"], ["left_upper_arm", "left_lower_arm", "left_hand"]]:
-		var mao := skel.find_bone(lado[2])
-		var c: Vector3 = g0[mao] * _punho[mao]
-		var rel := c - _vc
-		rel -= _ve * rel.dot(_ve)
-		var no_aro := _vc + rel.normalized() * raio
-		_maos.append({"sup": skel.find_bone(lado[0]), "inf": skel.find_bone(lado[1]), "mao": mao,
-			"cent": _punho[mao], "pega": g0[mao].translated(no_aro - c)})
+	# a mão esquerda pega o aro onde o quadro 0 do STEER_LEFT a põe (~10h) e a
+	# direita é o espelho dela no plano do volante. No quadro 0 do jogo a
+	# direita fica a 22° do topo e a esquerda a 44°: na câmera do piloto os
+	# braços saíam tortos
+	var esq := skel.find_bone("left_hand")
+	var c_esq: Vector3 = g0[esq] * _punho[esq]
+	var rel := c_esq - _vc
+	rel -= _ve * rel.dot(_ve)
+	var no_aro := _vc + rel.normalized() * raio
+	var pega_esq: Transform3D = g0[esq].translated(no_aro - c_esq)
+	# reflexão no plano do volante (normal = lado do carro) e, nos ossos, a
+	# troca de lado do esqueleto (x negado, como o espelho da animação)
+	var nl := _ve.cross(Vector3.UP).normalized()
+	var S := Basis(Vector3.RIGHT - 2.0 * nl * nl.x, Vector3.UP - 2.0 * nl * nl.y, Vector3.BACK - 2.0 * nl * nl.z)
+	var reflexo := Transform3D(S, 2.0 * nl * nl.dot(_vc))
+	var dir_ := skel.find_bone("right_hand")
+	var pega_dir := Transform3D(S * pega_esq.basis * Basis.FLIP_X, reflexo * pega_esq.origin)
+	pega_dir = pega_dir.translated(reflexo * no_aro - pega_dir * _punho[dir_])
+	for lado in [["right_upper_arm", "right_lower_arm", dir_, pega_dir], ["left_upper_arm", "left_lower_arm", esq, pega_esq]]:
+		_maos.append({"sup": skel.find_bone(lado[0]), "inf": skel.find_bone(lado[1]), "mao": lado[2],
+			"cent": _punho[lado[2]], "pega": lado[3]})
 	_giro.clear()
 	for k in _tempos.size():
 		var gk := _globais_quadro(k)

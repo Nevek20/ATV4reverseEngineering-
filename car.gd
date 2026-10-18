@@ -102,6 +102,8 @@ const VOLANTE_NOSSO := true
 const Volantes := preload("res://volantes.gd")
 var volante_estilo := ""      # "" = o do carro (Volantes.POR_CARRO); B no jogo troca
 var sw_malha: MeshInstance3D
+var sw_avanco := 0.0          # volante gerado avançado pro piloto pra coluna não atravessar o cubo
+var sw_ponta_coluna := -INF   # ponta da coluna de direção da carroceria (m no eixo, + = pro piloto)
 var rider_s := 0.0            # direção suavizada do piloto (rider+0x2d8 com sinal trocado: + = esquerda)
 # piloto do jogo (piloto.gd, tools/piloto.py): sentado no ponto ARSE, braços pela rider_s
 const PILOTO_DIR := "res://assets/piloto"
@@ -784,7 +786,12 @@ func _load_piloto() -> void:
 	if MAOS_NO_VOLANTE and VOLANTE_GIRA and sw_pivot:
 		var vol: Dictionary = pecas.get("volante", {})
 		# aro no frame do esqueleto (o piloto não gira em relação ao modelo)
-		piloto.prender_no_volante(SW_CENTER - (points["ARSE"] - piloto.root_pos), SW_AXIS, vol.get("raio", 0.19))
+		piloto.prender_no_volante(sw_centro() - (points["ARSE"] - piloto.root_pos), SW_AXIS, vol.get("raio", 0.19))
+
+
+## centro do aro do volante que aparece (o do jogo, ou o gerado avançado)
+func sw_centro() -> Vector3:
+	return SW_CENTER + SW_AXIS.normalized() * sw_avanco
 
 
 func _load_steering_wheel() -> void:
@@ -800,11 +807,10 @@ func _load_steering_wheel() -> void:
 	model_root.add_child(sw_pivot)
 	var mi := MeshInstance3D.new()
 	if VOLANTE_NOSSO:
-		if volante_estilo == "":
-			volante_estilo = Volantes.do_carro(vehicle_id)
-		mi.mesh = Volantes.montar(vol.get("raio", 0.19), SW_AXIS, volante_estilo)
 		sw_pivot.add_child(mi)
 		sw_malha = mi
+		sw_ponta_coluna = _ponta_coluna()
+		_montar_volante(volante_estilo if volante_estilo != "" else Volantes.do_carro(vehicle_id))
 		return
 	var mesh := load(path) as Mesh
 	if mesh == null:
@@ -819,6 +825,38 @@ func _load_steering_wheel() -> void:
 	sw_pivot.add_child(mi)
 
 
+## monta o volante gerado. O centro dele é recuado pro painel (dish) e a
+## coluna de direção do jogo, feita pro volante chato, termina quase no plano
+## do aro: o volante avança pro piloto até a coluna acabar atrás do miolo
+## (Kraken 5.5 cm, Viper 3.5, Trident 2.5, Storm 2.9; Renegade e Bulldog 0)
+func _montar_volante(nome: String) -> void:
+	volante_estilo = nome
+	sw_malha.mesh = Volantes.montar(pecas.get("volante", {}).get("raio", 0.19), SW_AXIS, nome)
+	sw_avanco = maxf(0.0, sw_ponta_coluna + 0.004 + Volantes.fundo(nome))
+	sw_pivot.position = model_offset + sw_centro()
+	if piloto and piloto.no_volante():
+		piloto.prender_no_volante(sw_centro() - (points["ARSE"] - piloto.root_pos), SW_AXIS,
+			pecas.get("volante", {}).get("raio", 0.19))
+
+
+## ponta da coluna de direção na carroceria: o vértice mais pro lado do piloto
+## perto do eixo do volante (até 6 cm dele e 8 cm atrás do aro). -INF = sem coluna
+func _ponta_coluna() -> float:
+	var m := load(model_path) as Mesh
+	var ponta := -INF
+	if m == null:
+		return ponta
+	var n := SW_AXIS.normalized()
+	for si in m.get_surface_count():
+		var vs: PackedVector3Array = m.surface_get_arrays(si)[Mesh.ARRAY_VERTEX]
+		for v in vs:
+			var d := v - SW_CENTER
+			var t := d.dot(n)
+			if t > -0.08 and t < 0.1 and (d - n * t).length() < 0.06:
+				ponta = maxf(ponta, t)
+	return ponta
+
+
 ## troca o volante gerado (nome = "" passa pro próximo estilo); devolve o nome
 func trocar_volante(nome := "") -> String:
 	if sw_malha == null:
@@ -826,8 +864,7 @@ func trocar_volante(nome := "") -> String:
 	if nome == "":
 		var lista := Volantes.nomes()
 		nome = lista[(lista.find(volante_estilo) + 1) % lista.size()]
-	volante_estilo = nome
-	sw_malha.mesh = Volantes.montar(pecas.get("volante", {}).get("raio", 0.19), SW_AXIS, nome)
+	_montar_volante(nome)
 	return nome
 
 
