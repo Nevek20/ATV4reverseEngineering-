@@ -225,21 +225,9 @@ estão 1 na RAM, e com o corte o remake dá a mesma força por roda que o jogo
 (maior diferença 0.13 kN; sem o corte era 1.26 kN). O drr_1 é o Matheus
 soltando o volante no meio da derrapagem: o jogo seguia girando a 79°/s.
 
-### Ajuste nosso pro teclado (não é do jogo)
-
-No teclado o volante é tudo ou nada: um toque dá menos de 12° de derrapagem
-e, abaixo do limiar, o jogo não corta nada (endireita na hora). Com
-`car.solto` (tecla K, ligado no main.gd, desligado nos testes), abaixo do
-limiar e com o volante solto ou pra dentro:
-
-```python
-solto_f = SOLTURA * thr * ang / th                 # SOLTURA = 0.7
-f = max(f, solto_f)
-decel_lateral_modo_B *= 1 - solto_f
-```
-
-Toque de 0.4 s a 120 km/h: fiel fica reto 1.1 s depois de soltar; com 0.5,
-1.5 s; com 0.7, ~2.5 s; com 0.9 passa dos 12° e não volta mais.
+Tentamos um ajuste nosso por cima (cortar também abaixo dos 12°, pra um
+toque de teclado segurar mais): comparado com o jogo lado a lado ficou pior.
+O fiel é o certo.
 
 ## 4. Powerslide, a "Clutch Turn" (0x214610)
 

@@ -220,10 +220,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   volante está pra dentro da curva ou solto, e sobe a patinada de trás até
   0.2. Sai contra-esterçando ou soltando o acelerador. Sem ele o remake
   "consertava o carro pra pista" (docs/derrapagem.md).
-  Por cima disso tem um ajuste NOSSO pro teclado (car.gd SOLTURA 0.7, tecla
-  K, main.gd liga, testes ficam no fiel): abaixo dos 12° o corte cresce com
-  o ângulo e a freada lateral do modo B cai junto. Um toque de 0.4 s a
-  120 km/h fica reto em ~2.5 s em vez de 1.1 s.
+  Testamos um ajuste NOSSO pro teclado por cima (cortar também abaixo dos
+  12°, out/2026): o Matheus comparou lado a lado e ficou pior. O fiel é o
+  certo; não "afrouxar" a derrapagem no chute.
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto, que ainda não temos.
