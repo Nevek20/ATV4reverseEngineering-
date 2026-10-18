@@ -244,11 +244,17 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   até 35°. tests/teste_volante.gd: 0.0 cm nos 13 carros.
   No quadro 0 do STEER_LEFT a mão direita pega a 22° do topo e a esquerda a
   44° (braços tortos na câmera do piloto): a direita agora é o espelho da
-  esquerda no plano do volante (±44°, piloto.gd prender_no_volante). A mão
+  esquerda no plano do volante (piloto.gd prender_no_volante). A mão
   também gira até a linha dos nós (indicador -> anelar) ficar ao longo do
   aro: na animação ela fica 25° a 43° torta e o aro saía de lado do punho
   ("mão mal encostando"). O ponto do punho (média dos vértices da mão) cai no
   buraco dos dedos dobrados, a ~5 mm do centro dele (corte da malha).
+  Depois ela desce pelo aro até PEGA_GRAUS = 65° do topo (~9h30/2h30, vídeo
+  de referência do Matheus; a 44° os braços subiam na frente da câmera no
+  Bulldog e no Viper) e gira em volta da linha dos nós até ficar na linha
+  do antebraço do IK (pulso reto; antes o Renegade ficava de punho dobrado
+  pra dentro). No volante todo a mão de fora vai perto do topo e o
+  antebraço passa na frente da câmera (pendente).
 - Volantes gerados (melhoria nossa, car.gd VOLANTE_NOSSO, volantes.gd): o
   do jogo tem aro de 6 a 12 lados e raios tortos; 8 carros usam o mesmo X
   furado girado ~20°. No lugar vai um volante redondo e centralizado, no
@@ -264,7 +270,7 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   1.7, Storm 0.7 cm NA FRENTE) e atravessava o miolo recuado (dish): o
   volante avança pro piloto até a coluna acabar atrás dele (car.gd
   _montar_volante, de 0 a 5.6 cm no Kraken; teste_volante imprime). Os X
-  abrem a 60° do topo: a 45° o raio passava embaixo do dedão.
+  ficam a 45° do topo, longe das mãos (65°).
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto (piloto.gd).

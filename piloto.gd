@@ -40,6 +40,9 @@ var _giro := PackedFloat32Array() # giro do volante em cada quadro (rad, em volt
 var _maos: Array = []             # {sup, inf, mao, cent (punho no frame da mão), pega}
 var _punho := {}                  # osso da mão -> centro do punho no frame dela
 var alcance := 0.0                # conferência: distância até o alvo / braço esticado (> 1 = não alcança)
+# onde as mãos pegam o aro, em graus a partir do topo (melhoria nossa; ~9h30
+# e 2h30 como no vídeo de referência do Matheus). O quadro 0 do jogo dá 44°
+const PEGA_GRAUS := 65.0
 
 
 ## monta tudo a partir de dir/piloto.json; false se o asset não existe
@@ -184,10 +187,9 @@ func prender_no_volante(centro: Vector3, eixo: Vector3, raio: float) -> void:
 	_ve = eixo.normalized()
 	var g0 := _globais_quadro(0)
 	_maos.clear()
-	# a mão esquerda pega o aro onde o quadro 0 do STEER_LEFT a põe (~10h) e a
-	# direita é o espelho dela no plano do volante. No quadro 0 do jogo a
-	# direita fica a 22° do topo e a esquerda a 44°: na câmera do piloto os
-	# braços saíam tortos
+	# a mão esquerda pega o aro e a direita é o espelho dela no plano do
+	# volante (no quadro 0 do jogo a direita fica a 22° do topo e a esquerda a
+	# 44°: na câmera do piloto os braços saíam tortos)
 	var esq := skel.find_bone("left_hand")
 	var c_esq: Vector3 = g0[esq] * _punho[esq]
 	var rel := c_esq - _vc
@@ -202,6 +204,30 @@ func prender_no_volante(centro: Vector3, eixo: Vector3, raio: float) -> void:
 		tang = -tang
 	var b_esq: Basis = Basis(Quaternion(nos.normalized(), tang)) * g0[esq].basis
 	var pega_esq := Transform3D(b_esq, no_aro - b_esq * _punho[esq])
+	# desce pela borda do aro até PEGA_GRAUS do topo, girando junto com ele
+	# (a 44° os braços subiam na frente da câmera do piloto)
+	var cima := (Vector3.UP - _ve * _ve.y).normalized()
+	var ang := cima.signed_angle_to(rel, _ve)
+	var gira := Basis(_ve, deg_to_rad(PEGA_GRAUS) * signf(ang) - ang)
+	pega_esq = Transform3D(gira, _vc - gira * _vc) * pega_esq
+	no_aro = _vc + gira * (no_aro - _vc)
+	tang = gira * tang
+	# pulso reto: a mão gira em volta da linha dos nós (no aro) até o
+	# comprimento dela (pulso -> punho) ficar na linha do antebraço do IK
+	var sup := skel.find_bone("left_upper_arm")
+	var inf := skel.find_bone("left_lower_arm")
+	var ombro: Vector3 = g0[sup].origin
+	var l1: float = ombro.distance_to(g0[inf].origin)
+	var l2: float = g0[inf].origin.distance_to(g0[esq].origin)
+	var compr := _punho[esq].normalized() as Vector3
+	for it in 8:
+		var pulso := pega_esq.origin
+		var cot := _cotovelo(ombro, g0[inf].origin, pulso, l1, l2)
+		var ante := (pulso - cot).normalized()
+		var h: Vector3 = pega_esq.basis * compr
+		var phi := (h - tang * h.dot(tang)).signed_angle_to(ante - tang * ante.dot(tang), tang)
+		var r := Basis(tang, phi)
+		pega_esq = Transform3D(r * pega_esq.basis, no_aro + r * (pega_esq.origin - no_aro))
 	# reflexão no plano do volante (normal = lado do carro) e, nos ossos, a
 	# troca de lado do esqueleto (x negado, como o espelho da animação)
 	var nl := _ve.cross(Vector3.UP).normalized()
@@ -227,6 +253,20 @@ func prender_no_volante(centro: Vector3, eixo: Vector3, raio: float) -> void:
 
 func no_volante() -> bool:
 	return _vol
+
+
+## cotovelo do IK de dois ossos (ombro -> cotovelo -> pulso) com o cotovelo
+## no plano que a animação dá (cot0 = cotovelo da animação)
+func _cotovelo(ombro: Vector3, cot0: Vector3, pulso: Vector3, l1: float, l2: float) -> Vector3:
+	var para := pulso - ombro
+	var d := clampf(para.length(), absf(l1 - l2) + 1e-4, l1 + l2 - 1e-4)
+	var dir := para.normalized()
+	var polo := (cot0 - ombro) - dir * (cot0 - ombro).dot(dir)
+	if polo.length_squared() < 1e-10:
+		polo = dir.cross(_ve)
+	polo = polo.normalized()
+	var x := (l1 * l1 - l2 * l2 + d * d) / (2.0 * d)
+	return ombro + dir * x + polo * sqrt(maxf(l1 * l1 - x * x, 0.0))
 
 
 ## giro do volante (rad, em volta do eixo do aro) pra direção suavizada s do
