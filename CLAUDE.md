@@ -52,6 +52,7 @@ python tests/rodar_testes.py accel --veh 0 --hz 60                 :: passo NTSC
 
 :: save state do PCSX2 -> valores reais do jogo
 python tools/ler_savestate.py arquivo.p2s
+python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carro pro remake
 
 :: print do carro parado (na nuvem: xvfb-run -a ... --rendering-driver opengl3)
 %GODOT% --path . -s res://tests/print_tela.gd -- print.png lado
@@ -67,6 +68,7 @@ python tools/ler_savestate.py arquivo.p2s
 %GODOT% --headless --path . -s res://tests/teste_camera_passo.gd  :: câmera de órbita sem vai e volta
 %GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL e save states
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
+%GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda e 1.16 s de derrapagem
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
@@ -124,6 +126,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   1379 a 8.6 km/h, 0.48 / 1568 a 9.8, 1.20 / 4763 a 19.8, 1.38 / 5766 a 22.1
   (teste_largada imprime remake x jogo). No vídeo, as barrinhas do lado do
   conta-giros são acelerador (verde) e freio (vermelho).
+- **Derrapagem** (4 save states do Matheus a ~120 km/h na terra, volante
+  todo e acelerador; tests/ref_derrapagem.json): forças por roda e 1.16 s
+  de derrapagem batem (tests/teste_derrapagem.gd, 0.4 m no fim). Todo .p2s
+  traz Screenshot.png: o relógio da corrida dá o tempo entre save states.
 - **Gravação PCSX2 do Renegade**: carro ocupa ~27% da largura (em 4:3) a
   122 km/h na câmera perto; bate com a câmera portada.
 

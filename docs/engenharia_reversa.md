@@ -118,6 +118,21 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 
 ## Pneus e derrapagem
 
+- **Conferido com save states** (tests/teste_derrapagem.gd, tests/
+  ref_derrapagem.json; Renegade no RX01 a ~120 km/h, volante todo e
+  acelerador no fundo): o remake no estado exato da RAM dá a mesma força
+  por roda (0x5c0: x = lateral pro lado direito do carro, z = pra frente,
+  kN) em poucos %; a 30 km/h a 60° a lateral da frente fica 14% abaixo
+  (7.9 x 9.2 kN). Do drr_3 (118 km/h, −42°, 84°/s) até o drr_2 (1.16 s
+  depois pelo relógio do Screenshot.png do .p2s) o remake termina a 0.4 m:
+  30.0 x 30.7 km/h, girou 122 x 120°, derrapagem −67 x −60°, giro 163 x
+  179°/s. No jogo o carro também roda segurando o volante todo.
+- Estado da RAM pro remake: corpo = (−direita, cima, frente) do jogo
+  transpostos (Terrain.dir_do_jogo), origem = origem do modelo menos
+  corpo(0); velocidade angular = −dir_do_jogo(w) (vetor axial na
+  transposição). O curso da RAM é do fim do passo, já subido até o chão
+  (pen = 0); o teste tira 1 mm pra roda contar como no chão.
+
 - **0x211b58 aplicação das forças**: por roda, em CoM + n·(soma do y do
   contato do eixo relativo ao CoM × escala) + frente·z_do_eixo.
   Lateral_scale_std 0.09; longitudinal = mistura de 0.5 e 0.2 por 0x474
