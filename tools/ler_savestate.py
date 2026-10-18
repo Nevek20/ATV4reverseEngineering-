@@ -92,9 +92,14 @@ def estado(r, veh):
         "origem": v4(veh + 0xAA0), "com": v4(ph + 0x70),
         "direita": v4(ph + 0xB0), "cima": v4(ph + 0xC0), "frente": v4(ph + 0xD0),
         "vel": v4(ph + 0x90), "w": v4(ph + 0xA0), "massa": 1.0 / r.f(ph + 0x130),
-        # comandos (cru, suavizado): direção, acelerador, freio de mão, freio
+        # comandos (cru, suavizado): direção, acelerador, botão da embreagem
+        # ("freio de mão" do controle; o jogo não tem freio de mão), freio
         "direcao": [r.f(ph + 0x36C), r.f(ph + 0x370)], "acelerador": [r.f(ph + 0x37C), r.f(ph + 0x380)],
         "mao": [r.f(ph + 0x384), r.f(ph + 0x388)], "freio": [r.f(ph + 0x38C), r.f(ph + 0x390)],
+        # Clutch Turn (powerslide 0x214610): estado 0 nada, 1 crescendo, 2 ativo,
+        # 3 sumindo; quantidade, escala pela velocidade, embreagem do passo anterior
+        "powerslide": {"estado": r.u(ph + 0x74C), "qtd": r.f(ph + 0x744), "esc": r.f(ph + 0x748),
+                       "emb_ant": r.f(ph + 0x740)},
         "rpm": r.f(ph + 0x2C0), "torque": r.f(ph + 0x2B4), "limitador": r.f(ph + 0x2C4),
         "marcha": r.u(ph + 0x2F0), "marcha_alvo": r.u(ph + 0x2F4), "embreagem": r.f(ph + 0x2EC),
         "estado_emb": r.u(ph + 0x314), "troca_t": r.f(ph + 0x2FC), "troca": r.u(ph + 0x318),
@@ -164,6 +169,9 @@ def main():
     print(f"velocidade {r.v(ph + 0x90)}  |v| {r.f(ph + 0xE0):.3f} m/s = {r.f(ph + 0xE0) * 3.6:.1f} km/h")
     print(f"pra frente {r.f(ph + 0x418):.3f} m/s   sem chão há {r.f(ph + 0x4E4):.3f} s   rodas no chão {r.u(ph + 0x8A8)}")
     print(f"frente {fwd}  cima {up}")
+    print(f"botão da embreagem {r.f(ph + 0x384):.2f} (suavizado {r.f(ph + 0x388):.2f})   "
+          f"Clutch Turn: estado {r.u(ph + 0x74C)} (0 nada, 1 crescendo, 2 ativo, 3 sumindo)  "
+          f"quantidade {r.f(ph + 0x744):.2f}  escala {r.f(ph + 0x748):.2f}")
 
     g = r.u(ph + 0x2D0)
     print("\n== câmbio")
