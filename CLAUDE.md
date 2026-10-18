@@ -285,7 +285,17 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Tremida da câmera na BATIDA (a por velocidade já está, camera_jitter.gd):
   precisa do sistema de colisão do corpo (corpo+0x7a0); fórmula em
   docs/engenharia_reversa.md, Câmera.
-- Som do motor (00002/00004/00005 xml: bancos e faders por buggy).
+- Som do motor (melhoria nossa, plano combinado com o Matheus): o jogo só
+  tem 3 bancos de motor (02/03/04, XMLs 00002/00004/00005) repetidos nos 12
+  buggies (o Mosquito soa igual ao Kraken V8). Plano: o Matheus monta cada
+  motor no Engine Simulator e grava loops de 1-2 s a cada 1000 rpm,
+  acelerando e soltando, cortados no zero da onda; no Godot um tocador faz
+  crossfade + pitch entre os 2 samples vizinhos e mistura acelerando/
+  soltando pelo acelerador. RPM: opção (b), o 1000-8000 do jogo (igual nos
+  12) esticado pra faixa real de cada motor. Constante pra voltar ao som do
+  jogo quando ele for portado. Nomes internos dos buggies no vehicles.xml
+  ajudam a escolher o motor (BUGGY_01 "Manx", 07 "Unlimited V8", 12
+  "Lancia"...).
 - Piloto: montar a textura dele como o jogo (5 camadas por parte + cores do
   perfil; hoje usa o rider_fury pronto), LOD MID/LOW, piloto feminino.
   Melhoria nossa depois: mãos tremendo no volante em alta velocidade.
