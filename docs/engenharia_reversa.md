@@ -76,6 +76,11 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   direção 0x36c/0x370, acelerador 0x37c/0x380, embreagem 0x384/0x388 (InputRates/Clutch; o jogo não tem freio de mão),
   freio 0x38c/0x390, flags 0x394. O motor (E[1] = 0x2b0) e o arrasto
   usam o suavizado; câmbio e "preso" usam o cru.
+- **0x241220** suavização da direção (0x241178 é a dos pedais: sobe/desce
+  na taxa, vezes Normalised_rate_vs_speed, 1 nos buggies). Abrindo do mesmo
+  lado: taxa de subida, × (1 − s²) se *_damp_increase_rate (direção dos
+  buggies: sim), ou seja tanh: 0.77 em 0.17 s, 0.95 em 0.3 s; voltando pro
+  centro: taxa de descida; trocando de lado: taxa oposta.
 - **0x202df0** pedais do jogador no AutoManual (veículo+0xb14 = 1), mph =
   v pra frente·2.2374146: acima de 1 mph modo frente (corpo+0x2d8 = 0) e
   espera 0.1 s (veículo+0xb2c). Senão: soltar o freio zera a espera; freio

@@ -371,6 +371,7 @@ func _load_physics() -> void:
 	P.st_up = d.f("InputRates/Steer", "Digital_increase_rate", 6.0)
 	P.st_down = d.f("InputRates/Steer", "Digital_decrease_rate", 4.0)
 	P.st_opp = d.f("InputRates/Steer", "Digital_opposite_rate", 6.0)
+	P.st_damp = d.f("InputRates/Steer", "Digital_damp_increase_rate", 0.0)   # "true" = 1
 
 	# arrasto e freio
 	P.air_drag = d.f("Misc", "Air_drag_coefficient", 1.0)
@@ -960,11 +961,17 @@ func _physics_process(dt: float) -> void:
 	throttle = move_toward(throttle, thr_raw, dt * (P.thr_up if thr_raw > throttle else P.thr_down))
 	brake_in = move_toward(brake_in, brk_raw, dt * (P.brk_up if brk_raw > brake_in else P.brk_down))
 	emb_in = move_toward(emb_in, emb_btn, dt * (P.emb_up if emb_btn > emb_in else P.emb_down))
-	var st_rate: float = P.st_up
-	if st_raw == 0.0 or absf(st_raw) < absf(steer):
-		st_rate = P.st_down
-	if st_raw != 0.0 and steer != 0.0 and signf(st_raw) != signf(steer):
-		st_rate = P.st_opp
+	# 0x241220: direção. Abrindo do mesmo lado sobe na taxa de subida, que com
+	# damp_increase_rate vira (1 - s²) x taxa (o volante chega no fim devagar,
+	# como tanh: 0.77 em 0.17 s, 0.95 em 0.3 s); voltando pro centro, taxa de
+	# descida; passando pro outro lado, taxa oposta. (Normalised_rate_vs_speed
+	# é 1 em todas as velocidades nos buggies.)
+	var st_rate: float = P.st_down
+	if (st_raw > steer and st_raw > 0.0) or (st_raw < steer and st_raw < 0.0):
+		if steer * st_raw >= 0.0:
+			st_rate = P.st_up * (1.0 - steer * steer) if P.st_damp != 0.0 else P.st_up
+		else:
+			st_rate = P.st_opp
 	steer = move_toward(steer, st_raw, dt * st_rate)
 
 	# ---- suspensão portada (0x248768 contato, 0x248a80 mola, 0x2484c8 roda)

@@ -131,6 +131,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   todo e acelerador; tests/ref_derrapagem.json): forças por roda e 1.16 s
   de derrapagem batem (tests/teste_derrapagem.gd, 0.4 m no fim). Todo .p2s
   traz Screenshot.png: o relógio da corrida dá o tempo entre save states.
+  Derrapagem natural ("SLIDE - Steer hard into turn" no treino): virando
+  tudo a 173 km/h o remake chega no save state "170" (133 km/h, 35.7°,
+  82°/s, HUD 114) em 1.6 s, e o HUD marca 130 / 160 quando solta, como o
+  Matheus leu no jogo. O velocímetro do jogo é ~1.06 x a velocidade PRA
+  FRENTE (cai quando o carro fica de lado). tests/teste_entrada.tscn.
 - **Gravação PCSX2 do Renegade**: carro ocupa ~27% da largura (em 4:3) a
   122 km/h na câmera perto; bate com a câmera portada.
 
