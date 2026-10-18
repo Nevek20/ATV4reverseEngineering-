@@ -212,22 +212,15 @@ func prender_no_volante(centro: Vector3, eixo: Vector3, raio: float) -> void:
 	pega_esq = Transform3D(gira, _vc - gira * _vc) * pega_esq
 	no_aro = _vc + gira * (no_aro - _vc)
 	tang = gira * tang
-	# pulso reto: a mão gira em volta da linha dos nós (no aro) até o
-	# comprimento dela (pulso -> punho) ficar na linha do antebraço do IK
-	var sup := skel.find_bone("left_upper_arm")
-	var inf := skel.find_bone("left_lower_arm")
-	var ombro: Vector3 = g0[sup].origin
-	var l1: float = ombro.distance_to(g0[inf].origin)
-	var l2: float = g0[inf].origin.distance_to(g0[esq].origin)
-	var compr := _punho[esq].normalized() as Vector3
-	for it in 8:
-		var pulso := pega_esq.origin
-		var cot := _cotovelo(ombro, g0[inf].origin, pulso, l1, l2)
-		var ante := (pulso - cot).normalized()
-		var h: Vector3 = pega_esq.basis * compr
-		var phi := (h - tang * h.dot(tang)).signed_angle_to(ante - tang * ante.dot(tang), tang)
-		var r := Basis(tang, phi)
-		pega_esq = Transform3D(r * pega_esq.basis, no_aro + r * (pega_esq.origin - no_aro))
+	# pulso reto atrás do punho: a mão gira em volta da linha dos nós até o
+	# pulso ficar na direção do eixo do volante, pro lado do piloto. Nos
+	# carros bons ele já ficava assim (-28° a +10°); seguir o antebraço do IK
+	# não serve no Renegade (volante perto e deitado: o antebraço fica quase
+	# na linha do aro e o pulso ia 7 cm pra dentro, braço em zigue-zague)
+	var h: Vector3 = pega_esq.basis * _punho[esq].normalized()
+	var phi := (h - tang * h.dot(tang)).signed_angle_to(-_ve, tang)
+	var r := Basis(tang, phi)
+	pega_esq = Transform3D(r * pega_esq.basis, no_aro + r * (pega_esq.origin - no_aro))
 	# reflexão no plano do volante (normal = lado do carro) e, nos ossos, a
 	# troca de lado do esqueleto (x negado, como o espelho da animação)
 	var nl := _ve.cross(Vector3.UP).normalized()
@@ -253,20 +246,6 @@ func prender_no_volante(centro: Vector3, eixo: Vector3, raio: float) -> void:
 
 func no_volante() -> bool:
 	return _vol
-
-
-## cotovelo do IK de dois ossos (ombro -> cotovelo -> pulso) com o cotovelo
-## no plano que a animação dá (cot0 = cotovelo da animação)
-func _cotovelo(ombro: Vector3, cot0: Vector3, pulso: Vector3, l1: float, l2: float) -> Vector3:
-	var para := pulso - ombro
-	var d := clampf(para.length(), absf(l1 - l2) + 1e-4, l1 + l2 - 1e-4)
-	var dir := para.normalized()
-	var polo := (cot0 - ombro) - dir * (cot0 - ombro).dot(dir)
-	if polo.length_squared() < 1e-10:
-		polo = dir.cross(_ve)
-	polo = polo.normalized()
-	var x := (l1 * l1 - l2 * l2 + d * d) / (2.0 * d)
-	return ombro + dir * x + polo * sqrt(maxf(l1 * l1 - x * x, 0.0))
 
 
 ## giro do volante (rad, em volta do eixo do aro) pra direção suavizada s do

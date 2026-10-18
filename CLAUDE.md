@@ -251,9 +251,12 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   buraco dos dedos dobrados, a ~5 mm do centro dele (corte da malha).
   Depois ela desce pelo aro até PEGA_GRAUS = 65° do topo (~9h30/2h30, vídeo
   de referência do Matheus; a 44° os braços subiam na frente da câmera no
-  Bulldog e no Viper) e gira em volta da linha dos nós até ficar na linha
-  do antebraço do IK (pulso reto; antes o Renegade ficava de punho dobrado
-  pra dentro). No volante todo a mão de fora vai perto do topo e o
+  Bulldog e no Viper) e gira em volta da linha dos nós até o pulso ficar
+  reto atrás do punho, na direção do eixo do volante (os carros bons já
+  ficavam entre -28° e +10° disso). Seguir o antebraço do IK NÃO serve: no
+  Renegade (volante perto e deitado) o antebraço fica quase na linha do aro,
+  o ajuste fica indefinido e o pulso ia 7 cm pra dentro (braço em
+  zigue-zague). No volante todo a mão de fora vai perto do topo e o
   antebraço passa na frente da câmera (pendente).
 - Volantes gerados (melhoria nossa, car.gd VOLANTE_NOSSO, volantes.gd): o
   do jogo tem aro de 6 a 12 lados e raios tortos; 8 carros usam o mesmo X
