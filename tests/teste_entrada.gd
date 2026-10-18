@@ -3,7 +3,9 @@ extends Node3D
 ## padrão 0.2 = fora da pista do RX01; na pista 0.8 / 1.1 e 0): o Renegade acelera reto até VEL km/h, vira tudo (ST, padrão 1) com
 ## o acelerador no fundo e mede quando a derrapagem passa de 20°. Referência
 ## do jogo (Matheus, out/2026): a 110 km/h não derrapa; a 170 derrapa depois
-## de 0.5 a 1 s. Com DET=1 imprime roda por roda a cada 0.1 s.
+## de 0.5 a 1 s. Com DET=1 imprime roda por roda a cada 0.1 s. Com SOLTA=t
+## solta o volante t segundos depois de virar (acelerador continua no fundo;
+## DEPOIS=-1 contra-esterça, ACEL=0 solta o acelerador junto).
 ## Uso: VEL=110 godot --headless --path . res://tests/teste_entrada.tscn
 const Car := preload("res://car.gd")
 const Main := preload("res://main.gd")
@@ -46,6 +48,11 @@ func _physics_process(d):
 		t_vira = t
 	var st := float(OS.get_environment("ST")) if OS.get_environment("ST") != "" else 1.0
 	ti.steer = st if t_vira >= 0.0 else 0.0
+	var t_solta := float(OS.get_environment("SOLTA")) if OS.get_environment("SOLTA") != "" else INF
+	if t_vira >= 0.0 and t - t_vira >= t_solta:
+		ti.steer = float(OS.get_environment("DEPOIS")) if OS.get_environment("DEPOIS") != "" else 0.0
+		if OS.get_environment("ACEL") != "":
+			ti.thr = float(OS.get_environment("ACEL"))
 	if t_vira >= 0.0:
 		var tv := t - t_vira
 		var ss := absf(rad_to_deg(car.sideslip))

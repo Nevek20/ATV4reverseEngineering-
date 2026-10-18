@@ -146,11 +146,34 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   ref_derrapagem.json; Renegade no RX01 a ~120 km/h, volante todo e
   acelerador no fundo): o remake no estado exato da RAM dá a mesma força
   por roda (0x5c0: x = lateral pro lado direito do carro, z = pra frente,
-  kN) em poucos %; a 30 km/h a 60° a lateral da frente fica 14% abaixo
-  (7.9 x 9.2 kN). Do drr_3 (118 km/h, −42°, 84°/s) até o drr_2 (1.16 s
-  depois pelo relógio do Screenshot.png do .p2s) o remake termina a 0.4 m:
-  30.0 x 30.7 km/h, girou 122 x 120°, derrapagem −67 x −60°, giro 163 x
-  179°/s. No jogo o carro também roda segurando o volante todo.
+  kN), maior diferença 0.13 kN (era 1.26 sem o 0x2120c0). Do drr_3
+  (118 km/h, −42°, 84°/s) até o drr_2 (1.16 s depois pelo relógio do
+  Screenshot.png do .p2s) o remake termina a 0.4 m: 29.4 x 30.7 km/h, girou
+  124 x 120°, derrapagem −68 x −60°, giro 178 x 179°/s. No jogo o carro
+  também roda segurando o volante todo.
+- **Corte de recuperação 0x2120c0** (Sideslip/RecoveryTorqueCutting P+0xb10,
+  chamado no fim dos modos B e C do 0x20efa0; o modo A pula): devolve f e o
+  torque de giro do modo vira torque·(1 − f). Só com FrictionEllipse Enabled
+  (P+0x430) e corpo+0x728 = 0; mph(0x440) > Speed_for_zero_sideslip e
+  v_f > 0. f = Maximum_cut(mph v_f, P+0xbb8)·acel·rampa(|β|, Threshold
+  P+0xb20, Maximum_angle P+0xb6c; 0 nos buggies, o cut é 0). Com
+  Steering_dependent (P+0xb1c) e |β| > Threshold (12°): direção 0x370 com
+  sinal contrário a β ou solta -> f = acelerador 0x380 (solta e
+  |giro| > v_p / |ponto (x, z) da roda FL|: devolve 0, rodou); mesmo sinal
+  (contra-esterço) -> f = (f − 1)·|direção| + 1. Com f > 0.01 a patinada
+  0x610 de cada roda com W+0x10c != 0 em (−0.1, lim) sobe
+  Growth_rate_during_wheel_spin·dt até lim = Maximum_increased_front/
+  rear_slip_ratio (P+0xb14/0xb18, frente se W+0x40 & 4; 0 e 0.2)·f, no
+  máximo SlipRatio/Maximum, e marca corpo+0x540 = 1 (zerado no começo do
+  0x20efa0): aí o 0x2101e0 não devolve a patinada positiva da roda dentro
+  da elipse. Na RAM dos 6 save states: Enabled 1, Steering_dependent 1,
+  0x728 0, W+0x10c 1, W+0x40 0x5 na frente e 0xa atrás. Efeito: acelerando
+  com o volante pra dentro ou solto o carro NÃO endireita sozinho.
+- Modo A do 0x20efa0: a mistura com −erro_giro/dt (peso (10° − erro)/10°,
+  DAT_00550658) só vale com DAT_00550654 = 1 e a direção crua 0x36c e a
+  suavizada 0x370 do mesmo lado (estritamente).
+- Versão legível de toda a derrapagem, na ordem do passo:
+  docs/derrapagem.md.
 - Estado da RAM pro remake: corpo = (−direita, cima, frente) do jogo
   transpostos (Terrain.dir_do_jogo), origem = origem do modelo menos
   corpo(0); velocidade angular = −dir_do_jogo(w) (vetor axial na

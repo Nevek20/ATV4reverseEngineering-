@@ -131,6 +131,9 @@ var rate_dec_max: Dictionary
 var rate_dec_min: Dictionary
 var ps_rate: Dictionary
 var ps_scale: Dictionary
+var rtc_th: Dictionary        # RecoveryTorqueCutting (0x2120c0): ângulo onde começa,
+var rtc_max: Dictionary       # onde corta tudo e quanto corta, pela velocidade
+var rtc_cut: Dictionary
 var mu_t := 1.0               # 0 = atrito mínimo do XML, 1 = máximo
 var gears := PackedFloat32Array()
 
@@ -155,6 +158,7 @@ var want_rev := false         # pedido de ré (o câmbio abre, engata a ré e fe
 var reverse_hold := 0.0
 # pedais crus depois do 0x202df0 (corpo+0x37c / +0x38c); o throttle e o
 # brake_in são os suavizados (+0x380 / +0x390). O câmbio e o "preso" leem o cru.
+var steer_cx := 0.0            # direção crua (corpo+0x36c)
 var thr_cx := 0.0
 var brk_cx := 0.0
 var rev_timer := 0.0          # veículo+0xb2c: espera do freio virar ré quando vinha andando
@@ -170,6 +174,9 @@ var ps_estado := 0
 var ps_qtd := 0.0
 var ps_esc := 0.0
 var ps_emb_ant := 0.0
+# corpo+0x540: o corte de recuperação (0x2120c0) subiu a patinada neste passo;
+# aí a roda dentro da elipse não devolve a patinada (0x2101e0)
+var rtc_patinou := false
 var air_time := 0.0
 var air_lat_state := 0        # empurrão lateral no ar (0x6f4): 0 nada, 1 direita, 2 esquerda
 var air_lat_timer := 0.0
@@ -428,6 +435,15 @@ func _load_physics() -> void:
 	ps_rate = d.curve("Powerslide/Maximum_sideslip_rate_vs_sideslip")
 	ps_scale = d.curve("Powerslide/Scale_vs_speed")
 	P.ps_ellipse = d.f("Powerslide", "Scale_of_min_friction_ellipse_scale", 0.8)
+	var rt := "Sideslip/RecoveryTorqueCutting"
+	# o 0x2120c0 só roda com a elipse ligada (FrictionEllipse Enabled, 0x430)
+	P.rtc_on = d.f(rt, "Enabled", 0.0) != 0.0 and d.f("FrictionEllipse", "Enabled", 1.0) != 0.0
+	P.rtc_front = d.f(rt, "Maximum_increased_front_slip_ratio", 0.0)
+	P.rtc_rear = d.f(rt, "Maximum_increased_rear_slip_ratio", 0.0)
+	P.rtc_steer = d.f(rt, "Steering_dependent", 0.0) != 0.0
+	rtc_th = d.curve(rt + "/Threshold_angle_vs_speed")
+	rtc_max = d.curve(rt + "/Maximum_angle_vs_speed")
+	rtc_cut = d.curve(rt + "/Maximum_cut_vs_speed")
 
 	# ---- parte 1: pneus e derrapagem, como no executável (funções 0x20ede8,
 	# 0x20eb98, 0x20efa0 e 0x2101e0). Detalhes nos comentários do _tires().
@@ -852,6 +868,7 @@ func reset_drivetrain() -> void:
 	limiter = false
 	throttle = 0.0
 	brake_in = 0.0
+	steer_cx = 0.0
 	thr_cx = 0.0
 	brk_cx = 0.0
 	rev_timer = 0.0
@@ -861,6 +878,7 @@ func reset_drivetrain() -> void:
 	ps_qtd = 0.0
 	ps_esc = 0.0
 	ps_emb_ant = 0.0
+	rtc_patinou = false
 
 
 func gear_label() -> String:
@@ -973,6 +991,7 @@ func _physics_process(dt: float) -> void:
 		else:
 			st_rate = P.st_opp
 	steer = move_toward(steer, st_raw, dt * st_rate)
+	steer_cx = st_raw
 
 	# ---- suspensão portada (0x248768 contato, 0x248a80 mola, 0x2484c8 roda)
 	# Cada roda tem curso x e velocidade v próprios. A roda só "pega" no chão se
@@ -1304,6 +1323,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 				w.fz += mass * (dec - dec_front) / nr_s
 
 	# ---- 0x20efa0: derrapagem
+	rtc_patinou = false
 	var f_cent: float = mass * v_p * v_p * kappa          # força centrípeta pedida
 	var ss_deg := absf(sideslip) / DEG
 	# alvo de derrapagem: acima de Speed_for_zero_sideslip o bico aponta pra dentro
@@ -1347,7 +1367,9 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			if signf(path) == signf(err) and err_deg < P.tail_off:
 				# chegando no alvo: rampa em cosseno (Increase_tail_off_threshold)
 				acc *= (cos((P.tail_off - err_deg) / P.tail_off * PI) + 1.0) * 0.5
-				if steer != 0.0:
+				# DAT_00550654 = 1: só com a direção crua e a suavizada do mesmo
+				# lado (DAT_00550658 = 10°)
+				if steer * steer_cx > 0.0:
 					var k := maxf((10.0 - err_deg) / 10.0, 0.0)
 					acc = (1.0 - k) * acc + k * (-w_err / dt)
 			var step := -acc * dt
@@ -1372,6 +1394,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			var lim: float = dt * lerpf(VehicleData.fcurve_eval(P.yaw_dec_zero, mu, mph),
 				VehicleData.fcurve_eval(P.yaw_dec_full, mu, mph), throttle) * DEG
 			torque = inertia.y * clampf(w_err, -lim, lim) / dt
+			torque *= 1.0 - _corte_recuperacao(dt, v_f, v_p, yaw)
 	else:
 		# C) derrapando pro lado contrário (contra-esterço)
 		var fc := f_cent
@@ -1392,6 +1415,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 		if v_f < 0.0:
 			rate = -rate
 		torque = inertia.y * -rate
+		torque *= 1.0 - _corte_recuperacao(dt, v_f, v_p, yaw)
 
 	# divide força lateral e torque entre os eixos (estática de bicicleta)
 	var a_f: float = P.axle_f
@@ -1478,7 +1502,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 				w.slip = maxf(w.slip - P.lock_grow * dt, -1.0)
 		elif w.slip < 0.0:
 			w.slip = minf(w.slip + P.lock_recover * dt, 0.0)
-		else:
+		elif not rtc_patinou:
 			w.slip = maxf(w.slip - P.slip_recover * dt, 0.0)
 		if not w.front or not REAR_DRIVE:
 			drive_slip = maxf(drive_slip, w.slip)
@@ -1741,6 +1765,50 @@ func _powerslide(dt: float, v_p: float) -> void:
 			if _motriz(w):
 				var e: Dictionary = P.ell_FrontWheels if w.front else P.ell_RearWheels
 				w.grip = VehicleData.triple(e.ms, minf(w.mu, 1.0)) * P.ps_ellipse
+
+
+## 0x2120c0 (Sideslip/RecoveryTorqueCutting): quanto do torque que ENDIREITA
+## o carro (modos B e C do 0x20efa0) é cortado, 0 a 1. Com Steering_dependent,
+## passou do Threshold_angle (12°) e o volante está pra dentro da curva (sinal
+## contrário ao da derrapagem) ou solto, o corte é o acelerador suavizado: no
+## fundo, o carro NÃO volta sozinho. Contra-esterçando, o corte cai com o
+## volante (1 - |volante|, o Maximum_cut dos buggies é 0). Volante solto e o
+## carro girando mais rápido que v / (distância da roda FL ao CoM): rodando,
+## sem corte. Com corte > 0.01 a patinada de cada roda sobe (Growth_rate da
+## SlipRatio) até Maximum_increased_*_slip_ratio x corte (trás 0.2, frente 0).
+func _corte_recuperacao(dt: float, v_f: float, v_p: float, yaw: float) -> float:
+	if not P.rtc_on or v_p / MPH_G <= P.ss_zero or v_f <= 0.0:
+		return 0.0
+	var ang := absf(sideslip) / DEG
+	var mph_f := v_f / MPH_G
+	var th: float = VehicleData.sample(rtc_th, mph_f)
+	var mx: float = VehicleData.sample(rtc_max, mph_f)
+	var cut: float = VehicleData.sample(rtc_cut, mph_f)
+	if mx - th < 0.1:
+		mx = th + 0.1
+	var f := 0.0
+	if ang > mx:
+		f = cut * throttle
+	elif ang > th:
+		f = (ang - th) / (mx - th) * cut * throttle
+	var rodando := false
+	if P.rtc_steer and ang > th:
+		# direção e derrapagem têm o sinal trocado nos dois no remake: o produto é o do jogo
+		if steer * sideslip < 0.0 or absf(steer) < 1e-6:
+			if absf(steer) < 1e-6:
+				var fl: Dictionary = wheels[jit_order[0]]
+				var r := Vector2(fl.px - center_of_mass.x, fl.pz - center_of_mass.z).length()
+				rodando = v_p / r < absf(yaw)
+			f = throttle
+		else:
+			f = (f - 1.0) * absf(steer) + 1.0
+	if f > 0.01:
+		for w in wheels:
+			var lim: float = minf((P.rtc_front if w.front else P.rtc_rear) * f, P.slip_max)
+			if w.slip > -0.1 and w.slip < lim:
+				rtc_patinou = true
+				w.slip = minf(w.slip + P.slip_grow * dt, lim)
+	return 0.0 if rodando else f
 
 
 func _side_to_fwd(f_side: float, ss_deg: float) -> float:

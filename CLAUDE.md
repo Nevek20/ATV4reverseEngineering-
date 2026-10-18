@@ -36,7 +36,7 @@ assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas (fo
 tests/               teste de física sem tela + rodar_testes.py
 tools/               scripts Python de extração (pingu2obj, pintura, savestate)
 re/                  engenharia reversa: scripts do Ghidra, exe_util, dumps
-docs/                engenharia_reversa.md (mapa do exe), assets.md
+docs/                engenharia_reversa.md (mapa do exe), derrapagem.md (código da derrapagem legível), assets.md
 ```
 
 ## Comandos
@@ -70,6 +70,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
 %GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda e 1.16 s de derrapagem
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
+:: + SOLTA=1.3 solta o volante (DEPOIS=-1 contra-esterça, ACEL=0 solta o acelerador)
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
@@ -129,7 +130,7 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   conta-giros são acelerador (verde) e freio (vermelho).
 - **Derrapagem** (4 save states do Matheus a ~120 km/h na terra, volante
   todo e acelerador; tests/ref_derrapagem.json): forças por roda e 1.16 s
-  de derrapagem batem (tests/teste_derrapagem.gd, 0.4 m no fim). Todo .p2s
+  de derrapagem batem (tests/teste_derrapagem.gd: 0.13 kN por roda, 0.4 m no fim). Todo .p2s
   traz Screenshot.png: o relógio da corrida dá o tempo entre save states.
   Derrapagem natural ("SLIDE - Steer hard into turn" no treino): virando
   tudo a 173 km/h o remake chega no save state "170" (133 km/h, 35.7°,
@@ -210,6 +211,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   segurando abre a embreagem (> 0.1, 0x20c558); um toque virando e
   acelerando faz a "Clutch Turn" (powerslide 0x214610, car.gd
   _powerslide). O freio só tem o pedal (0x390). No remake é o Espaço.
+- Derrapagem não volta sozinha: o 0x2120c0 (RecoveryTorqueCutting) corta o
+  torque que endireita (modos B/C do 0x20efa0) pelo acelerador quando o
+  volante está pra dentro da curva ou solto, e sobe a patinada de trás até
+  0.2. Sai contra-esterçando ou soltando o acelerador. Sem ele o remake
+  "consertava o carro pra pista" (docs/derrapagem.md).
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto, que ainda não temos.

@@ -209,6 +209,6 @@ func _clutch_turn() -> void:
 	var esperado := 1.0 - (seq.size() - i3) * PASSO
 	var ok: bool = estados == [0, 1, 2, 3] and absf(q_fim - esperado) < 0.03 and seq[3][0] == 1 and seq[4][0] == 2
 	print("  estados %s  (3 a partir do passo %d)  quantidade no fim %.2f (esperado %.2f)" % [estados, i3 + 1, q_fim, esperado])
-	print("  maior diferença de força lateral por roda: %.2f kN (limite 1.5)" % pior_forca)
-	print("teste_derrapagem: %s" % ("ok" if ok and ok_fim and pior_forca < 1.5 else "FALHA"))
+	print("  maior diferença de força lateral por roda: %.2f kN (limite 0.5)" % pior_forca)
+	print("teste_derrapagem: %s" % ("ok" if ok and ok_fim and pior_forca < 0.5 else "FALHA"))
 	quit()
