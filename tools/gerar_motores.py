@@ -396,9 +396,9 @@ AJUSTE = {
     "07": dict(k_fluxo=0.9, placa=0.995972),
     "08": dict(k_fluxo=0.6445, placa=0.99433),
     "09": dict(k_fluxo=0.6366, placa=0.99433),
-    "10": dict(k_fluxo=0.6293, placa=0.996791),  # abaixo de ~820 apaga
-    "11": dict(k_fluxo=0.6302, placa=0.995855),  # comando grande: abaixo de ~900 apaga
-    "12": dict(k_fluxo=1.5, placa=0.999307, energia=87.21),  # turbo de mentira ~1.8x
+    "10": dict(k_fluxo=0.6293, placa=0.9966),  # com 0.99688 já apaga
+    "11": dict(k_fluxo=0.6302, placa=0.9955),  # comando grande: com 0.99586 já apaga
+    "12": dict(k_fluxo=1.5, placa=0.9992, energia=87.21),  # com 0.99937 já apaga;  # turbo de mentira ~1.8x
 }
 
 

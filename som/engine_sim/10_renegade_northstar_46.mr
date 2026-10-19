@@ -236,7 +236,7 @@ public node northstar_46 {
         runner_flow_rate: k_carb(138.446),
         runner_length: 10 * units.inch,
         idle_flow_rate: k_carb(0.0),
-        idle_throttle_plate_position: 0.996791, // maior = marcha lenta mais baixa
+        idle_throttle_plate_position: 0.9966, // maior = marcha lenta mais baixa
         velocity_decay: 0.5
     )
 

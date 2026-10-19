@@ -236,7 +236,7 @@ public node gm_ls7_bravo {
         runner_flow_rate: k_carb(163.852),
         runner_length: 11 * units.inch,
         idle_flow_rate: k_carb(0.0),
-        idle_throttle_plate_position: 0.995855, // maior = marcha lenta mais baixa
+        idle_throttle_plate_position: 0.9955, // maior = marcha lenta mais baixa
         velocity_decay: 0.5
     )
 

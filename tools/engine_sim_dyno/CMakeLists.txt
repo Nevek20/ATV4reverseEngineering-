@@ -27,3 +27,9 @@ target_compile_definitions(dyno PRIVATE ATG_ENGINE_SIM_PIRANHA_ENABLED ES_DIR="$
 target_include_directories(dyno PRIVATE ${ES} ${ES}/dependencies/submodules)
 target_link_options(dyno PRIVATE -Wl,--allow-multiple-definition)
 target_link_libraries(dyno piranha csv-io simple-2d-constraint-solver pthread)
+
+add_executable(gravar gravar.cpp ${CORE_SRC})
+target_compile_definitions(gravar PRIVATE ATG_ENGINE_SIM_PIRANHA_ENABLED ES_DIR="${ES}")
+target_include_directories(gravar PRIVATE ${ES} ${ES}/dependencies/submodules)
+target_link_options(gravar PRIVATE -Wl,--allow-multiple-definition)
+target_link_libraries(gravar piranha csv-io simple-2d-constraint-solver pthread)

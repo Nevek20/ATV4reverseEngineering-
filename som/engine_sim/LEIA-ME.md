@@ -27,9 +27,9 @@ Plena carga, rpm fixa a cada 500. Engine-sim 85f7c3b (jan/2023) sem tela
 | Kraken V8 | Chevy 454 big-block | 7439 | 1-8-4-3-6-5-7-2 | 363 | 371 @ 4500 | 700 | 696 |
 | McKenzies | GM LS6 5.7 | 5665 | 1-8-7-2-6-5-4-3 | 405 | 408 @ 5000 | 800 | 796 |
 | Viper | V10 8.0 tipo Viper | 7990 | 1-10-9-4-3-6-5-8-7-2 | 334 | 320 @ 4000 | 700 | 660 |
-| Renegade | Cadillac Northstar 4.6 | 4565 | 1-2-7-3-4-5-6-8 | 441 | 435 @ 7000 | 700 | 821 |
-| Hurricane | GM LS7 7.0 bravo | 7011 | 1-8-7-2-6-5-4-3 | 604 | 599 @ 7000 | 800 | 908 |
-| Storm | Lancia Delta S4 1.8 (turbo de mentira) | 1759 | 1-3-4-2 | 417 | 410 @ 8000 | 1000 | 924 |
+| Renegade | Cadillac Northstar 4.6 | 4565 | 1-2-7-3-4-5-6-8 | 441 | 435 @ 7000 | 700 | 865 |
+| Hurricane | GM LS7 7.0 bravo | 7011 | 1-8-7-2-6-5-4-3 | 604 | 599 @ 7000 | 800 | 970 |
+| Storm | Lancia Delta S4 1.8 (turbo de mentira) | 1759 | 1-3-4-2 | 417 | 410 @ 8000 | 1000 | 1110 |
 
 ## O que vale saber
 
@@ -42,8 +42,9 @@ Plena carga, rpm fixa a cada 500. Engine-sim 85f7c3b (jan/2023) sem tela
   desigual 54/90°. Soa diferente do LFA (72°, ignição igual).
 - **Bulldog:** V6 4.3 LV3, que é a família LS com 6 cilindros (285 cv de
   fábrica). Pino defasado, ignição a cada 120°.
-- **Renegade e Hurricane:** abaixo de ~820 e ~900 rpm apagam (o LS7 bravo
-  tem comando grande, lenta alta é normal).
+- **Renegade, Hurricane e Storm:** a lenta ficou um pouco acima do alvo de
+  propósito. Mais baixo que isso eles apagam (o LS7 bravo tem comando grande,
+  lenta alta é normal).
 - **Sphinx:** biela de 136 mm. Com 137,16 (a original) o engine-sim explode
   numericamente.
 - **Câmbio e carro:** marchas na proporção do Renegade no save state
