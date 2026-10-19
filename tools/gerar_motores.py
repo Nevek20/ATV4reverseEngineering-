@@ -159,8 +159,10 @@ MOTORES.append(dict(
     arq="03_trident_ecotec_24", no="ecotec_24", nome="GM Ecotec 2.4 [I4, DOHC]",
     buggy="Trident (Snake)", cv=196, lenta=900, corte=7000,
     tdc=90, bancadas=[(0, False)], pinos=[0, 180, 180, 0],
-    # coletor 4-2-1: 1 e 4 num tubo, 2 e 3 no outro
-    cil={1: cil(0, 0, 0, 4), 2: cil(0, 1, 1, 4), 3: cil(0, 2, 1, 4), 4: cil(0, 3, 0, 4)},
+    # coletor 4-2-1: 1 e 4 num tubo, 2 e 3 no outro. Primários e tubos de
+    # tamanhos diferentes e silencioso "sharp": com tudo igual (4 pol, 90/92 pol,
+    # mild) o som saía 80-100% numa frequência só, um apito de aspirador
+    cil={1: cil(0, 0, 0, 4), 2: cil(0, 1, 1, 11), 3: cil(0, 2, 1, 18), 4: cil(0, 3, 0, 25)},
     ordem=[1, 3, 4, 2],
     diam=88.0, curso=98.0, biela=145.5, alt_comp=1.1, cr=10.4,
     massa_biela=560, massa_pistao=420, massa_vira=14.0, massa_volante=7.0, raio_volante=5.5,
@@ -169,8 +171,8 @@ MOTORES.append(dict(
     adm=dict(dur=226, gamma=1.0, lift=420), esc=dict(dur=222, gamma=1.0, lift=400),
     centros=(112, 114), raio_base=0.65,
     admissoes=[dict(fluxo=750, runner=240, runner_len=9.0, lenta=0.9984, plenum=1.3, decay=0.5)],
-    escapes=[dict(saida=1000, prim_len=14, prim_fluxo=220, compr=90, vol=6.0, ir="mild_exhaust_0"),
-             dict(saida=1000, prim_len=14, prim_fluxo=220, compr=92, vol=6.0, ir="mild_exhaust_0")],
+    escapes=[dict(saida=1000, prim_len=14, prim_fluxo=220, compr=70, vol=6.0, ir="sharp_0"),
+             dict(saida=1000, prim_len=14, prim_fluxo=220, compr=110, vol=6.0, ir="sharp_0")],
     avanco=[(0, 15), (1000, 15), (2000, 25), (3000, 34), (4000, 38), (7000, 38)],
     combustivel=dict(mte=2.5, mbe=0.8), jitter=0.3, freq=20000, limitador=0.06,
     partida=(70, 400), embreagem=230,

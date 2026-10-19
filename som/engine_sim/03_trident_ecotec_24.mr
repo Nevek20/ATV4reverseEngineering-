@@ -214,8 +214,8 @@ public node ecotec_24 {
     exhaust_system exhaust0(
         es_params0,
         audio_volume: 6,
-        length: 90 * units.inch,
-        impulse_response: ir_lib.mild_exhaust_0
+        length: 70 * units.inch,
+        impulse_response: ir_lib.sharp_0
     )
 
     exhaust_system_parameters es_params1(
@@ -227,8 +227,8 @@ public node ecotec_24 {
     exhaust_system exhaust1(
         es_params1,
         audio_volume: 6,
-        length: 92 * units.inch,
-        impulse_response: ir_lib.mild_exhaust_0
+        length: 110 * units.inch,
+        impulse_response: ir_lib.sharp_0
     )
 
     cylinder_bank_parameters bank_params(
@@ -254,7 +254,7 @@ public node ecotec_24 {
             intake: intake0,
             exhaust_system: exhaust1,
             ignition_wire: wires.wire2,
-            primary_length: 4 * units.inch
+            primary_length: 11 * units.inch
         )
         .add_cylinder(
             piston: piston(piston_params, blowby: k_28inH2O(0.0)),
@@ -263,7 +263,7 @@ public node ecotec_24 {
             intake: intake0,
             exhaust_system: exhaust1,
             ignition_wire: wires.wire3,
-            primary_length: 4 * units.inch
+            primary_length: 18 * units.inch
         )
         .add_cylinder(
             piston: piston(piston_params, blowby: k_28inH2O(0.0)),
@@ -272,7 +272,7 @@ public node ecotec_24 {
             intake: intake0,
             exhaust_system: exhaust0,
             ignition_wire: wires.wire4,
-            primary_length: 4 * units.inch
+            primary_length: 25 * units.inch
         )
         .set_cylinder_head(
             ecotec_24_head(
