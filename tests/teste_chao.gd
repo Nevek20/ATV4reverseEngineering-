@@ -239,7 +239,7 @@ func _tremida(onde: String, wj: float, mu: float, amort: float) -> void:
 		ok = ok and absf(w.mu - mu) < 1e-6 and absf(w.amort - amort) < 1e-6
 	ok = ok and absf(car.mu_medio - mu) < 1e-6 and absf(car.amort_medio - amort) < 1e-6
 	# arrasto a 20 m/s (0x20e5e8) com Air 1.25 e Ground 2.0 (params+0x3e0/0x3e4 na RAM)
-	var arr: float = car._arrasto(20.0, 1.0 / 120.0)
+	var arr: float = car._arrasto(20.0, 1.0 / 50.0)
 	var arr_esp: float = (1.25 * 0.65 + amort * 2.0 * 10.0) * 400.0
 	ok = ok and car.P.air_drag == 1.25 and car.P.ground_drag == 2.0 and absf(arr - arr_esp) < 1e-3
 	if not ok:

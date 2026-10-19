@@ -30,6 +30,8 @@ camera_jitter.gd     tremida da câmera (Perlin por velocidade, só na terra)
 suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
 main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V)
+piloto.gd            piloto do jogo sentado no ARSE, braços pela direção (STEER_LEFT)
+volantes.gd          volantes gerados, um estilo por carro (melhoria nossa, no lugar do do jogo)
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas (fora do git)
@@ -38,7 +40,7 @@ tools/               scripts Python de extração (pingu2obj, pintura, savestate
 som/engine_sim/      um .mr do Engine Simulator por buggy (gerados por tools/gerar_motores.py)
 som/loops/           loops .wav de cada motor (lenta, on/off a cada 500 rpm), tools/gravar_loops.py
 re/                  engenharia reversa: scripts do Ghidra, exe_util, dumps
-docs/                engenharia_reversa.md (mapa do exe), assets.md
+docs/                engenharia_reversa.md (mapa do exe), derrapagem.md (código da derrapagem legível), assets.md, som_motor.md
 ```
 
 ## Comandos
@@ -50,9 +52,11 @@ python tests/rodar_testes.py                  :: aceleração dos 3 carros
 python tests/rodar_testes.py hs --veh 0       :: curva em alta no Renegade
 python tests/rodar_testes.py accel --veh 1 --tune "{\"engine\":0.81}"
 python tests/rodar_testes.py accel --veh 0 --mu 0.69 --amort 0.2   :: fora da pista
+python tests/rodar_testes.py accel --veh 0 --hz 60                 :: passo NTSC (padrão 50 = PAL)
 
 :: save state do PCSX2 -> valores reais do jogo
 python tools/ler_savestate.py arquivo.p2s
+python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carro pro remake
 
 :: print do carro parado (na nuvem: xvfb-run -a ... --rendering-driver opengl3)
 %GODOT% --path . -s res://tests/print_tela.gd -- print.png lado
@@ -66,6 +70,12 @@ python tools/ler_savestate.py arquivo.p2s
 %GODOT% --headless --path . -s res://tests/teste_freio.gd   :: patinada, ABS e trava
 %GODOT% --headless --path . -s res://tests/teste_roda.gd    :: giro das rodas por torque (no ar, preso)
 %GODOT% --headless --path . -s res://tests/teste_camera_passo.gd  :: câmera de órbita sem vai e volta
+%GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL e save states
+%GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
+%GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda e 1.16 s de derrapagem
+%GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 13 carros (0 cm) e giro do volante
+set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
+:: + SOLTA=1.3 solta o volante (DEPOIS=-1 contra-esterça, ACEL=0 solta o acelerador), DUR=8 segundos depois de virar
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
@@ -73,6 +83,9 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 
 :: checar um script sem abrir o editor
 %GODOT% --headless --path . --check-only --script res://car.gd
+
+:: piloto (malha, esqueleto, animação da direção, textura) -> assets/piloto
+python tools/piloto.py <unpacked>
 
 :: assets dos 12 buggies (modelo, peças, freios, rodas, pintura)
 python tools/gerar_buggies.py <unpacked> <texturas>
@@ -115,9 +128,33 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   CoM (0, 0.639, -0.4), marchas 18.2/11.9/8.9/7.1/5.9, final 1.1636,
   embreagem máx 0.6127, rpm 6582, torque -0.094 kN·m, curso frente
   ~0.22-0.25 / trás ~0.11-0.13, câmera (longe) zoom 0.41, suavização 40/s.
-- **Speedrun do Sphinx** (vídeo, HUD em mph): 20 mph em 1.45 s; trocas a
-  38 mph (2.55 s), 57 mph (3.95 s), 75 mph (5.95 s). Bate com
-  "Sphinx speedrun" (motor 0.81, BodyMass L2, Clutch L2, final 0.61).
+- **Speedrun do Sphinx** (versão NTSC = física a 60 Hz; atv4-dados/videos,
+  parte_00_00, largada em 25 s; relógio da corrida + HUD em mph lidos quadro
+  a quadro, tabela em tests/rodar_testes.py). Carro pela ficha da tela de
+  opções: DIRT PREMIUM, 269.9 HP (motor 1.0), 2204 lbs (BodyMass L2),
+  embreagem L2 (troca 2->3 para 0.28 s). A 60 Hz o remake fica a 1.2 mph.
+- **Renegade PAL** (gravação do Matheus no RX01, sozinho na pista, de
+  fábrica = 440.6 HP; tabela em tests/teste_largada.gd) + save state
+  patinando a 48.7 km/h em 1ª: 6893 rpm, roda de trás 34.09 rad/s (0x600
+  0.26, 0x610 0.32), 8.0 kN por roda traseira (elipse 8.17 x 0.98).
+  Mais 4 save states da largada (5_a_10, 15_a_20 e os _teste_2 do Matheus,
+  ainda fora do atv4-dados/savestates): patinada de trás / rpm 0.48 /
+  1379 a 8.6 km/h, 0.48 / 1568 a 9.8, 1.20 / 4763 a 19.8, 1.38 / 5766 a 22.1
+  (teste_largada imprime remake x jogo). No vídeo, as barrinhas do lado do
+  conta-giros são acelerador (verde) e freio (vermelho).
+- **Derrapagem** (4 save states do Matheus a ~120 km/h na terra, volante
+  todo e acelerador; tests/ref_derrapagem.json): forças por roda e 1.16 s
+  de derrapagem batem (tests/teste_derrapagem.gd: 0.13 kN por roda, 0.4 m no fim).
+  Mais 5 segurando o R1 do controle (= botão da embreagem, "freio de mão"),
+  virando e acelerando: embreagem aberta (0x2ec = 0), motor batendo no
+  limitador (~8000 rpm), Clutch Turn em 0. O remake bate (rpm, embreagem e
+  força por roda). Segurar não faz Clutch Turn: ele só começa ao SOLTAR. Todo .p2s
+  traz Screenshot.png: o relógio da corrida dá o tempo entre save states.
+  Derrapagem natural ("SLIDE - Steer hard into turn" no treino): virando
+  tudo a 173 km/h o remake chega no save state "170" (133 km/h, 35.7°,
+  82°/s, HUD 114) em 1.6 s, e o HUD marca 130 / 160 quando solta, como o
+  Matheus leu no jogo. O velocímetro do jogo é ~1.06 x a velocidade PRA
+  FRENTE (cai quando o carro fica de lado). tests/teste_entrada.tscn.
 - **Gravação PCSX2 do Renegade**: carro ocupa ~27% da largura (em 4:3) a
   122 km/h na câmera perto; bate com a câmera portada.
 
@@ -149,9 +186,13 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Rodas sem escala (tamanho = modelo). Frente: centro gira com a balança em
   x/z e y = WHEEL.y + curso; trás: arco inteiro. O pneu afunda uns cm parado
   no jogo também.
-- Física roda a 120 Hz com interpolação ligada; câmera em passos de 1/60
-  interpolando no frame do carro (senão aparece "fantasma"). O passo de
-  física do jogo no PAL é 1/50 (a tremida das rodas sorteia a 50 Hz).
+- Física roda a 50 Hz = passo do PAL (nosso exe). O jogo DEPENDE do passo:
+  com a roda patinando o motor fica batendo no limitador (rampas de 15/s) e
+  a patinada sobe e desce (3/s, 4/s); com passo menor o corte é raso e a
+  força média sobe. A 120 Hz a 1ª saía 28% forte. Vídeo NTSC (EUA) = 60 Hz
+  (rodar_testes --hz 60; o veh=2 já roda assim). Interpolação ligada;
+  câmera em passos de 1/60 interpolando no frame do carro (senão aparece
+  "fantasma").
   Cada passo da câmera de órbita usa o carro NO TEMPO DELE (posição de agora
   menos velocidade x o que sobrou do acumulador). Sem isso, a 60 Hz saem
   quadros com 0 e 2 passos e o carro vai e volta na tela (14 cm a 60 km/h,
@@ -178,9 +219,72 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   0x600 (ω·R/v − 1, que ABS/trava/embreagem leem) é a 0x610 do passo
   anterior. 0x3cc = rodas de TRÁS no chão (não "tração no chão"). O
   "torque" do freio ali não tem a massa (×1000 com inércia em kg·m²).
+- Pedais: cada comando tem cru e suavizado (corpo+0x368; acelerador
+  0x37c/0x380, freio 0x38c/0x390). Motor usa o suavizado; o CÂMBIO
+  (0x20c7a8) e o "preso" usam o CRU. Parado sem pedal (< 0.2 mph) o jogo põe
+  freio 1.0 sozinho (0x202df0): a barra vermelha cheia na largada não é o
+  jogador freando. Freio parado vira ré na hora (0.1 s se vinha andando);
+  no ar o acelerador corta até ser solto uma vez. car.gd _pedais_auto.
+- O jogo NÃO tem freio de mão. O botão (corpo+0x384/0x388) é a EMBREAGEM:
+  segurando abre a embreagem (> 0.1, 0x20c558); um toque virando e
+  acelerando faz a "Clutch Turn" (powerslide 0x214610, car.gd
+  _powerslide). O freio só tem o pedal (0x390). No remake é o Espaço.
+- Derrapagem não volta sozinha: o 0x2120c0 (RecoveryTorqueCutting) corta o
+  torque que endireita (modos B/C do 0x20efa0) pelo acelerador quando o
+  volante está pra dentro da curva ou solto, e sobe a patinada de trás até
+  0.2. Sai contra-esterçando ou soltando o acelerador. Sem ele o remake
+  "consertava o carro pra pista" (docs/derrapagem.md).
+  Testamos um ajuste NOSSO pro teclado por cima (cortar também abaixo dos
+  12°, out/2026): o Matheus comparou lado a lado e ficou pior. O fiel é o
+  certo; não "afrouxar" a derrapagem no chute.
+- Piloto (piloto.gd, tools/piloto.py): .skl/.srd/.bac decifrados
+  (docs Piloto). ROOT da animação em cima do ARSE, sem a rotação do ponto.
+  STEER_LEFT no tempo |s|/6, espelhado com s > 0 do jogo (= rider_s < 0 no
+  remake). Índice de osso no .srd vem x4. Some no capô e no para-choque
+  (mRenderRider 0); na nossa câmera do piloto aparece sem o capacete (osso
+  head encolhido: o olho fica dentro da cabeça dele), com braços e mãos no
+  volante.
+- Mãos no volante (melhoria nossa, car.gd MAOS_NO_VOLANTE): o volante gira o
+  quanto os punhos giram no STEER_LEFT do jogo (39° a 62° no volante todo,
+  por carro; antes era SW_TURNS = 149° sem fonte) e cada punho fica preso no
+  aro por IK de dois ossos. Em 5 carros (Sphinx, Inferno, Kraken, McKenzies,
+  Storm) o volante fica além do braço esticado (até 108%): a clavícula avança
+  até 35°. tests/teste_volante.gd: 0.0 cm nos 13 carros.
+  No quadro 0 do STEER_LEFT a mão direita pega a 22° do topo e a esquerda a
+  44° (braços tortos na câmera do piloto): a direita agora é o espelho da
+  esquerda no plano do volante (piloto.gd prender_no_volante). A mão
+  também gira até a linha dos nós (indicador -> anelar) ficar ao longo do
+  aro: na animação ela fica 25° a 43° torta e o aro saía de lado do punho
+  ("mão mal encostando"). O ponto do punho (média dos vértices da mão) cai no
+  buraco dos dedos dobrados, a ~5 mm do centro dele (corte da malha).
+  Depois ela desce pelo aro até PEGA_GRAUS = 65° do topo (~9h30/2h30, vídeo
+  de referência do Matheus; a 44° os braços subiam na frente da câmera no
+  Bulldog e no Viper) e gira em volta da linha dos nós até o pulso ficar
+  reto atrás do punho, na direção do eixo do volante (os carros bons já
+  ficavam entre -28° e +10° disso). Seguir o antebraço do IK NÃO serve: no
+  Renegade (volante perto e deitado) o antebraço fica quase na linha do aro,
+  o ajuste fica indefinido e o pulso ia 7 cm pra dentro (braço em
+  zigue-zague). No volante todo a mão de fora vai perto do topo e o
+  antebraço passa na frente da câmera (pendente).
+- Volantes gerados (melhoria nossa, car.gd VOLANTE_NOSSO, volantes.gd): o
+  do jogo tem aro de 6 a 12 lados e raios tortos; 8 carros usam o mesmo X
+  furado girado ~20°. No lugar vai um volante redondo e centralizado, no
+  centro, raio e eixo do pecas.json (a IK das mãos não muda). Um estilo por
+  carro (Volantes.POR_CARRO): os únicos do jogo melhorados (Renegade barra
+  + losango, Bulldog barra larga, Inferno/Storm X de aço com rebites, Sphinx
+  o X furado) e os das fotos do Matheus (buggy no Phantom, Sparco preto no
+  Kraken, Sparco azul no Viper, Mountney no McKenzies, kart no Hurricane,
+  espuma no Trident, Fusca Itamar no Mosquito; couro sobra). B no jogo troca;
+  print_tela VOLANTE=nome PILOTO=0. Alisar o aro do jogo (VOLANTE_LISO)
+  quebrou no Renegade e no Bulldog: não voltar.
+  A coluna de direção da carroceria termina 1.1 cm atrás do aro (Renegade
+  1.7, Storm 0.7 cm NA FRENTE) e atravessava o miolo recuado (dish): o
+  volante avança pro piloto até a coluna acabar atrás dele (car.gd
+  _montar_volante, de 0 a 5.6 cm no Kraken; teste_volante imprime). Os X
+  ficam a 45° do topo, longe das mãos (65°).
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
-  são os braços do piloto, que ainda não temos.
+  são os braços do piloto (piloto.gd).
 
 ## Pendente / ideias
 
@@ -189,11 +293,20 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Tremida da câmera na BATIDA (a por velocidade já está, camera_jitter.gd):
   precisa do sistema de colisão do corpo (corpo+0x7a0); fórmula em
   docs/engenharia_reversa.md, Câmera.
-- Som do motor (00002/00004/00005 xml: bancos e faders por buggy). Já tem um
-  .mr do Engine Simulator por buggy (som/engine_sim, LEIA-ME com cv e lenta
-  medidos) e os loops gravados (som/loops); falta ligar no Godot.
-- Piloto sentado e animado (MALE_*.srd + InGame_Mid.skl + STEER_LEFT.bac,
-  docs/engenharia_reversa.md "Piloto"): falta parser dos 3 formatos.
+- Som do motor (melhoria nossa, plano combinado com o Matheus): o jogo só
+  tem 3 bancos de motor (02/03/04, XMLs 00002/00004/00005) repetidos nos 12
+  buggies (o Mosquito soa igual ao Kraken V8). Plano: o Matheus monta cada
+  motor no Engine Simulator e grava loops de 1-2 s a cada 500 rpm,
+  acelerando e soltando, cortados no zero da onda; no Godot um tocador faz
+  crossfade + pitch entre os 2 samples vizinhos e mistura acelerando/
+  soltando pelo acelerador. RPM: opção (b), o 1000-8000 do jogo (igual nos
+  12) esticado pra faixa real de cada motor. Constante pra voltar ao som do
+  jogo quando ele for portado. Motor proposto por buggy (nome interno do
+  vehicles.xml + base real + HP de fábrica, com fontes) e o jeito de
+  gravar: docs/som_motor.md. Feito: os 12 .mr (som/engine_sim, LEIA-ME
+  com cv e lenta medidos) e os loops (som/loops); falta o tocador no Godot.
+- Piloto: montar a textura dele como o jogo (5 camadas por parte + cores do
+  perfil; hoje usa o rider_fury pronto), LOD MID/LOW, piloto feminino.
   Melhoria nossa depois: mãos tremendo no volante em alta velocidade.
 - Câmera do piloto: referência do Matheus = cockpit do Dirt Rally 2.0
   (horizonte perto do meio, volante cortado embaixo, muita estrada).

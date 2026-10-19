@@ -11,6 +11,7 @@ O .p2s é um zip com compressão zstd (método 93), então precisa de:
 Uso:
     python ler_savestate.py arquivo.p2s
     python ler_savestate.py arquivo.p2s --dump eeMemory.bin   (salva a RAM)
+    python ler_savestate.py arquivo.p2s --json estado.json      (estado do carro, coords do jogo)
 
 Endereços (PAL SCES_546.88), achados no save state do Renegade:
     câmera de órbita: vtable 0x5b3f30 em +0x68; +0x10 posição, +0x40 direção,
@@ -81,10 +82,49 @@ def dist(a, b):
     return sum((a[i] - b[i]) ** 2 for i in range(3)) ** 0.5
 
 
+def estado(r, veh):
+    """estado do carro do jogador em coordenadas do JOGO (mundo e frame do
+    modelo), pro remake se colocar no mesmo lugar (tests/teste_derrapagem.gd).
+    Rodas na ordem do jogo: FL, RL, FR, RR (corpo+0x254+4i)."""
+    ph = r.u(veh + 0x9D4)
+    v4 = lambda a: list(r.v(a, 3))
+    e = {
+        "origem": v4(veh + 0xAA0), "com": v4(ph + 0x70),
+        "direita": v4(ph + 0xB0), "cima": v4(ph + 0xC0), "frente": v4(ph + 0xD0),
+        "vel": v4(ph + 0x90), "w": v4(ph + 0xA0), "massa": 1.0 / r.f(ph + 0x130),
+        # comandos (cru, suavizado): direção, acelerador, botão da embreagem
+        # ("freio de mão" do controle; o jogo não tem freio de mão), freio
+        "direcao": [r.f(ph + 0x36C), r.f(ph + 0x370)], "acelerador": [r.f(ph + 0x37C), r.f(ph + 0x380)],
+        "mao": [r.f(ph + 0x384), r.f(ph + 0x388)], "freio": [r.f(ph + 0x38C), r.f(ph + 0x390)],
+        # Clutch Turn (powerslide 0x214610): estado 0 nada, 1 crescendo, 2 ativo,
+        # 3 sumindo; quantidade, escala pela velocidade, embreagem do passo anterior
+        "powerslide": {"estado": r.u(ph + 0x74C), "qtd": r.f(ph + 0x744), "esc": r.f(ph + 0x748),
+                       "emb_ant": r.f(ph + 0x740)},
+        "rpm": r.f(ph + 0x2C0), "torque": r.f(ph + 0x2B4), "limitador": r.f(ph + 0x2C4),
+        "marcha": r.u(ph + 0x2F0), "marcha_alvo": r.u(ph + 0x2F4), "embreagem": r.f(ph + 0x2EC),
+        "estado_emb": r.u(ph + 0x314), "troca_t": r.f(ph + 0x2FC), "troca": r.u(ph + 0x318),
+        "emb_sinal": r.f(ph + 0x320), "derrapagem": r.f(ph + 0x6C0), "ar": r.f(ph + 0x4E4),
+        "esterco_vis": r.f(ph + 0x3C0), "stf": r.f(ph + 0x474),
+        "rodas": [],
+    }
+    for i in range(4):
+        w = r.u(ph + 0x254 + 4 * i)
+        e["rodas"].append({
+            "ponto": v4(w + 0x10), "raio": r.f(w + 0x30), "giro": r.f(w + 0x48),
+            "curso": r.f(w + 0xE8), "curso_v": r.f(w + 0xF4), "contato": v4(w + 0x130),
+            "patinada": r.f(ph + 0x610 + 4 * i), "medida": r.f(ph + 0x600 + 4 * i),
+            "abs": r.u(ph + 0x620 + 4 * i), "grip": r.f(ph + 0x670 + 4 * i),
+            # força da roda no passo (kN): x = pro lado direito do carro, z = pra frente
+            "forca": v4(ph + 0x5C0 + 16 * i), "pedida": v4(ph + 0x680 + 16 * i),
+        })
+    return e
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("p2s")
     ap.add_argument("--dump", help="salva a RAM (32 MB) nesse arquivo")
+    ap.add_argument("--json", help="salva o estado do carro (coordenadas do jogo) nesse arquivo")
     a = ap.parse_args()
     m = ler_ram(a.p2s)
     if a.dump:
@@ -112,6 +152,10 @@ def main():
     _, cam, tgt, veh = best
     ph = r.u(veh + 0x9D4)
     print(f"câmera {cam:#x}  alvo {tgt:#x}  veículo {veh:#x}  corpo {ph:#x}")
+    if a.json:
+        import json
+        json.dump(estado(r, veh), open(a.json, "w"), indent=1)
+        print(f"[+] estado salvo em {a.json}")
 
     pos = r.v(ph + 0x70)
     origem = r.v(veh + 0xAA0)
@@ -125,6 +169,9 @@ def main():
     print(f"velocidade {r.v(ph + 0x90)}  |v| {r.f(ph + 0xE0):.3f} m/s = {r.f(ph + 0xE0) * 3.6:.1f} km/h")
     print(f"pra frente {r.f(ph + 0x418):.3f} m/s   sem chão há {r.f(ph + 0x4E4):.3f} s   rodas no chão {r.u(ph + 0x8A8)}")
     print(f"frente {fwd}  cima {up}")
+    print(f"botão da embreagem {r.f(ph + 0x384):.2f} (suavizado {r.f(ph + 0x388):.2f})   "
+          f"Clutch Turn: estado {r.u(ph + 0x74C)} (0 nada, 1 crescendo, 2 ativo, 3 sumindo)  "
+          f"quantidade {r.f(ph + 0x744):.2f}  escala {r.f(ph + 0x748):.2f}")
 
     g = r.u(ph + 0x2D0)
     print("\n== câmbio")
