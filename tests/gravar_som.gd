@@ -37,7 +37,7 @@ func _process(dt: float) -> bool:
 	t += dt
 	var thr := 1.0 if t > PARADO and t < PARADO + ACELERA else 0.0
 	car.test_input = {"thr": thr}
-	if int(t * 4.0) != int((t - dt) * 4.0):
+	if OS.has_environment("DETALHE") or int(t * 4.0) != int((t - dt) * 4.0):
 		print("%.2f s  %3.0f km/h  marcha %s  rpm %4.0f  real %4.0f  carga %.2f" % [
 			t, car.linear_velocity.length() * 3.6, car.gear_label(), car.rpm, car.som.r_real if car.som else 0.0, car.som_carga])
 	return t > PARADO + ACELERA + SOLTA

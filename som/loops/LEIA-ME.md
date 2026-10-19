@@ -24,3 +24,8 @@ bombear. Por isso on e off saem com volume parecido, igual no app. A diferença
 real está no `nivel_cru_db` do info.csv: pra deixar o off mais baixo no jogo,
 toca com `volume_db = nivel_cru_db(off) - nivel_cru_db(on)` em relação ao on do
 mesmo rpm (média -17 dB, vai de -39 a +4).
+
+**Ruído:** `ruido_pct` no info.csv = energia fora dos múltiplos da frequência
+do ciclo (o que não se repete de um ciclo pro outro). Os loops ficam em 0-4%;
+o off_4000 do Phantom tem 53% e o motor_som.gd pula (limite 20%). Na lenta o
+rpm varia (não fica preso no dinamômetro), então lá a conta não vale.

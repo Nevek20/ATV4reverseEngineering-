@@ -104,7 +104,7 @@ def processar(mr, saida, passo):
         rpm = medido[chave]
         if rpm < 300:  # apagou
             linhas.append(dict(arquivo=chave + ".wav (APAGOU)", rpm_medido=round(rpm), segundos=0, ciclos=0,
-                               ganho=0, nivel_cru_db=0, emenda_corr=0, emenda_salto=0))
+                               ganho=0, nivel_cru_db=0, emenda_corr=0, emenda_salto=0, ruido_pct=0))
             os.remove(f)
             continue
         s, e, ciclos, nota = cortar(x, rpm)
@@ -115,9 +115,15 @@ def processar(mr, saida, passo):
         wav16(os.path.join(pasta, chave + ".wav"), y)
         # salto na emenda comparado com o passo típico entre amostras
         salto = abs(y[0] - y[-1]) / (np.median(np.abs(np.diff(y))) + 1e-9)
+        # ruído = energia fora dos múltiplos da frequência do ciclo (720°): o
+        # que não se repete de um ciclo pro outro (motor irregular). Na lenta
+        # o rpm não fica preso e varia, então lá a conta não vale (~90%)
+        X = np.abs(np.fft.rfft(loop)) ** 2
+        ruido = 100 * (1 - X[::ciclos].sum() / X.sum())
         linhas.append(dict(arquivo=chave + ".wav", rpm_medido=round(rpm), segundos=round(len(y) / FS, 3),
                            ciclos=ciclos, ganho=round(ganho, 6), nivel_cru_db=round(20 * np.log10(pico), 1),
-                           emenda_corr=round(nota, 3), emenda_salto=round(salto, 2)))
+                           emenda_corr=round(nota, 3), emenda_salto=round(salto, 2),
+                           ruido_pct=round(ruido, 1)))
         os.remove(f)
     os.rmdir(tmp)
     with open(os.path.join(pasta, "info.csv"), "w", newline="") as fo:

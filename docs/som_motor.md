@@ -76,6 +76,12 @@ Não achei se o engine-sim simula turbo ou compressor.
 - Mistura das camadas pela carga do motor (car.gd som_carga = acelerador x
   limitador x embreagem na troca), suavizada em 30 ms: no limitador o som
   pipoca junto.
+- O rpm que vai pro som passa por um filtro de 80 ms (RPM_SUAVE): com a roda
+  patinando na 1ª a física do jogo leva o rpm de 6300 a 7900 e de volta umas
+  6 vezes por segundo, e o tom tremendo junto soava como ruído (Mosquito).
+- Loops com ruido_pct > 20 no info.csv ficam de fora (o off_4000 do Phantom:
+  53%, o motor fica irregular ali e o engine-sim repete igual toda vez). Na
+  lenta o rpm não fica preso, então o ruido_pct dela (~90%) não vale.
 - Volume: nível cru (info.csv) comprimido, K_RPM = 0.5 entre giros e
   K_OFF = 0.5 entre soltando e acelerando, piso de -12 dB.
 - Conferência: tests/teste_som.gd (pesos, tom, lenta). Prévia com áudio:
