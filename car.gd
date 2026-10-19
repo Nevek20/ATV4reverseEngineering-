@@ -108,6 +108,11 @@ var rider_s := 0.0            # direção suavizada do piloto (rider+0x2d8 com s
 # piloto do jogo (piloto.gd, tools/piloto.py): sentado no ponto ARSE, braços pela rider_s
 const PILOTO_DIR := "res://assets/piloto"
 var piloto: Node3D = null
+# melhoria nossa: som do motor com os loops do Engine Simulator de cada buggy
+# (motor_som.gd, som/loops). O som do jogo (3 bancos pros 12) não foi portado
+const SOM_MOTOR := true
+var som: Node = null
+var som_carga := 0.0          # carga do motor pro som: acelerador x limitador x troca
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
 const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
@@ -253,6 +258,7 @@ func _ready() -> void:
 	_load_model()                 # antes da física: define model_offset
 	_load_physics()
 	_load_piloto()                # depois da física: precisa do ponto ARSE
+	_load_som()
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = Vector3(2.1, 0.8, 4.8)
@@ -792,6 +798,26 @@ func _load_piloto() -> void:
 ## centro do aro do volante que aparece (o do jogo, ou o gerado avançado)
 func sw_centro() -> Vector3:
 	return SW_CENTER + SW_AXIS.normalized() * sw_avanco
+
+
+func _load_som() -> void:
+	if not SOM_MOTOR:
+		return
+	var dir: String = preload("res://motor_som.gd").pasta_do_carro(vehicle_id)
+	if dir == "":
+		return
+	som = preload("res://motor_som.gd").new()
+	som.name = "SomMotor"
+	if som.carregar(dir):
+		add_child(som)
+	else:
+		som.free()
+		som = null
+
+
+func _process(delta: float) -> void:
+	if som:
+		som.atualizar(rpm, som_carga, delta)
 
 
 func _load_steering_wheel() -> void:
@@ -2036,6 +2062,7 @@ func _drivetrain(dt: float, v_f: float, driven_on_ground: bool, forced_open: boo
 	elif rpm < P.lim_off:
 		lim_k = minf(lim_k + P.lim_rate_off * dt, 1.0)
 	limiter = lim_k < 0.999
+	som_carga = thr_eng * lim_k
 	eng_torque = thr_eng * lim_k * VehicleData.sample(drive_curve, rpm) * P.drive_scale \
 		- VehicleData.sample(fric_curve, rpm) * P.fric_scale
 	if integrate:

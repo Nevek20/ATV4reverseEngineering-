@@ -32,6 +32,7 @@ vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
 main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V)
 piloto.gd            piloto do jogo sentado no ARSE, braços pela direção (STEER_LEFT)
 volantes.gd          volantes gerados, um estilo por carro (melhoria nossa, no lugar do do jogo)
+motor_som.gd         som do motor: loops do Engine Simulator por rpm e carga (melhoria nossa)
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas (fora do git)
@@ -74,6 +75,8 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
 %GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda e 1.16 s de derrapagem
 %GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 13 carros (0 cm) e giro do volante
+%GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies
+%GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta)
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
 :: + SOLTA=1.3 solta o volante (DEPOIS=-1 contra-esterça, ACEL=0 solta o acelerador), DUR=8 segundos depois de virar
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
@@ -304,7 +307,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   jogo quando ele for portado. Motor proposto por buggy (nome interno do
   vehicles.xml + base real + HP de fábrica, com fontes) e o jeito de
   gravar: docs/som_motor.md. Feito: os 12 .mr (som/engine_sim, LEIA-ME
-  com cv e lenta medidos) e os loops (som/loops); falta o tocador no Godot.
+  com cv e lenta medidos), os loops (som/loops) e o tocador (motor_som.gd,
+  car.gd SOM_MOTOR; N no jogo deixa mudo). Ajuste de volume: K_RPM, K_OFF
+  e PISO_DB no motor_som.gd.
 - Piloto: montar a textura dele como o jogo (5 camadas por parte + cores do
   perfil; hoje usa o rider_fury pronto), LOD MID/LOW, piloto feminino.
   Melhoria nossa depois: mãos tremendo no volante em alta velocidade.

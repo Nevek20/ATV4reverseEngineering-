@@ -64,3 +64,20 @@ Não achei se o engine-sim simula turbo ou compressor.
 10. Subaru EJ25 (limitador 6500, ordem 1-3-2-4): https://thinktuning.com/subaru-ej25-engine/
 11. Lancia Delta S4: https://en.wikipedia.org/wiki/Lancia_Delta_S4
 12. engine-sim: https://github.com/ange-yaghi/engine-sim
+
+## Tocador no Godot (motor_som.gd)
+
+- Pasta pelo id: BUGGY_07 -> `som/loops/07_*`. Um AudioStreamPlayer por loop
+  (sem posição 3D), só os que têm peso tocam (no máximo 4).
+- rpm real = lenta gravada + (rpm do jogo - 1000) / 7000 x (último on - lenta).
+- Camada acelerando = on_RRRR; camada soltando = off_RRRR + lenta.wav (no rpm
+  medido dela). Em cada uma, os 2 loops vizinhos do rpm real com pitch =
+  rpm / rpm gravado e crossfade de potência constante.
+- Mistura das camadas pela carga do motor (car.gd som_carga = acelerador x
+  limitador x embreagem na troca), suavizada em 30 ms: no limitador o som
+  pipoca junto.
+- Volume: nível cru (info.csv) comprimido, K_RPM = 0.5 entre giros e
+  K_OFF = 0.5 entre soltando e acelerando, piso de -12 dB.
+- Conferência: tests/teste_som.gd (pesos, tom, lenta). Prévia com áudio:
+  tests/gravar_som.gd no Movie Maker do Godot.
+
