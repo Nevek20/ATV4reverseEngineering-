@@ -309,7 +309,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   gravar: docs/som_motor.md. Feito: os 12 .mr (som/engine_sim, LEIA-ME
   com cv e lenta medidos), os loops (som/loops) e o tocador (motor_som.gd,
   car.gd SOM_MOTOR; N no jogo deixa mudo). Ajuste de volume: K_RPM, K_OFF
-  e PISO_DB no motor_som.gd.
+  e PISO_DB no motor_som.gd. FECHADO (out/2026, o Matheus aprovou os 12):
+  Trident e Viper com escape/filtro escolhidos de ouvido entre variantes.
+  Zumbido ou apito num tom só = filtro mild_exhaust do engine-sim (pico em
+  133 Hz), não o tamanho do tubo (som/engine_sim/LEIA-ME.md).
 - Piloto: montar a textura dele como o jogo (5 camadas por parte + cores do
   perfil; hoje usa o rider_fury pronto), LOD MID/LOW, piloto feminino.
   Melhoria nossa depois: mãos tremendo no volante em alta velocidade.

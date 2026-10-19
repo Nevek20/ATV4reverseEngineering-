@@ -242,7 +242,7 @@ public node viper_v10 {
         es_params0,
         audio_volume: 2,
         length: 100 * units.inch,
-        impulse_response: ir_lib.mild_exhaust_0_reverb
+        impulse_response: ir_lib.real_engine_2
     )
 
     exhaust_system_parameters es_params1(
@@ -255,7 +255,7 @@ public node viper_v10 {
         es_params1,
         audio_volume: 2,
         length: 100.5 * units.inch,
-        impulse_response: ir_lib.mild_exhaust_0_reverb
+        impulse_response: ir_lib.real_engine_2
     )
 
     cylinder_bank_parameters bank_params(

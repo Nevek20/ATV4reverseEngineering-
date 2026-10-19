@@ -306,8 +306,11 @@ MOTORES.append(dict(
     adm=dict(dur=212, gamma=1.0, lift=490), esc=dict(dur=218, gamma=1.0, lift=490),
     centros=(114, 114), raio_base=0.9,
     admissoes=[dict(fluxo=1000, runner=200, runner_len=10.0, lenta=0.9955, plenum=2.0, decay=0.5)],
-    escapes=[dict(saida=1500, prim_len=30, prim_fluxo=600, compr=100, vol=2.0, ir="mild_exhaust_0_reverb"),
-             dict(saida=1500, prim_len=30, prim_fluxo=600, compr=100.5, vol=2.0, ir="mild_exhaust_0_reverb")],
+    # filtro real_engine_2, escolhido pelo Matheus de ouvido. O mild_exhaust tem
+    # 75% da energia entre 100 e 250 Hz (pico de +11.5 dB em 133 Hz): de 4000 a
+    # 4500 rpm o som virava um zumbido grave, 90% num tom só e o dobro do volume
+    escapes=[dict(saida=1500, prim_len=30, prim_fluxo=600, compr=100, vol=2.0, ir="real_engine_2"),
+             dict(saida=1500, prim_len=30, prim_fluxo=600, compr=100.5, vol=2.0, ir="real_engine_2")],
     avanco=[(0, 12), (1000, 12), (2000, 22), (3000, 30), (4000, 36), (6000, 36)],
     combustivel=dict(mte=3.0, mbe=0.9), jitter=0.3, freq=8000, limitador=0.12,
     partida=(200, 200), embreagem=650,

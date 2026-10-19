@@ -47,7 +47,13 @@ Plena carga, rpm fixa a cada 500. Engine-sim 85f7c3b (jan/2023) sem tela
   assim de propósito, abaixar o `k_fluxo` muda o som. A física não usa o
   .mr, então a potência daqui não mexe no carro.
 - **Viper:** V10 90° de pino comum como o Viper de verdade, ignição
-  desigual 54/90°. Soa diferente do LFA (72°, ignição igual).
+  desigual 54/90°. Soa diferente do LFA (72°, ignição igual). Filtro do
+  escape real_engine_2, escolhido pelo Matheus de ouvido entre 3.
+- **Filtro mild_exhaust:** 75% da energia entre 100 e 250 Hz, pico de
+  +11.5 dB em 133 Hz. No Viper, de 4000 a 4500 rpm (5500-6000 no HUD), o
+  som virava um zumbido grave: 90% num tom só e o dobro do volume. Mudar o
+  tamanho dos tubos não resolve, tem que trocar o filtro. Mosquito,
+  Phantom e Storm ainda usam (o Matheus gosta do som deles).
 - **Bulldog:** V6 4.3 LV3, que é a família LS com 6 cilindros (285 cv de
   fábrica). Pino defasado, ignição a cada 120°.
 - **Renegade, Hurricane e Storm:** a lenta ficou um pouco acima do alvo de
