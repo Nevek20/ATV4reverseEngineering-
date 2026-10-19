@@ -20,7 +20,7 @@ Plena carga, rpm fixa a cada 500. Engine-sim 85f7c3b (jan/2023) sem tela
 |---|---|---|---|---|---|---|---|
 | Mosquito | VW Tipo 4 2.0 a ar | 1971 | 1-4-3-2 | 144 | 141 @ 5500 | 900 | 904 |
 | Inferno | Chevy 305 small-block carb | 5001 | 1-8-4-3-6-5-7-2 | 198 | 200 @ 4000 | 750 | 717 |
-| Trident | GM Ecotec 2.4 DOHC | 2384 | 1-3-4-2 | 196 | 202 @ 6000 | 900 | 892 |
+| Trident | GM Ecotec 2.4 DOHC | 2384 | 1-3-4-2 | 196 | 263 @ 6500 | 900 | 866 |
 | Sphinx | VW Tipo 1 2180 preparado | 2180 | 1-4-3-2 | 180 | 182 @ 6500 | 900 | 815 |
 | Bulldog | GM 4.3 LV3 V6 90° | 4301 | 1-6-5-4-3-2 | 280 | 277 @ 4000 | 800 | 795 |
 | Phantom | Subaru EJ25 (turbo de mentira) | 2457 | 1-3-2-4 | 297 | 304 @ 6500 | 800 | 809 |
@@ -38,10 +38,14 @@ Plena carga, rpm fixa a cada 500. Engine-sim 85f7c3b (jan/2023) sem tela
   (o STI e o S4 de verdade eram sobrealimentados). O engine-sim não tem
   turbo, então esses dois têm `energy_density` maior no combustível
   (55 e 87 kJ/g, normal 48), que faz o papel da pressão extra.
-- **Trident:** com primários e tubos iguais (4 pol; 90 e 92 pol) e o
-  silencioso mild, o 4 em linha saía 80-100% numa frequência só (a das
-  explosões), um apito de aspirador. Agora primários de 4/11/18/25 pol,
-  tubos de 70 e 110 pol e o silencioso sharp_0: 23-40%, igual aos outros.
+- **Trident:** escape escolhido pelo Matheus de ouvido, entre 4 opções:
+  coletor 4-1 de corrida (primários iguais de 14 pol, tubo de 50) e quase
+  sem silencioso (minimal_muffling_02). Com 4-2-1 e o silencioso mild ele
+  saía 80-100% numa frequência só (apito de aspirador); com primários de
+  tamanhos diferentes virou batidão de Fusca. O escape aberto deixa ele
+  mais forte (263 cv, alvo 196) e tem um vale no dinamômetro a 5500: fica
+  assim de propósito, abaixar o `k_fluxo` muda o som. A física não usa o
+  .mr, então a potência daqui não mexe no carro.
 - **Viper:** V10 90° de pino comum como o Viper de verdade, ignição
   desigual 54/90°. Soa diferente do LFA (72°, ignição igual).
 - **Bulldog:** V6 4.3 LV3, que é a família LS com 6 cilindros (285 cv de

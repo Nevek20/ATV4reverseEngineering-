@@ -34,34 +34,34 @@ private node ecotec_24_head {
     function intake_flow(50 * units.thou)
     intake_flow
         .add_flow_sample(0 * lift_scale, 0 * flow_attenuation)
-        .add_flow_sample(50 * lift_scale, 41 * flow_attenuation)
-        .add_flow_sample(100 * lift_scale, 73 * flow_attenuation)
-        .add_flow_sample(150 * lift_scale, 111 * flow_attenuation)
-        .add_flow_sample(200 * lift_scale, 152 * flow_attenuation)
-        .add_flow_sample(250 * lift_scale, 177 * flow_attenuation)
-        .add_flow_sample(300 * lift_scale, 191 * flow_attenuation)
-        .add_flow_sample(350 * lift_scale, 199 * flow_attenuation)
-        .add_flow_sample(400 * lift_scale, 199 * flow_attenuation)
-        .add_flow_sample(450 * lift_scale, 200 * flow_attenuation)
-        .add_flow_sample(500 * lift_scale, 200 * flow_attenuation)
-        .add_flow_sample(550 * lift_scale, 200 * flow_attenuation)
-        .add_flow_sample(600 * lift_scale, 200 * flow_attenuation)
+        .add_flow_sample(50 * lift_scale, 48 * flow_attenuation)
+        .add_flow_sample(100 * lift_scale, 86 * flow_attenuation)
+        .add_flow_sample(150 * lift_scale, 130 * flow_attenuation)
+        .add_flow_sample(200 * lift_scale, 179 * flow_attenuation)
+        .add_flow_sample(250 * lift_scale, 208 * flow_attenuation)
+        .add_flow_sample(300 * lift_scale, 224 * flow_attenuation)
+        .add_flow_sample(350 * lift_scale, 234 * flow_attenuation)
+        .add_flow_sample(400 * lift_scale, 234 * flow_attenuation)
+        .add_flow_sample(450 * lift_scale, 235 * flow_attenuation)
+        .add_flow_sample(500 * lift_scale, 235 * flow_attenuation)
+        .add_flow_sample(550 * lift_scale, 235 * flow_attenuation)
+        .add_flow_sample(600 * lift_scale, 235 * flow_attenuation)
 
     function exhaust_flow(50 * units.thou)
     exhaust_flow
         .add_flow_sample(0 * lift_scale, 0 * flow_attenuation)
-        .add_flow_sample(50 * lift_scale, 22 * flow_attenuation)
-        .add_flow_sample(100 * lift_scale, 44 * flow_attenuation)
-        .add_flow_sample(150 * lift_scale, 68 * flow_attenuation)
-        .add_flow_sample(200 * lift_scale, 97 * flow_attenuation)
-        .add_flow_sample(250 * lift_scale, 119 * flow_attenuation)
-        .add_flow_sample(300 * lift_scale, 134 * flow_attenuation)
-        .add_flow_sample(350 * lift_scale, 142 * flow_attenuation)
-        .add_flow_sample(400 * lift_scale, 148 * flow_attenuation)
-        .add_flow_sample(450 * lift_scale, 149 * flow_attenuation)
-        .add_flow_sample(500 * lift_scale, 149 * flow_attenuation)
-        .add_flow_sample(550 * lift_scale, 149 * flow_attenuation)
-        .add_flow_sample(600 * lift_scale, 149 * flow_attenuation)
+        .add_flow_sample(50 * lift_scale, 26 * flow_attenuation)
+        .add_flow_sample(100 * lift_scale, 51 * flow_attenuation)
+        .add_flow_sample(150 * lift_scale, 80 * flow_attenuation)
+        .add_flow_sample(200 * lift_scale, 114 * flow_attenuation)
+        .add_flow_sample(250 * lift_scale, 139 * flow_attenuation)
+        .add_flow_sample(300 * lift_scale, 158 * flow_attenuation)
+        .add_flow_sample(350 * lift_scale, 167 * flow_attenuation)
+        .add_flow_sample(400 * lift_scale, 174 * flow_attenuation)
+        .add_flow_sample(450 * lift_scale, 175 * flow_attenuation)
+        .add_flow_sample(500 * lift_scale, 175 * flow_attenuation)
+        .add_flow_sample(550 * lift_scale, 175 * flow_attenuation)
+        .add_flow_sample(600 * lift_scale, 175 * flow_attenuation)
 
     generic_cylinder_head head(
         chamber_volume: chamber_volume,
@@ -197,11 +197,11 @@ public node ecotec_24 {
     intake intake0(
         plenum_volume: 1.3 * units.L,
         plenum_cross_section_area: 20.0 * units.cm2,
-        intake_flow_rate: k_carb(637.5),
-        runner_flow_rate: k_carb(204),
+        intake_flow_rate: k_carb(750),
+        runner_flow_rate: k_carb(240),
         runner_length: 9 * units.inch,
         idle_flow_rate: k_carb(0.0),
-        idle_throttle_plate_position: 0.997961, // maior = marcha lenta mais baixa
+        idle_throttle_plate_position: 0.9984, // maior = marcha lenta mais baixa
         velocity_decay: 0.5
     )
 
@@ -214,21 +214,8 @@ public node ecotec_24 {
     exhaust_system exhaust0(
         es_params0,
         audio_volume: 6,
-        length: 70 * units.inch,
-        impulse_response: ir_lib.sharp_0
-    )
-
-    exhaust_system_parameters es_params1(
-        outlet_flow_rate: k_carb(1000),
-        primary_tube_length: 14 * units.inch,
-        primary_flow_rate: k_carb(220),
-        velocity_decay: 1.0
-    )
-    exhaust_system exhaust1(
-        es_params1,
-        audio_volume: 6,
-        length: 110 * units.inch,
-        impulse_response: ir_lib.sharp_0
+        length: 50 * units.inch,
+        impulse_response: ir_lib.minimal_muffling_02
     )
 
     cylinder_bank_parameters bank_params(
@@ -245,25 +232,25 @@ public node ecotec_24 {
             intake: intake0,
             exhaust_system: exhaust0,
             ignition_wire: wires.wire1,
-            primary_length: 4 * units.inch
+            primary_length: 14 * units.inch
         )
         .add_cylinder(
             piston: piston(piston_params, blowby: k_28inH2O(0.0)),
             connecting_rod: connecting_rod(cr_params),
             rod_journal: rj1,
             intake: intake0,
-            exhaust_system: exhaust1,
+            exhaust_system: exhaust0,
             ignition_wire: wires.wire2,
-            primary_length: 11 * units.inch
+            primary_length: 14 * units.inch
         )
         .add_cylinder(
             piston: piston(piston_params, blowby: k_28inH2O(0.0)),
             connecting_rod: connecting_rod(cr_params),
             rod_journal: rj2,
             intake: intake0,
-            exhaust_system: exhaust1,
+            exhaust_system: exhaust0,
             ignition_wire: wires.wire3,
-            primary_length: 18 * units.inch
+            primary_length: 14 * units.inch
         )
         .add_cylinder(
             piston: piston(piston_params, blowby: k_28inH2O(0.0)),
@@ -272,7 +259,7 @@ public node ecotec_24 {
             intake: intake0,
             exhaust_system: exhaust0,
             ignition_wire: wires.wire4,
-            primary_length: 25 * units.inch
+            primary_length: 14 * units.inch
         )
         .set_cylinder_head(
             ecotec_24_head(
