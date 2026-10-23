@@ -1,0 +1,253 @@
+extends Node
+## Sons de pneu, suspensão e pouso do jogo (portados do exe), tocados com os
+## samples do próprio jogo (tools/sfx_jogo.py -> assets/sfx, som_jogo.gd).
+## Parâmetros: data/sound_database.xml (Audio/SoundDatabase.xml do jogo).
+## Roda a cada passo do jogo (50 Hz), chamado pelo car.gd depois do _vibracao.
+##
+## Entradas comuns (0x36fa28): spd = |v|·2.2374/140 e side = |v lateral|·
+## 2.2374/60, as duas com x < 0.025 -> 40x² e no máximo 1; ws = 0.5 por roda
+## com patinada 0x600 > 0.2, no máximo 1.
+## Rodas (0x370548): só a frente esquerda (FL) e a traseira esquerda (RL)
+## tocam o patch principal do material do chão; a FL toca também o
+## secundário (no asfalto, o Screech). Material = SFX do materials_rx01.xml.
+##   volume: V = Min + spd·(Max - Min) (x40·spd abaixo de 0.025), + side·Side
+##   + ws·Wheelspin [+ WheelLock travada acima de 5 mph] [+ AttackLevel no
+##   passo em que o chão muda], x (|direção|·Steer + 1)·(acelerador·Acc + 1),
+##   V = (V - V·(1 - susp)·Suspension)·Volume; abaixo do MinThreshold = 0,
+##   senão x Volume do material, cai devagar (DecayRate) e x SFX·Surface.
+##   tom: (Pitch + spd·Speed + side·Side + ws·Wheelspin [+ WheelLock] +
+##   |direção|·Steer + acelerador·Acc + roda·WheelDiff + susp·Suspension)
+##   x Pitch do material. No ar o volume vai a 0 na hora.
+## Suspensão (0x36e498/0x36e2d8): acima de 20 mph pra frente, quando a taxa
+## da suspensão (car.susp_taxa) passa o Threshold do Small/Large do "Buggy",
+## toca com a Probability, no máximo uma vez por MinRetriggerTime; volume
+## (1 - VolumeSpeed·(1 - spd))·Collision·SFX·Volume, tom 1.
+## Pouso (0x370df0): car.pouso (0.5 + 0.5·min(1, tempo no ar)) x Landing
+## Volume duas vezes x SFX, tom Landing Pitch, material da FL.
+## Sem distância 3D (o carro do jogador). Unidades de volume do 989snd não
+## confirmadas: GANHO é o nosso trim contra o som do motor (que é nosso).
+
+const SomJogo := preload("res://som_jogo.gd")
+const XML := "res://data/sound_database.xml"
+const GANHO := 1.0
+
+var car = null
+var master := {}
+var patches := {}                 # nome -> {looping: {sample, pitch:{}, volume:{}}, landing: {...}}
+var materiais := {}               # nome -> {Pitch, Volume, SurfacePatch, SecondaryPatch}
+var susp := {}                    # Small/Large do "Buggy"
+var modelo := {}                  # BUGGY_NN (SuspensionScale, SuspensionOffset)
+var rodas: Array = []             # objetos de som das rodas
+var _susp_ret := {"Small": 0.0, "Large": 0.0}
+var _susp_flag := {"Small": false, "Large": false}
+var _uma_vez: Array = []          # sons curtos tocando (suspensão, pouso)
+var spd := 0.0
+var side := 0.0
+var ws := 0.0
+
+
+func carregar(c) -> bool:
+	car = c
+	if not FileAccess.file_exists(XML) or SomJogo.banco().is_empty():
+		return false
+	var x := XMLParser.new()
+	if x.open(XML) != OK:
+		return false
+	var pilha: Array = []
+	var patch := ""
+	while x.read() == OK:
+		var t := x.get_node_type()
+		if t == XMLParser.NODE_ELEMENT_END:
+			pilha.pop_back()
+			continue
+		if t != XMLParser.NODE_ELEMENT:
+			continue
+		var n := x.get_node_name()
+		var a := {}
+		for k in x.get_attribute_count():
+			a[x.get_attribute_name(k)] = x.get_attribute_value(k)
+		var caminho := "/".join(pilha)
+		if n == "PS2" and caminho.ends_with("MasterSettings"):
+			master = a
+		elif caminho == "Root/Wheels/Patches":
+			patch = n
+			patches[patch] = {}
+		elif caminho == "Root/Wheels/Patches/" + patch:
+			if n == "Looping":
+				patches[patch].looping = {"sample": a.get("Sample", ""), "pitch": {}, "volume": {}}
+			elif n == "Landing":
+				patches[patch].landing = a
+		elif caminho == "Root/Wheels/Patches/%s/Looping" % patch:
+			patches[patch].looping[n.to_lower()] = a
+		elif caminho == "Root/Wheels/Materials":
+			materiais[n] = a
+		elif caminho == "Root/Vehicles/Suspension/Buggy":
+			susp[n] = a
+		elif caminho == "Root/Vehicles/Model" and n == car.vehicle_id:
+			modelo = a
+		if not x.is_empty():
+			pilha.append(n)
+	for k in 3:
+		var o := SomJogo.new()
+		o.name = ["RodaFL", "RodaRL", "RodaFL2"][k]
+		o.ganho = GANHO
+		add_child(o)
+		rodas.append({"som": o, "idx": 0 if k != 1 else 1, "sec": k == 2, "trava": 0.0,
+			"mat": -2, "s": 0.0, "vol": 0.0})
+	return not patches.is_empty()
+
+
+func _f(d: Dictionary, k: String, padrao := 0.0) -> float:
+	return float(d.get(k, padrao))
+
+
+## nome do material de som do chão embaixo da roda (SFX do materials_rx01.xml)
+func _sfx_chao(m: int) -> String:
+	if car.terrain and car.terrain.has_method("sfx"):
+		return car.terrain.sfx(m)
+	return "Dirt"
+
+
+func passo(dt: float, v_l: float, v_f: float) -> void:
+	if car == null or car.jit_order.size() != 4:
+		return
+	var v: float = car.linear_velocity.length()
+	spd = _curva(v * 0.015981533)
+	side = _curva(absf(v_l) * 0.03729024)
+	ws = 0.0
+	for w in car.wheels:
+		if w.sr > 0.2:
+			ws += 0.5
+	ws = minf(ws, 1.0)
+	for o in rodas:
+		_roda(o, dt, v)
+	_suspensao(dt, v_f)
+	_pouso()
+
+
+static func _curva(x: float) -> float:
+	if x < 0.025:
+		x = 40.0 * x * x
+	return minf(x, 1.0)
+
+
+func _roda(o: Dictionary, dt: float, v: float) -> void:
+	var w: Dictionary = car.wheels[car.jit_order[o.idx]]
+	var m: int = maxi(w.mat, 0)                # 0x158: -1 vira o material 0
+	var mat: Dictionary = materiais.get(_sfx_chao(m), materiais.get("Default", {}))
+	var p: Dictionary = patches.get(mat.get("SecondaryPatch" if o.sec else "SurfacePatch", "Default"), {})
+	var som: SomJogo = o.som
+	if not p.has("looping") or _f(p.looping.volume, "Volume") == 0.0:
+		if som.tocando:
+			som.parar()
+		o.vol = 0.0
+		return
+	var lp: Dictionary = p.looping
+	# troca de chão: muda o sample (com 0.07 s sem trocar de novo) e o volume
+	# leva o AttackLevel nesse passo
+	var ataque := false
+	if o.trava <= 0.0:
+		if m != o.mat:
+			o.mat = m
+			ataque = true
+		if lp.sample != som.nome or not som.tocando:
+			som.tocar("Surface", lp.sample)
+			o.trava = 0.07
+	else:
+		o.trava -= dt
+	var vol := 0.0
+	if w.hit:
+		var s := clampf((w.x + _f(modelo, "SuspensionOffset")) * _f(modelo, "SuspensionScale", 3.4375), 0.0, 1.0)
+		o.s = s
+		var trava: bool = w.sr < -0.95 and v > 2.2347221
+		var pv: Dictionary = lp.volume
+		var pp: Dictionary = lp.pitch
+		vol = _f(pv, "MinSpeed") + spd * (_f(pv, "MaxSpeed") - _f(pv, "MinSpeed"))
+		if spd < 0.025:
+			vol *= 40.0 * spd
+		vol += side * _f(pv, "SideSpeed") + ws * _f(pv, "Wheelspin")
+		if trava:
+			vol += _f(pv, "WheelLock")
+		if ataque:
+			vol += _f(pv, "AttackLevel")
+		vol *= (absf(car.steer) * _f(pv, "Steer") + 1.0) * (car.throttle * _f(pv, "Acc") + 1.0)
+		vol = (vol - vol * (1.0 - s) * _f(pv, "Suspension")) * _f(pv, "Volume")
+		if vol < _f(pv, "MinThreshold"):
+			vol = 0.0
+		else:
+			vol *= _f(mat, "Volume", 1.0)
+			if vol < o.vol:
+				vol = o.vol - (o.vol - vol) * (1.0 - _f(pv, "DecayRate"))
+			vol *= _f(master, "SFXVolume", 1.0) * _f(master, "SurfaceVolume", 0.5)
+		var tom := _f(pp, "Pitch", 1.0) + spd * _f(pp, "Speed") + side * _f(pp, "SideSpeed") + ws * _f(pp, "Wheelspin")
+		if trava:
+			tom += _f(pp, "WheelLock")
+		tom = (tom + absf(car.steer) * _f(pp, "Steer") + car.throttle * _f(pp, "Acc")
+			+ o.idx * _f(pp, "WheelDiff") + s * _f(pp, "Suspension")) * _f(mat, "Pitch", 1.0)
+		som.tom = tom
+	o.vol = maxf(vol, 0.0)
+	som.volume = o.vol
+
+
+func _suspensao(dt: float, v_f: float) -> void:
+	if absf(v_f) < car.SUSP_VEL:                # 0x418: velocidade pra frente
+		return
+	for k in ["Small", "Large"]:
+		var a: Dictionary = susp.get(k, {})
+		if _f(a, "Volume") < 0.05:
+			continue
+		if _susp_ret[k] > 0.0:
+			_susp_ret[k] -= dt
+			if _susp_ret[k] > 0.0:
+				continue
+		var acima: bool = car.susp_taxa > _f(a, "Threshold")
+		if not acima:
+			_susp_flag[k] = false
+		elif not _susp_flag[k]:
+			if randf() < _f(a, "Probability"):
+				var vol := (1.0 - _f(a, "VolumeSpeed") * (1.0 - spd)) * _f(master, "CollisionVolume", 0.8) \
+					* _f(master, "SFXVolume", 1.0) * _f(a, "Volume")
+				_tocar_uma("Coll_Big", a.get("FirstSample", ""), vol, 1.0)
+				_susp_ret[k] = _f(a, "MinRetriggerTime", 0.25)
+			_susp_flag[k] = true
+
+
+func _pouso() -> void:
+	if car.pouso <= 0.0:
+		return
+	var w: Dictionary = car.wheels[car.jit_order[0]]
+	var mat: Dictionary = materiais.get(_sfx_chao(maxi(w.mat, 0)), {})
+	var p: Dictionary = patches.get(mat.get("SurfacePatch", "Default"), {})
+	if not p.has("landing"):
+		return
+	var l: Dictionary = p.landing
+	var vol: float = car.pouso * _f(l, "Volume") * _f(l, "Volume") * _f(master, "SFXVolume", 1.0)
+	if vol > 0.0:
+		_tocar_uma(l.get("Bank", "Coll_Big"), l.get("FirstSample", ""), vol, _f(l, "Pitch", 1.0))
+
+
+func _tocar_uma(b: String, n: String, vol: float, tom: float) -> void:
+	var vivos: Array = []
+	for s in _uma_vez:
+		if s.tocando:
+			vivos.append(s)
+		else:
+			s.queue_free()
+	_uma_vez = vivos
+	if not SomJogo.existe(b, n):
+		return
+	var s := SomJogo.new()
+	s.ganho = GANHO
+	s.volume = vol
+	s.tom = tom
+	add_child(s)
+	s.tocar(b, n)
+	_uma_vez.append(s)
+
+
+## conferência (tests/teste_sfx.gd): [nome, volume, tom] de cada roda
+func estado() -> Array:
+	var out: Array = []
+	for o in rodas:
+		out.append([o.som.nome, o.vol, o.som.tom])
+	return out

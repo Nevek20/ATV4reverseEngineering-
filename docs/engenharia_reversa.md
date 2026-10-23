@@ -505,6 +505,41 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   do material (veículo+0xa88) são poeira, som, marca de pneu e sujeira da
   roda (esta usa o giro W+0x48 e a patinada 0x600).
 
+## Som de pneu, suspensão e pouso
+
+Porta em sfx_carro.gd; samples do jogo via tools/sfx_jogo.py (assets/sfx,
+fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
+- Bancos numa corrida no RX01 (RAM do SPU de 17 save states): Audio/SURFACE.bnk
+  e Audio/Collide.bnk ("Coll_Big"). Suspen.bnk e VEHICLE.bnk (#01b65ec7) nunca
+  carregam. Formato 989snd "SBlk" v3 no cabeçalho do sfx_jogo.py. Índice do
+  som = posição da entrada no Audio/SampleBanks.xml. Taxa com tom 1.0 =
+  48000·2^((CN + CF/128 − 196)/12) (registrador de pitch das vozes).
+- Só veículo humano tem som de pneu (0x36bb68/0x36f460): objetos das rodas 0
+  (FL) e 1 (RL), mais um do patch secundário na FL. Suspensão só com um
+  jogador.
+- Entradas 0x36fa28: spd = |v|(0xe0)·2.2374/140, side = |0x410|·2.2374/60,
+  as duas x < 0.025 → 40x² e no máximo 1; ws = 0.5 por roda com 0x600 > 0.2.
+  Dono+0x178 = 0.4·anterior + 0.1·média(d susp/dt de FL e RL), limitado a ±1.
+- Roda 0x370548 (por quadro): material W+0x140 (−1 = 0) → DB+0x70+4i (pelo
+  SFX do Materials.xml da pista, 0x377ce0); água se veículo+0xaec+4i > −0.05.
+  Sample novo: para, toca o outro e trava 0.07 s. Patch com Volume 0 para.
+  No ar o volume vai a 0 (tom fica). susp = clamp((W+0xe8 + SuspensionOffset)
+  ·SuspensionScale, 0, 1). Volume e tom: fórmulas no cabeçalho do
+  sfx_carro.gd (offsets do patch: 0x2c..0x4c tom, 0x50..0x7c volume, com
+  0x5c MinThreshold e 0x60 SideSpeed). Conferido com o pitch das vozes do SPU
+  em 7 save states (tests/teste_sfx.gd): pior 0.010.
+- Pouso 0x370df0: tempo no ar com 0x8a8 = 0; ao voltar com mais de 0.1 s,
+  0.5 + 0.5·min(1, t), x Landing.Volume duas vezes, x SFX; material da FL.
+- Suspensão 0x36e498 → 0x36e2d8 (Small e Large): |0x418| ≥ 20 mph; dono+0x178
+  passa o Threshold (subida) → toca com Probability; espera MinRetriggerTime;
+  volume (1 − VolumeSpeed·(1 − spd))·Collision·SFX, tom 1.0.
+- MasterSettings: SurfaceVolume 0.5, CollisionVolume 0.8, SFXVolume 1.
+- Não confirmado: unidade das esperas dos grãos (sons.json tick_s = 1 ms),
+  como o 989snd soma volume do som, do tom e ADSR, curva de distância 3D.
+- Achado: no save state 110 (1ª curva) o PS2 tocava asfalto e o mapa de
+  material do remake diz cascalho nas rodas da frente (pendente: o atrito
+  também usa esse mapa).
+
 ## Mão (espelho)
 
 - O jogo é mão esquerda: x direita, y cima, z frente; WHEEL_*_LEFT em x < 0

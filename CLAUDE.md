@@ -33,9 +33,10 @@ main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V)
 piloto.gd            piloto do jogo sentado no ARSE, braços pela direção (STEER_LEFT)
 volantes.gd          volantes gerados, um estilo por carro (melhoria nossa, no lugar do do jogo)
 motor_som.gd         som do motor: loops do Engine Simulator por rpm e carga (melhoria nossa)
+sfx_carro.gd         som de pneu, suspensão e pouso do jogo (portado do exe); som_jogo.gd toca os sons 989snd
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
-assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas (fora do git)
+assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas; sfx (sons do jogo) (fora do git)
 tests/               teste de física sem tela + rodar_testes.py
 tools/               scripts Python de extração (pingu2obj, pintura, savestate)
 som/engine_sim/      um .mr do Engine Simulator por buggy (gerados por tools/gerar_motores.py)
@@ -77,7 +78,8 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 13 carros (0 cm) e giro do volante
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
 %GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies
-%GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta)
+%GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states
+%GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
 :: + SOLTA=1.3 solta o volante (DEPOIS=-1 contra-esterça, ACEL=0 solta o acelerador), DUR=8 segundos depois de virar
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
@@ -87,6 +89,9 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 
 :: checar um script sem abrir o editor
 %GODOT% --headless --path . --check-only --script res://car.gd
+
+:: sons de pneu, suspensão e pouso do jogo -> assets/sfx (wav + sons.json)
+python tools/sfx_jogo.py <unpacked>
 
 :: piloto (malha, esqueleto, animação da direção, textura) -> assets/piloto
 python tools/piloto.py <unpacked>
@@ -289,6 +294,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto (piloto.gd).
+- Som de pneu, suspensão e pouso = do jogo (sfx_carro.gd, docs Som de
+  pneu): Suspen.bnk e VEHICLE.bnk existem mas o jogo NÃO carrega; a
+  suspensão sai do Collide.bnk (BigSuspension/SmallSuspension) e o pneu do
+  SURFACE.bnk, pelo SFX do material da pista. Só FL e RL tocam (+ Screech na
+  FL no asfalto). Tom conferido com o SPU (tests/teste_sfx.gd).
 - Volante tremendo (melhoria nossa, car.gd VOLANTE_TREME, _vibracao): no
   jogo nada treme (nem volante, nem mãos, nem motor: varredura do exe e
   vídeo). A força é a do motor pequeno da vibração do CONTROLE (0x202ab8:
@@ -326,3 +336,7 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   (horizonte perto do meio, volante cortado embaixo, muita estrada).
 - Sinal do giro/direção visual: falta save state andando com volante virado.
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).
+- Mapa de material do RX01: no save state 110 (1ª curva) o PS2 tocava
+  asfalto e o mapa do remake diz cascalho nas rodas da frente
+  (tests/teste_sfx.gd avisa). O atrito do pneu usa o mesmo mapa: conferir
+  (pode ser uma malha de estrada por cima do relevo).

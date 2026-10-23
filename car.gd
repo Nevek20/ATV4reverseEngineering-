@@ -112,6 +112,10 @@ var piloto: Node3D = null
 # (motor_som.gd, som/loops). O som do jogo (3 bancos pros 12) não foi portado
 const SOM_MOTOR := true
 var som: Node = null
+# sons de pneu, suspensão e pouso do jogo (sfx_carro.gd, portados do exe com
+# os samples do jogo em assets/sfx: tools/sfx_jogo.py). false = sem eles
+const SOM_PNEU := true
+var sfx: Node = null
 var som_carga := 0.0          # carga do motor pro som: acelerador x limitador x troca
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
@@ -289,6 +293,7 @@ func _ready() -> void:
 	_load_physics()
 	_load_piloto()                # depois da física: precisa do ponto ARSE
 	_load_som()
+	_load_sfx()
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = Vector3(2.1, 0.8, 4.8)
@@ -830,6 +835,17 @@ func sw_centro() -> Vector3:
 	return SW_CENTER + SW_AXIS.normalized() * sw_avanco
 
 
+func _load_sfx() -> void:
+	if not SOM_PNEU:
+		return
+	sfx = preload("res://sfx_carro.gd").new()
+	sfx.name = "SomPneu"
+	add_child(sfx)
+	if not sfx.carregar(self):
+		sfx.queue_free()
+		sfx = null
+
+
 func _load_som() -> void:
 	if not SOM_MOTOR:
 		return
@@ -1320,6 +1336,8 @@ func _physics_process(dt: float) -> void:
 		jit_acc -= 1.0 / JIT_HZ
 		_wheel_jitter()
 		_vibracao(1.0 / JIT_HZ, v.dot(left), v_f)
+		if sfx:
+			sfx.passo(1.0 / JIT_HZ, v.dot(left), v_f)
 	_update_visuals(dt, v_f)
 
 
