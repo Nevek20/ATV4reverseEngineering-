@@ -1,0 +1,463 @@
+import "engine_sim.mr"
+
+// Viper (Higman): Viper 8.0 [V10 90, ignicao desigual]
+// 7990 cc, taxa 9.6:1, marcha lenta ~700 rpm, corte 6000 rpm, alvo ~334 cv
+// ordem de ignicao 1-10-9-4-3-6-5-8-7-2, intervalos 54/90/54/90/54/90/54/90/54/90 graus
+// gerado por tools/gerar_motores.py (mexer la e gerar de novo)
+
+units units()
+constants constants()
+impulse_response_library ir_lib()
+label cycle(2 * 360 * units.deg)
+
+private node wires {
+    output wire1: ignition_wire();
+    output wire2: ignition_wire();
+    output wire3: ignition_wire();
+    output wire4: ignition_wire();
+    output wire5: ignition_wire();
+    output wire6: ignition_wire();
+    output wire7: ignition_wire();
+    output wire8: ignition_wire();
+    output wire9: ignition_wire();
+    output wire10: ignition_wire();
+}
+
+private node viper_v10_head {
+    input intake_camshaft;
+    input exhaust_camshaft;
+    input chamber_volume: 92.9 * units.cc;
+    input intake_runner_volume: 149.6 * units.cc;
+    input intake_runner_cross_section_area: 2 * units.inch * 2 * units.inch;
+    input exhaust_runner_volume: 50.0 * units.cc;
+    input exhaust_runner_cross_section_area: 1.75 * units.inch * 1.75 * units.inch;
+
+    input flow_attenuation: 1.0;
+    input lift_scale: 1;
+    input flip_display: false;
+    alias output __out: head;
+
+    function intake_flow(50 * units.thou)
+    intake_flow
+        .add_flow_sample(0 * lift_scale, 0 * flow_attenuation)
+        .add_flow_sample(50 * lift_scale, 33 * flow_attenuation)
+        .add_flow_sample(100 * lift_scale, 60 * flow_attenuation)
+        .add_flow_sample(150 * lift_scale, 90 * flow_attenuation)
+        .add_flow_sample(200 * lift_scale, 124 * flow_attenuation)
+        .add_flow_sample(250 * lift_scale, 144 * flow_attenuation)
+        .add_flow_sample(300 * lift_scale, 155 * flow_attenuation)
+        .add_flow_sample(350 * lift_scale, 162 * flow_attenuation)
+        .add_flow_sample(400 * lift_scale, 162 * flow_attenuation)
+        .add_flow_sample(450 * lift_scale, 162 * flow_attenuation)
+        .add_flow_sample(500 * lift_scale, 162 * flow_attenuation)
+        .add_flow_sample(550 * lift_scale, 162 * flow_attenuation)
+        .add_flow_sample(600 * lift_scale, 162 * flow_attenuation)
+
+    function exhaust_flow(50 * units.thou)
+    exhaust_flow
+        .add_flow_sample(0 * lift_scale, 0 * flow_attenuation)
+        .add_flow_sample(50 * lift_scale, 18 * flow_attenuation)
+        .add_flow_sample(100 * lift_scale, 35 * flow_attenuation)
+        .add_flow_sample(150 * lift_scale, 56 * flow_attenuation)
+        .add_flow_sample(200 * lift_scale, 79 * flow_attenuation)
+        .add_flow_sample(250 * lift_scale, 96 * flow_attenuation)
+        .add_flow_sample(300 * lift_scale, 109 * flow_attenuation)
+        .add_flow_sample(350 * lift_scale, 116 * flow_attenuation)
+        .add_flow_sample(400 * lift_scale, 120 * flow_attenuation)
+        .add_flow_sample(450 * lift_scale, 121 * flow_attenuation)
+        .add_flow_sample(500 * lift_scale, 121 * flow_attenuation)
+        .add_flow_sample(550 * lift_scale, 121 * flow_attenuation)
+        .add_flow_sample(600 * lift_scale, 121 * flow_attenuation)
+
+    generic_cylinder_head head(
+        chamber_volume: chamber_volume,
+        intake_runner_volume: intake_runner_volume,
+        intake_runner_cross_section_area: intake_runner_cross_section_area,
+        exhaust_runner_volume: exhaust_runner_volume,
+        exhaust_runner_cross_section_area: exhaust_runner_cross_section_area,
+
+        intake_port_flow: intake_flow,
+        exhaust_port_flow: exhaust_flow,
+        valvetrain: standard_valvetrain(
+            intake_camshaft: intake_camshaft,
+            exhaust_camshaft: exhaust_camshaft
+        ),
+        flip_display: flip_display
+    )
+}
+
+private node viper_v10_camshaft {
+    input lobe_profile;
+    input intake_lobe_profile: lobe_profile;
+    input exhaust_lobe_profile: lobe_profile;
+    input lobe_separation: 114 * units.deg;
+    input intake_lobe_center: lobe_separation;
+    input exhaust_lobe_center: lobe_separation;
+    input advance: 0 * units.deg;
+    input base_radius: 1.0 * units.inch;
+
+    output intake_cam_0: _intake_cam_0;
+    output exhaust_cam_0: _exhaust_cam_0;
+    output intake_cam_1: _intake_cam_1;
+    output exhaust_cam_1: _exhaust_cam_1;
+
+    camshaft_parameters params (
+        advance: advance,
+        base_radius: base_radius
+    )
+
+    camshaft _intake_cam_0(params, lobe_profile: intake_lobe_profile)
+    camshaft _exhaust_cam_0(params, lobe_profile: exhaust_lobe_profile)
+    camshaft _intake_cam_1(params, lobe_profile: intake_lobe_profile)
+    camshaft _exhaust_cam_1(params, lobe_profile: exhaust_lobe_profile)
+
+    label rot360(360 * units.deg)
+
+    _exhaust_cam_0
+        .add_lobe(rot360 - exhaust_lobe_center + 0 * units.deg) // 1
+        .add_lobe(rot360 - exhaust_lobe_center + 288 * units.deg) // 3
+        .add_lobe(rot360 - exhaust_lobe_center + 432 * units.deg) // 5
+        .add_lobe(rot360 - exhaust_lobe_center + 576 * units.deg) // 7
+        .add_lobe(rot360 - exhaust_lobe_center + 144 * units.deg) // 9
+    _intake_cam_0
+        .add_lobe(rot360 + intake_lobe_center + 0 * units.deg) // 1
+        .add_lobe(rot360 + intake_lobe_center + 288 * units.deg) // 3
+        .add_lobe(rot360 + intake_lobe_center + 432 * units.deg) // 5
+        .add_lobe(rot360 + intake_lobe_center + 576 * units.deg) // 7
+        .add_lobe(rot360 + intake_lobe_center + 144 * units.deg) // 9
+
+    _exhaust_cam_1
+        .add_lobe(rot360 - exhaust_lobe_center + 630 * units.deg) // 2
+        .add_lobe(rot360 - exhaust_lobe_center + 198 * units.deg) // 4
+        .add_lobe(rot360 - exhaust_lobe_center + 342 * units.deg) // 6
+        .add_lobe(rot360 - exhaust_lobe_center + 486 * units.deg) // 8
+        .add_lobe(rot360 - exhaust_lobe_center + 54 * units.deg) // 10
+    _intake_cam_1
+        .add_lobe(rot360 + intake_lobe_center + 630 * units.deg) // 2
+        .add_lobe(rot360 + intake_lobe_center + 198 * units.deg) // 4
+        .add_lobe(rot360 + intake_lobe_center + 342 * units.deg) // 6
+        .add_lobe(rot360 + intake_lobe_center + 486 * units.deg) // 8
+        .add_lobe(rot360 + intake_lobe_center + 54 * units.deg) // 10
+}
+
+public node viper_v10 {
+    alias output __out: engine;
+
+    engine engine(
+        name: "Viper 8.0 [V10 90, ignicao desigual]",
+        starter_torque: 200 * units.lb_ft,
+        starter_speed: 200 * units.rpm,
+        redline: 6000 * units.rpm,
+        fuel: fuel(
+            max_turbulence_effect: 3,
+            max_burning_efficiency: 0.9
+        ),
+        throttle_gamma: 2.0,
+        hf_gain: 0.01,
+        noise: 1.0,
+        jitter: 0.3,
+        simulation_frequency: 8000
+    )
+
+    wires wires()
+
+    label stroke(98.55 * units.mm)
+    label bore(101.6 * units.mm)
+    label rod_length(155.55 * units.mm)
+    label rod_mass(650 * units.g)
+    label compression_height(1.3 * units.inch)
+    label crank_mass(30 * units.kg)
+    label flywheel_mass(14 * units.kg)
+    label flywheel_radius(7.5 * units.inch)
+
+    label crank_moment(
+        disk_moment_of_inertia(mass: crank_mass, radius: stroke / 2)
+    )
+    label flywheel_moment(
+        disk_moment_of_inertia(mass: flywheel_mass, radius: flywheel_radius)
+    )
+    label other_moment( // comando, polias etc [estimado]
+        disk_moment_of_inertia(mass: 10 * units.kg, radius: 6.0 * units.cm)
+    )
+
+    crankshaft c0(
+        throw: stroke / 2,
+        flywheel_mass: flywheel_mass,
+        mass: crank_mass,
+        friction_torque: 14 * units.lb_ft,
+        moment_of_inertia:
+            crank_moment + flywheel_moment + other_moment,
+        position_x: 0.0,
+        position_y: 0.0,
+        tdc: 45 * units.deg
+    )
+
+    rod_journal rj0(angle: 0 * units.deg)
+    rod_journal rj1(angle: 288 * units.deg)
+    rod_journal rj2(angle: 72 * units.deg)
+    rod_journal rj3(angle: 216 * units.deg)
+    rod_journal rj4(angle: 144 * units.deg)
+    c0
+        .add_rod_journal(rj0)
+        .add_rod_journal(rj1)
+        .add_rod_journal(rj2)
+        .add_rod_journal(rj3)
+        .add_rod_journal(rj4)
+
+    piston_parameters piston_params(
+        mass: 520 * units.g,
+        compression_height: compression_height,
+        wrist_pin_position: 0.0,
+        displacement: 0.0
+    )
+
+    connecting_rod_parameters cr_params(
+        mass: rod_mass,
+        moment_of_inertia: rod_moment_of_inertia(
+            mass: rod_mass,
+            length: rod_length
+        ),
+        center_of_mass: 0.0,
+        length: rod_length
+    )
+
+    intake intake0(
+        plenum_volume: 2 * units.L,
+        plenum_cross_section_area: 20.0 * units.cm2,
+        intake_flow_rate: k_carb(636.6),
+        runner_flow_rate: k_carb(127.32),
+        runner_length: 10 * units.inch,
+        idle_flow_rate: k_carb(0.0),
+        idle_throttle_plate_position: 0.99433, // maior = marcha lenta mais baixa
+        velocity_decay: 0.5
+    )
+
+    exhaust_system_parameters es_params0(
+        outlet_flow_rate: k_carb(1500),
+        primary_tube_length: 30 * units.inch,
+        primary_flow_rate: k_carb(600),
+        velocity_decay: 1.0
+    )
+    exhaust_system exhaust0(
+        es_params0,
+        audio_volume: 2,
+        length: 100 * units.inch,
+        impulse_response: ir_lib.real_engine_2
+    )
+
+    exhaust_system_parameters es_params1(
+        outlet_flow_rate: k_carb(1500),
+        primary_tube_length: 30 * units.inch,
+        primary_flow_rate: k_carb(600),
+        velocity_decay: 1.0
+    )
+    exhaust_system exhaust1(
+        es_params1,
+        audio_volume: 2,
+        length: 100.5 * units.inch,
+        impulse_response: ir_lib.real_engine_2
+    )
+
+    cylinder_bank_parameters bank_params(
+        bore: bore,
+        deck_height: stroke / 2 + rod_length + compression_height
+    )
+
+    cylinder_bank b0(bank_params, angle: -45 * units.deg)
+    cylinder_bank b1(bank_params, angle: 45 * units.deg)
+    b0
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj0,
+            intake: intake0,
+            exhaust_system: exhaust0,
+            ignition_wire: wires.wire1,
+            primary_length: 5 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj1,
+            intake: intake0,
+            exhaust_system: exhaust0,
+            ignition_wire: wires.wire3,
+            primary_length: 4 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj2,
+            intake: intake0,
+            exhaust_system: exhaust0,
+            ignition_wire: wires.wire5,
+            primary_length: 3 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj3,
+            intake: intake0,
+            exhaust_system: exhaust0,
+            ignition_wire: wires.wire7,
+            primary_length: 2 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj4,
+            intake: intake0,
+            exhaust_system: exhaust0,
+            ignition_wire: wires.wire9,
+            primary_length: 1 * units.inch
+        )
+        .set_cylinder_head(
+            viper_v10_head(
+                intake_camshaft: camshaft.intake_cam_0,
+                exhaust_camshaft: camshaft.exhaust_cam_0,
+                flip_display: false)
+        )
+    b1
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj0,
+            intake: intake0,
+            exhaust_system: exhaust1,
+            ignition_wire: wires.wire2,
+            primary_length: 5 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj1,
+            intake: intake0,
+            exhaust_system: exhaust1,
+            ignition_wire: wires.wire4,
+            primary_length: 4 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj2,
+            intake: intake0,
+            exhaust_system: exhaust1,
+            ignition_wire: wires.wire6,
+            primary_length: 3 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj3,
+            intake: intake0,
+            exhaust_system: exhaust1,
+            ignition_wire: wires.wire8,
+            primary_length: 2 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj4,
+            intake: intake0,
+            exhaust_system: exhaust1,
+            ignition_wire: wires.wire10,
+            primary_length: 1 * units.inch
+        )
+        .set_cylinder_head(
+            viper_v10_head(
+                intake_camshaft: camshaft.intake_cam_1,
+                exhaust_camshaft: camshaft.exhaust_cam_1,
+                flip_display: true)
+        )
+
+    engine
+        .add_cylinder_bank(b0)
+        .add_cylinder_bank(b1)
+
+    engine.add_crankshaft(c0)
+
+    harmonic_cam_lobe intake_lobe(
+        duration_at_50_thou: 212 * units.deg,
+        gamma: 1,
+        lift: 490 * units.thou,
+        steps: 100
+    )
+
+    harmonic_cam_lobe exhaust_lobe(
+        duration_at_50_thou: 218 * units.deg,
+        gamma: 1,
+        lift: 490 * units.thou,
+        steps: 100
+    )
+
+    viper_v10_camshaft camshaft(
+        lobe_profile: "N/A",
+
+        intake_lobe_profile: intake_lobe,
+        exhaust_lobe_profile: exhaust_lobe,
+        intake_lobe_center: 114 * units.deg,
+        exhaust_lobe_center: 114 * units.deg,
+        base_radius: 0.9 * units.inch
+    )
+
+    function timing_curve(1000 * units.rpm)
+    timing_curve
+        .add_sample(0000 * units.rpm, 12 * units.deg)
+        .add_sample(1000 * units.rpm, 12 * units.deg)
+        .add_sample(2000 * units.rpm, 22 * units.deg)
+        .add_sample(3000 * units.rpm, 30 * units.deg)
+        .add_sample(4000 * units.rpm, 36 * units.deg)
+        .add_sample(6000 * units.rpm, 36 * units.deg)
+
+    ignition_module ignition_module(
+        timing_curve: timing_curve,
+        rev_limit: 6200 * units.rpm,
+        limiter_duration: 0.12)
+    ignition_module
+            .connect_wire(wires.wire1, 0 * units.deg)
+            .connect_wire(wires.wire10, 54 * units.deg)
+            .connect_wire(wires.wire9, 144 * units.deg)
+            .connect_wire(wires.wire4, 198 * units.deg)
+            .connect_wire(wires.wire3, 288 * units.deg)
+            .connect_wire(wires.wire6, 342 * units.deg)
+            .connect_wire(wires.wire5, 432 * units.deg)
+            .connect_wire(wires.wire8, 486 * units.deg)
+            .connect_wire(wires.wire7, 576 * units.deg)
+            .connect_wire(wires.wire2, 630 * units.deg)
+
+    engine.add_ignition_module(ignition_module)
+}
+
+private node viper_v10_buggy {
+    alias output __out:
+        vehicle(
+            mass: 1100 * units.kg,
+            drag_coefficient: 0.45,
+            cross_sectional_area: (70 * units.inch) * (60 * units.inch),
+            diff_ratio: 5.07,
+            tire_radius: 15 * units.inch,
+            rolling_resistance: 300 * units.N
+        );
+}
+
+private node viper_v10_transmission {
+    alias output __out:
+        transmission(
+            max_clutch_torque: 650 * units.lb_ft
+        )
+        .add_gear(3.085)
+        .add_gear(2.017)
+        .add_gear(1.508)
+        .add_gear(1.203)
+        .add_gear(1);
+}
+
+public node main {
+    run(
+        engine: viper_v10(),
+        transmission: viper_v10_transmission(),
+        vehicle: viper_v10_buggy()
+    )
+}
+
+main()

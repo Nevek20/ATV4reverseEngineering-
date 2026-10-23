@@ -1,0 +1,12 @@
+diff --git a/include/sparse_matrix.h b/include/sparse_matrix.h
+index c8875c6..fec2157 100644
+--- a/include/sparse_matrix.h
++++ b/include/sparse_matrix.h
+@@ -4,6 +4,7 @@
+ #include <assert.h>
+ #include <stdint.h>
+ #include <string.h>
++#include "matrix.h"
+ 
+ namespace atg_scs {
+     class Matrix;

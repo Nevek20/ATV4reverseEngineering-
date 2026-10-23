@@ -154,6 +154,14 @@ func amortecimento(m: int) -> float:
 	return float(materials[m].get("Damping", 0.0))
 
 
+## som do pneu no material (atributo SFX: Dirt, Tarmac, Gravel, Grass, Snow);
+## o 0x377ce0 liga o material i da pista ao material de som desse nome
+func sfx(m: int) -> String:
+	if m < 0 or m >= materials.size():
+		return "Default"
+	return str(materials[m].get("SFX", "Default"))
+
+
 ## nome curto do material: "COMMON_3(TARMAC/COMMON)*" -> "TARMAC/COMMON"
 func material_name(m: int) -> String:
 	if m < 0 or m >= materials.size():

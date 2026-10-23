@@ -1,0 +1,387 @@
+<Root FileVersion="1.0000000">
+   <BankPatches>
+      <BankPatch name="Permanent">
+         <Bank name="Damage"/>
+      </BankPatch>
+      <BankPatch name="FrontEnd">
+         <Bank name="Menu_FE"/>
+      </BankPatch>
+      <BankPatch name="InGame">
+         <Bank name="Menu_IG"/>
+      </BankPatch>
+      <BankPatch name="NORMAL">
+         <Bank name="Surface"/>
+      </BankPatch>
+      <BankPatch name="ICY">
+         <Bank name="Surface2"/>
+      </BankPatch>
+      <BankPatch name="MG_Basketball">
+         <Bank name="MG_GEN"/>
+         <Bank name="Basketball"/>
+      </BankPatch>
+      <BankPatch name="MG_Bomb">
+         <Bank name="DodgeBomb"/>
+      </BankPatch>
+      <BankPatch name="MG_Freestyle">
+         <Bank name="Freestyle"/>
+      </BankPatch>
+      <BankPatch name="MG_Ghost">
+         <Bank name="Ghost"/>
+      </BankPatch>
+      <BankPatch name="MG_Hockey">
+         <Bank name="MG_GEN"/>
+         <Bank name="Hockey"/>
+      </BankPatch>
+      <BankPatch name="MG_Rings">
+         <Bank name="MG_GEN"/>
+         <Bank name="Rings"/>
+      </BankPatch>
+      <BankPatch name="MG_Soccer">
+         <Bank name="MG_GEN"/>
+         <Bank name="Soccer"/>
+      </BankPatch>
+      <BankPatch name="MG_Treasure">
+         <Bank name="Treasure"/>
+      </BankPatch>
+      <BankPatch name="BREEZE">
+         <Bank name="Env1"/>
+      </BankPatch>
+      <BankPatch name="COLDWIND">
+         <Bank name="Env2"/>
+      </BankPatch>
+      <BankPatch name="THUNDER">
+         <Bank name="Env3"/>
+      </BankPatch>
+      <BankPatch name="THUNDER2">
+         <Bank name="Env4"/>
+      </BankPatch>
+      <BankPatch name="THUNDERRAIN">
+         <Bank name="Env5"/>
+      </BankPatch>
+      <BankPatch name="RAIN">
+         <Bank name="Env6"/>
+      </BankPatch>
+      <BankPatch name="DESERT">
+         <Bank name="Env7"/>
+      </BankPatch>
+      <BankPatch name="NORMAL">
+         <Bank name="Surface"/>
+      </BankPatch>
+      <BankPatch name="ICY">
+         <Bank name="Surface2"/>
+      </BankPatch>
+      <BankPatch name="PICKUPS">
+         <Bank name="Pickups"/>
+      </BankPatch>
+      <BankPatch name="MG_Bowling">
+         <Bank name="Bowling"/>
+      </BankPatch>
+   </BankPatches>
+   <MasterSettings>
+      <PS2 FrontEndVolume="0.7" MasterEffectVolume="0.8500000" MusicVolume="0.8" EngineVolume="1.0" SurfaceVolume="0.5" CollisionVolume="0.8" AmbientVolume="0.55" CharacterVolume="1.0000000" SFXVolume="1.0000000" CrowdsVolume="0.65" MovieVolume="0.7" MasterMusicVolume="0.44"/>
+   </MasterSettings>
+   <Wheels>
+      <Patches>
+         <Default>
+            <Looping Bank="Surface" Substitute="false" Sample="Dirt">
+               <Pitch Pitch="1.75" Speed="0.2000000" SideSpeed="0.0" Suspension="-0.1000000" Steer="0.0000000" Acc="0.0000000" Wheelspin="-0.1187499" WheelLock="-0.1046875" WheelDiff="0.0799999"/>
+               <Volume Volume="0.8227" MinSpeed="0.4305" MaxSpeed="0.5898" SideSpeed="0.3328" MinThreshold="0.0000000" Suspension="0.2500000" Acc="0.2000000" Steer="0.5000000" Wheelspin="0.2859" WheelLock="0.7304688" AttackLevel="0.0203" DecayRate="0.9289063"/>
+            </Looping>
+            <OneShot TriggerRateMinSpeed="0.3000000" TriggerRateMaxSpeed="0.6999999" VolumeOnFirstContact="0.0000000" Bank="Coll_Big" Substitute="false" FirstSample="LandingImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.1000000" Volume="0.0000000" VolumeRandomise="0.1000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Landing Bank="Coll_Big" Substitute="true" FirstSample="LandingImpact" NumSamples="1" Pitch="1.1" PitchRandomise="0.0000000" Volume="0.8" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Default>
+         <Silence>
+            <Looping Bank="Surface" Substitute="false" Sample="Dirt">
+               <Pitch Pitch="2.0" Speed="0.2000000" SideSpeed="0.0" Suspension="-0.1000000" Steer="0.0000000" Acc="0.0000000" Wheelspin="-0.1187499" WheelLock="-0.1046875" WheelDiff="0.0799999"/>
+               <Volume Volume="0.0" MinSpeed="0.4305" MaxSpeed="0.5898" SideSpeed="0.3328" MinThreshold="0.0000000" Suspension="0.2500000" Acc="0.2000000" Steer="0.5000000" Wheelspin="0.2859" WheelLock="0.7304688" AttackLevel="0.0203" DecayRate="0.9289063"/>
+            </Looping>
+            <OneShot TriggerRateMinSpeed="0.3000000" TriggerRateMaxSpeed="0.6999999" VolumeOnFirstContact="0.0000000" Bank="Coll_Big" Substitute="false" FirstSample="LandingImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.1000000" Volume="0.0000000" VolumeRandomise="0.0" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Landing Bank="Coll_Big" Substitute="true" FirstSample="LandingImpact" NumSamples="1" Pitch="1.2" PitchRandomise="0.0000000" Volume="0.0" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Silence>
+         <Tarmac>
+            <Looping Bank="Surface" Substitute="false" Sample="Tarmac">
+               <Pitch Pitch="1.0" Speed="0.000" SideSpeed="0.000" Suspension="0.000" Steer="0.0000000" Acc="0.0000000" Wheelspin="0.06" WheelLock="0.0000000" WheelDiff="0.0599"/>
+               <Volume Volume="0.7" MinSpeed="0.1555" MaxSpeed="0.8625" SideSpeed="0.0" MinThreshold="0.0000000" Suspension="0.0000000" Acc="0.0000000" Steer="0.0" Wheelspin="0.0469" WheelLock="0.0000000" AttackLevel="0.0000000" DecayRate="0.0099999"/>
+            </Looping>
+            <OneShot TriggerRateMinSpeed="3.0000000" TriggerRateMaxSpeed="0.6999999" VolumeOnFirstContact="0.0000000" Bank="Coll_Big" Substitute="false" FirstSample="LandingImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.1000000" Volume="0.0000000" VolumeRandomise="0.1000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Landing Bank="Coll_Big" Substitute="true" FirstSample="LandingImpact" NumSamples="1" Pitch="1.1" PitchRandomise="0.0000000" Volume="0.8" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Tarmac>
+         <Screech>
+            <Looping Bank="Surface" Substitute="false" Sample="Screech">
+               <Pitch Pitch="0.65" Speed="0.0000000" SideSpeed="0.1890625" Suspension="0.0000000" Steer="0.0000000" Acc="0.0000000" Wheelspin="0.1359375" WheelLock="0.0689999" WheelDiff="0.0599999"/>
+               <Volume Volume="0.9" MinSpeed="0.1484" MaxSpeed="1.0000" SideSpeed="0.5367" MinThreshold="0.2305" Suspension="0.5500000" Acc="0.2500000" Steer="0.0000000" Wheelspin="0.5586" WheelLock="0.4233999" AttackLevel="0.0000" DecayRate="0.9819"/>
+            </Looping>
+            <OneShot TriggerRateMinSpeed="3.0000000" TriggerRateMaxSpeed="0.6999999" VolumeOnFirstContact="0.0000000" Bank="Coll_Big" Substitute="false" FirstSample="LandingImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.1000000" Volume="0.0000000" VolumeRandomise="0.1000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Landing Bank="Coll_Big" Substitute="true" FirstSample="LandingImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.0" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Screech>
+         <Gravel>
+            <Looping Bank="Surface" Substitute="false" Sample="Gravel">
+               <Pitch Pitch="1.75" Speed="0.2000000" SideSpeed="0.0" Suspension="-0.1000000" Steer="0.0000000" Acc="0.0000000" Wheelspin="-0.1187499" WheelLock="-0.1046875" WheelDiff="0.0799999"/>
+               <Volume Volume="0.8227" MinSpeed="0.4305" MaxSpeed="0.5898" SideSpeed="0.3328" MinThreshold="0.0000000" Suspension="0.2500000" Acc="0.2000000" Steer="0.5000000" Wheelspin="0.2859" WheelLock="0.7304688" AttackLevel="0.0203" DecayRate="0.9289063"/>
+            </Looping>
+            <OneShot TriggerRateMinSpeed="0.3000000" TriggerRateMaxSpeed="0.6999999" VolumeOnFirstContact="0.0000000" Bank="Coll_Big" Substitute="false" FirstSample="LandingImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.1000000" Volume="0.0000000" VolumeRandomise="0.1000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Landing Bank="Coll_Big" Substitute="true" FirstSample="LandingImpact" NumSamples="1" Pitch="1.1" PitchRandomise="0.0000000" Volume="0.8" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Gravel>
+         <Sand>
+            <Looping Bank="Surface" Substitute="false" Sample="Dirt">
+               <Pitch Pitch="1.75" Speed="0.2000000" SideSpeed="0.0" Suspension="-0.1000000" Steer="0.0000000" Acc="0.0000000" Wheelspin="-0.1187499" WheelLock="-0.1046875" WheelDiff="0.0799999"/>
+               <Volume Volume="0.8227" MinSpeed="0.4305" MaxSpeed="0.5898" SideSpeed="0.3328" MinThreshold="0.0000000" Suspension="0.2500000" Acc="0.2000000" Steer="0.5000000" Wheelspin="0.2859" WheelLock="0.7304688" AttackLevel="0.0203" DecayRate="0.9289063"/>
+            </Looping>
+            <OneShot TriggerRateMinSpeed="0.3000000" TriggerRateMaxSpeed="0.6999999" VolumeOnFirstContact="0.0000000" Bank="Coll_Big" Substitute="false" FirstSample="LandingImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.1000000" Volume="0.0000000" VolumeRandomise="0.1000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Landing Bank="Coll_Big" Substitute="true" FirstSample="LandingImpact" NumSamples="1" Pitch="1.1" PitchRandomise="0.0000000" Volume="0.8" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Sand>
+         <Grass>
+            <Looping Bank="Surface" Substitute="false" Sample="Gravel">
+               <Pitch Pitch="1.75" Speed="0.2000000" SideSpeed="0.0" Suspension="-0.1000000" Steer="0.0000000" Acc="0.0000000" Wheelspin="-0.1187499" WheelLock="-0.1046875" WheelDiff="0.0799999"/>
+               <Volume Volume="0.8227" MinSpeed="0.4305" MaxSpeed="0.5898" SideSpeed="0.3328" MinThreshold="0.0000000" Suspension="0.2500000" Acc="0.2000000" Steer="0.5000000" Wheelspin="0.2859" WheelLock="0.7304688" AttackLevel="0.0203" DecayRate="0.9289063"/>
+            </Looping>
+            <OneShot TriggerRateMinSpeed="0.3000000" TriggerRateMaxSpeed="0.6999999" VolumeOnFirstContact="0.0000000" Bank="Coll_Big" Substitute="false" FirstSample="LandingImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.1000000" Volume="0.0000000" VolumeRandomise="0.1000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Landing Bank="Coll_Big" Substitute="true" FirstSample="LandingImpact" NumSamples="1" Pitch="1.1" PitchRandomise="0.0000000" Volume="0.8" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Grass>
+         <Water>
+            <Looping Bank="Surface" Substitute="false" Sample="Water">
+               <Pitch Pitch="2.0" Speed="0.2" SideSpeed="0.0" Suspension="0.0" Steer="0.0" Acc="0.0" Wheelspin="0.0" WheelLock="0.0" WheelDiff="0.25"/>
+               <Volume Volume="1.0" MinSpeed="0.6" MaxSpeed="1.0" SideSpeed="0.0" MinThreshold="0.0" Suspension="0.0" Acc="0.0" Steer="0.0" Wheelspin="0.0" WheelLock="0.0" AttackLevel="0.0203" DecayRate="0.95"/>
+            </Looping>
+            <OneShot TriggerRateMinSpeed="0.3000000" TriggerRateMaxSpeed="0.6999999" VolumeOnFirstContact="0.0000000" Bank="Coll_Big" Substitute="false" FirstSample="LandingImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.1000000" Volume="0.0000000" VolumeRandomise="0.1000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Landing Bank="Coll_Big" Substitute="true" FirstSample="WaterImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.9" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Water>
+         <Dirt>
+            <Looping Bank="Surface" Substitute="false" Sample="Dirt">
+               <Pitch Pitch="1.75" Speed="0.2" SideSpeed="0.0" Suspension="-0.1000000" Steer="0.0000000" Acc="0.0000000" Wheelspin="-0.1187499" WheelLock="-0.1046875" WheelDiff="0.0799999"/>
+               <Volume Volume="0.8227" MinSpeed="0.4" MaxSpeed="0.8" SideSpeed="0.1" MinThreshold="0.0000000" Suspension="0.2500000" Acc="0.2000000" Steer="0.5000000" Wheelspin="0.1711" WheelLock="0.7304688" AttackLevel="0.0203" DecayRate="0.9289063"/>
+            </Looping>
+            <OneShot TriggerRateMinSpeed="0.3000000" TriggerRateMaxSpeed="0.6999999" VolumeOnFirstContact="0.0000000" Bank="Coll_Big" Substitute="false" FirstSample="LandingImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.1000000" Volume="0.0000000" VolumeRandomise="0.1000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Landing Bank="Coll_Big" Substitute="true" FirstSample="LandingImpact" NumSamples="1" Pitch="1.1" PitchRandomise="0.0000000" Volume="0.8" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Dirt>
+         <Snow>
+            <Looping Bank="Surface" Substitute="false" Sample="Dirt">
+               <Pitch Pitch="1.3" Speed="0.2000000" SideSpeed="0.0" Suspension="-0.1000000" Steer="0.0000000" Acc="0.0000000" Wheelspin="-0.1187499" WheelLock="-0.1046875" WheelDiff="0.1"/>
+               <Volume Volume="0.8227" MinSpeed="0.4305" MaxSpeed="0.5898" SideSpeed="0.0" MinThreshold="0.0000000" Suspension="0.2500000" Acc="0.2000000" Steer="0.5000000" Wheelspin="0.2859" WheelLock="0.7304688" AttackLevel="0.0203" DecayRate="0.9289063"/>
+            </Looping>
+            <OneShot TriggerRateMinSpeed="0.3000000" TriggerRateMaxSpeed="0.6999999" VolumeOnFirstContact="0.0000000" Bank="Coll_Big" Substitute="false" FirstSample="LandingImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.1000000" Volume="0.0000000" VolumeRandomise="0.1000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Landing Bank="Coll_Big" Substitute="true" FirstSample="LandingImpact" NumSamples="1" Pitch="1.1" PitchRandomise="0.0000000" Volume="0.8" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Snow>
+         <Ice>
+            <Looping Bank="Surface" Substitute="false" Sample="Dirt">
+               <Pitch Pitch="1.3" Speed="0.2000000" SideSpeed="0.0" Suspension="-0.1000000" Steer="0.0000000" Acc="0.0000000" Wheelspin="-0.1187499" WheelLock="-0.1046875" WheelDiff="0.1"/>
+               <Volume Volume="0.8227" MinSpeed="0.4305" MaxSpeed="0.5898" SideSpeed="0.0" MinThreshold="0.0000000" Suspension="0.2500000" Acc="0.2000000" Steer="0.5000000" Wheelspin="0.2859" WheelLock="0.7304688" AttackLevel="0.0203" DecayRate="0.9289063"/>
+            </Looping>
+            <OneShot TriggerRateMinSpeed="0.3000000" TriggerRateMaxSpeed="0.6999999" VolumeOnFirstContact="0.0000000" Bank="Coll_Big" Substitute="false" FirstSample="LandingImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.1000000" Volume="0.0000000" VolumeRandomise="0.1000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Landing Bank="Coll_Big" Substitute="true" FirstSample="LandingImpact" NumSamples="1" Pitch="1.1" PitchRandomise="0.0000000" Volume="0.8" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Ice>
+      </Patches>
+      <Materials>
+         <Default Pitch="1.0000000" Volume="0.0000000" SurfacePatch="Default" SecondaryPatch="Silence"/>
+         <Tarmac Pitch="1.0000000" Volume="1.0000000" SurfacePatch="Tarmac" SecondaryPatch="Screech"/>
+         <Gravel Pitch="1.0000000" Volume="1.0000000" SurfacePatch="Gravel" SecondaryPatch="Silence"/>
+         <Grass Pitch="1.0000000" Volume="1.0000000" SurfacePatch="Grass" SecondaryPatch="Silence"/>
+         <Sand Pitch="1.0000000" Volume="1.0000000" SurfacePatch="Sand" SecondaryPatch="Silence"/>
+         <Mud Pitch="1.0000000" Volume="1.0000000" SurfacePatch="Dirt" SecondaryPatch="Silence"/>
+         <Snow Pitch="1.0000000" Volume="1.0000000" SurfacePatch="Snow" SecondaryPatch="Silence"/>
+         <Ice Pitch="1.0000000" Volume="1.0000000" SurfacePatch="Ice" SecondaryPatch="Silence"/>
+         <Water Pitch="1.0000000" Volume="1.0000000" SurfacePatch="Water" SecondaryPatch="Silence"/>
+         <Dirt Pitch="1.0" Volume="1.0000000" SurfacePatch="Dirt" SecondaryPatch="Silence"/>
+      </Materials>
+   </Wheels>
+   <Collisions SmallThreshold="0.5" LargeThreshold="20" RiderThreshold="0.6999999" MinRetriggerTime="0.2000000" MinScrapeTime="0.2500000" OffsetEnhance="1.0000000">
+      <Patches>
+         <Default>
+            <Small Bank="Coll_Big" Substitute="true" FirstSample="SmallImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+            <Large Bank="Coll_Big" Substitute="true" FirstSample="BigImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Scraping Bank="Surface" Substitute="false" Sample="Dirt" Volume="0.5000000" Pitch="1.0000000"/>
+         </Default>
+         <Metal>
+            <Small Bank="Coll_Big" Substitute="true" FirstSample="MetalImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.6999999" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+            <Large Bank="Coll_Big" Substitute="true" FirstSample="MetalImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Scraping Bank="Menu_IG" Substitute="true" Sample="Metal" Volume="1.0000000" Pitch="1.0000000"/>
+         </Metal>
+         <Wood>
+            <Small Bank="Coll_Big" Substitute="true" FirstSample="Branch" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.6999999" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+            <Large Bank="Coll_Big" Substitute="true" FirstSample="Tree" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Scraping Bank="Surface" Substitute="false" Sample="Wood" Volume="1.0000000" Pitch="1.0000000"/>
+         </Wood>
+         <Vehicle>
+            <Small Bank="Coll_Big" Substitute="true" FirstSample="SmallImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.6999999" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+            <Large Bank="Coll_Big" Substitute="true" FirstSample="BigImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Scraping Bank="Menu_IG" Substitute="true" Sample="MetalImpact" Volume="1.0000000" Pitch="1.0000000"/>
+         </Vehicle>
+         <RiderM>
+            <Small Bank="Damage" Substitute="false" FirstSample="RiderM" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.6999999" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+            <Large Bank="Damage" Substitute="false" FirstSample="RiderM" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Scraping Bank="Surface" Substitute="false" Sample="Dirt" Volume="0.5000000" Pitch="1.0000000"/>
+         </RiderM>
+         <RiderF>
+            <Small Bank="Damage" Substitute="false" FirstSample="RiderF" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.6999999" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+            <Large Bank="Damage" Substitute="false" FirstSample="RiderF" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Scraping Bank="Surface" Substitute="false" Sample="Dirt" Volume="0.5000000" Pitch="1.0000000"/>
+         </RiderF>
+      </Patches>
+      <InteractiveObjects>
+         <COLLISIONS Bank="Coll_Big" Substitute="true" FirstSample="MediumImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <TRACKBLOCKS Bank="Coll_Big" Substitute="true" FirstSample="TrackBlocks" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.6" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <SIGNPOST Bank="Coll_Big" Substitute="true" FirstSample="SignPost" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.7" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <COLLISIONMETAL Bank="Coll_Big" Substitute="true" FirstSample="Metal" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <WOODEN_CRATE Bank="Coll_Big" Substitute="true" FirstSample="Branch" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <CARBOARD Bank="Coll_Big" Substitute="true" FirstSample="MediumImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <COLLISIBARRIER Bank="Coll_Big" Substitute="true" FirstSample="Barrier" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <OIL_BARREL Bank="Coll_Big" Substitute="true" FirstSample="Metal" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <INFLATABLE Bank="Coll_Big" Substitute="true" FirstSample="Inflatable" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <COLLISION_TREE Bank="Coll_Big" Substitute="true" FirstSample="Tree" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <PLASTIC_CHAIRS Bank="Coll_Big" Substitute="true" FirstSample="FencePlastic" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <PORTALOO Bank="Coll_Big" Substitute="true" FirstSample="Inflatable" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <PLASTIC_FENCE Bank="Coll_Big" Substitute="true" FirstSample="FencePlastic" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <CONE Bank="Coll_Big" Substitute="true" FirstSample="Cone" NumSamples="1" Pitch="1.2" PitchRandomise="0.0000000" Volume="0.7" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <ATV_COLLISIONS Bank="Coll_Big" Substitute="true" FirstSample="MediumImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <ADDBOARD Bank="Coll_Big" Substitute="true" FirstSample="AdBoard" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <HAY Bank="Coll_Big" Substitute="true" FirstSample="Hay" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+         <GATE Bank="Coll_Big" Substitute="true" FirstSample="MetalImpact" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="70.000000" Short="false"/>
+      </InteractiveObjects>
+      <Materials>
+         <Default Pitch="1.0000000" Volume="1.0000000" CollisionPatch="Small"/>
+         <Metal Pitch="1.0000000" Volume="1.0000000" CollisionPatch="Metal"/>
+         <Wood Pitch="1.0000000" Volume="1.0000000" CollisionPatch="Wood"/>
+      </Materials>
+   </Collisions>
+   <Vehicles EngineMinDist="4.0000000" EngineMaxDist="150.00000" SurfaceMinDist="4.0000000" SurfaceMaxDist="40.000000" CollisionMinDist="4.0000000" CollisionMaxDist="75.000000">
+      <Suspension>
+         <Default>
+            <Small VolumeSpeed="0.3703" Threshold="1.0000" Probability="0.9227" MinRetriggerTime="0.2500000" Bank="Coll_Big" Substitute="true" FirstSample="SmallSuspension" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.0000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Large VolumeSpeed="0.3766" Threshold="0.5719" Probability="1.0000000" MinRetriggerTime="0.2500000" Bank="Coll_Big" Substitute="true" FirstSample="BigSuspension" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.8156" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Default>
+         <BigTruck>
+            <Small VolumeSpeed="0.28" Threshold="0.4945" Probability="0.7" MinRetriggerTime="0.2500000" Bank="Coll_Big" Substitute="true" FirstSample="SmallSuspension" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.0578" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Large VolumeSpeed="0.2" Threshold="0.6563" Probability="0.8" MinRetriggerTime="0.250" Bank="Coll_Big" Substitute="true" FirstSample="BigSuspension" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.8156" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </BigTruck>
+         <Buggy>
+            <Small VolumeSpeed="0.28" Threshold="0.4945" Probability="0.7" MinRetriggerTime="0.2500000" Bank="Coll_Big" Substitute="true" FirstSample="SmallSuspension" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.1109" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Large VolumeSpeed="0.2" Threshold="0.6563" Probability="0.8" MinRetriggerTime="0.250" Bank="Coll_Big" Substitute="true" FirstSample="BigSuspension" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.8156" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Buggy>
+         <Bike>
+            <Small VolumeSpeed="0.3703" Threshold="0.7336" Probability="0.9227" MinRetriggerTime="0.2500000" Bank="Coll_Big" Substitute="true" FirstSample="SmallSuspension" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.6633" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Large VolumeSpeed="0.3" Threshold="0.5" Probability="1.0000000" MinRetriggerTime="0.2500000" Bank="Coll_Big" Substitute="true" FirstSample="BigSuspension" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.6" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </Bike>
+         <ATV>
+            <Small VolumeSpeed="0.3703" Threshold="0.7828" Probability="0.9227" MinRetriggerTime="0.2500000" Bank="Coll_Big" Substitute="true" FirstSample="SmallSuspension" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.6633" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+            <Large VolumeSpeed="0.30" Threshold="0.5" Probability="1.0000000" MinRetriggerTime="0.2500000" Bank="Coll_Big" Substitute="true" FirstSample="BigSuspension" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.6" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+         </ATV>
+      </Suspension>
+      <Model>
+         <Default LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="4.0000000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="1.0000000" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Default" XFEngine="QUAD1_01" XFEngineAI="QUAD1_01"/>
+         <ATV_01 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="ATV" XFEngine="ATV_01" XFEngineAI="ATV"/>
+         <ATV_02 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="ATV" XFEngine="ATV_02" XFEngineAI="ATV"/>
+         <ATV_03 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="ATV" XFEngine="ATV_03" XFEngineAI="ATV"/>
+         <ATV_04 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="ATV" XFEngine="ATV_03" XFEngineAI="ATV"/>
+         <ATV_05 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="ATV" XFEngine="ATV_03" XFEngineAI="ATV"/>
+         <ATV_06 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="ATV" XFEngine="ATV_06" XFEngineAI="ATV"/>
+         <ATV_07 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="ATV" XFEngine="ATV_06" XFEngineAI="ATV"/>
+         <ATV_08 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="ATV" XFEngine="ATV_08" XFEngineAI="ATV"/>
+         <ATV_09 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="ATV" XFEngine="ATV_09" XFEngineAI="ATV"/>
+         <ATV_10 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="ATV" XFEngine="ATV_09" XFEngineAI="ATV"/>
+         <ATV_GHOST LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.0000000" EngineVolumeAI="0.0000000" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="ATV" XFEngine="ATV_09" XFEngineAI="ATV"/>
+         <BIKE_01 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.8" EngineVolumeAI="0.8" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Bike" XFEngine="CROSS1" XFEngineAI="BIKE"/>
+         <BIKE_02 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Bike" XFEngine="CROSS2" XFEngineAI="BIKE"/>
+         <BIKE_03 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Bike" XFEngine="CROSS3" XFEngineAI="BIKE"/>
+         <BIKE_04 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Bike" XFEngine="CROSS4" XFEngineAI="BIKE"/>
+         <BIKE_05 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Bike" XFEngine="CROSS5" XFEngineAI="BIKE"/>
+         <BIKE_06 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Bike" XFEngine="CROSS1" XFEngineAI="BIKE"/>
+         <BIKE_07 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Bike" XFEngine="CROSS2" XFEngineAI="BIKE"/>
+         <BIKE_08 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Bike" XFEngine="CROSS3" XFEngineAI="BIKE"/>
+         <BIKE_09 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Bike" XFEngine="CROSS4" XFEngineAI="BIKE"/>
+         <BIKE_10 LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Bike" XFEngine="CROSS5" XFEngineAI="BIKE"/>
+         <BIKE_GHOST LimitRevs="false" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="1.0000000" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Bike" XFEngine="BIKE_GHOST" XFEngineAI="BIKE_GHOST"/>
+         <BUGGY_01 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.962" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Buggy" XFEngine="BUGGY_05" XFEngineAI="BUGGY"/>
+         <BUGGY_02 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Buggy" XFEngine="BUGGY_04" XFEngineAI="BUGGY"/>
+         <BUGGY_03 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.975" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Buggy" XFEngine="BUGGY_04" XFEngineAI="BUGGY"/>
+         <BUGGY_04 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.975" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Buggy" XFEngine="BUGGY_05" XFEngineAI="BUGGY"/>
+         <BUGGY_05 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.953" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Buggy" XFEngine="BUGGY_06" XFEngineAI="BUGGY"/>
+         <BUGGY_06 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.899" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Buggy" XFEngine="BUGGY_07" XFEngineAI="BUGGY"/>
+         <BUGGY_07 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.922" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Buggy" XFEngine="BUGGY_08" XFEngineAI="BUGGY"/>
+         <BUGGY_08 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.994" EngineVolumeAI="1.0000000" RevsZeroPoint="0.0000000" RevsSlew="0.965" Suspension="Buggy" XFEngine="BUGGY_02" XFEngineAI="BUGGY"/>
+         <BUGGY_09 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.975" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Buggy" XFEngine="BUGGY_03" XFEngineAI="BUGGY"/>
+         <BUGGY_10 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.975" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Buggy" XFEngine="BUGGY_04" XFEngineAI="BUGGY"/>
+         <BUGGY_11 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.972" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="0.989" Suspension="Buggy" XFEngine="BUGGY_05" XFEngineAI="BUGGY"/>
+         <BUGGY_12 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.945" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0070" RevsSlew="0.923" Suspension="Buggy" XFEngine="BUGGY_06" XFEngineAI="BUGGY"/>
+         <BUGGY_13 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Buggy" XFEngine="BUGGY_07" XFEngineAI="BUGGY"/>
+         <BUGGY_GHOST LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="1.0000000" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="Buggy" XFEngine="BUGGY_GHOST" XFEngineAI="BUGGY_GHOST"/>
+         <TRUCK_01 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.936" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0219" RevsSlew="1.051" Suspension="BigTruck" XFEngine="TRUCK1_05" XFEngineAI="TRUCK"/>
+         <TRUCK_02 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.936" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="BigTruck" XFEngine="TRUCK1_06" XFEngineAI="TRUCK"/>
+         <TRUCK_03 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0219" RevsSlew="1.0000000" Suspension="BigTruck" XFEngine="TRUCK1_07" XFEngineAI="TRUCK"/>
+         <TRUCK_04 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0891" RevsSlew="0.688" Suspension="BigTruck" XFEngine="TRUCK1_08" XFEngineAI="TRUCK"/>
+         <TRUCK_05 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.975" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="0.853" Suspension="BigTruck" XFEngine="TRUCK1_05" XFEngineAI="TRUCK"/>
+         <TRUCK_06 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.953" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="0.886" Suspension="BigTruck" XFEngine="TRUCK1_06" XFEngineAI="TRUCK"/>
+         <TRUCK_07 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.967" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0375" RevsSlew="1.0000000" Suspension="BigTruck" XFEngine="TRUCK1_07" XFEngineAI="TRUCK"/>
+         <TRUCK_08 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.984" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="BigTruck" XFEngine="TRUCK1_08" XFEngineAI="TRUCK"/>
+         <TRUCK_09 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0750" RevsSlew="0.853" Suspension="BigTruck" XFEngine="TRUCK1_01" XFEngineAI="TRUCK"/>
+         <TRUCK_10 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.979" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="0.895" Suspension="BigTruck" XFEngine="TRUCK1_01" XFEngineAI="TRUCK"/>
+         <TRUCK_11 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.975" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="0.956" Suspension="BigTruck" XFEngine="TRUCK1_02" XFEngineAI="TRUCK"/>
+         <TRUCK_12 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="0.984" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="BigTruck" XFEngine="TRUCK1_03" XFEngineAI="TRUCK"/>
+         <TRUCK_13 LimitRevs="true" SuspensionOffset="0.0000000" SuspensionScale="3.4375000" LoadRateLimit="0.5000000" EngineVolume="1.0000000" EngineVolumeAI="0.8999999" RevsZeroPoint="0.0000000" RevsSlew="1.0000000" Suspension="BigTruck" XFEngine="TRUCK1_04" XFEngineAI="TRUCK"/>
+      </Model>
+   </Vehicles>
+   <Ambients>
+      <Default>
+         <Loops/>
+         <OneShots>
+            <Dog Bank="Env" Substitute="false" FirstSample="Dog1_01" NumSamples="3" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.2000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false" TriggerNumMin="1" TriggerNumMax="2" TriggerTimeMin="2.3906250" TriggerTimeMax="2.5312500" MoveTimeMin="17.250000" MoveTimeMax="18.703125" MoveMinRadius="50.000000" MoveMaxRadius="100.00000" MovePitchRand="0.0000000" MoveVolumeRand="0.0000000"/>
+            <Wind Bank="Env" Substitute="false" FirstSample="Wind1_01" NumSamples="2" Pitch="0.3254687" PitchRandomise="0.1203125" Volume="0.0710938" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false" TriggerNumMin="10" TriggerNumMax="10" TriggerTimeMin="1.2187500" TriggerTimeMax="2.1562500" MoveTimeMin="0.2812500" MoveTimeMax="0.7968750" MoveMinRadius="0.0000000" MoveMaxRadius="0.0000000" MovePitchRand="0.0000000" MoveVolumeRand="0.0000000"/>
+            <Bird1 Bank="Env" Substitute="false" FirstSample="Bird1_01" NumSamples="5" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.1406250" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false" TriggerNumMin="1" TriggerNumMax="2" TriggerTimeMin="1.2187500" TriggerTimeMax="1.7343750" MoveTimeMin="5.6250000" MoveTimeMax="6.7968750" MoveMinRadius="20.000000" MoveMaxRadius="80.859383" MovePitchRand="0.2406249" MoveVolumeRand="0.0000000"/>
+            <Bird2 Bank="Env" Substitute="false" FirstSample="Bird1_01" NumSamples="5" Pitch="0.6999999" PitchRandomise="0.0000000" Volume="0.1406250" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false" TriggerNumMin="1" TriggerNumMax="2" TriggerTimeMin="1.2187500" TriggerTimeMax="1.7343750" MoveTimeMin="8.6250000" MoveTimeMax="10.796875" MoveMinRadius="20.000000" MoveMaxRadius="80.859383" MovePitchRand="0.2406249" MoveVolumeRand="0.0000000"/>
+         </OneShots>
+      </Default>
+   </Ambients>
+   <TwoDEffects>
+      <Default Bank="Menu_FE" Substitute="false" FirstSample="ScrollHoriz" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <FE_select Bank="Menu_FE" Substitute="false" FirstSample="TE_Correct" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="true"/>
+      <FE_cancel Bank="Menu_FE" Substitute="false" FirstSample="TE_Incorrect" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="true"/>
+      <FE_slide Bank="Menu_FE" Substitute="false" FirstSample="SlideInSub" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="true"/>
+      <FE_scrollHoriz Bank="Menu_FE" Substitute="false" FirstSample="ScrollHoriz" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="true"/>
+      <FE_scrollVert Bank="Menu_FE" Substitute="false" FirstSample="ScrollVert" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <FE_transIn Bank="Menu_FE" Substitute="false" FirstSample="SlideInSub" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <FE_transOut Bank="Menu_FE" Substitute="false" FirstSample="SlideOut" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <FE_transInOut Bank="Menu_FE" Substitute="false" FirstSample="SlideIn" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <FE_transOutIn Bank="Menu_FE" Substitute="false" FirstSample="SlideBack" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <TE_Correct Bank="Menu_FE" Substitute="false" FirstSample="TE_Correct" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <TE_Incorrect Bank="Menu_FE" Substitute="false" FirstSample="TE_Incorrect" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <TE_Valid Bank="Menu_FE" Substitute="false" FirstSample="TE_Valid" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <TE_Rotate Bank="Menu_FE" Substitute="false" FirstSample="TE_Rotate" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <TE_Delete Bank="Menu_FE" Substitute="false" FirstSample="TE_Delete" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <IG_slide Bank="Menu_IG" Substitute="false" FirstSample="Scroll" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <IG_scrollHoriz Bank="Menu_IG" Substitute="false" FirstSample="Scroll" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <IG_scrollVert Bank="Menu_IG" Substitute="false" FirstSample="ScrollVert" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <IG_cancel Bank="Menu_IG" Substitute="false" FirstSample="Back" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_GEN_Count Bank="MG_GEN" Substitute="false" FirstSample="Countdown" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_GEN_CountA Bank="MG_GEN" Substitute="false" FirstSample="CountdownA" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_GEN_CountB Bank="MG_GEN" Substitute="false" FirstSample="CountdownB" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_GEN_Whistle Bank="MG_GEN" Substitute="false" FirstSample="RefWhistle" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.65" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_GEN_InNet Bank="MG_GEN" Substitute="false" FirstSample="InNet" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_BA_Dribble Bank="Basketball" Substitute="false" FirstSample="Dribble" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_BA_Rim Bank="Basketball" Substitute="false" FirstSample="Rim" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_BA_SlamDunk Bank="Basketball" Substitute="false" FirstSample="SlamDunk" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_BA_ShrtBuzz Bank="Basketball" Substitute="false" FirstSample="BuzzShort" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_SO_Kick Bank="Soccer" Substitute="false" FirstSample="Kick" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_RF_Ring Bank="Rings" Substitute="false" FirstSample="Rings" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.65" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_RF_LavaFire Bank="Rings" Substitute="false" FirstSample="LavaFire" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_RF_Lava Bank="Rings" Substitute="false" FirstSample="Lava" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_TH_Bronze Bank="Treasure" Substitute="false" FirstSample="Bronze" NumSamples="1" Pitch="0.8" PitchRandomise="0.0000000" Volume="0.8" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_TH_Silver Bank="Treasure" Substitute="false" FirstSample="Bronze" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.9" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_TH_Gold Bank="Treasure" Substitute="false" FirstSample="Bronze" NumSamples="1" Pitch="1.2" PitchRandomise="0.0000000" Volume="1.0" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_BO_Pin Bank="Bowling" Substitute="false" FirstSample="Pin" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_BO_Strike Bank="Bowling" Substitute="false" FirstSample="Strike" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_HO_PuckDrop Bank="Hockey" Substitute="false" FirstSample="PuckDrop" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_HO_StkIce Bank="Hockey" Substitute="false" FirstSample="StickIce" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_HO_StkPuck Bank="Hockey" Substitute="false" FirstSample="StickPuck" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_HO_StkStk Bank="Hockey" Substitute="false" FirstSample="StickStick" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_HO_Slap Bank="Hockey" Substitute="false" FirstSample="Slap" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_HO_Siren Bank="Hockey" Substitute="false" FirstSample="Siren" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_DB_Explosion Bank="DodgeBomb" Substitute="false" FirstSample="Explosion" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_DB_Timer Bank="DodgeBomb" Substitute="false" FirstSample="Timer" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_FS_Collect Bank="Freestyle" Substitute="false" FirstSample="Collect" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <MG_GY_Laugh Bank="Ghost" Substitute="false" FirstSample="Laugh" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+      <TARGET_PICKUP Bank="Pickups" Substitute="false" FirstSample="Pickup02" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.6" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="false"/>
+   </TwoDEffects>
+   <Level>
+      <Gate Bank="RX_01" Substitute="true" FirstSample="Gate" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="0.9" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="8.0000000" MaxDist="100.00000" Short="true"/>
+      <Helicopter Bank="-1" Substitute="true" NumSamples="1" Pitch="1.0000000" PitchRandomise="0.0000000" Volume="1.0000000" VolumeRandomise="0.0000000" AttackTime="0.0000000" DecayTime="0.0000000" MinDist="30.000000" MaxDist="250.00000" Short="false"/>
+   </Level>
+</Root>

@@ -12,6 +12,50 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - Interpolação "tunada": valor = lerp(non_tuned, fully_tuned, t), com t das
   peças (data/upgrades.xml, efeitos somados por tipo).
 
+## Passo da física (PAL 50 Hz, NTSC 60 Hz)
+
+- O jogo integra uma vez por quadro: 1/50 no PAL (nosso exe), 1/60 no NTSC.
+  A física DEPENDE disso. Com a roda patinando em 1ª o giro vem da roda
+  (0x20c558) e bate no limitador (Rev_limiter_engage/disengage_rate 15/s),
+  enquanto a patinada 0x610 sobe a 3/s e volta a 4/s; o liga-desliga dessas
+  rampas depende do passo. Passo menor = corte mais raso = mais força média.
+- Conferido com dois vídeos: o Renegade PAL do Matheus (RX01) na 1ª vai de
+  30 a 60 km/h em 1.25 s; o remake dá 1.36 s a 50 Hz e 0.92 s a 120 Hz.
+  O speedrun do Sphinx (NTSC, mph) bate a 60 Hz em 1.7 mph do começo ao fim
+  (a 50 Hz fica até 3.8 mph abaixo; a 120 Hz até 7 acima).
+- Save state PAL patinando a 48.7 km/h (1ª): rodas de trás no limite da
+  elipse (0x5c8 = 8.007 kN = 8.17 x 0.98; pedido 0x680 = 10.48), 6893 rpm,
+  0x600 0.26, 0x610 0.32, limitador 1.0 naquele quadro.
+- Save states PAL da largada de fábrica (acelerador no fundo, embreagem já
+  travada): patinada 0x610 de trás / rpm = 0.48 / 1379 a 8.6 km/h, 0.48 /
+  1568 a 9.8, 1.20 / 4763 a 19.8, 1.38 / 5766 a 22.1. A força na roda
+  (0x5c8) bate com o remake na mesma patinada (7.03 kN em 0.48, 6.54 em
+  1.38): o que falta é a patinada começar mais cedo. Com os pedais do
+  0x202df0 e o câmbio no acelerador cru o remake dá 0.22/0.31/1.07/1.25
+  (antes 0.00/0.04/0.76/0.94). Save state a 7.7 km/h: embreagem ABRINDO
+  (0x314 = 2, de 1.0 pra 0.6; rpm 1013 < 1050), patinada 0.36, e o
+  0x320 (rpm − rpm da roda quando começou a engatar) = 755. Ou seja, o jogo
+  também cai abaixo de 1050 a ~3 km/h e reengata (remake: 786), igual ao
+  remake. A diferença é que no jogo a embreagem chega a 1.0 até 7.7 km/h
+  (remake 0.80): o carro anda mais devagar de 3 a 7.7 km/h. Hipótese: o
+  freio automático segura mais no jogo; no remake o ABS solta o freio
+  quando a roda para com o carro a ~1e-5 m/s (0x600 = −1) e o carro anda
+  de passo em passo. Sobra uns 0.09 s na frente entre 5 e 14 km/h.
+
+## Ficha do carro (tela de opções da corrida)
+
+- **0x1f5e90** monta a ficha a partir dos parâmetros já com as peças
+  (0x21d618: para cada slot i, (1-t)·P[0x1350+8i] + t·P[0x1354+8i]; slot 1 =
+  Drive_torque -> P+0x58). Power HP = P+0x58 · 250 (classes 2 e 3) ou · 264
+  (0 e 1); Weight lbs = massa (t, P+4) · 2204.6; Cornering = 10·(1 - (P+0x53c
+  - mín)/(máx - mín)). Faixas por classe em 0x847cd0 (6 floats): classes 0/1
+  potência 0.05..0.25, peso 0.07..0.18 t; classes 2/3 potência 0..3.8, peso
+  0..2.4 t, cornering 16..27. O texto trunca: 1.08·250 em float dá 269.99997
+  e aparece "269.9" (motor todo preparado).
+- Peças de motor do buggy (upgrades.xml <Buggy>): Internals até 0.35,
+  Management 0.2, Header 0.1, Exhaust 0.1, Intake 0.2 e o câmbio Prototype
+  soma mais 0.05: máximo 1.0.
+
 ## Motor e câmbio
 
 - **0x246858 motor** (struct E em obj+0x2ac): E[1] acelerador, E[2] torque,
@@ -22,8 +66,30 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   corte, sobe a Rev_limiter_disengage_rate abaixo da de volta.
 - **0x20c558**: embreagem travada e rodas de tração no chão → rpm = rpm da
   roda × relação. Em troca (shift flag) o acelerador é multiplicado pela
-  embreagem. **0x20c7a8** entradas do câmbio. **0x20c808** carga = torque da
-  embreagem quando não travada.
+  embreagem. **0x20c7a8** entradas do câmbio: o acelerador do câmbio
+  (câmbio+0xc) é o CRU 0x37c, não o suavizado. Ele entra na rampa da
+  embreagem (2·(1 + t²) por s), na rpm de engate, no "engata solto acima de
+  5 mph" e na troca. **0x20c808** carga = torque da embreagem quando não
+  travada; travada, Σ "torque" do freio/relação (sem massa; só pesa com as
+  rodas de trás fora do chão, não portado).
+- **Pedais (corpo+0x368)**: cada comando tem cru e suavizado (InputRates):
+  direção 0x36c/0x370, acelerador 0x37c/0x380, embreagem 0x384/0x388 (InputRates/Clutch; o jogo não tem freio de mão),
+  freio 0x38c/0x390, flags 0x394. O motor (E[1] = 0x2b0) e o arrasto
+  usam o suavizado; câmbio e "preso" usam o cru.
+- **0x241220** suavização da direção (0x241178 é a dos pedais: sobe/desce
+  na taxa, vezes Normalised_rate_vs_speed, 1 nos buggies). Abrindo do mesmo
+  lado: taxa de subida, × (1 − s²) se *_damp_increase_rate (direção dos
+  buggies: sim), ou seja tanh: 0.77 em 0.17 s, 0.95 em 0.3 s; voltando pro
+  centro: taxa de descida; trocando de lado: taxa oposta.
+- **0x202df0** pedais do jogador no AutoManual (veículo+0xb14 = 1), mph =
+  v pra frente·2.2374146: acima de 1 mph modo frente (corpo+0x2d8 = 0) e
+  espera 0.1 s (veículo+0xb2c). Senão: soltar o freio zera a espera; freio
+  gasta a espera e depois engata a ré (0x2d8 = 1) com o freio virando
+  acelerador; acelerador volta pra frente (de ré a mais de 1 mph vira
+  freio). Sem pedal e |v| < 0.2 mph (DAT_00550508): freio 1.0, a barra
+  vermelha cheia na largada. No ar (0x4e4 > 0) o acelerador fica cortado
+  até ser solto uma vez no voo (veículo+0xb30). car.gd _pedais_auto,
+  tests/teste_pedais.gd.
 - **Câmbio** (struct G em obj+0x2d0, params GP = P+0x138):
   0x2474a0 AutoManual (modo 3): troca por velocidade do carro.
   Velocidade de subir = up_rpm·r·rpm2rad/(relação·final); descer como
@@ -57,6 +123,71 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 
 ## Pneus e derrapagem
 
+- **Powerslide = "Clutch Turn"** (0x214610, chamado em 0x20cea0 antes do
+  0x2101e0 só se Powerslide/Growth_rate P+0xf64 > 0; treino: "Tap ... to
+  initiate a clutch turn"). Estado corpo+0x74c, quantidade 0x744, escala
+  0x748 = Scale_vs_speed(mph do 0x440), embreagem do passo anterior 0x740.
+  0 -> 1: direção suavizada 0x370 != 0, acelerador 0x380 > 0 e a embreagem
+  0x388 SOLTANDO (< 0x740). 1: quantidade += Growth_rate·dt até 1 (-> 2);
+  embreagem subindo ou acelerador 0 -> 3. 2: embreagem subindo -> 0 (a
+  quantidade fica); acelerador 0 ou direção·derrapagem 0x6c0 >= 0 -> 3. 3:
+  quantidade −= Decay_rate·dt até 0 (-> 0). No ar > Maximum_air_time (0.1)
+  zera. Efeitos: em 1/2 a elipse 0x670 das rodas de tração vai pro mínimo
+  da curva × Scale_of_min_friction_ellipse_scale (0x214610 e 0x2101e0); em
+  qualquer estado != 0 o Side_deceleration_to_fwd vira o do Powerslide
+  (P+0xf70, 1.0 x 0.75; 0x20efa0); quantidade·escala mistura a curva de
+  taxa de subida da derrapagem com Maximum_sideslip_rate_vs_sideslip do
+  Powerslide (P+0xecc; 0x210ce0). Estado 3 escala a tração por
+  Decay_drive_force_scale (1 nos buggies) e soma Decay_boost_acceleration
+  (0 nos buggies). Nos 4 save states de derrapagem o estado era 0: a
+  derrapagem "natural" de virar forte não usa o powerslide.
+
+- **Conferido com save states** (tests/teste_derrapagem.gd, tests/
+  ref_derrapagem.json; Renegade no RX01 a ~120 km/h, volante todo e
+  acelerador no fundo): o remake no estado exato da RAM dá a mesma força
+  por roda (0x5c0: x = lateral pro lado direito do carro, z = pra frente,
+  kN), maior diferença 0.13 kN (era 1.26 sem o 0x2120c0). Do drr_3
+  (118 km/h, −42°, 84°/s) até o drr_2 (1.16 s depois pelo relógio do
+  Screenshot.png do .p2s) o remake termina a 0.4 m: 29.4 x 30.7 km/h, girou
+  124 x 120°, derrapagem −68 x −60°, giro 178 x 179°/s. No jogo o carro
+  também roda segurando o volante todo.
+- **Segurando o R1** (botão da embreagem, 5 save states fm_* em
+  tests/ref_derrapagem.json, 30 a 148 km/h virando e acelerando): botão
+  0x384/0x388 = 1, embreagem 0x2ec = 0 (aberta pelo 0x20c558), motor no
+  limitador (8000 a 8100 rpm, 0x2c4 batendo 0.3/0.6), Clutch Turn 0x74c = 0.
+  O remake dá a mesma força por roda (0.13 kN no pior dos 11 estados) e o
+  mesmo rpm (±110). A RAM guarda o curso da roda do começo do passo e a pose
+  do fim: com o carro subindo (fm_2, 0.38 m/s) o teste desce a roda o quanto
+  o ponto dela subiu no passo.
+- **Corte de recuperação 0x2120c0** (Sideslip/RecoveryTorqueCutting P+0xb10,
+  chamado no fim dos modos B e C do 0x20efa0; o modo A pula): devolve f e o
+  torque de giro do modo vira torque·(1 − f). Só com FrictionEllipse Enabled
+  (P+0x430) e corpo+0x728 = 0; mph(0x440) > Speed_for_zero_sideslip e
+  v_f > 0. f = Maximum_cut(mph v_f, P+0xbb8)·acel·rampa(|β|, Threshold
+  P+0xb20, Maximum_angle P+0xb6c; 0 nos buggies, o cut é 0). Com
+  Steering_dependent (P+0xb1c) e |β| > Threshold (12°): direção 0x370 com
+  sinal contrário a β ou solta -> f = acelerador 0x380 (solta e
+  |giro| > v_p / |ponto (x, z) da roda FL|: devolve 0, rodou); mesmo sinal
+  (contra-esterço) -> f = (f − 1)·|direção| + 1. Com f > 0.01 a patinada
+  0x610 de cada roda com W+0x10c != 0 em (−0.1, lim) sobe
+  Growth_rate_during_wheel_spin·dt até lim = Maximum_increased_front/
+  rear_slip_ratio (P+0xb14/0xb18, frente se W+0x40 & 4; 0 e 0.2)·f, no
+  máximo SlipRatio/Maximum, e marca corpo+0x540 = 1 (zerado no começo do
+  0x20efa0): aí o 0x2101e0 não devolve a patinada positiva da roda dentro
+  da elipse. Na RAM dos 6 save states: Enabled 1, Steering_dependent 1,
+  0x728 0, W+0x10c 1, W+0x40 0x5 na frente e 0xa atrás. Efeito: acelerando
+  com o volante pra dentro ou solto o carro NÃO endireita sozinho.
+- Modo A do 0x20efa0: a mistura com −erro_giro/dt (peso (10° − erro)/10°,
+  DAT_00550658) só vale com DAT_00550654 = 1 e a direção crua 0x36c e a
+  suavizada 0x370 do mesmo lado (estritamente).
+- Versão legível de toda a derrapagem, na ordem do passo:
+  docs/derrapagem.md.
+- Estado da RAM pro remake: corpo = (−direita, cima, frente) do jogo
+  transpostos (Terrain.dir_do_jogo), origem = origem do modelo menos
+  corpo(0); velocidade angular = −dir_do_jogo(w) (vetor axial na
+  transposição). O curso da RAM é do fim do passo, já subido até o chão
+  (pen = 0); o teste tira 1 mm pra roda contar como no chão.
+
 - **0x211b58 aplicação das forças**: por roda, em CoM + n·(soma do y do
   contato do eixo relativo ao CoM × escala) + frente·z_do_eixo.
   Lateral_scale_std 0.09; longitudinal = mistura de 0.5 e 0.2 por 0x474
@@ -83,6 +214,12 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   pedal (0x390) > 0.1 desce Growth_rate_during_wheel_lock até −1. Fora da
   elipse volta pra 0 (Recovery_rate_during_wheel_lock / _spin). Sem
   condição de acelerador nem de marcha (vale em ré).
+- **Freio 0x20eb98**: desaceleração = pedal 0x390·0.44694445·
+  Maximum_deceleration·escala(atrito 0x780), no máximo o que zera a
+  velocidade PREVISTA (0x211e48, com a tração 0x5c8 e o 0x1a0 já somados:
+  gravidade do 0x20e160 e arrasto). Ordem no passo (0x20cd2c): 0x20da90,
+  0x20df58, 0x20e160, 0x20e5e8, 0x20e8d8, 0x20eb98, 0x20ede8, 0x20efa0,
+  0x2100a0. Por isso o freio segura o carro parado contra a tração.
 - **ABS 0x20eb98** (flag 0x620+4i): Enable_ABS do Footbrake; patinada medida
   (0x600) <
   ABS_engagement_slip_ratio (−0.2) solta o freio da roda, ≥
@@ -94,7 +231,6 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   contra o deslize do contato: velocidade local do corpo (0x410, global
   0x550680 = 0) com a frente trocada por −v_f·patinada (0x630, 0x20df58).
   Em −1 fica toda contra. Com o ABS dos buggies não chega a agir.
-- O ABS fica fora do freio de mão do remake (que não é o do jogo).
 
 ## Giro das rodas
 
@@ -124,13 +260,13 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   relação). Tração com 0x3cc = 0: embreagem travada (0x314 = 3) → giro do
   motor/relação; senão motor − sinal(ω)·freio, com freio maior parando a
   roda e motor maior sem passar do giro do motor.
-- Preso (0x890/0x894/0x870): acelerador 0x37c > 0, sem freio de mão 0x388,
+- Preso (0x890/0x894/0x870): acelerador 0x37c > 0, botão da embreagem 0x388 = 0,
   |v_f| < 0.5 e o corpo dentro de 3 cm (0.0009 m²) por mais de 0.33 s. Aí
   v_ref = deslocamento do passo (0x70 − 0x880)·frente/dt e o giro do motor
   não vem das rodas.
 - **0x20c558** (motor): 0x304 = ω da roda de tração mais rápida·9.549;
   embreagem travada, não preso e 0x3cc ≥ 1 → rpm = 0x304·relação (mín.
-  marcha lenta). Embreagem forçada aberta 0x31c: 0x5ac, freio de mão > 0.1,
+  marcha lenta). Embreagem forçada aberta 0x31c: 0x5ac, botão da embreagem 0x388 > 0.1,
   mais de 1 s no ar (0x3d0) abaixo de câmbio+0x90 (1050 rpm), ou pedal >
   0.9 com roda de tração em 0x600 < −0.9 (0x55067c).
 - No chão o 0x600 de um passo sai igual à 0x610 do anterior (por isso a
@@ -235,6 +371,16 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   triângulo do contato (W+0x140). A largada do RX_01 é asfalto. Entra em
   0x222078 (curso visual, sem clamp depois), então mexe balança, cubo,
   freio e amortecedor. tests/teste_tremida.gd.
+- Vibração do controle 0x202ab8 (chamada por 0x159448, entregue por
+  FUN_00649a68 aos motores 0 e 1 do DualShock). Motor 1 (grande) =
+  veículo+0xa40 limitado a 1 (amplitude da tremida de batida da câmera,
+  escrita em 0x202760). Motor 0 (pequeno), só com corpo+0x8a8 > 0 (rodas no
+  chão, contadas em 0x20cf28 pelo W+0x10c): v = |v| (0xe0); trava = alguma
+  roda com 0x600 < -0.95; pat = maior clamp(0x600, 0, 1) das rodas com giro
+  W+0x48 > 3.14; r = (1.5·|0x410| + 15·[v < 8.938889 e pat > 0.1] +
+  0.33561218·v·[trava])·U(0.1, 0.9), + 0.25·v em 10% das chamadas, ×0.07.
+  Não usa rpm. No remake vira a tremida do volante (car.gd _vibracao,
+  melhoria nossa).
 - Conferido: tests/teste_pecas.gd compara 100 matrizes de 6 carros
   (Renegade, Sphinx, Inferno, Bulldog, Phantom, Storm) com a RAM dos save
   states parados na largada, erro < 0.01 mm. Classes das rodas de rally:
@@ -259,7 +405,57 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   suavização com o sinal trocado: car.gd rider_s = −s, + = esquerda). mRiderMatchSteer = 0 nos buggies; IK das mãos só no ATV_Riding e
   Bike_Riding (0x1a15a0/0x1a1650), não no Truck_Riding que o Seated usa.
   Câmeras: mRenderRider = 0 em On_Front, On_Hood e Wheel (xml 14837).
-  Ainda não portado (faltam parsers de .srd/.skl/.bac).
+  Portado: tools/piloto.py -> assets/piloto/piloto.json, piloto.gd.
+- Formatos (out/2026, tools/piloto.py tem o detalhe):
+  - .skl "cstfd": 0x0c nº de ossos, offsets em 0x10..0x30: pai (int16),
+    osso espelho (int16, direito <-> esquerdo), matriz inversa de repouso,
+    matriz de repouso, 2 tabelas de quaternions (identidade no InGame_Mid),
+    posição local (x com sinal trocado em relação às matrizes), nomes.
+    Pose T, 1.69 m, direita do piloto = x > 0 (mão esquerda do jogo).
+  - .srd "SKRDPS2 ": 0x10 nº de ossos, 0x14 matrizes inversas de repouso,
+    0x4c material ("WHITE" = textura montada), 0x48 geometria: 1ª palavra
+    = tamanho em qwords (& 0xffffff), depois lotes VIF de até 51 vértices:
+    V3-32 posição, V4-5 normal ((v − 15.5)/15.5 em x, y, z; bit 15 = ADC,
+    não fecha triângulo), V2-16 UV (/4096), V4-8 ossos (índice x 4, 255 =
+    nenhum), V4-8 pesos (/255), MSCNT. Triângulos virados pela normal do
+    jogo (o PS2 desenha os dois lados). MALE_HIGH 3761 vértices, MID 1579,
+    LOW 778, FEMALE_HIGH 3536, ARMS_POV 1461 (26 ossos), PONYTAIL 183.
+  - .bac "BAC 2.07" (loader 0x22f090 pelo tipo em +0x44; tipo 1 =
+    0x2340f8, amostrador 0x234750): +0x40 duração, +0x48 bloco D com
+    ponteiros relativos: D+4 posições, D+8 índice de posição por quadro e
+    osso, D+0xc nº de rotações, D+0x10 rotações (x, y, z, w), D+0x14 índice
+    de rotação, D+0x24 nº de quadros, D+0x28 tempos, D+0x2c/0x2d largura do
+    índice (8 = byte). osso b no quadro k = tabela[índice[k·nº_ossos + b]];
+    entre quadros interpola (ou pega o mais perto). STEER_LEFT: 6 quadros a
+    30/s em 1/6 s; o Buggy/Controls e o Truck/Controls são o mesmo arquivo.
+- 0x187060 lê corpo+0x3c4 = direção suavizada (igual ao 0x370 nos 11 save
+  states). 0x190e50: tempo = |s|·duração, espelha com s > 0 (flag 2 no
+  0x22f200). Espelho no remake: cada osso pega o do outro lado (tabela do
+  .skl), posição com x trocado e rotação (x, −y, −z, w). O quadro 0 do
+  STEER_LEFT já é simétrico assim.
+- O ROOT da animação fica em (0, 1.1315, 0.3032) do piloto: é a origem =
+  ARSE − isso do doc. O ARSE tem matriz (90° em y na maioria dos buggies),
+  mas o piloto não gira com ela.
+- Textura: material único "WHITE" num atlas 512x512 (braços, camisa,
+  calça, capacete, luvas, óculos, rosto, botas; o UV da malha cai no
+  Characters/Textures/Template/Rider_Template.bog). O jogo monta o atlas com
+  as 5 camadas de cada parte (Characters/Textures/#hash/<parte>/
+  RIDER_NN_{BASE,DETAIL,PRIMARY,SECONDARY,WRINKLE}_<parte>, 12 roupas) e as
+  cores do piloto; isso ainda não foi portado. O remake usa o
+  rider_fury.bog (00970, roupa "Fury" pronta, 256x256).
+- Material em camadas (0x1a6300 escolhe a parte pelo nome, 0x1a69c8 monta):
+  4 camadas da tabela 0x838a40 com textura RIDER_%02d_<camada>_<parte> e
+  cor RGBA do perfil (perfil+8 → +0x20 + camada·0x10, gravada no +0x30 do
+  nó), mais RIDER_%02d_DETAIL/WRINKLE/SPEC_<parte>; sem peça usa
+  /Setup/Init_White e Init_Seethru. A peça (RIDER_NN) vem do byte +0x1c do
+  item (0x1a4610). Nas camadas o que importa está no ALFA (converter com
+  gob_tex2png --alpha): BASE opaco, PRIMARY e SECONDARY = máscaras (o logo
+  SINISALO do RIDER_04 está no alfa do PRIMARY), DETAIL = desenho com alfa
+  até 180, WRINKLE = sombra cinza (alfa 136..254). Falta: a conta da mistura
+  e onde ficam as 4 cores do perfil na RAM.
+- Piloto do Matheus (RAM dos save states, objetos de textura em 0xd27490):
+  roupa, braços, calça e capacete RIDER_04, óculos RIDER_05, botas e luvas
+  RIDER_03, rosto FACE_MALE_FACE05; na foto dele: verde, branco e preto.
 - Direção visual das rodas 0x21def8 / 0x20ede8: body+0x3c0 = direção ·
   lerp(Max_visual_steer_zero, _full, mph/SpeedMax), SpeedMax = curva
   BasicSteering/Angle_vs_speed (params+0x4e8 = 100); nos buggies 30°/30°.
@@ -308,6 +504,41 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   0x238e08 que lê +0x754 é de outra classe de veículo. Os outros leitores
   do material (veículo+0xa88) são poeira, som, marca de pneu e sujeira da
   roda (esta usa o giro W+0x48 e a patinada 0x600).
+
+## Som de pneu, suspensão e pouso
+
+Porta em sfx_carro.gd; samples do jogo via tools/sfx_jogo.py (assets/sfx,
+fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
+- Bancos numa corrida no RX01 (RAM do SPU de 17 save states): Audio/SURFACE.bnk
+  e Audio/Collide.bnk ("Coll_Big"). Suspen.bnk e VEHICLE.bnk (#01b65ec7) nunca
+  carregam. Formato 989snd "SBlk" v3 no cabeçalho do sfx_jogo.py. Índice do
+  som = posição da entrada no Audio/SampleBanks.xml. Taxa com tom 1.0 =
+  48000·2^((CN + CF/128 − 196)/12) (registrador de pitch das vozes).
+- Só veículo humano tem som de pneu (0x36bb68/0x36f460): objetos das rodas 0
+  (FL) e 1 (RL), mais um do patch secundário na FL. Suspensão só com um
+  jogador.
+- Entradas 0x36fa28: spd = |v|(0xe0)·2.2374/140, side = |0x410|·2.2374/60,
+  as duas x < 0.025 → 40x² e no máximo 1; ws = 0.5 por roda com 0x600 > 0.2.
+  Dono+0x178 = 0.4·anterior + 0.1·média(d susp/dt de FL e RL), limitado a ±1.
+- Roda 0x370548 (por quadro): material W+0x140 (−1 = 0) → DB+0x70+4i (pelo
+  SFX do Materials.xml da pista, 0x377ce0); água se veículo+0xaec+4i > −0.05.
+  Sample novo: para, toca o outro e trava 0.07 s. Patch com Volume 0 para.
+  No ar o volume vai a 0 (tom fica). susp = clamp((W+0xe8 + SuspensionOffset)
+  ·SuspensionScale, 0, 1). Volume e tom: fórmulas no cabeçalho do
+  sfx_carro.gd (offsets do patch: 0x2c..0x4c tom, 0x50..0x7c volume, com
+  0x5c MinThreshold e 0x60 SideSpeed). Conferido com o pitch das vozes do SPU
+  em 7 save states (tests/teste_sfx.gd): pior 0.010.
+- Pouso 0x370df0: tempo no ar com 0x8a8 = 0; ao voltar com mais de 0.1 s,
+  0.5 + 0.5·min(1, t), x Landing.Volume duas vezes, x SFX; material da FL.
+- Suspensão 0x36e498 → 0x36e2d8 (Small e Large): |0x418| ≥ 20 mph; dono+0x178
+  passa o Threshold (subida) → toca com Probability; espera MinRetriggerTime;
+  volume (1 − VolumeSpeed·(1 − spd))·Collision·SFX, tom 1.0.
+- MasterSettings: SurfaceVolume 0.5, CollisionVolume 0.8, SFXVolume 1.
+- Não confirmado: unidade das esperas dos grãos (sons.json tick_s = 1 ms),
+  como o 989snd soma volume do som, do tom e ADSR, curva de distância 3D.
+- Achado: no save state 110 (1ª curva) o PS2 tocava asfalto e o mapa de
+  material do remake diz cascalho nas rodas da frente (pendente: o atrito
+  também usa esse mapa).
 
 ## Mão (espelho)
 

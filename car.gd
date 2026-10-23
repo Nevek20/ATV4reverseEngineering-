@@ -91,8 +91,41 @@ const WHEEL_Y := 0.45         # altura do cubo com o carro parado
 const VOLANTE_GIRA := true
 var SW_CENTER := Vector3(-0.434, 1.351, 0.396)    # Renegade, se faltar no pecas.json
 var SW_AXIS := Vector3(0.0, 0.684, -0.729)
-const SW_TURNS := 2.6         # sem fonte no jogo (escolha do remake)
+const SW_TURNS := 2.6         # sem fonte no jogo (escolha do remake); com o piloto, o giro sai da animação dele
+# melhoria nossa: as mãos do piloto ficam presas no aro (piloto.gd); o volante
+# gira o quanto as mãos giram no STEER_LEFT do jogo (~50°), não SW_TURNS
+const MAOS_NO_VOLANTE := true
+# melhoria nossa: o volante do jogo (aro de 6 a 12 lados, raios tortos) vira um
+# gerado, redondo e centralizado (volantes.gd: um estilo por carro), no mesmo
+# centro, raio e inclinação. false = malha do jogo.
+const VOLANTE_NOSSO := true
+const Volantes := preload("res://volantes.gd")
+var volante_estilo := ""      # "" = o do carro (Volantes.POR_CARRO); B no jogo troca
+var sw_malha: MeshInstance3D
+var sw_avanco := 0.0          # volante gerado avançado pro piloto pra coluna não atravessar o cubo
+var sw_ponta_coluna := -INF   # ponta da coluna de direção da carroceria (m no eixo, + = pro piloto)
 var rider_s := 0.0            # direção suavizada do piloto (rider+0x2d8 com sinal trocado: + = esquerda)
+# piloto do jogo (piloto.gd, tools/piloto.py): sentado no ponto ARSE, braços pela rider_s
+const PILOTO_DIR := "res://assets/piloto"
+var piloto: Node3D = null
+# melhoria nossa: som do motor com os loops do Engine Simulator de cada buggy
+# (motor_som.gd, som/loops). O som do jogo (3 bancos pros 12) não foi portado
+const SOM_MOTOR := true
+var som: Node = null
+# sons de pneu, suspensão e pouso do jogo (sfx_carro.gd, portados do exe com
+# os samples do jogo em assets/sfx: tools/sfx_jogo.py). false = sem eles
+const SOM_PNEU := true
+var sfx: Node = null
+# fumaça do escapamento (melhoria nossa, fumaca.gd: o efeito ExhaustSmokeTrail
+# que o jogo tem no XML e não usa, nos pontos EXHAUST). false = sem fumaça
+const FUMACA := true
+var fumaca: Node3D = null
+# motor e escape tremendo (melhoria nossa, motor_treme.gd: peças soltas da
+# carroceria no cofre do motor; vibração pela rotação e balanço pela carga)
+const MOTOR_TREME := true
+var motor_treme: Node3D = null
+var body_mi: MeshInstance3D = null
+var som_carga := 0.0          # carga do motor pro som: acelerador x limitador x troca
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
 const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
@@ -131,6 +164,9 @@ var rate_dec_max: Dictionary
 var rate_dec_min: Dictionary
 var ps_rate: Dictionary
 var ps_scale: Dictionary
+var rtc_th: Dictionary        # RecoveryTorqueCutting (0x2120c0): ângulo onde começa,
+var rtc_max: Dictionary       # onde corta tudo e quanto corta, pela velocidade
+var rtc_cut: Dictionary
 var mu_t := 1.0               # 0 = atrito mínimo do XML, 1 = máximo
 var gears := PackedFloat32Array()
 
@@ -153,6 +189,27 @@ var eng_torque := 0.0         # torque líquido do motor (N·m)
 var clutch_t := 0.0           # torque passando pela embreagem (N·m)
 var want_rev := false         # pedido de ré (o câmbio abre, engata a ré e fecha)
 var reverse_hold := 0.0
+# pedais crus depois do 0x202df0 (corpo+0x37c / +0x38c); o throttle e o
+# brake_in são os suavizados (+0x380 / +0x390). O câmbio e o "preso" leem o cru.
+var steer_cx := 0.0            # direção crua (corpo+0x36c)
+var thr_cx := 0.0
+var brk_cx := 0.0
+var rev_timer := 0.0          # veículo+0xb2c: espera do freio virar ré quando vinha andando
+var ar_libera := false        # veículo+0xb30: soltou o acelerador nesse voo
+# botão da embreagem (corpo+0x384 cru / +0x388 suavizado, InputRates/Clutch).
+# O jogo não tem freio de mão: segurar abre a embreagem (0x20c558) e dar um
+# toque virando e acelerando faz a "Clutch Turn" (powerslide, 0x214610)
+var emb_in := 0.0
+# powerslide (0x214610): estado corpo+0x74c (0 nada, 1 crescendo, 2 ativo,
+# 3 sumindo), quantidade 0x744, escala pela velocidade 0x748 e a embreagem do
+# passo anterior 0x740
+var ps_estado := 0
+var ps_qtd := 0.0
+var ps_esc := 0.0
+var ps_emb_ant := 0.0
+# corpo+0x540: o corte de recuperação (0x2120c0) subiu a patinada neste passo;
+# aí a roda dentro da elipse não devolve a patinada (0x2101e0)
+var rtc_patinou := false
 var air_time := 0.0
 var air_lat_state := 0        # empurrão lateral no ar (0x6f4): 0 nada, 1 direita, 2 esquerda
 var air_lat_timer := 0.0
@@ -177,6 +234,36 @@ var jit_acc := 0.0
 var spd_ground := 0.0         # corpo+0x440: velocidade no plano do chão (m/s)
 var jit_order := []           # índices das rodas na ordem do jogo: FL, RL, FR, RR
 var jitter_chao := 0.0        # veículo+0xac0: média do WheelJitter embaixo de FL, RL, FR no chão (câmera)
+
+# melhoria nossa: o volante treme (as mãos vão junto pela IK). No jogo ele não
+# treme; a força vem do que o jogo usa pra sacudir o CONTROLE e pro som:
+#   vibracao (0x202ab8, motor pequeno do controle, só com roda no chão):
+#     0.07 x U(0.1, 0.9) x (1.5 |v lateral| + 15 se patinando abaixo de 20 mph
+#     + 0.3356 |v| se alguma roda travada), + 0.07 x 0.25 |v| em 10% dos passos
+#   pancada: pouso depois de mais de 0.1 s no ar (0x370df0: 0.5 + 0.5 min(1, t))
+#     e suspensão afundando rápido acima de 20 mph (0x36e498/0x36e2d8, limites
+#     Small/Large do "Buggy" no SoundDatabase.xml)
+#   terra: a tremida do curso das rodas da frente (0x202760), uma contra a outra
+# Os graus são escolha nossa. VOLANTE_TREME = false deixa parado.
+const VOLANTE_TREME := true
+const TREME_GRAUS := 2.5          # giro com vibracao 1
+const TREME_PANCADA_GRAUS := 6.0  # tranco com pancada 1
+const TREME_TERRA := 60.0         # graus por metro de diferença no curso das rodas da frente
+const TREME_SUAVE := 0.015        # s: o volante segue o sorteio com essa constante
+const PANCADA_SOLTA := 0.15       # s: o tranco some com essa constante
+const SUSP_ESCALA := 3.4375       # SuspensionScale (SoundDatabase.xml, Model, igual nos 12 buggies)
+const SUSP_PEQUENA := 0.4945      # Suspension "Buggy": Small Threshold
+const SUSP_GRANDE := 0.6563       # Large Threshold
+const SUSP_VEL := 8.938889        # 20 mph: abaixo disso o 0x36e498 não toca a suspensão
+var vibracao := 0.0
+var pancada := 0.0
+var treme := 0.0                  # rad somados ao giro do volante
+var _treme_alvo := 0.0
+var susp_taxa := 0.0              # dono do som +0x178: d(suspensão)/dt filtrado de FL e RL
+var _susp_ant := [0.0, 0.0]       # roda do som +0x164 de FL e RL
+var _susp_acima := [false, false]
+var ar_som := 0.0                 # tempo no ar contado pelo som (0x370df0)
+var pouso := 0.0                  # > 0 no passo em que pousou: volume do pouso (0x370df0)
 
 var lateral_game := true     # L alterna: força lateral por eixo (jogo) x remendo antigo
 var use_ported := true      # P alterna: física portada do jogo x modelo antigo
@@ -213,6 +300,11 @@ func _ready() -> void:
 	_load_pecas()
 	_load_model()                 # antes da física: define model_offset
 	_load_physics()
+	_load_piloto()                # depois da física: precisa do ponto ARSE
+	_load_motor_treme()
+	_load_som()
+	_load_sfx()
+	_load_fumaca()
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = Vector3(2.1, 0.8, 4.8)
@@ -268,7 +360,10 @@ func _load_tuning() -> void:
 	TUNE_GEARS = t.gears
 	TUNE_FRONT_BIAS = t.front_bias
 	for k in tune_override:
-		set("TUNE_" + String(k).to_upper(), tune_override[k])
+		if String(k) == "tire":
+			pneu = String(tune_override[k])     # classe do pneu (override de atrito do chão)
+		else:
+			set("TUNE_" + String(k).to_upper(), tune_override[k])
 
 
 func _load_physics() -> void:
@@ -351,6 +446,7 @@ func _load_physics() -> void:
 	P.st_up = d.f("InputRates/Steer", "Digital_increase_rate", 6.0)
 	P.st_down = d.f("InputRates/Steer", "Digital_decrease_rate", 4.0)
 	P.st_opp = d.f("InputRates/Steer", "Digital_opposite_rate", 6.0)
+	P.st_damp = d.f("InputRates/Steer", "Digital_damp_increase_rate", 0.0)   # "true" = 1
 
 	# arrasto e freio
 	P.air_drag = d.f("Misc", "Air_drag_coefficient", 1.0)
@@ -407,6 +503,15 @@ func _load_physics() -> void:
 	ps_rate = d.curve("Powerslide/Maximum_sideslip_rate_vs_sideslip")
 	ps_scale = d.curve("Powerslide/Scale_vs_speed")
 	P.ps_ellipse = d.f("Powerslide", "Scale_of_min_friction_ellipse_scale", 0.8)
+	var rt := "Sideslip/RecoveryTorqueCutting"
+	# o 0x2120c0 só roda com a elipse ligada (FrictionEllipse Enabled, 0x430)
+	P.rtc_on = d.f(rt, "Enabled", 0.0) != 0.0 and d.f("FrictionEllipse", "Enabled", 1.0) != 0.0
+	P.rtc_front = d.f(rt, "Maximum_increased_front_slip_ratio", 0.0)
+	P.rtc_rear = d.f(rt, "Maximum_increased_rear_slip_ratio", 0.0)
+	P.rtc_steer = d.f(rt, "Steering_dependent", 0.0) != 0.0
+	rtc_th = d.curve(rt + "/Threshold_angle_vs_speed")
+	rtc_max = d.curve(rt + "/Maximum_angle_vs_speed")
+	rtc_cut = d.curve(rt + "/Maximum_cut_vs_speed")
 
 	# ---- parte 1: pneus e derrapagem, como no executável (funções 0x20ede8,
 	# 0x20eb98, 0x20efa0 e 0x2101e0). Detalhes nos comentários do _tires().
@@ -431,6 +536,11 @@ func _load_physics() -> void:
 	P.cs_scale = d.f("BasicSteering/MaximumYawAcceleration", "Counter_steer_maximum_scale", 1.0)
 	P.cs_scale_ss = d.f("BasicSteering/MaximumYawAcceleration", "Counter_steer_maximum_scale_sideslip", 60.0)
 	P.ps_side_to_fwd = d.f("Powerslide", "Side_deceleration_to_fwd_acceleration", 1.0)
+	P.ps_growth = d.f("Powerslide", "Growth_rate", 60.0)
+	P.ps_decay = d.f("Powerslide", "Decay_rate", 1.0)
+	P.ps_air = d.f("Powerslide", "Maximum_air_time", 0.1)
+	P.emb_up = d.f("InputRates/Clutch", "Digital_increase_rate", 8.0)
+	P.emb_down = d.f("InputRates/Clutch", "Digital_decrease_rate", 8.0)
 	P.ss_rate_inc = d.fcurves("Sideslip/MaximumRate/Maximum_increase_rate_vs_sideslip", "rate_vs_sideslip")
 	P.ss_rate_dec = d.fcurves("Sideslip/MaximumRate/Maximum_decrease_rate_vs_sideslip", "rate_vs_sideslip")
 	P.slip_grow = d.f("SlipRatio", "Growth_rate_during_wheel_spin", 3.0)
@@ -708,7 +818,92 @@ func _load_model() -> void:
 	model_offset = Vector3(-c.x, -aabb.position.y + 0.12, -c.z)
 	mi.position = model_offset
 	model_root.add_child(mi)
+	body_mi = mi
 	_load_steering_wheel()
+
+
+## depois da física (precisa dos pontos ARSE, rodas e EXHAUST)
+func _load_motor_treme() -> void:
+	if not MOTOR_TREME or body_mi == null:
+		return
+	motor_treme = preload("res://motor_treme.gd").new()
+	motor_treme.name = "MotorTreme"
+	if motor_treme.separar(body_mi, points):
+		model_root.add_child(motor_treme)
+	else:
+		motor_treme.free()
+		motor_treme = null
+
+
+## piloto (piloto.gd): o osso ROOT da animação fica em cima do ponto ARSE
+## (rider+0x2f0; no Renegade origem = ARSE - (0, 1.1315, 0.3032)), sem girar
+## com a matriz do ponto
+func _load_piloto() -> void:
+	if not points.has("ARSE"):
+		return
+	piloto = preload("res://piloto.gd").new()
+	if not piloto.carregar(PILOTO_DIR, MODEL_CULL):
+		piloto.free()
+		piloto = null
+		return
+	piloto.name = "Piloto"
+	piloto.position = model_offset + points["ARSE"] - piloto.root_pos
+	model_root.add_child(piloto)
+	if MAOS_NO_VOLANTE and VOLANTE_GIRA and sw_pivot:
+		var vol: Dictionary = pecas.get("volante", {})
+		# aro no frame do esqueleto (o piloto não gira em relação ao modelo)
+		piloto.prender_no_volante(sw_centro() - (points["ARSE"] - piloto.root_pos), SW_AXIS, vol.get("raio", 0.19))
+
+
+## centro do aro do volante que aparece (o do jogo, ou o gerado avançado)
+func sw_centro() -> Vector3:
+	return SW_CENTER + SW_AXIS.normalized() * sw_avanco
+
+
+func _load_fumaca() -> void:
+	if not FUMACA:
+		return
+	fumaca = preload("res://fumaca.gd").new()
+	fumaca.name = "Fumaca"
+	add_child(fumaca)
+	if not fumaca.montar(self):
+		fumaca.queue_free()
+		fumaca = null
+
+
+func _load_sfx() -> void:
+	if not SOM_PNEU:
+		return
+	sfx = preload("res://sfx_carro.gd").new()
+	sfx.name = "SomPneu"
+	add_child(sfx)
+	if not sfx.carregar(self):
+		sfx.queue_free()
+		sfx = null
+
+
+func _load_som() -> void:
+	if not SOM_MOTOR:
+		return
+	var dir: String = preload("res://motor_som.gd").pasta_do_carro(vehicle_id)
+	if dir == "":
+		return
+	som = preload("res://motor_som.gd").new()
+	som.name = "SomMotor"
+	if som.carregar(dir):
+		add_child(som)
+	else:
+		som.free()
+		som = null
+
+
+func _process(delta: float) -> void:
+	if som:
+		som.atualizar(rpm, som_carga, delta)
+	if fumaca:
+		fumaca.atualizar(som_carga, rpm)
+	if motor_treme:
+		motor_treme.atualizar(rpm, som_carga, delta)
 
 
 func _load_steering_wheel() -> void:
@@ -719,13 +914,19 @@ func _load_steering_wheel() -> void:
 	if vol.has("centro"):
 		SW_CENTER = Vector3(vol.centro[0], vol.centro[1], vol.centro[2])
 		SW_AXIS = Vector3(vol.eixo[0], vol.eixo[1], vol.eixo[2])
-	var mesh := load(path) as Mesh
-	if mesh == null:
-		return
 	sw_pivot = Node3D.new()
 	sw_pivot.position = model_offset + SW_CENTER
 	model_root.add_child(sw_pivot)
 	var mi := MeshInstance3D.new()
+	if VOLANTE_NOSSO:
+		sw_pivot.add_child(mi)
+		sw_malha = mi
+		sw_ponta_coluna = _ponta_coluna()
+		_montar_volante(volante_estilo if volante_estilo != "" else Volantes.do_carro(vehicle_id))
+		return
+	var mesh := load(path) as Mesh
+	if mesh == null:
+		return
 	mi.mesh = mesh
 	mi.position = -SW_CENTER
 	for i in mesh.get_surface_count():
@@ -734,6 +935,49 @@ func _load_steering_wheel() -> void:
 		m2.cull_mode = MODEL_CULL
 		mi.set_surface_override_material(i, m2)
 	sw_pivot.add_child(mi)
+
+
+## monta o volante gerado. O centro dele é recuado pro painel (dish) e a
+## coluna de direção do jogo, feita pro volante chato, termina quase no plano
+## do aro: o volante avança pro piloto até a coluna acabar atrás do miolo
+## (Kraken 5.5 cm, Viper 3.5, Trident 2.5, Storm 2.9; Renegade e Bulldog 0)
+func _montar_volante(nome: String) -> void:
+	volante_estilo = nome
+	sw_malha.mesh = Volantes.montar(pecas.get("volante", {}).get("raio", 0.19), SW_AXIS, nome)
+	sw_avanco = maxf(0.0, sw_ponta_coluna + 0.004 + Volantes.fundo(nome))
+	sw_pivot.position = model_offset + sw_centro()
+	if piloto and piloto.no_volante():
+		piloto.prender_no_volante(sw_centro() - (points["ARSE"] - piloto.root_pos), SW_AXIS,
+			pecas.get("volante", {}).get("raio", 0.19))
+
+
+## ponta da coluna de direção na carroceria: o vértice mais pro lado do piloto
+## perto do eixo do volante (até 6 cm dele e 8 cm atrás do aro). -INF = sem coluna
+func _ponta_coluna() -> float:
+	var m := load(model_path) as Mesh
+	var ponta := -INF
+	if m == null:
+		return ponta
+	var n := SW_AXIS.normalized()
+	for si in m.get_surface_count():
+		var vs: PackedVector3Array = m.surface_get_arrays(si)[Mesh.ARRAY_VERTEX]
+		for v in vs:
+			var d := v - SW_CENTER
+			var t := d.dot(n)
+			if t > -0.08 and t < 0.1 and (d - n * t).length() < 0.06:
+				ponta = maxf(ponta, t)
+	return ponta
+
+
+## troca o volante gerado (nome = "" passa pro próximo estilo); devolve o nome
+func trocar_volante(nome := "") -> String:
+	if sw_malha == null:
+		return ""
+	if nome == "":
+		var lista := Volantes.nomes()
+		nome = lista[(lista.find(volante_estilo) + 1) % lista.size()]
+	_montar_volante(nome)
+	return nome
 
 
 func driver_eye() -> Vector3:
@@ -826,6 +1070,17 @@ func reset_drivetrain() -> void:
 	limiter = false
 	throttle = 0.0
 	brake_in = 0.0
+	steer_cx = 0.0
+	thr_cx = 0.0
+	brk_cx = 0.0
+	rev_timer = 0.0
+	ar_libera = false
+	emb_in = 0.0
+	ps_estado = 0
+	ps_qtd = 0.0
+	ps_esc = 0.0
+	ps_emb_ant = 0.0
+	rtc_patinou = false
 
 
 func gear_label() -> String:
@@ -869,12 +1124,12 @@ func _physics_process(dt: float) -> void:
 	var thr_raw := 0.0
 	var brk_raw := 0.0
 	var st_raw := 0.0
-	var handbrake := false
+	var emb_btn := 0.0
 	if test_input != null:
 		thr_raw = test_input.get("thr", 0.0)
 		brk_raw = test_input.get("brk", 0.0)
 		st_raw = test_input.get("steer", 0.0)
-		handbrake = test_input.get("hb", false)
+		emb_btn = test_input.get("emb", 1.0 if test_input.get("hb", false) else 0.0)
 	else:
 		if Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP):
 			thr_raw = 1.0
@@ -884,7 +1139,7 @@ func _physics_process(dt: float) -> void:
 			st_raw += 1.0
 		if Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT):
 			st_raw -= 1.0
-		handbrake = Input.is_physical_key_pressed(KEY_SPACE)
+		emb_btn = 1.0 if Input.is_physical_key_pressed(KEY_SPACE) else 0.0
 		if Input.get_connected_joypads().size() > 0:
 			thr_raw = maxf(thr_raw, Input.get_joy_axis(0, JOY_AXIS_TRIGGER_RIGHT))
 			brk_raw = maxf(brk_raw, Input.get_joy_axis(0, JOY_AXIS_TRIGGER_LEFT))
@@ -897,8 +1152,12 @@ func _physics_process(dt: float) -> void:
 	var fwd_body := b.z
 	var v_body_f := linear_velocity.dot(fwd_body)
 
-	# ré: segurando freio parado engata a ré; na ré os pedais se invertem
-	if want_rev:
+	if not manual:
+		_pedais_auto(dt, v_body_f, thr_raw, brk_raw)
+		thr_raw = thr_cx
+		brk_raw = brk_cx
+	# manual (nosso): segurando freio parado engata a ré; na ré os pedais se invertem
+	elif want_rev:
 		if thr_raw > 0.1 and v_body_f > -0.5:
 			want_rev = false
 			if manual:
@@ -916,15 +1175,25 @@ func _physics_process(dt: float) -> void:
 			reverse_hold = 0.0
 	else:
 		reverse_hold = 0.0
+	thr_cx = thr_raw
+	brk_cx = brk_raw
 
 	throttle = move_toward(throttle, thr_raw, dt * (P.thr_up if thr_raw > throttle else P.thr_down))
 	brake_in = move_toward(brake_in, brk_raw, dt * (P.brk_up if brk_raw > brake_in else P.brk_down))
-	var st_rate: float = P.st_up
-	if st_raw == 0.0 or absf(st_raw) < absf(steer):
-		st_rate = P.st_down
-	if st_raw != 0.0 and steer != 0.0 and signf(st_raw) != signf(steer):
-		st_rate = P.st_opp
+	emb_in = move_toward(emb_in, emb_btn, dt * (P.emb_up if emb_btn > emb_in else P.emb_down))
+	# 0x241220: direção. Abrindo do mesmo lado sobe na taxa de subida, que com
+	# damp_increase_rate vira (1 - s²) x taxa (o volante chega no fim devagar,
+	# como tanh: 0.77 em 0.17 s, 0.95 em 0.3 s); voltando pro centro, taxa de
+	# descida; passando pro outro lado, taxa oposta. (Normalised_rate_vs_speed
+	# é 1 em todas as velocidades nos buggies.)
+	var st_rate: float = P.st_down
+	if (st_raw > steer and st_raw > 0.0) or (st_raw < steer and st_raw < 0.0):
+		if steer * st_raw >= 0.0:
+			st_rate = P.st_up * (1.0 - steer * steer) if P.st_damp != 0.0 else P.st_up
+		else:
+			st_rate = P.st_opp
 	steer = move_toward(steer, st_raw, dt * st_rate)
+	steer_cx = st_raw
 
 	# ---- suspensão portada (0x248768 contato, 0x248a80 mola, 0x2484c8 roda)
 	# Cada roda tem curso x e velocidade v próprios. A roda só "pega" no chão se
@@ -993,7 +1262,7 @@ func _physics_process(dt: float) -> void:
 
 	# ---- motor e câmbio
 	var driven_g := rear_g if REAR_DRIVE else grounded
-	var drive := _drivetrain(dt, v_f, driven_g > 0, handbrake)
+	var drive := _drivetrain(dt, v_f, driven_g > 0, emb_in > 0.1)   # 0x20c558: embreagem > 0.1 abre
 	_razao_patinada(v_f)
 
 	var f_fwd := 0.0                        # forças das rodas pra frente (0x5c8) + atrito interno
@@ -1003,9 +1272,9 @@ func _physics_process(dt: float) -> void:
 		air_lat_scale = 1.0
 		gravity_scale = 1.0
 		if use_ported:
-			f_fwd = _tires(dt, v, fwd, left, ground_n, com_w, h_sum / grounded, drive, handbrake)
+			f_fwd = _tires(dt, v, fwd, left, ground_n, com_w, h_sum / grounded, drive)
 		else:
-			_tires_legacy(dt, v, fwd, left, ground_n, com_w, h_sum / grounded, drive, handbrake)
+			_tires_legacy(dt, v, fwd, left, ground_n, com_w, h_sum / grounded, drive, false)
 		# 0x20e160: no chão o jogo anula a parte da gravidade que puxa o carro
 		# de lado num barranco, aplicada na altura do chão (vira rolagem)
 		var g_side: float = mass * G * Vector3.DOWN.dot(left)
@@ -1079,7 +1348,7 @@ func _physics_process(dt: float) -> void:
 	var f_arr_f: float = f_arr * v_f / spd if spd > 1e-6 else 0.0
 	var a_f: float = (f_fwd - f_arr_f) / mass + get_gravity().dot(fwd) * gravity_scale
 	v_ref = v_f + a_f * dt
-	_giro_rodas(dt, v_f, rear_g, handbrake)
+	_giro_rodas(dt, v_f, rear_g)
 
 	# 0x2484c8: curso de cada roda anda com a massa dela. No ar a mola e o
 	# amortecedor levam a roda de volta pro meio (x = 0)
@@ -1106,6 +1375,9 @@ func _physics_process(dt: float) -> void:
 	while jit_acc >= 1.0 / JIT_HZ:
 		jit_acc -= 1.0 / JIT_HZ
 		_wheel_jitter()
+		_vibracao(1.0 / JIT_HZ, v.dot(left), v_f)
+		if sfx:
+			sfx.passo(1.0 / JIT_HZ, v.dot(left), v_f)
 	_update_visuals(dt, v_f)
 
 
@@ -1157,6 +1429,74 @@ func _wheel_jitter() -> void:
 		jitter_chao /= no_chao
 
 
+## A cada passo do jogo (50 Hz): vibração do controle (0x202ab8), pouso
+## (0x370df0) e taxa da suspensão do som (0x36fa28/0x370548) -> tremida do
+## volante (melhoria nossa, VOLANTE_TREME)
+func _vibracao(dt: float, v_l: float, v_f: float) -> void:
+	var v := linear_velocity.length()       # corpo+0xe0
+	vibracao = 0.0
+	if grounded > 0:                        # corpo+0x8a8: rodas no chão
+		var trava := false
+		var pat := 0.0
+		for w in wheels:
+			if w.sr < -0.95:                    # 0x600: roda travada
+				trava = true
+			if w.omega > 3.14:                  # W+0x48: só roda girando
+				pat = maxf(pat, clampf(w.sr, 0.0, 1.0))
+		var base := 1.5 * absf(v_l)
+		if v < 8.938889 and pat > 0.1:
+			base += 15.0
+		if trava:
+			base += v * 0.33561218
+		vibracao = base * randf_range(0.1, 0.9)
+		if randf() < 0.1:
+			vibracao += v * 0.25
+		vibracao *= 0.07
+	# pouso: o som conta o tempo com nenhuma roda no chão e toca ao voltar
+	pouso = 0.0
+	if grounded == 0:
+		ar_som += dt
+	else:
+		if ar_som > 0.1:
+			pouso = 0.5 + 0.5 * minf(1.0, ar_som)
+		ar_som = 0.0
+	# suspensão: por roda (FL, RL) s = clamp(curso x SuspensionScale, 0, 1) e
+	# a taxa ds/dt (0 no ar); o dono filtra 0.4 x anterior + 0.1 x média
+	var media := 0.0
+	if jit_order.size() == 4:
+		for k in 2:
+			var w: Dictionary = wheels[jit_order[k]]
+			var d := 0.0
+			if w.hit:
+				var s := clampf(w.x * SUSP_ESCALA, 0.0, 1.0)
+				d = (s - _susp_ant[k]) / dt
+				_susp_ant[k] = s
+			else:
+				_susp_ant[k] = 0.0
+			media += d * 0.5
+	susp_taxa = clampf(0.4 * susp_taxa + 0.1 * media, -1.0, 1.0)
+	var tranco := pouso
+	if absf(v_f) >= SUSP_VEL:
+		for k in 2:
+			var lim: float = [SUSP_PEQUENA, SUSP_GRANDE][k]
+			var acima := susp_taxa > lim
+			if acima and not _susp_acima[k]:
+				tranco = maxf(tranco, 0.4 if k == 0 else 1.0)
+			_susp_acima[k] = acima
+	else:
+		_susp_acima = [false, false]
+	if not VOLANTE_TREME:
+		return
+	pancada = maxf(pancada * exp(-dt / PANCADA_SOLTA), tranco)
+	# alvo do giro: sorteio pela vibração, tranco com sinal sorteado, e a
+	# diferença de curso das rodas da frente (uma batendo e a outra não)
+	var terra := 0.0
+	if jit_order.size() == 4:
+		terra = (wheels[jit_order[0]].jit - wheels[jit_order[2]].jit) * TREME_TERRA
+	_treme_alvo = deg_to_rad(TREME_GRAUS * vibracao * randf_range(-1.0, 1.0)
+		+ TREME_PANCADA_GRAUS * pancada * (1.0 if randf() < 0.5 else -1.0) + terra)
+
+
 # ------------------------------------------------------------------ pneus
 ## Parte 1 portada do executável do jogo. Ordem igual à do jogo:
 ##   0x20ede8  curvatura pedida pela direção (com subesterço)
@@ -1171,7 +1511,7 @@ const MPH_G := 0.44694445
 const DEG := 0.017453294
 
 func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_w: Vector3,
-		h: float, drive: float, handbrake: bool) -> float:
+		h: float, drive: float) -> float:
 	var v_f := v.dot(fwd)                   # 0x418
 	var v_l := v.dot(left)                  # 0x410 (+ = esquerda)
 	var v_p := sqrt(v_f * v_f + v_l * v_l)  # 0x440 velocidade no plano do chão
@@ -1222,21 +1562,28 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 				w.fz += drive / n_drive
 
 	# ---- 0x20eb98: freio. Desaceleração máxima (mph/s) x escala do chão,
-	# nunca mais do que o necessário pra parar neste passo
-	var brk := brake_in if not handbrake else maxf(brake_in, 0.4)
+	# nunca mais do que o necessário pra parar neste passo. "Parar" é pela
+	# velocidade PREVISTA (0x211e48): a de agora + (tração já somada nas rodas
+	# + gravidade e arrasto do 0x1a0) x dt / massa. Assim o freio segura o
+	# carro parado contra a tração (o freio automático da largada).
+	var brk := brake_in                     # só o pedal (0x390): o jogo não tem freio de mão
 	if brk > 0.0 and (nf + nr) > 0:
 		var dmax: float = brk * MPH_G * P.brake_decel * VehicleData.triple(P.brake_fscale, mu)
-		var dec: float = -v_f / dt if absf(v_f) < dmax * dt else dmax * -sgn_v
+		var f_prev: float = mass * get_gravity().dot(fwd) * gravity_scale
+		var spd := v.length()
+		if spd > 1e-6:
+			f_prev -= _arrasto(spd, dt) * v_f / spd
+		for w in wheels:
+			f_prev += w.fz
+		var v_prev := v_f + f_prev * dt / mass
+		var dec: float = -v_prev / dt if absf(v_prev) < dmax * dt else dmax * -signf(v_prev)
 		var dec_front: float = P.front_bias * dec
-		if handbrake:
-			dec_front = 0.0                 # freio de mão só atrás
 		for w in wheels:
 			if not w.hit:
 				w.abs = false
 				continue
-			# o ABS é do pedal (0x390) e lê a patinada medida (0x600); o freio de
-			# mão do remake passa por aqui mas não é o do jogo, então fica fora dele
-			if P.abs_on and not handbrake:
+			# o ABS é do pedal (0x390) e lê a patinada medida (0x600)
+			if P.abs_on:
 				if w.sr < P.abs_eng:
 					w.abs = true
 				elif w.sr >= P.abs_dis:
@@ -1249,6 +1596,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 				w.fz += mass * (dec - dec_front) / nr_s
 
 	# ---- 0x20efa0: derrapagem
+	rtc_patinou = false
 	var f_cent: float = mass * v_p * v_p * kappa          # força centrípeta pedida
 	var ss_deg := absf(sideslip) / DEG
 	# alvo de derrapagem: acima de Speed_for_zero_sideslip o bico aponta pra dentro
@@ -1292,7 +1640,9 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			if signf(path) == signf(err) and err_deg < P.tail_off:
 				# chegando no alvo: rampa em cosseno (Increase_tail_off_threshold)
 				acc *= (cos((P.tail_off - err_deg) / P.tail_off * PI) + 1.0) * 0.5
-				if steer != 0.0:
+				# DAT_00550654 = 1: só com a direção crua e a suavizada do mesmo
+				# lado (DAT_00550658 = 10°)
+				if steer * steer_cx > 0.0:
 					var k := maxf((10.0 - err_deg) / 10.0, 0.0)
 					acc = (1.0 - k) * acc + k * (-w_err / dt)
 			var step := -acc * dt
@@ -1308,6 +1658,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			torque = inertia.y * step / dt
 		else:
 			# B) passou do alvo: segura a velocidade lateral no ângulo alvo
+			var corte := _corte_recuperacao(dt, v_f, v_p, yaw)
 			var decel: float = VehicleData.triple(P.side_std, mu) * MPH_G
 			var vt := tan(target) * absf(v_f)
 			var a: float = (vt - v_l) / dt if absf(vt - v_l) < decel * dt else decel * -signf(v_l)
@@ -1317,6 +1668,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			var lim: float = dt * lerpf(VehicleData.fcurve_eval(P.yaw_dec_zero, mu, mph),
 				VehicleData.fcurve_eval(P.yaw_dec_full, mu, mph), throttle) * DEG
 			torque = inertia.y * clampf(w_err, -lim, lim) / dt
+			torque *= 1.0 - corte
 	else:
 		# C) derrapando pro lado contrário (contra-esterço)
 		var fc := f_cent
@@ -1337,6 +1689,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 		if v_f < 0.0:
 			rate = -rate
 		torque = inertia.y * -rate
+		torque *= 1.0 - _corte_recuperacao(dt, v_f, v_p, yaw)
 
 	# divide força lateral e torque entre os eixos (estática de bicicleta)
 	var a_f: float = P.axle_f
@@ -1351,6 +1704,9 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 		else:
 			w.fx += (a_f / span) * (f_lat - torque / a_f) / nr_s
 		w.fz += f_fwd / n_all
+
+	# ---- 0x20cea0 -> 0x214610: powerslide (antes da elipse)
+	_powerslide(dt, v_p)
 
 	# ---- 0x2101e0: elipse de atrito por roda
 	var lat_dem := 0.0
@@ -1385,9 +1741,8 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 				w.fz = fz * k
 				clamped = true
 		var min_scale: float = VehicleData.triple(e.ms, mu_w)
-		if handbrake and not w.front:
-			min_scale *= P.ps_ellipse
-			clamped = true                    # powerslide: traseira escorrega
+		if _motriz(w) and (ps_estado == 1 or ps_estado == 2):
+			min_scale *= P.ps_ellipse          # powerslide: elipse de trás encolhe mais
 		w.sat = clamped
 		lat_dem += absf(fx)
 		lat_got += absf(w.fx)
@@ -1421,7 +1776,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 				w.slip = maxf(w.slip - P.lock_grow * dt, -1.0)
 		elif w.slip < 0.0:
 			w.slip = minf(w.slip + P.lock_recover * dt, 0.0)
-		else:
+		elif not rtc_patinou:
 			w.slip = maxf(w.slip - P.slip_recover * dt, 0.0)
 		if not w.front or not REAR_DRIVE:
 			drive_slip = maxf(drive_slip, w.slip)
@@ -1487,8 +1842,10 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 			var ss_d: float = absf(sideslip) / DEG
 			var growing: bool = beta_rate * sideslip > 0.0
 			var mr: float = VehicleData.fcurve_eval(P.ss_rate_inc if growing else P.ss_rate_dec, mu, ss_d)
-			if handbrake and growing:
-				mr = VehicleData.sample(ps_rate, ss_d)     # powerslide: curva própria
+			# powerslide: mistura com a curva própria pela quantidade x escala
+			var a_ps := ps_qtd * ps_esc
+			if a_ps > 0.0 and growing:
+				mr = (1.0 - a_ps) * mr + a_ps * VehicleData.sample(ps_rate, ss_d)
 			if absf(beta_rate) > mr * DEG:
 				var ex: float = beta_rate - signf(beta_rate) * mr * DEG
 				if ex * yaw_now > 0.0:
@@ -1635,6 +1992,99 @@ func _tires_legacy(dt: float, v: Vector3, fwd: Vector3, left: Vector3, ground_n:
 	apply_torque(ground_n * inertia.y * step / dt * (grounded / 4.0))
 
 
+## 0x214610: powerslide ("Clutch Turn" do treino: "tap ... to initiate a
+## clutch turn"). Só com Powerslide/Growth_rate > 0 (todos os buggies).
+##  0 nada: virando (direção suavizada != 0), acelerando e a embreagem
+##    SOLTANDO (menor que no passo anterior) -> 1;
+##  1 crescendo: quantidade += Growth_rate x dt até 1 (-> 2); apertou a
+##    embreagem de novo ou soltou o acelerador -> 3;
+##  2 ativo: apertou a embreagem de novo -> 0 (a quantidade fica); soltou o
+##    acelerador ou contra-esterçou (direção x derrapagem >= 0) -> 3;
+##  3 sumindo: quantidade -= Decay_rate x dt até 0 (-> 0).
+## Mais de Maximum_air_time no ar zera tudo. Em 1 e 2 a elipse das rodas de
+## tração vai pro mínimo dela x Scale_of_min_friction_ellipse_scale. A
+## quantidade x Scale_vs_speed (0x748) mistura a curva de taxa de derrapagem
+## (0x210ce0). Decay_drive_force_scale e Decay_boost_acceleration (estado 3)
+## são 1 e 0 nos buggies: sem efeito, não portados.
+func _powerslide(dt: float, v_p: float) -> void:
+	if air_time > P.ps_air:
+		ps_qtd = 0.0
+		ps_estado = 0
+	elif ps_estado == 0:
+		if absf(steer) > 0.0 and throttle > 0.0 and emb_in < ps_emb_ant:
+			ps_estado = 1
+	elif ps_estado == 1:
+		if ps_emb_ant < emb_in or throttle == 0.0:
+			ps_estado = 3
+		else:
+			ps_qtd += P.ps_growth * dt
+			if ps_qtd > 1.0:
+				ps_qtd = 1.0
+				ps_estado = 2
+	elif ps_estado == 2:
+		# direção e derrapagem têm o sinal trocado nos dois no remake: o produto é o do jogo
+		if ps_emb_ant < emb_in:
+			ps_estado = 0
+		elif throttle == 0.0 or steer * sideslip >= 0.0:
+			ps_estado = 3
+	elif ps_estado == 3:
+		ps_qtd -= P.ps_decay * dt
+		if ps_qtd < 0.0:
+			ps_qtd = 0.0
+			ps_estado = 0
+	ps_esc = VehicleData.sample(ps_scale, v_p / MPH_G)
+	ps_emb_ant = emb_in
+	if ps_estado == 1 or ps_estado == 2:
+		for w in wheels:
+			if _motriz(w):
+				var e: Dictionary = P.ell_FrontWheels if w.front else P.ell_RearWheels
+				w.grip = VehicleData.triple(e.ms, minf(w.mu, 1.0)) * P.ps_ellipse
+
+
+## 0x2120c0 (Sideslip/RecoveryTorqueCutting): quanto do torque que ENDIREITA
+## o carro (modos B e C do 0x20efa0) é cortado, 0 a 1. Com Steering_dependent,
+## passou do Threshold_angle (12°) e o volante está pra dentro da curva (sinal
+## contrário ao da derrapagem) ou solto, o corte é o acelerador suavizado: no
+## fundo, o carro NÃO volta sozinho. Contra-esterçando, o corte cai com o
+## volante (1 - |volante|, o Maximum_cut dos buggies é 0). Volante solto e o
+## carro girando mais rápido que v / (distância da roda FL ao CoM): rodando,
+## sem corte. Com corte > 0.01 a patinada de cada roda sobe (Growth_rate da
+## SlipRatio) até Maximum_increased_*_slip_ratio x corte (trás 0.2, frente 0).
+func _corte_recuperacao(dt: float, v_f: float, v_p: float, yaw: float) -> float:
+	if not P.rtc_on or v_p / MPH_G <= P.ss_zero or v_f <= 0.0:
+		return 0.0
+	var ang := absf(sideslip) / DEG
+	var mph_f := v_f / MPH_G
+	var th: float = VehicleData.sample(rtc_th, mph_f)
+	var mx: float = VehicleData.sample(rtc_max, mph_f)
+	var cut: float = VehicleData.sample(rtc_cut, mph_f)
+	if mx - th < 0.1:
+		mx = th + 0.1
+	var f := 0.0
+	if ang > mx:
+		f = cut * throttle
+	elif ang > th:
+		f = (ang - th) / (mx - th) * cut * throttle
+	var rodando := false
+	if P.rtc_steer and ang > th:
+		# direção e derrapagem têm o sinal trocado nos dois no remake: o produto é o do jogo
+		if steer * sideslip < 0.0 or absf(steer) < 1e-6:
+			if absf(steer) < 1e-6:
+				var fl: Dictionary = wheels[jit_order[0]]
+				var r := Vector2(fl.px - center_of_mass.x, fl.pz - center_of_mass.z).length()
+				rodando = v_p / r < absf(yaw)
+			f = throttle
+		else:
+			f = (f - 1.0) * absf(steer) + 1.0
+	if f > 0.01:
+		for w in wheels:
+			var lim: float = minf((P.rtc_front if w.front else P.rtc_rear) * f, P.slip_max)
+			if w.slip > -0.1 and w.slip < lim:
+				rtc_patinou = true
+				w.slip = minf(w.slip + P.slip_grow * dt, lim)
+	return 0.0 if rodando else f
+
+
 func _side_to_fwd(f_side: float, ss_deg: float) -> float:
 	# parte da desaceleração lateral vira aceleração pra frente (com acelerador)
 	var frac := 0.0
@@ -1644,8 +2094,10 @@ func _side_to_fwd(f_side: float, ss_deg: float) -> float:
 		frac = (ss_deg - P.side_to_fwd_min) / (P.side_to_fwd_max - P.side_to_fwd_min)
 	if frac <= 0.0:
 		return 0.0
-	stf_blend = throttle * frac * P.side_to_fwd     # 0x474: muda a altura da força longitudinal
-	return throttle * absf(f_side) * frac * P.side_to_fwd
+	# no powerslide (qualquer estado) vale o Side_deceleration_to_fwd dele
+	var k: float = P.side_to_fwd if ps_estado == 0 else P.ps_side_to_fwd
+	stf_blend = throttle * frac * k     # 0x474: muda a altura da força longitudinal
+	return throttle * absf(f_side) * frac * k
 
 
 
@@ -1674,6 +2126,51 @@ func _start_shift(to: int) -> void:
 	shift_flag = true
 
 
+## 0x202df0: pedais do jogador no AutoManual (corpo+0x2d4 = 3, veículo+0xb14
+## ligado), velocidades em mph (x 2.2374146):
+##  - pra frente a mais de 1 mph: modo frente (corpo+0x2d8 = 0) e espera
+##    de 0.1 s (veículo+0xb2c) pro freio virar ré;
+##  - senão: soltar o freio zera a espera; freio apertado gasta a espera e
+##    depois engata a ré com o freio virando acelerador; acelerador volta pra
+##    frente (de ré a mais de 1 mph ele vira freio até parar);
+##  - sem pedal nenhum e |v| < 0.2 mph o jogo segura no freio (1.0). É a
+##    barra vermelha cheia na largada: ao acelerar o freio cai a 2/s;
+##  - no ar (corpo+0x4e4 > 0) o acelerador fica cortado até ser solto uma vez
+##    nesse voo (veículo+0xb30).
+func _pedais_auto(dt: float, v_f: float, thr_raw: float, brk_raw: float) -> void:
+	var v_mph := v_f / MPH_G
+	if v_mph > 1.0:
+		want_rev = false
+		rev_timer = 0.1
+	else:
+		if rev_timer > 0.0 and brk_raw == 0.0:
+			rev_timer = 0.0
+		if brk_raw > 0.0:
+			if rev_timer > 0.0:
+				rev_timer -= dt
+			else:
+				want_rev = true
+				thr_raw = brk_raw
+				brk_raw = 0.0
+		elif thr_raw > 0.0:
+			if v_mph < -1.0 and want_rev:
+				brk_raw = thr_raw
+				thr_raw = 0.0
+			else:
+				want_rev = false
+	if thr_raw == 0.0 and brk_raw == 0.0 and linear_velocity.length() / MPH_G < 0.2:
+		brk_raw = 1.0
+	if air_time == 0.0:
+		ar_libera = false
+	elif not ar_libera:
+		if thr_raw == 0.0:
+			ar_libera = true
+		else:
+			thr_raw = 0.0
+	thr_cx = thr_raw
+	brk_cx = brk_raw
+
+
 ## Motor e câmbio portados do executável:
 ##   0x20c558  giro vem das rodas (W+0x48) quando a embreagem está travada,
 ##             com roda de trás no chão e o carro não está preso; embreagem
@@ -1686,7 +2183,7 @@ func _start_shift(to: int) -> void:
 ## Marchas aqui: -1 = ré (0 no jogo), 0 = neutro (6 no jogo), 1..5.
 func _drivetrain(dt: float, v_f: float, driven_on_ground: bool, forced_open: bool) -> float:
 	var ratio := _ratio(gear)
-	# ---- 0x20c558: embreagem forçada aberta (0x31c): freio de mão; mais de 1 s
+	# ---- 0x20c558: embreagem forçada aberta (0x31c): botão da embreagem > 0.1; mais de 1 s
 	# no ar abaixo do giro de desengate (câmbio+0x90); ou pedal de freio > 0.9
 	# com roda de tração travando (0x600 < DAT_0055067c = -0.9)
 	var forced := forced_open
@@ -1722,6 +2219,7 @@ func _drivetrain(dt: float, v_f: float, driven_on_ground: bool, forced_open: boo
 	elif rpm < P.lim_off:
 		lim_k = minf(lim_k + P.lim_rate_off * dt, 1.0)
 	limiter = lim_k < 0.999
+	som_carga = thr_eng * lim_k
 	eng_torque = thr_eng * lim_k * VehicleData.sample(drive_curve, rpm) * P.drive_scale \
 		- VehicleData.sample(fric_curve, rpm) * P.fric_scale
 	if integrate:
@@ -1770,12 +2268,12 @@ func _razao_patinada(v_f: float) -> void:
 ## O "torque" do freio aqui é desaceleração x parte do eixo / rodas x raio, sem
 ## a massa (o jogo divide pela inércia em t·m²; com a inércia em kg·m² entra
 ## x1000). 0x720 = 1 (RAM, multiplica o motor).
-func _giro_rodas(dt: float, v_f: float, rear_g: int, handbrake: bool) -> void:
-	# 0x2113e0: preso. Acelerando (sem freio de mão) a menos de 0,5 m/s e o
+func _giro_rodas(dt: float, v_f: float, rear_g: int) -> void:
+	# 0x2113e0: preso. Acelerando (botão da embreagem em 0) a menos de 0,5 m/s e o
 	# carro não sai de 3 cm (0.0009 m²) por 0,33 s
 	preso = false
 	var v_r := v_ref
-	if throttle > 0.0 and not handbrake and absf(v_f) < 0.5:
+	if thr_cx > 0.0 and emb_in == 0.0 and absf(v_f) < 0.5:
 		if preso_t == 0.0:
 			preso_t = dt
 			preso_pos = global_position
@@ -1802,9 +2300,8 @@ func _giro_rodas(dt: float, v_f: float, rear_g: int, handbrake: bool) -> void:
 			n_tr += 1
 	var ratio := _ratio(gear)
 	var w_mot := rpm * RPM2RAD / ratio if ratio != 0.0 else 0.0     # giro do motor na roda
-	var brk := brake_in if not handbrake else maxf(brake_in, 0.4)
-	var dmax: float = brk * MPH_G * P.brake_decel * VehicleData.triple(P.brake_fscale, mu_medio)
-	var d_fr: float = 0.0 if handbrake else P.front_bias * dmax
+	var dmax: float = brake_in * MPH_G * P.brake_decel * VehicleData.triple(P.brake_fscale, mu_medio)
+	var d_fr: float = P.front_bias * dmax
 	for w in wheels:
 		var I: float = w.inercia
 		var t_mot := clutch * ratio * eng_torque / n_tr if _motriz(w) else 0.0
@@ -1854,7 +2351,7 @@ func _freio_livre(w: Dictionary, a: float, dt: float) -> float:
 func _gearbox(dt: float, v_f: float, out_rpm: float, auto_ok: bool, forced: bool) -> float:
 	var n_g := gears.size() - 1
 	var rev_now := gear == -1
-	var t2 := throttle * throttle
+	var t2 := thr_cx * thr_cx              # câmbio+0xc = acelerador cru (0x20c7a8)
 	var dis: float = P.clutch_dis_rate
 	var eng: float = P.clutch_eng_rate
 	var rpm_thr: float = P.clutch_rpm_lo
@@ -1885,7 +2382,7 @@ func _gearbox(dt: float, v_f: float, out_rpm: float, auto_ok: bool, forced: bool
 				engage = true
 			elif cstate == 1 or cstate == 3:
 				engage = true
-			elif throttle < 0.01 and absf(v_f) > 5.0 * MPH:
+			elif thr_cx < 0.01 and absf(v_f) > 5.0 * MPH:
 				engage = true
 		else:
 			open_path = true
@@ -1925,7 +2422,7 @@ func _gearbox(dt: float, v_f: float, out_rpm: float, auto_ok: bool, forced: bool
 				shift_flag = false
 		# troca automática por velocidade (só com as rodas de tração no chão)
 		if cstate == 3 and not manual and not want_rev and auto_ok and gear >= 1:
-			var k: float = 1.0 + throttle * (P.up_thr_mod - 1.0)
+			var k: float = 1.0 + thr_cx * (P.up_thr_mod - 1.0)
 			if v_f > k * _up_speed(gear) and gear < n_g:
 				shift_to = gear + 1
 				cstate = 2
@@ -1992,7 +2489,14 @@ func _update_visuals(dt: float, _v_f: float) -> void:
 	# é o que move os braços dele no jogo, então o volante anda junto
 	if dt > 0.0:
 		rider_s = clampf(rider_s + minf(1.0 / dt, 30.0) * (steer - rider_s) * dt, -1.0, 1.0)
+	if dt > 0.0:
+		treme += (_treme_alvo - treme) * (1.0 - exp(-dt / TREME_SUAVE))
 	if sw_pivot and VOLANTE_GIRA:
-		sw_pivot.basis = Basis(SW_AXIS.normalized(), -rider_s * SW_TURNS)
+		var giro := -rider_s * SW_TURNS
+		if piloto and piloto.no_volante():
+			giro = piloto.giro_volante(rider_s)
+		sw_pivot.basis = Basis(SW_AXIS.normalized(), giro + treme)
+	if piloto:
+		piloto.pose(rider_s, treme if VOLANTE_GIRA else 0.0)
 	if susp_vis:
 		susp_vis.update(a_jogo)

@@ -13,11 +13,14 @@ const VEHICLES := [
 		"data": "res://data/vehicles/buggy_10.xml", "points": "res://data/vehicles/buggy_10_points.bin", "fp": [0.39, 0.52, 0.00]},
 	{"name": "Sphinx", "id": "BUGGY_04", "cams": "BuggyCamSet_04", "dir": "res://assets/sphinx",
 		"data": "res://data/vehicles/buggy_04.xml", "points": "res://data/vehicles/buggy_04_points.bin", "fp": [0.35, 0.48, 0.00]},
-	# o Sphinx do speedrun tem peças compradas: com motor 0.81, BodyMass L2 e
-	# Clutch L2 as trocas (38/57/75 mph) caem no mesmo tempo do vídeo
+	# Sphinx do speedrun, pela ficha da tela de opções do vídeo (0:00): pneu
+	# DIRT PREMIUM; 269,9 HP = Drive_torque 1,08 x 250 (0x1f5e90), ou seja,
+	# motor todo Prototype + câmbio Prototype (soma 1.0); 2204 lbs = 1,0 t
+	# (BodyMass L2). Embreagem L2: na troca 2->3 do vídeo a velocidade para
+	# 0,28 s (L2 dá 0,30, L1 0,40)
 	{"name": "Sphinx speedrun", "id": "BUGGY_04", "cams": "BuggyCamSet_04", "dir": "res://assets/sphinx",
 		"data": "res://data/vehicles/buggy_04.xml", "points": "res://data/vehicles/buggy_04_points.bin", "fp": [0.35, 0.48, 0.00],
-		"livery": "pintura_speedrun.png", "tune": {"engine": 0.81, "mass": 1.0, "shift": 1.0}},
+		"livery": "pintura_speedrun.png", "tune": {"engine": 1.0, "mass": 1.0, "shift": 1.0, "tire": "DIRT_PREMIUM"}},
 	# os outros buggies, na ordem da lista do jogo (tools/gerar_buggies.py)
 	{"name": "Mosquito", "id": "BUGGY_01", "cams": "BuggyCamSet_01", "dir": "res://assets/buggy_01",
 		"data": "res://data/vehicles/buggy_01.xml", "points": "res://data/vehicles/buggy_01_points.bin", "fp": [0.35, 0.46, 0.00]},
@@ -173,6 +176,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				_swap_vehicle((veh_idx + 1) % VEHICLES.size())
 			KEY_F:
 				car.flip_model()
+			KEY_B:
+				car.trocar_volante()
+			KEY_N:
+				AudioServer.set_bus_mute(0, not AudioServer.is_bus_mute(0))
 			# ajuste ao vivo da câmera do piloto (1/2 altura, 3/4 distância,
 			# 5/6 inclinação, 7/8 campo de visão); os valores aparecem no HUD
 			KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8:
@@ -247,8 +254,8 @@ func _process(delta: float) -> void:
 	if cam_mode == 4:
 		fp = "\n\npiloto: altura %.2f (1/2)  distância %.2f (3/4)  inclinação %.2f (5/6)  campo de visão %.0f° (7/8)" % [
 			car.FP_UP, car.FP_BACK, car.FP_PITCH, car.FP_FOV]
-	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço: powerslide (freio de mão)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC: câmera (%s)   V: próximo carro   Tab: menu de carros   F: girar o modelo   Esc: sair" % [
-		int(kmh), int(kmh / 1.609), car.gear_label(), int(car.rpm), "MANUAL" if car.manual else "AUTO", car.vehicle_name, ("pneus portados do jogo" if car.use_ported else "pneus antigos") + (", lateral do jogo" if car.lateral_game else ", lateral remendo"), CAM_NAMES[cam_mode]]
+	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço: embreagem (toque virando e acelerando = Clutch Turn)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC: câmera (%s)   V: próximo carro   Tab: menu de carros   F: girar o modelo   B: volante (%s)   N: som %s   Esc: sair" % [
+		int(kmh), int(kmh / 1.609), car.gear_label(), int(car.rpm), "MANUAL" if car.manual else "AUTO", car.vehicle_name, ("pneus portados do jogo" if car.use_ported else "pneus antigos") + (", lateral do jogo" if car.lateral_game else ", lateral remendo"), CAM_NAMES[cam_mode], car.volante_estilo if car.sw_malha else "do jogo", ("mudo" if AudioServer.is_bus_mute(0) else (car.som.pasta.get_file() if car.som else "sem loops"))]
 	hud.text += fp
 	hud.text += "\n\nchão: " + _chao()
 
@@ -289,7 +296,7 @@ func _make_cameras() -> void:
 
 
 func cam_state() -> Dictionary:
-	# transform interpolado: é o que aparece na tela (física roda a 120 Hz)
+	# transform interpolado: é o que aparece na tela (física roda a 50 Hz)
 	var xf: Transform3D = car.get_global_transform_interpolated()
 	var b := xf.basis.orthonormalized()
 	var tp: Vector3 = xf * car.corpo(Vector3.ZERO)   # origem do modelo
@@ -331,6 +338,11 @@ func _update_camera(delta: float) -> void:
 	car.model_root.visible = cam_mode != 3
 	if car.susp_vis:
 		car.susp_vis.visible = cam_mode != 3
+	# mRenderRider (xml 14837): 0 em On_Hood e On_Front. Na nossa câmera do
+	# piloto ele aparece sem o capacete (braços e mãos no volante)
+	if car.piloto:
+		car.piloto.visible = cam_mode <= 1 or cam_mode == 4
+		car.piloto.sem_cabeca = cam_mode == 4
 
 	if cam_mode <= 1:
 		gcams[cam_mode].apply(cam, s.tp)

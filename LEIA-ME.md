@@ -39,7 +39,7 @@ roda a física sem tela. Comandos: `/teste` e `/entrega`.
 |---|---|
 | W / S ou setas | acelerar / frear (parado, segure S pra engatar a ré) |
 | A / D | virar |
-| Espaço | powerslide (freio de mão): a traseira escorrega |
+| Espaço | embreagem: segurando abre a embreagem; um toque virando e acelerando faz a "Clutch Turn" (powerslide do jogo). O jogo não tem freio de mão |
 | M | câmbio automático / manual |
 | P | alterna pneus/derrapagem: portados do jogo x modelo antigo |
 | L | força lateral: por eixo como no jogo x remendo antigo (pra comparar) |

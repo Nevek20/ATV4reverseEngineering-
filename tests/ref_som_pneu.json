@@ -1,0 +1,12 @@
+{
+ "fonte": "registrador de pitch das vozes do SPU (core 0) na RAM do SPU dos save states do Matheus (os mesmos de tests/ref_derrapagem.json): pitch / (4096 x 2^((CN + CF/128 - 196) / 12)) do tom 0 do som. Cada roda toca 2 vozes (as camadas do som); FL = par com WheelDiff 0, RL = par com WheelDiff 1. Só vozes tocando (envelope > 0). Quantização do registrador: ~0.0013. drr_2 fica de fora (só um par tocando, sem dar pra saber a roda).",
+ "estados": {
+  "drr_1": {"chao": "Dirt", "FL": 1.6804, "RL": 1.7604},
+  "drr_3": {"chao": "Dirt", "FL": 1.6445},
+  "170": {"chao": "Dirt", "FL": 1.6816, "RL": 1.7723},
+  "fm_1": {"chao": "Dirt", "FL": 1.6744, "RL": 1.7747},
+  "fm_2": {"chao": "Dirt", "FL": 1.6123, "RL": 1.6529},
+  "fm_3": {"chao": "Tarmac", "FL": 0.9996, "RL": 1.0591, "Screech": 0.6501},
+  "110": {"chao": "Tarmac", "FL": 1.0300, "RL": 1.0894, "Screech": 0.7400}
+ }
+}

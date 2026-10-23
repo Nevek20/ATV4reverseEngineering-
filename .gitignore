@@ -3,6 +3,9 @@ assets/renegade/
 assets/sphinx/
 assets/rodas/
 assets/buggy_*/
+assets/piloto/
+assets/sfx/
+assets/fx/
 re/decomp/
 *.p2s
 *.iso
@@ -10,3 +13,5 @@ re/decomp/
 SCES_546.88
 unpacked/
 __pycache__/
+tools/engine_sim_dyno/es/
+tools/engine_sim_dyno/build/

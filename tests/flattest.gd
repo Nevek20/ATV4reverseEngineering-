@@ -13,6 +13,8 @@ extends Node3D
 ##   AMORT Damping do chão (arrasto, padrão 0 = terra comum; fora da pista 0.2)
 ##   ST    direção no roteiro hs (padrão 1)
 ##   LDT   intervalo do log em s (padrão 0.25)
+##   HZ    passos de física por segundo (padrão do projeto: 50 = PAL, como o
+##         nosso exe; 60 = NTSC, pra comparar com vídeo da versão americana)
 ##   LEG=1 pneus antigos   LAT=0 lateral remendo
 const Car := preload("res://car.gd")
 const Main := preload("res://main.gd")
@@ -22,6 +24,8 @@ var log_t := 0.0
 
 
 func _ready():
+	if OS.get_environment("HZ") != "":
+		Engine.physics_ticks_per_second = int(OS.get_environment("HZ"))
 	var body := StaticBody3D.new()
 	var cs := CollisionShape3D.new()
 	var box := BoxShape3D.new()
@@ -96,7 +100,7 @@ func _physics_process(d):
 	elif sc == "hb":
 		ti.thr = 1.0 if t > 1.0 else 0.0
 		ti.steer = 1.0 if t > 5.0 and t < 8.0 else 0.0
-		ti.hb = t > 5.0 and t < 6.0
+		ti.hb = t > 5.0 and t < 6.0      # botão da embreagem (o jogo não tem freio de mão)
 	elif sc == "freio" or sc == "freiocurva":
 		# acelera até ~7 s e pisa no freio (curva: virando metade)
 		ti.thr = 1.0 if t > 1.0 and t < 7.0 else 0.0
