@@ -35,6 +35,7 @@ volantes.gd          volantes gerados, um estilo por carro (melhoria nossa, no l
 motor_som.gd         som do motor: loops do Engine Simulator por rpm e carga (melhoria nossa)
 sfx_carro.gd         som de pneu, suspensão e pouso do jogo (portado do exe); som_jogo.gd toca os sons 989snd
 fumaca.gd            fumaça do escapamento (melhoria nossa com o efeito ExhaustSmokeTrail que o jogo não usa)
+motor_treme.gd       motor e escape tremendo (melhoria nossa): separa as peças do cofre da carroceria
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas; sfx (sons) e fx (fumaça) do jogo (fora do git)
@@ -80,6 +81,8 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
 %GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies
 %GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states
+%GODOT% --headless --path . -s res://tests/teste_motor_treme.gd   :: peças e faces do motor que treme nos 12 carros
+:: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
 :: + SOLTA=1.3 solta o volante (DEPOIS=-1 contra-esterça, ACEL=0 solta o acelerador), DUR=8 segundos depois de virar
@@ -308,6 +311,15 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   cRenderer*; tabela de pontos 0x550700 sem EXHAUST; vídeo sem fumaça).
   Usamos os parâmetros do efeito; taxa de emissão e saída do cano são nossas.
   Storm não tem ponto EXHAUST (sem fumaça).
+- Motor e escape tremendo (melhoria nossa, car.gd MOTOR_TREME,
+  motor_treme.gd): no jogo são parte da Body e não tremem. Separação pelas
+  peças soltas da malha que cabem inteiras no cofre (atrás do banco até o
+  escape, entre as rodas de trás), sem pintura "white", pneu, sem textura,
+  chapas/travessas e peças grandes. A textura "engie/engine" NÃO serve: é um
+  atlas usado no painel, na frente e na gaiola. Conferido com prints
+  vermelhos x normais (Sphinx, Phantom, McKenzies, Viper, Hurricane, Trident:
+  só o metal do cofre). Amplitude exagerada (6 mm na lenta) pra aparecer na
+  câmera de corrida (1 px ~ 8 mm a 6 m).
 - Volante tremendo (melhoria nossa, car.gd VOLANTE_TREME, _vibracao): no
   jogo nada treme (nem volante, nem mãos, nem motor: varredura do exe e
   vídeo). A força é a do motor pequeno da vibração do CONTROLE (0x202ab8:

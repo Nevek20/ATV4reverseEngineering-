@@ -120,6 +120,11 @@ var sfx: Node = null
 # que o jogo tem no XML e não usa, nos pontos EXHAUST). false = sem fumaça
 const FUMACA := true
 var fumaca: Node3D = null
+# motor e escape tremendo (melhoria nossa, motor_treme.gd: peças soltas da
+# carroceria no cofre do motor; vibração pela rotação e balanço pela carga)
+const MOTOR_TREME := true
+var motor_treme: Node3D = null
+var body_mi: MeshInstance3D = null
 var som_carga := 0.0          # carga do motor pro som: acelerador x limitador x troca
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
@@ -296,6 +301,7 @@ func _ready() -> void:
 	_load_model()                 # antes da física: define model_offset
 	_load_physics()
 	_load_piloto()                # depois da física: precisa do ponto ARSE
+	_load_motor_treme()
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
@@ -812,7 +818,21 @@ func _load_model() -> void:
 	model_offset = Vector3(-c.x, -aabb.position.y + 0.12, -c.z)
 	mi.position = model_offset
 	model_root.add_child(mi)
+	body_mi = mi
 	_load_steering_wheel()
+
+
+## depois da física (precisa dos pontos ARSE, rodas e EXHAUST)
+func _load_motor_treme() -> void:
+	if not MOTOR_TREME or body_mi == null:
+		return
+	motor_treme = preload("res://motor_treme.gd").new()
+	motor_treme.name = "MotorTreme"
+	if motor_treme.separar(body_mi, points):
+		model_root.add_child(motor_treme)
+	else:
+		motor_treme.free()
+		motor_treme = null
 
 
 ## piloto (piloto.gd): o osso ROOT da animação fica em cima do ponto ARSE
@@ -882,6 +902,8 @@ func _process(delta: float) -> void:
 		som.atualizar(rpm, som_carga, delta)
 	if fumaca:
 		fumaca.atualizar(som_carga, rpm)
+	if motor_treme:
+		motor_treme.atualizar(rpm, som_carga, delta)
 
 
 func _load_steering_wheel() -> void:
