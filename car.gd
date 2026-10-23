@@ -116,6 +116,10 @@ var som: Node = null
 # os samples do jogo em assets/sfx: tools/sfx_jogo.py). false = sem eles
 const SOM_PNEU := true
 var sfx: Node = null
+# fumaça do escapamento (melhoria nossa, fumaca.gd: o efeito ExhaustSmokeTrail
+# que o jogo tem no XML e não usa, nos pontos EXHAUST). false = sem fumaça
+const FUMACA := true
+var fumaca: Node3D = null
 var som_carga := 0.0          # carga do motor pro som: acelerador x limitador x troca
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
@@ -294,6 +298,7 @@ func _ready() -> void:
 	_load_piloto()                # depois da física: precisa do ponto ARSE
 	_load_som()
 	_load_sfx()
+	_load_fumaca()
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = Vector3(2.1, 0.8, 4.8)
@@ -835,6 +840,17 @@ func sw_centro() -> Vector3:
 	return SW_CENTER + SW_AXIS.normalized() * sw_avanco
 
 
+func _load_fumaca() -> void:
+	if not FUMACA:
+		return
+	fumaca = preload("res://fumaca.gd").new()
+	fumaca.name = "Fumaca"
+	add_child(fumaca)
+	if not fumaca.montar(self):
+		fumaca.queue_free()
+		fumaca = null
+
+
 func _load_sfx() -> void:
 	if not SOM_PNEU:
 		return
@@ -864,6 +880,8 @@ func _load_som() -> void:
 func _process(delta: float) -> void:
 	if som:
 		som.atualizar(rpm, som_carga, delta)
+	if fumaca:
+		fumaca.atualizar(som_carga, rpm)
 
 
 func _load_steering_wheel() -> void:

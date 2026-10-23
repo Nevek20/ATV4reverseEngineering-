@@ -34,9 +34,10 @@ piloto.gd            piloto do jogo sentado no ARSE, braços pela direção (STE
 volantes.gd          volantes gerados, um estilo por carro (melhoria nossa, no lugar do do jogo)
 motor_som.gd         som do motor: loops do Engine Simulator por rpm e carga (melhoria nossa)
 sfx_carro.gd         som de pneu, suspensão e pouso do jogo (portado do exe); som_jogo.gd toca os sons 989snd
+fumaca.gd            fumaça do escapamento (melhoria nossa com o efeito ExhaustSmokeTrail que o jogo não usa)
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
-assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas; sfx (sons do jogo) (fora do git)
+assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas; sfx (sons) e fx (fumaça) do jogo (fora do git)
 tests/               teste de física sem tela + rodar_testes.py
 tools/               scripts Python de extração (pingu2obj, pintura, savestate)
 som/engine_sim/      um .mr do Engine Simulator por buggy (gerados por tools/gerar_motores.py)
@@ -92,6 +93,8 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 
 :: sons de pneu, suspensão e pouso do jogo -> assets/sfx (wav + sons.json)
 python tools/sfx_jogo.py <unpacked>
+:: textura da fumaça (Sprites/Particles, caixa Dust0) -> assets/fx/fumaca.png
+python tools/fx_jogo.py <unpacked>
 
 :: piloto (malha, esqueleto, animação da direção, textura) -> assets/piloto
 python tools/piloto.py <unpacked>
@@ -299,6 +302,12 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   suspensão sai do Collide.bnk (BigSuspension/SmallSuspension) e o pneu do
   SURFACE.bnk, pelo SFX do material da pista. Só FL e RL tocam (+ Screech na
   FL no asfalto). Tom conferido com o SPU (tests/teste_sfx.gd).
+- Fumaça do escapamento (melhoria nossa, car.gd FUMACA, fumaca.gd): o jogo
+  NÃO solta fumaça. O efeito ExhaustSmokeTrail (xml 01416) e os pontos
+  EXHAUST/EXHAUST2 existem, mas o exe não lê nenhum (sem cBehaviour*/
+  cRenderer*; tabela de pontos 0x550700 sem EXHAUST; vídeo sem fumaça).
+  Usamos os parâmetros do efeito; taxa de emissão e saída do cano são nossas.
+  Storm não tem ponto EXHAUST (sem fumaça).
 - Volante tremendo (melhoria nossa, car.gd VOLANTE_TREME, _vibracao): no
   jogo nada treme (nem volante, nem mãos, nem motor: varredura do exe e
   vídeo). A força é a do motor pequeno da vibração do CONTROLE (0x202ab8:
