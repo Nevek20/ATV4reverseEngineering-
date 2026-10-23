@@ -272,8 +272,9 @@ func _textura(caminho: String) -> Texture2D:
 
 
 ## s = direção suavizada do piloto do remake (car.gd rider_s, + = esquerda);
-## no jogo é -s
-func pose(s: float) -> void:
+## no jogo é -s. extra = giro a mais do volante (rad, car.gd treme): as mãos
+## acompanham
+func pose(s: float, extra := 0.0) -> void:
 	if skel == null:
 		return
 	var s_jogo := -s
@@ -291,7 +292,7 @@ func pose(s: float) -> void:
 		_lp[b] = p
 		_lr[b] = r
 	if _vol:
-		_segura_volante(giro_volante(s))
+		_segura_volante(giro_volante(s) + extra)
 	for b in skel.get_bone_count():
 		skel.set_bone_pose_position(b, _lp[b])
 		skel.set_bone_pose_rotation(b, _lr[b])

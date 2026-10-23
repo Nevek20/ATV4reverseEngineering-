@@ -371,6 +371,16 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   triângulo do contato (W+0x140). A largada do RX_01 é asfalto. Entra em
   0x222078 (curso visual, sem clamp depois), então mexe balança, cubo,
   freio e amortecedor. tests/teste_tremida.gd.
+- Vibração do controle 0x202ab8 (chamada por 0x159448, entregue por
+  FUN_00649a68 aos motores 0 e 1 do DualShock). Motor 1 (grande) =
+  veículo+0xa40 limitado a 1 (amplitude da tremida de batida da câmera,
+  escrita em 0x202760). Motor 0 (pequeno), só com corpo+0x8a8 > 0 (rodas no
+  chão, contadas em 0x20cf28 pelo W+0x10c): v = |v| (0xe0); trava = alguma
+  roda com 0x600 < -0.95; pat = maior clamp(0x600, 0, 1) das rodas com giro
+  W+0x48 > 3.14; r = (1.5·|0x410| + 15·[v < 8.938889 e pat > 0.1] +
+  0.33561218·v·[trava])·U(0.1, 0.9), + 0.25·v em 10% das chamadas, ×0.07.
+  Não usa rpm. No remake vira a tremida do volante (car.gd _vibracao,
+  melhoria nossa).
 - Conferido: tests/teste_pecas.gd compara 100 matrizes de 6 carros
   (Renegade, Sphinx, Inferno, Bulldog, Phantom, Storm) com a RAM dos save
   states parados na largada, erro < 0.01 mm. Classes das rodas de rally:

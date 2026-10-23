@@ -75,6 +75,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
 %GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda e 1.16 s de derrapagem
 %GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 13 carros (0 cm) e giro do volante
+%GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
 %GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta)
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
@@ -288,6 +289,12 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Volante: no jogo NÃO gira (é parte da carroceria). Girar é melhoria nossa
   (VOLANTE_GIRA no car.gd; tools/volante.py acha o aro). O que gira no jogo
   são os braços do piloto (piloto.gd).
+- Volante tremendo (melhoria nossa, car.gd VOLANTE_TREME, _vibracao): no
+  jogo nada treme (nem volante, nem mãos, nem motor: varredura do exe e
+  vídeo). A força é a do motor pequeno da vibração do CONTROLE (0x202ab8:
+  carro de lado, roda patinando devagar, roda travada, trancos pela
+  velocidade) + pouso (0x370df0) e suspensão (0x36e498) do som + a tremida
+  de curso das rodas da frente na terra (0x202760). Graus = escolha nossa.
 
 ## Pendente / ideias
 
@@ -315,7 +322,6 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   133 Hz), não o tamanho do tubo (som/engine_sim/LEIA-ME.md).
 - Piloto: montar a textura dele como o jogo (5 camadas por parte + cores do
   perfil; hoje usa o rider_fury pronto), LOD MID/LOW, piloto feminino.
-  Melhoria nossa depois: mãos tremendo no volante em alta velocidade.
 - Câmera do piloto: referência do Matheus = cockpit do Dirt Rally 2.0
   (horizonte perto do meio, volante cortado embaixo, muita estrada).
 - Sinal do giro/direção visual: falta save state andando com volante virado.

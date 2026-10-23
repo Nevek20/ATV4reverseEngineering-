@@ -222,6 +222,36 @@ var spd_ground := 0.0         # corpo+0x440: velocidade no plano do chão (m/s)
 var jit_order := []           # índices das rodas na ordem do jogo: FL, RL, FR, RR
 var jitter_chao := 0.0        # veículo+0xac0: média do WheelJitter embaixo de FL, RL, FR no chão (câmera)
 
+# melhoria nossa: o volante treme (as mãos vão junto pela IK). No jogo ele não
+# treme; a força vem do que o jogo usa pra sacudir o CONTROLE e pro som:
+#   vibracao (0x202ab8, motor pequeno do controle, só com roda no chão):
+#     0.07 x U(0.1, 0.9) x (1.5 |v lateral| + 15 se patinando abaixo de 20 mph
+#     + 0.3356 |v| se alguma roda travada), + 0.07 x 0.25 |v| em 10% dos passos
+#   pancada: pouso depois de mais de 0.1 s no ar (0x370df0: 0.5 + 0.5 min(1, t))
+#     e suspensão afundando rápido acima de 20 mph (0x36e498/0x36e2d8, limites
+#     Small/Large do "Buggy" no SoundDatabase.xml)
+#   terra: a tremida do curso das rodas da frente (0x202760), uma contra a outra
+# Os graus são escolha nossa. VOLANTE_TREME = false deixa parado.
+const VOLANTE_TREME := true
+const TREME_GRAUS := 2.5          # giro com vibracao 1
+const TREME_PANCADA_GRAUS := 6.0  # tranco com pancada 1
+const TREME_TERRA := 60.0         # graus por metro de diferença no curso das rodas da frente
+const TREME_SUAVE := 0.015        # s: o volante segue o sorteio com essa constante
+const PANCADA_SOLTA := 0.15       # s: o tranco some com essa constante
+const SUSP_ESCALA := 3.4375       # SuspensionScale (SoundDatabase.xml, Model, igual nos 12 buggies)
+const SUSP_PEQUENA := 0.4945      # Suspension "Buggy": Small Threshold
+const SUSP_GRANDE := 0.6563       # Large Threshold
+const SUSP_VEL := 8.938889        # 20 mph: abaixo disso o 0x36e498 não toca a suspensão
+var vibracao := 0.0
+var pancada := 0.0
+var treme := 0.0                  # rad somados ao giro do volante
+var _treme_alvo := 0.0
+var susp_taxa := 0.0              # dono do som +0x178: d(suspensão)/dt filtrado de FL e RL
+var _susp_ant := [0.0, 0.0]       # roda do som +0x164 de FL e RL
+var _susp_acima := [false, false]
+var ar_som := 0.0                 # tempo no ar contado pelo som (0x370df0)
+var pouso := 0.0                  # > 0 no passo em que pousou: volume do pouso (0x370df0)
+
 var lateral_game := true     # L alterna: força lateral por eixo (jogo) x remendo antigo
 var use_ported := true      # P alterna: física portada do jogo x modelo antigo
 var stf_blend := 0.0          # 0x474: quanto da força pra frente veio da derrapagem
@@ -1289,6 +1319,7 @@ func _physics_process(dt: float) -> void:
 	while jit_acc >= 1.0 / JIT_HZ:
 		jit_acc -= 1.0 / JIT_HZ
 		_wheel_jitter()
+		_vibracao(1.0 / JIT_HZ, v.dot(left), v_f)
 	_update_visuals(dt, v_f)
 
 
@@ -1338,6 +1369,74 @@ func _wheel_jitter() -> void:
 	wheels[jit_order[3]].jit = wheels[jit_order[1]].jit
 	if no_chao > 0:
 		jitter_chao /= no_chao
+
+
+## A cada passo do jogo (50 Hz): vibração do controle (0x202ab8), pouso
+## (0x370df0) e taxa da suspensão do som (0x36fa28/0x370548) -> tremida do
+## volante (melhoria nossa, VOLANTE_TREME)
+func _vibracao(dt: float, v_l: float, v_f: float) -> void:
+	var v := linear_velocity.length()       # corpo+0xe0
+	vibracao = 0.0
+	if grounded > 0:                        # corpo+0x8a8: rodas no chão
+		var trava := false
+		var pat := 0.0
+		for w in wheels:
+			if w.sr < -0.95:                    # 0x600: roda travada
+				trava = true
+			if w.omega > 3.14:                  # W+0x48: só roda girando
+				pat = maxf(pat, clampf(w.sr, 0.0, 1.0))
+		var base := 1.5 * absf(v_l)
+		if v < 8.938889 and pat > 0.1:
+			base += 15.0
+		if trava:
+			base += v * 0.33561218
+		vibracao = base * randf_range(0.1, 0.9)
+		if randf() < 0.1:
+			vibracao += v * 0.25
+		vibracao *= 0.07
+	# pouso: o som conta o tempo com nenhuma roda no chão e toca ao voltar
+	pouso = 0.0
+	if grounded == 0:
+		ar_som += dt
+	else:
+		if ar_som > 0.1:
+			pouso = 0.5 + 0.5 * minf(1.0, ar_som)
+		ar_som = 0.0
+	# suspensão: por roda (FL, RL) s = clamp(curso x SuspensionScale, 0, 1) e
+	# a taxa ds/dt (0 no ar); o dono filtra 0.4 x anterior + 0.1 x média
+	var media := 0.0
+	if jit_order.size() == 4:
+		for k in 2:
+			var w: Dictionary = wheels[jit_order[k]]
+			var d := 0.0
+			if w.hit:
+				var s := clampf(w.x * SUSP_ESCALA, 0.0, 1.0)
+				d = (s - _susp_ant[k]) / dt
+				_susp_ant[k] = s
+			else:
+				_susp_ant[k] = 0.0
+			media += d * 0.5
+	susp_taxa = clampf(0.4 * susp_taxa + 0.1 * media, -1.0, 1.0)
+	var tranco := pouso
+	if absf(v_f) >= SUSP_VEL:
+		for k in 2:
+			var lim: float = [SUSP_PEQUENA, SUSP_GRANDE][k]
+			var acima := susp_taxa > lim
+			if acima and not _susp_acima[k]:
+				tranco = maxf(tranco, 0.4 if k == 0 else 1.0)
+			_susp_acima[k] = acima
+	else:
+		_susp_acima = [false, false]
+	if not VOLANTE_TREME:
+		return
+	pancada = maxf(pancada * exp(-dt / PANCADA_SOLTA), tranco)
+	# alvo do giro: sorteio pela vibração, tranco com sinal sorteado, e a
+	# diferença de curso das rodas da frente (uma batendo e a outra não)
+	var terra := 0.0
+	if jit_order.size() == 4:
+		terra = (wheels[jit_order[0]].jit - wheels[jit_order[2]].jit) * TREME_TERRA
+	_treme_alvo = deg_to_rad(TREME_GRAUS * vibracao * randf_range(-1.0, 1.0)
+		+ TREME_PANCADA_GRAUS * pancada * (1.0 if randf() < 0.5 else -1.0) + terra)
 
 
 # ------------------------------------------------------------------ pneus
@@ -2332,12 +2431,14 @@ func _update_visuals(dt: float, _v_f: float) -> void:
 	# é o que move os braços dele no jogo, então o volante anda junto
 	if dt > 0.0:
 		rider_s = clampf(rider_s + minf(1.0 / dt, 30.0) * (steer - rider_s) * dt, -1.0, 1.0)
+	if dt > 0.0:
+		treme += (_treme_alvo - treme) * (1.0 - exp(-dt / TREME_SUAVE))
 	if sw_pivot and VOLANTE_GIRA:
 		var giro := -rider_s * SW_TURNS
 		if piloto and piloto.no_volante():
 			giro = piloto.giro_volante(rider_s)
-		sw_pivot.basis = Basis(SW_AXIS.normalized(), giro)
+		sw_pivot.basis = Basis(SW_AXIS.normalized(), giro + treme)
 	if piloto:
-		piloto.pose(rider_s)
+		piloto.pose(rider_s, treme if VOLANTE_GIRA else 0.0)
 	if susp_vis:
 		susp_vis.update(a_jogo)
