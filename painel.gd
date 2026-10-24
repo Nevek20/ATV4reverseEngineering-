@@ -6,11 +6,15 @@ extends Node3D
 ## conta-giros e velocímetro de ponteiro, mostrador branco. PRO (Level="Pro"):
 ## conta-giros, velocímetro, marcha digital e luz de troca, mostrador preto.
 ##
-## Onde o modelo já tem relógio, o nosso vai por cima (DO_MODELO, medido no
-## .obj): Renegade (placa cadilac_clock_index), Sphinx (chapa b_2 com relógios
-## pintados, achados pelo UV) e Inferno (buracos pretos com aro). O que falta
-## vai num conjunto preso na coluna da direção, atrás do volante, na linha
-## entre o olho (câmera do piloto) e a metade de cima do aro.
+## Conjunto preso na coluna da direção, atrás do volante, na linha entre o
+## olho (câmera do piloto) e a metade de cima do aro, subindo até caber na
+## tela (McKenzies). No Phantom o volante tampa tudo: vai do lado direito
+## (LADO). AJUSTE por carro por cima, com os números que o Matheus acha na
+## câmera do piloto (9/0 desce/sobe, -/= lado, main.gd).
+## Os relógios do modelo saem pra o nosso não ficar em cima de outro
+## (pedido do Matheus): a placa do relógio do Renegade some e os relógios
+## pintados da chapa do Sphinx são repintados com o fundo da chapa. O
+## Inferno tem buracos de relógio vazios: os nossos vão neles (DO_MODELO).
 ##
 ## Valores: rpm do motor (car.rpm), velocímetro como o do jogo (1.06 x a
 ## velocidade pra frente, tests/teste_entrada.gd), marcha do car.gear_label().
@@ -19,23 +23,31 @@ extends Node3D
 ##
 ## Tudo no frame do modelo do jogo (filho do model_root, como a carroceria).
 
-# mostradores do modelo: tipo -> [centro, normal (pro piloto), diâmetro]
+# buracos de relógio do modelo: tipo -> [centro, normal (pro piloto), diâmetro]
 const DO_MODELO := {
-	"BUGGY_10": {"rpm": [Vector3(-0.437, 1.334, 0.674), Vector3(0.0, 0.62, -0.78), 0.115]},
-	# os 2 grandes do meio da chapa (o da frente do piloto fica atrás do X do volante)
-	"BUGGY_04": {"rpm": [Vector3(-0.098, 1.286, 0.591), Vector3(0.0, 0.65, -0.76), 0.10],
-		"vel": [Vector3(0.095, 1.285, 0.592), Vector3(0.01, 0.65, -0.76), 0.10]},
-	# o grande do meio e o pequeno à direita dele (o da esquerda fica atrás da mão)
-	"BUGGY_02": {"rpm": [Vector3(0.01, 1.377, 0.606), Vector3(0.0, 0.34, -0.94), 0.15],
+	# o grande do meio e o pequeno à direita dele (o da esquerda fica atrás da
+	# mão); 13 cm no grande pra não varar o capô (o buraco tem 15.6)
+	"BUGGY_02": {"rpm": [Vector3(0.01, 1.377, 0.606), Vector3(0.0, 0.34, -0.94), 0.13],
 		"vel": [Vector3(0.154, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.07]},
 }
-const NA_FRENTE := 0.004      # nosso mostrador acima do do modelo (m)
+const ESCONDER := {"BUGGY_10": "cadilac_clock"}     # textura da placa do relógio
+const REPINTAR := {"BUGGY_04": "_b_2"}              # textura com relógios pintados
+# ajuste por carro (m, no plano do conjunto): x = pra direita, y = pra cima.
+# Do teste do Matheus (out/2026): "abaixar um pouco" no Mosquito, Trident e Kraken
+const AJUSTE := {
+	"BUGGY_01": Vector2(0.0, -0.015),
+	"BUGGY_03": Vector2(0.0, -0.015),
+	"BUGGY_07": Vector2(0.0, -0.015),
+}
+const LADO := ["BUGGY_06"]    # volante tampa o conjunto: do lado direito dele
+const NA_FRENTE := 0.004      # nosso mostrador acima do buraco do modelo (m)
 const DIST := 0.13            # conjunto: além do aro, na linha do olho (m)
 const ALTURA_ARO := 0.5       # ponto do aro que o olho mira (x raio, pra cima)
 const MARGEM := 4.0           # graus acima da borda de baixo da câmera do piloto
 const D_RPM_PRO := 0.095      # diâmetros (m)
 const D_VEL_PRO := 0.075
 const D_AMADOR := 0.08
+const GAP := 0.008
 const PONTEIRO_T := 0.05      # inércia do ponteiro (s)
 const LEDS := 5
 const LED_INICIO := 0.85      # 1º LED a 85% do rpm de troca, último na troca
@@ -49,10 +61,14 @@ var rpm_max := 9.0
 var vel_max := 200.0
 var t := 0.0
 var fixo := Vector2(-1, -1)   # prints: PAINEL="rpm,km/h" fixa os ponteiros
+var ajuste := Vector2.ZERO    # AJUSTE + teclas
+var base_ajuste := Basis()
+var origem := Vector3.ZERO
 
 
 func montar(c) -> bool:
 	car = c
+	origem = position
 	pro = _nivel(car.vehicle_id) == "Pro"
 	if OS.has_environment("PAINEL"):
 		var f := OS.get_environment("PAINEL").split(",")
@@ -63,6 +79,7 @@ func montar(c) -> bool:
 	if car.gears.size() > 1:
 		top = lim * car.P.wheel_r * car.RPM2RAD / (car.gears[car.gears.size() - 1] * car.P.final) * 3.6 * 1.06
 	vel_max = maxf(ceilf(top / 20.0) * 20.0, 100.0)
+	_tirar_do_modelo()
 	var tem: Dictionary = DO_MODELO.get(car.vehicle_id, {})
 	var tipos := ["rpm", "vel"] + (["marcha", "luz"] if pro else [])
 	var falta := tipos.filter(func(k): return not tem.has(k))
@@ -70,56 +87,145 @@ func montar(c) -> bool:
 		if k in tipos:
 			var m: Array = tem[k]
 			_instrumento(k, m[0] + m[1].normalized() * NA_FRENTE, m[1], m[2], false)
-	if falta.is_empty():
-		return true
-	# conjunto atrás do volante: âncora = onde vai o conta-giros
+			base_ajuste = _base(m[1])
+	if not falta.is_empty() and not _conjunto(falta) and tem.is_empty():
+		return false
+	mover(AJUSTE.get(car.vehicle_id, Vector2.ZERO))
+	return true
+
+
+## desloca o painel no plano dele (teclas 9/0 e -/= na câmera do piloto)
+func mover(d: Vector2) -> void:
+	ajuste += d
+	position = origem + base_ajuste.x * ajuste.x + base_ajuste.y * ajuste.y
+
+
+## conjunto atrás do volante com o que falta
+func _conjunto(falta: Array) -> bool:
 	var vol: Dictionary = car.pecas.get("volante", {})
 	if not vol.has("centro"):
-		return not tem.is_empty()
+		return false
 	var ce: Vector3 = car.sw_centro()
 	var eixo: Vector3 = car.SW_AXIS.normalized()
 	var raio: float = vol.get("raio", 0.19)
 	var olho := ce + Vector3(0.0, car.FP_UP, -car.FP_BACK)
 	var cima := (Vector3.UP - eixo * Vector3.UP.dot(eixo)).normalized()
+	var direita := eixo.cross(cima).normalized()
+	if direita.x < 0.0:
+		direita = -direita
 	var d_rpm := D_RPM_PRO if pro else D_AMADOR
 	var d_vel := D_VEL_PRO if pro else D_AMADOR
-	# sobe a mira pelo aro até o conjunto caber na câmera do piloto (no
-	# McKenzies o volante fica no pé da tela e o conjunto sumia)
+	var h_baixo := d_rpm * 0.5 + 0.01
+	var largura := (d_rpm + d_vel + 0.06 + GAP * 2) if pro else (d_rpm + d_vel + GAP)
+	# ângulo de um ponto na câmera do piloto (vertical, graus)
 	var olhar := Vector3(0.0, -car.FP_PITCH, 1.0).normalized()
 	var cima_cam := Vector3(0.0, 1.0, car.FP_PITCH).normalized()
+	var ang := func(p: Vector3) -> float:
+		var v := p - olho
+		return rad_to_deg(atan2(v.dot(cima_cam), v.dot(olhar)))
+	var chao: float = -car.FP_FOV * 0.5 + MARGEM
 	var ancora := Vector3.ZERO
 	var n := Vector3.BACK
-	var alt := ALTURA_ARO
-	while alt <= 1.6:
-		var mira := ce + cima * raio * alt
-		var dir := (mira - olho).normalized()
-		ancora = mira + dir * DIST
+	var mira := ce + cima * raio * ALTURA_ARO
+	if car.vehicle_id in LADO:
+		# do lado direito do aro (o conjunto fica menor de longe: 0.8)
+		mira = ce + direita * (raio + 0.02 + largura * 0.25) + cima * raio * 0.2
+	var sobe := 0.0
+	while sobe <= 0.3:
+		var dir := (mira + cima * sobe - olho).normalized()
+		ancora = mira + cima * sobe + dir * DIST
 		n = -dir
-		var baixo := ancora - _base(n).y * (d_rpm * 0.5 + 0.012) - olho
-		if rad_to_deg(atan2(baixo.dot(cima_cam), baixo.dot(olhar))) >= -car.FP_FOV * 0.5 + MARGEM:
+		if ang.call(ancora - _base(n).y * h_baixo) >= chao:
 			break
-		alt += 0.05
-	if tem.has("rpm"):
-		# o conta-giros é o do modelo: o resto vai do lado dele
-		ancora = tem.rpm[0] + tem.rpm[1].normalized() * NA_FRENTE
-		n = tem.rpm[1].normalized()
+		sobe += 0.01
 	var b := _base(n)
-	var gap := 0.008
+	base_ajuste = b
 	var lugar := {}
 	if pro:
 		lugar.rpm = ancora
-		lugar.vel = ancora + b.x * (d_rpm * 0.5 + gap + d_vel * 0.5) - b.y * (d_rpm - d_vel) * 0.5
-		lugar.marcha = ancora - b.x * (d_rpm * 0.5 + gap + 0.03) - b.y * (d_rpm * 0.5 - 0.02)
-		lugar.luz = ancora + b.y * (d_rpm * 0.5 + 0.012)
+		lugar.vel = ancora + b.x * (d_rpm * 0.5 + GAP + d_vel * 0.5) - b.y * (d_rpm - d_vel) * 0.5
+		lugar.marcha = ancora - b.x * (d_rpm * 0.5 + GAP + 0.03) - b.y * (d_rpm * 0.5 - 0.02)
+		lugar.luz = ancora + b.y * (d_rpm * 0.5 + 0.014)
 	else:
-		lugar.rpm = ancora - b.x * (d_rpm * 0.5 + gap * 0.5)
-		lugar.vel = ancora + b.x * (d_vel * 0.5 + gap * 0.5)
+		lugar.rpm = ancora - b.x * (d_rpm * 0.5 + GAP * 0.5)
+		lugar.vel = ancora + b.x * (d_vel * 0.5 + GAP * 0.5)
 	for k in falta:
 		var d: float = {"rpm": d_rpm, "vel": d_vel, "marcha": 0.05, "luz": 0.0}[k]
-		_instrumento(k, lugar[k], n, d, not tem.has("rpm"))
-	if not tem.has("rpm"):
-		_suporte(ancora, b, ce - eixo * 0.06)
+		_instrumento(k, lugar[k], n, d, true)
+	_suporte(ancora, b, ce - eixo * 0.06)
 	return true
+
+
+## tira os relógios do modelo (placa do Renegade, pintura da chapa do Sphinx)
+func _tirar_do_modelo() -> void:
+	var mi: MeshInstance3D = car.body_mi
+	if mi == null:
+		return
+	for s in mi.mesh.get_surface_count():
+		var m: Material = mi.get_active_material(s)
+		if not (m is BaseMaterial3D) or m.albedo_texture == null:
+			continue
+		var tp: String = m.albedo_texture.resource_path
+		if ESCONDER.has(car.vehicle_id) and ESCONDER[car.vehicle_id] in tp:
+			var some := StandardMaterial3D.new()
+			some.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			some.albedo_color = Color(0, 0, 0, 0)
+			mi.set_surface_override_material(s, some)
+		elif REPINTAR.has(car.vehicle_id) and REPINTAR[car.vehicle_id] in tp:
+			var m2: BaseMaterial3D = m.duplicate()
+			m2.albedo_texture = _sem_relogios(m.albedo_texture)
+			mi.set_surface_override_material(s, m2)
+
+
+## pinta os mostradores (manchas claras grandes) com a cor do fundo da chapa;
+## os LEDs (pontinhos) ficam
+static func _sem_relogios(tex: Texture2D) -> Texture2D:
+	var img := tex.get_image()
+	if img.is_compressed():
+		img.decompress()
+	img.convert(Image.FORMAT_RGBA8)
+	var w := img.get_width()
+	var h := img.get_height()
+	var fundo := Color(0, 0, 0)
+	var nf := 0
+	for y in h:
+		for x in w:
+			var c := img.get_pixel(x, y)
+			if c.get_luminance() < 0.2:
+				fundo += c
+				nf += 1
+	if nf > 0:
+		fundo /= nf
+	var visto := {}
+	for y in h:
+		for x in w:
+			if visto.has(Vector2i(x, y)) or img.get_pixel(x, y).get_luminance() < 0.55:
+				continue
+			var pilha := [Vector2i(x, y)]
+			visto[Vector2i(x, y)] = true
+			var lo := Vector2i(x, y)
+			var hi := Vector2i(x, y)
+			var n := 0
+			while not pilha.is_empty():
+				var q: Vector2i = pilha.pop_back()
+				n += 1
+				lo = Vector2i(mini(lo.x, q.x), mini(lo.y, q.y))
+				hi = Vector2i(maxi(hi.x, q.x), maxi(hi.y, q.y))
+				for dq in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+					var r: Vector2i = q + dq
+					if r.x >= 0 and r.y >= 0 and r.x < w and r.y < h and not visto.has(r) \
+							and img.get_pixel(r.x, r.y).get_luminance() >= 0.55:
+						visto[r] = true
+						pilha.append(r)
+			if n < 20:
+				continue
+			var cen := Vector2(lo + hi) * 0.5
+			var rr := maxf(hi.x - lo.x, hi.y - lo.y) * 0.5 + 3.0
+			for py in range(maxi(0, int(cen.y - rr)), mini(h, int(cen.y + rr) + 1)):
+				for px in range(maxi(0, int(cen.x - rr)), mini(w, int(cen.x + rr) + 1)):
+					if Vector2(px, py).distance_to(cen) <= rr:
+						img.set_pixel(px, py, fundo)
+	return ImageTexture.create_from_image(img)
 
 
 func atualizar(delta: float) -> void:

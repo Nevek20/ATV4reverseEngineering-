@@ -373,15 +373,18 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   vehicles.xml: Mosquito, Inferno, Trident, Sphinx) = conta-giros e
   velocímetro de ponteiro, fundo branco; PRO = os dois + marcha digital +
   luz de troca (5 LEDs de 85% ao rpm de troca, piscam no limitador), fundo
-  preto (escolha do Matheus). Por cima dos que o modelo tem (DO_MODELO):
-  Renegade (placa cadilac_clock_index), Sphinx (2 relógios pintados do
-  meio da chapa b_2, achados pelo UV; o da frente fica atrás do X do
-  volante), Inferno (buraco grande do meio + pequeno da direita). O resto
-  vai num conjunto preso na coluna, na linha do olho pela metade de cima do
-  aro, subindo até caber na câmera do piloto (McKenzies). Velocímetro = 1.06
-  x velocidade pra frente (como o do jogo); conta-giros até o limitador +
-  1000. Telas 2D em SubViewport (texto sai certo: base com determinante -1
-  dentro do espelho).
+  preto (escolha do Matheus). Conjunto preso na coluna, atrás do volante: o
+  topo logo abaixo da borda de dentro do aro como o olho da câmera do piloto
+  vê, sem sair por baixo da tela; se não cabe (Phantom), do lado direito do
+  volante. AJUSTE por carro (painel.gd) com os números que o Matheus acha
+  na câmera do piloto: 9/0 desce/sobe, -/= lado (o HUD mostra). Os relógios
+  do modelo saem pra o nosso não ficar em cima de outro (pedido dele): a
+  placa cadilac_clock do Renegade some e os relógios pintados da chapa b_2
+  do Sphinx são repintados com o fundo (painel.gd _sem_relogios). O Inferno
+  tem buracos de relógio vazios: os nossos vão neles (DO_MODELO, 13 cm no
+  grande pra não varar o capô). Velocímetro = 1.06 x velocidade pra frente
+  (como o do jogo); conta-giros até o limitador + 1000. Telas 2D em
+  SubViewport (texto sai certo: base com determinante -1 dentro do espelho).
 
 ## Pendente / ideias
 
