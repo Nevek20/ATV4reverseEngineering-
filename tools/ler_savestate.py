@@ -109,6 +109,13 @@ def estado(r, veh):
         "sujeira": r.f(r.u(veh + 0xA80) + 0xC0) if r.u(veh + 0xA80) else 0.0,
         "rodas": [],
     }
+    dj = r.u(veh + 0xA80)
+    if dj:
+        # lama das rodas (0x2242d0): cor de onde saiu, alvo, cor de agora,
+        # material da FL, t, taxa suavizada e taxa alvo (WheelDirtRate)
+        e["roda_suja"] = {"de": list(r.v(dj + 0x10, 4)), "para": list(r.v(dj + 0x20, 4)),
+                          "cor": list(r.v(dj + 0x30, 4)), "mat": r.u(dj + 0x40), "t": r.f(dj + 0x44),
+                          "taxa": r.f(dj + 0x48), "taxa_alvo": r.f(dj + 0x4c)}
     for i in range(4):
         w = r.u(ph + 0x254 + 4 * i)
         e["rodas"].append({

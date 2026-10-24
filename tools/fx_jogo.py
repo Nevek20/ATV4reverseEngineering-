@@ -2,7 +2,7 @@
 fx_jogo.py
 ==========
 Texturas de efeito do jogo -> assets/fx (fora do git): fumaça do escapamento
-(fumaca.gd) e sujeira do carro e do piloto (sujeira.gd).
+(fumaca.gd), sujeira do carro e do piloto e lama dos pneus (sujeira.gd).
 
 O efeito "ExhaustSmokeTrail" (Effects/#3ffdac18, xml 01416) usa a textura
 Sprites/Particles (.bog, 128x128) na caixa "Dust0". A caixa vem do
@@ -13,6 +13,8 @@ de nuvem (PS2: 0x80 = 1.0, aqui x2).
 Sujeira: a pista manda usar GEN_DIRT_DIRT (TrackProperties, Dirt
 mDirtTextureName, igual em todas). Carro: Vehicles/Generic/Textures (128x128),
 piloto: Characters/Textures/Dirt (256x256). Marrom com alfa de mancha.
+Lama dos pneus: UNI_TyreOverlay (128x128, 4 bits; igual nos pneus do jogo),
+só o alfa conta (o jogo troca a cor da paleta pela lama do chão).
 
 Uso:
     python tools/fx_jogo.py <unpacked> [saida=assets/fx]
@@ -76,7 +78,8 @@ def main():
     print("Dust0", box, "->", os.path.join(saida, "fumaca.png"))
 
     for nome, png in (("Vehicles/Generic/Textures/GEN_DIRT_DIRT.bog", "sujeira.png"),
-                      ("Characters/Textures/Dirt/GEN_DIRT_DIRT.bog", "sujeira_piloto.png")):
+                      ("Characters/Textures/Dirt/GEN_DIRT_DIRT.bog", "sujeira_piloto.png"),
+                      ("Vehicles/Buggy/Models_4K/Wheel/#0678de18/UNI_TyreOverlay.bog", "lama_pneu.png")):
         gob, _, _ = caminho(unpacked, arqs, nome)
         im, info = convert(gob)
         if im is None:

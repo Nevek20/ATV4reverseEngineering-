@@ -171,7 +171,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				reset_camera()
 			KEY_T:
 				car.reset_to(spawn_point(), deg_to_rad(SPAWN_YAW))
-				car.sujeira_nivel = 0.0     # recomeço da corrida: o jogo zera (0x223db0)
+				car.limpar_sujeira()        # recomeço da corrida: o jogo zera (0x223db0)
 				reset_camera()
 			KEY_V:
 				_swap_vehicle((veh_idx + 1) % VEHICLES.size())

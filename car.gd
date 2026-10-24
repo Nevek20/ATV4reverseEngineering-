@@ -138,6 +138,16 @@ var body_mi: MeshInstance3D = null
 const SUJEIRA := true
 var sujeira_nivel := 0.0      # objeto da sujeira (veículo+0xa80) +0xc0, 0..1
 var sujeira = null
+# lama das rodas (0x224418/0x2242d0, mesmo objeto +0x10..+0x4c): vira a
+# paleta da UNI_TyreOverlay (0x224148). Alvo = DustColour do chão com alfa
+# WheelDirtAlpha (0 no asfalto: a lama some aos poucos)
+var roda_de := Color(0, 0, 0, 0)        # +0x10 cor de onde saiu
+var roda_para := Color(0, 0, 0, 0)      # +0x20 alvo
+var roda_cor := Color(0, 0, 0, 0)       # +0x30 cor de agora
+var roda_mat := -1                      # +0x40 material do chão da FL
+var roda_t := 0.0                       # +0x44 quanto já foi (0..1)
+var roda_taxa := 0.0                    # +0x48 WheelDirtRate suavizada
+var roda_taxa_alvo := 0.0               # +0x4c
 var som_carga := 0.0          # carga do motor pro som: acelerador x limitador x troca
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
@@ -318,7 +328,6 @@ func _ready() -> void:
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
-	_load_sujeira()               # por último: pega todas as malhas do carro
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = Vector3(2.1, 0.8, 4.8)
@@ -335,6 +344,7 @@ func _ready() -> void:
 			spare_mesh = load(wheel_rear_file) as Mesh
 		susp_vis.build(self, points, points_rot, asset_dir, pecas.get("pecas", {}),
 			pecas.get("rally", false), pecas.get("estepe", []), spare_mesh)
+	_load_sujeira()               # por último: precisa das rodas e das peças
 
 
 ## pecas.json (tools/gerar_buggies.py): modelo, peças e rodas do carro
@@ -915,13 +925,15 @@ func _load_fumaca() -> void:
 func _load_sujeira() -> void:
 	if not SUJEIRA:
 		return
-	if OS.has_environment("SUJEIRA"):          # prints: nível fixo
+	if OS.has_environment("SUJEIRA"):          # prints: nível fixo (e lama de terra nas rodas)
 		sujeira_nivel = clampf(float(OS.get_environment("SUJEIRA")), 0.0, 1.0)
+		if terrain and terrain.materials.size() > 0:
+			roda_cor = Color(terrain.materials[0].get("DustColour", Color.BLACK), 0.8 * sujeira_nivel)
 	sujeira = preload("res://sujeira.gd").new()
 	if not sujeira.montar(self):
 		sujeira = null
 		return
-	sujeira.atualizar(sujeira_nivel)
+	sujeira.atualizar(sujeira_nivel, roda_cor)
 
 
 func _load_sfx() -> void:
@@ -958,7 +970,7 @@ func _process(delta: float) -> void:
 	if motor_treme:
 		motor_treme.atualizar(rpm, som_carga, delta)
 	if sujeira:
-		sujeira.atualizar(sujeira_nivel)
+		sujeira.atualizar(sujeira_nivel, roda_cor)
 
 
 func _load_steering_wheel() -> void:
@@ -1432,6 +1444,7 @@ func _physics_process(dt: float) -> void:
 		_wheel_jitter()
 		_vibracao(1.0 / JIT_HZ, v.dot(left), v_f)
 		_sujeira_passo()
+		_roda_suja_passo(1.0 / JIT_HZ)
 		if sfx:
 			sfx.passo(1.0 / JIT_HZ, v.dot(left), v_f)
 	_update_visuals(dt, v_f)
@@ -1452,6 +1465,55 @@ func _sujeira_passo() -> void:
 		if w.mat >= 0:
 			k = maxf(k, minf(terrain.taxa_sujeira(w.mat), 1.0))
 	sujeira_nivel = clampf(sujeira_nivel + minf(spd_ground, 15.0) * k * 5e-5, 0.0, 1.0)
+
+
+## 0x224418 + 0x2242d0 (do 0x203930, depois da sujeira): com roda no chão e
+## material embaixo da FL (veículo+0xa88[0]), quando o material muda a cor
+## parte da de agora pro DustColour dele (alfa = WheelDirtAlpha; com alfa 0
+## só o alfa cai). t sobe giro da FL (W+0x48)·dt·0.002·WheelDirtRate
+## suavizada (0.95/0.05), x 10·patinada da RL (0x604) se passar de 1. Na água
+## (veículo+0xae8) o alvo é o registro DAT_007f4bf8+0x20 (o RX01 não tem
+## água). Confere com a RAM: tests/teste_derrapagem.gd.
+func _roda_suja_passo(dt: float) -> void:
+	if not SUJEIRA or grounded == 0 or terrain == null:
+		return
+	var fl: Dictionary = wheels[0]
+	if fl.mat < 0 or fl.mat >= terrain.materials.size():
+		return
+	var p: float = fl.omega * dt * 0.002
+	var pat := clampf(wheels[2].sr, 0.0, 1.0)
+	if pat * 10.0 > 1.0:
+		p *= pat * 10.0
+	if fl.mat != roda_mat:
+		var m: Dictionary = terrain.materials[fl.mat]
+		var alfa := float(m.get("WheelDirtAlpha", 0.0))
+		var poeira: Color = m.get("DustColour", Color(0, 0, 0, 0))
+		roda_mat = fl.mat
+		roda_t = 0.0
+		roda_de = roda_cor
+		roda_taxa_alvo = float(m.get("WheelDirtRate", 0.0))
+		if roda_de.a < 1e-6:
+			roda_de = Color(poeira, 0.0)
+			roda_para = Color(poeira, alfa)
+		elif alfa > 1e-6:
+			roda_para = Color(poeira, alfa)
+		else:
+			roda_para.a = alfa
+	roda_taxa = roda_taxa * 0.95 + roda_taxa_alvo * 0.05
+	roda_t = clampf(roda_t + p * roda_taxa, 0.0, 1.0)
+	roda_cor = roda_de.lerp(roda_para, roda_t)
+
+
+## recomeço (0x223db0): carro e rodas limpos
+func limpar_sujeira() -> void:
+	sujeira_nivel = 0.0
+	roda_de = Color(0, 0, 0, 0)
+	roda_para = Color(0, 0, 0, 0)
+	roda_cor = Color(0, 0, 0, 0)
+	roda_mat = -1
+	roda_t = 0.0
+	roda_taxa = 0.0
+	roda_taxa_alvo = 0.0
 
 
 ## 0x20e5e8: tamanho do arrasto (N). Em kN = (Air_drag_coefficient x 0.00065 +

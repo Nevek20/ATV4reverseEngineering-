@@ -1,5 +1,5 @@
 {
- "fonte": "save states PAL do Matheus (out/2026), Renegade de fábrica no RX01, volante todo e acelerador no fundo a ~120 km/h na terra. tools/ler_savestate.py --json; relógio da corrida lido no Screenshot.png de cada .p2s. drr_3 -> drr_2 é a mesma derrapagem (1.16 s); drr_1 e drr_1.backup são outras tentativas. 110 e 170: curvas fechadas com volante todo e acelerador (110 = 1ª curva depois da largada, 113 km/h a 6.4°, sem 'Slide' no HUD; 170 = derrapando a 133 km/h); no jogo a 110 não derrapa e a 170 derrapa depois de 0.5 a 1 s. fm_*: segurando o botão R1 (\"freio de mão\" = botão da embreagem) virando e acelerando: embreagem aberta, motor no limitador, Clutch Turn em 0; fm_2b -> fm_2 é a mesma derrapagem (0.26 s); fm_1b é o carro capotando fora da pista. sujeira = nível do objeto da sujeira (veículo+0xa80, +0xc0), lido depois na RAM dos 6 que temos.",
+ "fonte": "save states PAL do Matheus (out/2026), Renegade de fábrica no RX01, volante todo e acelerador no fundo a ~120 km/h na terra. tools/ler_savestate.py --json; relógio da corrida lido no Screenshot.png de cada .p2s. drr_3 -> drr_2 é a mesma derrapagem (1.16 s); drr_1 e drr_1.backup são outras tentativas. 110 e 170: curvas fechadas com volante todo e acelerador (110 = 1ª curva depois da largada, 113 km/h a 6.4°, sem 'Slide' no HUD; 170 = derrapando a 133 km/h); no jogo a 110 não derrapa e a 170 derrapa depois de 0.5 a 1 s. fm_*: segurando o botão R1 (\"freio de mão\" = botão da embreagem) virando e acelerando: embreagem aberta, motor no limitador, Clutch Turn em 0; fm_2b -> fm_2 é a mesma derrapagem (0.26 s); fm_1b é o carro capotando fora da pista. sujeira = nível do objeto da sujeira (veículo+0xa80, +0xc0), lido depois na RAM dos 6 que temos. roda_suja = lama das rodas (mesmo objeto, +0x10..+0x4c: de, para, cor, material, t, taxa, taxa alvo).",
  "estados": {
   "drr_3": {
    "origem": [
@@ -192,7 +192,31 @@
    ],
    "relogio": 9.48,
    "arquivo": "drr_3",
-   "sujeira": 0.069057
+   "sujeira": 0.069057,
+   "roda_suja": {
+    "de": [
+     0.5712,
+     0.4898,
+     0.3858,
+     0.3086
+    ],
+    "para": [
+     0.7,
+     0.63,
+     0.55,
+     0.8
+    ],
+    "cor": [
+     0.5736,
+     0.4924,
+     0.3888,
+     0.3177
+    ],
+    "mat": 10,
+    "t": 0.018438,
+    "taxa": 0.204828,
+    "taxa_alvo": 0.2
+   }
   },
   "drr_2": {
    "origem": [
@@ -385,7 +409,31 @@
    ],
    "relogio": 10.64,
    "arquivo": "drr_2",
-   "sujeira": 0.07796
+   "sujeira": 0.07796,
+   "roda_suja": {
+    "de": [
+     0.5578,
+     0.4846,
+     0.3855,
+     0.4015
+    ],
+    "para": [
+     0.6,
+     0.51,
+     0.4,
+     0.8
+    ],
+    "cor": [
+     0.5609,
+     0.4865,
+     0.3866,
+     0.4307
+    ],
+    "mat": 0,
+    "t": 0.073292,
+    "taxa": 0.200246,
+    "taxa_alvo": 0.2
+   }
   },
   "drr_1.backup": {
    "origem": [
@@ -578,7 +626,31 @@
    ],
    "relogio": 11.06,
    "arquivo": "drr_1.backup",
-   "sujeira": 0.082802
+   "sujeira": 0.082802,
+   "roda_suja": {
+    "de": [
+     0.5088,
+     0.4364,
+     0.3474,
+     0.5402
+    ],
+    "para": [
+     0.6,
+     0.51,
+     0.4,
+     0.0
+    ],
+    "cor": [
+     0.5149,
+     0.4413,
+     0.3509,
+     0.5043
+    ],
+    "mat": 2,
+    "t": 0.066435,
+    "taxa": 0.201783,
+    "taxa_alvo": 0.2
+   }
   },
   "drr_1": {
    "origem": [
@@ -771,7 +843,31 @@
    ],
    "relogio": 36.6,
    "arquivo": "drr_1",
-   "sujeira": 0.239948
+   "sujeira": 0.239948,
+   "roda_suja": {
+    "de": [
+     0.4488,
+     0.3807,
+     0.3021,
+     0.4232
+    ],
+    "para": [
+     0.6,
+     0.51,
+     0.4,
+     0.8
+    ],
+    "cor": [
+     0.4703,
+     0.3991,
+     0.3161,
+     0.4767
+    ],
+    "mat": 0,
+    "t": 0.142152,
+    "taxa": 0.223039,
+    "taxa_alvo": 0.2
+   }
   },
   "110": {
    "origem": [
@@ -964,7 +1060,31 @@
    ],
    "relogio": 5.22,
    "arquivo": "110",
-   "sujeira": 0.032833
+   "sujeira": 0.032833,
+   "roda_suja": {
+    "de": [
+     0.47,
+     0.42,
+     0.33,
+     0.0022
+    ],
+    "para": [
+     0.22,
+     0.16,
+     0.12,
+     0.6
+    ],
+    "cor": [
+     0.4698,
+     0.4198,
+     0.3298,
+     0.0027
+    ],
+    "mat": 5,
+    "t": 0.000901,
+    "taxa": 0.199999,
+    "taxa_alvo": 0.2
+   }
   },
   "170": {
    "origem": [
@@ -1157,7 +1277,31 @@
    ],
    "relogio": 9.26,
    "arquivo": "170",
-   "sujeira": 0.068232
+   "sujeira": 0.068232,
+   "roda_suja": {
+    "de": [
+     0.5773,
+     0.4919,
+     0.387,
+     0.2846
+    ],
+    "para": [
+     0.47,
+     0.42,
+     0.33,
+     0.8
+    ],
+    "cor": [
+     0.5764,
+     0.4913,
+     0.3865,
+     0.2891
+    ],
+    "mat": 9,
+    "t": 0.008812,
+    "taxa": 0.227405,
+    "taxa_alvo": 0.2
+   }
   },
   "fm_1b": {
    "origem": [

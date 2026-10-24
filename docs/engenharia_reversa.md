@@ -553,27 +553,42 @@ fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
   também (+ piloto+0x328·0.06 se (veículo+0xa6c)+0x8c+0x18). WheelDirtRate
   é 0.2 até no asfalto (0.3 na terra úmida): suja em qualquer chão.
   Depois do 0x223e68 o 0x203930 põe (veículo+0xa68)+0x58 = +0xc8·nível.
-- Desenho: +0x98 é um pintor de alfa de vértice (0x3a8680, lista de malhas;
-  17 no Renegade = carroceria e peças). Tipo 1 (0x3b3a78): alfa do vértice
-  = max(alfa, nível·128), 300 vértices por quadro. Na RAM: todos os
-  vértices com o mesmo alfa (d0: 10 = 0.083·128). A textura é a da pista:
+- Desenho: +0x98 é um pintor de alfa de vértice (0x3a8680, lista de malhas
+  montada no 0x223a78; 17 no Renegade = carroceria, balanças, freios e
+  amortecedores). Tipo 1 (0x3b3a78): alfa do vértice = max(alfa,
+  nível·128), 300 vértices por quadro. Na RAM: todos os vértices com o mesmo
+  alfa (d0: 10 = 0.083·128).
+- Camada: o lote de material do .pingu (0x50 bytes) tem +0x08 = quantas
+  texturas e +0x18 = slot da 2ª, desenhada por cima pelo 2º UV (o V4-32
+  traz s, t, s2, t2). Na carroceria só o lote da pintura ("white") tem, e a
+  2ª é a "dirt" (DIRT.bog do modelo = 8x8 vazio): vale a da pista,
   TrackProperties Dirt mDirtTextureName (0x1bf220, props+0x1c) =
-  GEN_DIRT_DIRT em todas (Vehicles/Generic/Textures 128x128 pro carro,
-  Characters/Textures/Dirt 256x256 pro piloto). O UV dessa camada sai no
-  microcódigo da VU1 (não achado).
+  GEN_DIRT_DIRT em todas (Vehicles/Generic/Textures 128x128). Alfa = alfa
+  do vértice x alfa da textura. As peças do pintor não têm camada (menos 2
+  balanças de trás do Kraken), então só a pintura suja.
+  Nas rodas (pneu e aro) a 2ª é a UNI_TyreOverlay (128x128, 4 bits, igual
+  nos 46 pneus do jogo).
 - Zera só no 0x223db0 (nível 0 e alfa 0 em todos os vértices): veículo
   inativo no 0x203930 e o método virtual +0xb4 do veículo (0x200b80,
   recomeço). Nada mais escreve o nível: a água NÃO limpa a carroceria.
-- Cor da roda (0x224418 -> 0x2242d0, com roda no chão; +0x10..+0x4c do
-  objeto): vai da cor atual pro DustColour (registro +0x10) com alfa
-  WheelDirtAlpha (+0x50; 0 no asfalto = só o alfa cai), taxa WheelDirtRate
-  suavizada (0.95/0.05), t += dt·giro da FL (W+0x48)·0.002 (x10·patinada
-  da RL, corpo+0x604, se passar de 0.1). Na água (veículo+0xae8) o alvo é o
-  registro DAT_007f4bf8+0x20. Quem desenha essa cor não achamos; não
-  portada.
+- Lama das rodas (0x224418 -> 0x2242d0, com roda no chão; +0x10..+0x4c do
+  objeto: de, para, cor, material, t, taxa, taxa alvo): quando o material
+  da FL (veículo+0xa88[0]) muda, vai da cor atual pro DustColour (registro
+  +0x10) com alfa WheelDirtAlpha (+0x50; 0 no asfalto = só o alfa cai),
+  taxa WheelDirtRate suavizada (0.95/0.05), t += dt·giro da FL
+  (W+0x48)·0.002·taxa (x10·patinada da RL, corpo+0x604, se passar de 0.1).
+  Na água (veículo+0xae8) o alvo é o registro DAT_007f4bf8+0x20.
+  Desenho (0x224148, chamado no desenho do modelo 0x22bba8 nos LODs 0 e
+  1): a paleta de 16 cores da UNI_TyreOverlay vira cor·128 com alfa = alfa
+  da lama x alfa original de cada entrada (+0x54..+0x90). Achado pela cópia
+  da cor na RAM em 0x7f72b8.
+- Brilho: o desenho da carroceria (0x22ace8) multiplica o reflexo por
+  (1 - modelo+0x58), e modelo+0x58 = nível. Não portado (o remake não tem
+  esse reflexo).
 - Conferido (tests/teste_derrapagem.gd): drr_3 -> drr_2 (1.16 s) o jogo
-  sujou 0.0089 e o remake 0.0091. Os níveis dos save states saem no
-  ler_savestate --json ("sujeira").
+  sujou 0.0089 e o remake 0.0091; lama da roda jogo (0.561, 0.486, 0.387,
+  0.431) e remake (0.561, 0.486, 0.386, 0.432). Os save states saem no
+  ler_savestate --json ("sujeira", "roda_suja").
 
 ## Mão (espelho)
 

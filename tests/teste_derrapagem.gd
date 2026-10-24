@@ -6,7 +6,8 @@ extends SceneTree
 ##     pra frente) com a do jogo;
 ##  2. do drr_3 roda até o relógio do drr_2 (mesma derrapagem, volante todo e
 ##     acelerador no fundo) e compara velocidade, rumo, derrapagem e giro, e
-##     quanto o carro sujou (0x223e68, objeto veículo+0xa80 +0xc0).
+##     quanto o carro sujou (0x223e68, objeto veículo+0xa80 +0xc0) e a lama
+##     das rodas (0x2242d0, +0x10..+0x4c).
 ## Uso: godot --headless --path . -s res://tests/teste_derrapagem.gd [-- curva]
 ##      (com "curva" imprime a derrapagem passo a passo)
 
@@ -64,6 +65,14 @@ func _physics_process(_dt: float) -> bool:
 		e0 = ref.estados["drr_3"]
 		_por_no_estado(e0)
 		car.sujeira_nivel = e0.sujeira
+		var rs: Dictionary = e0.roda_suja
+		car.roda_de = _cor(rs.de)
+		car.roda_para = _cor(rs.para)
+		car.roda_cor = _cor(rs.cor)
+		car.roda_mat = int(rs.mat)
+		car.roda_t = rs.t
+		car.roda_taxa = rs.taxa
+		car.roda_taxa_alvo = rs.taxa_alvo
 		alvo = roundi((ref.estados["drr_2"].relogio - e0.relogio) / PASSO)
 		n = 0
 		fase = "sim"
@@ -82,6 +91,14 @@ func _physics_process(_dt: float) -> bool:
 	car._physics_process(PASSO)
 	n += 1
 	return false
+
+
+func _cor(a: Array) -> Color:
+	return Color(a[0], a[1], a[2], a[3])
+
+
+func _txt(c: Color) -> String:
+	return "(%.3f, %.3f, %.3f, %.3f)" % [c.r, c.g, c.b, c.a]
 
 
 ## direção do mundo do jogo -> remake (mesma transposição do Terrain.do_jogo)
@@ -203,6 +220,14 @@ func _comparar_fim(e: Dictionary) -> void:
 	if absf(suj_r - suj_j) > 0.1 * suj_j:
 		ok_fim = false
 		print("  FALHA: sujeira mais de 10% longe do jogo")
+	var rj: Dictionary = e.roda_suja
+	var cj := _cor(rj.cor)
+	var dc := Vector4(cj.r - car.roda_cor.r, cj.g - car.roda_cor.g, cj.b - car.roda_cor.b, cj.a - car.roda_cor.a)
+	print("  lama da roda jogo %s t %.4f mat %d | remake %s t %.4f mat %d" % [_txt(cj), rj.t, int(rj.mat),
+		_txt(car.roda_cor), car.roda_t, car.roda_mat])
+	if int(rj.mat) != car.roda_mat or dc.length() > 0.03:
+		ok_fim = false
+		print("  FALHA: lama da roda longe do jogo (%.3f)" % dc.length())
 
 
 ## Clutch Turn (0x214610) a partir do drr_3, já de lado: botão da embreagem
