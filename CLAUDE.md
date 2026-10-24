@@ -363,8 +363,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   do carro com projeção nos 3 eixos da POSE DE REPOUSO (CUSTOM0/1 da malha;
   pela posição animada a sujeira ficava parada e o braço andava por dentro
   dela). Nosso: o jeito do jogo no piloto não foi achado.
-  Sem rodar o gerar_buggies de novo não há _camada.obj e o carro não suja
-  (o HUD avisa).
+  Sem rodar o gerar_buggies de novo não há _camada.obj e o carro não suja;
+  sem o fx_jogo novo não há lama_pneu.png e o pneu não suja (o HUD avisa).
+  No RX01 (taxa 0.2) a lama do pneu cresce devagar e quase só patinando
+  (x10) e some no asfalto (alfa 0); na lama do Hinter Valley a taxa é 3.0.
 
 ## Pendente / ideias
 
@@ -396,7 +398,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   (horizonte perto do meio, volante cortado embaixo, muita estrada).
 - Sinal do giro/direção visual: falta save state andando com volante virado.
 - Sujeira: água (veículo+0xae8 e o registro DAT_007f4bf8+0x20 que lava as
-  rodas) não portada: o RX01 não tem água. Reflexo menor com o carro sujo
+  rodas: cor 0, alfa 0, taxa 30, lido no save state do Hinter Valley) não
+  portada: o RX01 não tem água. Reflexo menor com o carro sujo
   (0x22ace8, 1 - nível) não portado. Sujeira do piloto como o jogo.
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).
 - Mapa de material do RX01: no save state 110 (1ª curva) o PS2 tocava

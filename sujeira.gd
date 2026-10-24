@@ -73,6 +73,7 @@ var carro: ShaderMaterial          # camada "dirt" (pintura)
 var lama: ShaderMaterial           # UNI_TyreOverlay (rodas)
 var piloto: ShaderMaterial
 var camadas := 0                   # quantas malhas de camada achou
+var aviso := ""                    # o que falta gerar (o HUD mostra)
 var byte := -1
 
 
@@ -91,8 +92,7 @@ func montar(car) -> bool:
 	if car.body_mi:
 		_camada(car.body_mi, car.model_path, carro)
 		if camadas == 0:
-			push_warning("Sem %s: rode o tools/gerar_buggies.py de novo pra ter a sujeira do carro." % (
-				car.model_path.get_basename() + "_camada.obj"))
+			aviso = "sem _camada.obj: rode o gerar_buggies"
 	var rodas: Array = [car.wheel_front_file, car.wheel_rear_file]
 	for mi in _malhas(car):
 		var path: String = mi.mesh.resource_path
@@ -101,6 +101,8 @@ func montar(car) -> bool:
 		if path in rodas:
 			if lama:
 				_camada(mi, path, lama)
+			elif aviso == "":
+				aviso = "sem lama_pneu.png: rode o fx_jogo"
 		else:
 			_camada(mi, path, carro)
 	if car.piloto and car.piloto.malha and ResourceLoader.exists(TEX_PILOTO):
@@ -111,6 +113,8 @@ func montar(car) -> bool:
 		piloto.set_shader_parameter("tex", load(TEX_PILOTO))
 		piloto.set_shader_parameter("escala", ESCALA_PILOTO)
 		car.piloto.malha.material_overlay = piloto
+	if aviso != "":
+		push_warning("Sujeira: " + aviso)
 	return camadas > 0 or piloto != null
 
 

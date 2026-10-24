@@ -582,6 +582,13 @@ fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
   1): a paleta de 16 cores da UNI_TyreOverlay vira cor·128 com alfa = alfa
   da lama x alfa original de cada entrada (+0x54..+0x90). Achado pela cópia
   da cor na RAM em 0x7f72b8.
+- Save state do Matheus no Hinter Valley (lama, neve e água; 100% sujo em
+  ~1 min): materiais da pista com WheelDirtRate 3.0 na lama (sujeira do
+  carro com k = 1: 0.0375/s, cheio em ~27 s) e 2.0 na neve (DustColour
+  quase branco: pneu branco). Registro da água (DAT_007f4bf8+0x20):
+  DustColour 0, WheelDirtAlpha 0, WheelDirtRate 30 = o pneu limpa quase na
+  hora e a lama (taxa 3) volta em meio segundo, como ele viu. Nível 1.0 e
+  lama (0.69, 0.63, 0.54, 0.86) no save state.
 - Brilho: o desenho da carroceria (0x22ace8) multiplica o reflexo por
   (1 - modelo+0x58), e modelo+0x58 = nível. Não portado (o remake não tem
   esse reflexo).
