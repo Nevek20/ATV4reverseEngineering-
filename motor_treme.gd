@@ -9,33 +9,50 @@ extends Node3D
 ## cofre = atrás do banco (ARSE.z - 0.45) até o escapamento (EXHAUST.z - 0.15)
 ## ou 0.8 m atrás do eixo traseiro, entre as rodas de trás (|x| < roda - 0.35)
 ## e de 0.25 a 1.75 m de altura. Ficam de fora a carroceria pintada ("white"),
-## pneu ("ban"), sem textura (painéis), chapas e travessas (espessura < 8 cm e
-## mais de 80 cm), peças grandes (mais de 300 faces ou 1.6 m).
-## Movimento (escolha nossa): vibração sorteada a cada quadro, mais forte na
+## pneu ("ban"), preto, banco ("chair"), direção ("STEER"), painéis ("sheet",
+## sem textura), luzes ("light" e peças a menos de 10 cm dos pontos
+## BRAKE_LIGHT/REVERSE_LIGHT/HEAD_LIGHT: as lanternas mexiam), chapas e
+## travessas (espessura < 8 cm e mais de 80 cm), peças grandes (mais de 300
+## faces ou 1.6 m). Escape: as peças a menos de 12 cm dos pontos EXHAUST,
+## atrás do banco, até 2.2 m (os canos compridos que saem do motor).
+## Carro sem ponto EXHAUST (Storm, fechado, motor escondido) não treme.
+## Movimento (escolha nossa): vibração sorteada e filtrada, mais forte na
 ## lenta (coxim de borracha) e menor no giro alto, e o balanço do torque: o
 ## motor gira em volta do virabrequim (eixo z) puxado pela carga, numa mola
 ## pouco amortecida (acelerou ou soltou = tranco e volta).
 
-# exagerado de propósito: na câmera de corrida (6 m) 1 pixel é ~8 mm
-const VIB_LENTA := 0.006          # m na marcha lenta
-const VIB_ALTO := 0.002           # m no corte
+# na câmera de corrida (6 m) 1 pixel é ~8 mm. 6 mm sorteados a cada quadro
+# ficou "tremelento" demais (Matheus): metade, e o sorteio passa por um filtro
+const VIB_LENTA := 0.004          # m na marcha lenta
+const VIB_ALTO := 0.001           # m no corte
+const VIB_SUAVE := 0.03           # s: o motor segue o sorteio com essa constante
 const BALANCO_GRAUS := 3.0        # inclinação com carga cheia
 const BALANCO_HZ := 3.0           # frequência da mola do coxim
 const BALANCO_AMORT := 0.25       # amortecimento (fração do crítico)
 
-var malha: MeshInstance3D         # peças que tremem
+var malha: MeshInstance3D         # peças do motor
+var malha_escape: MeshInstance3D  # canos do escape (tremem junto)
 var centro := Vector3.ZERO        # centro do motor (frame do modelo)
 var faces := 0
 var pecas := 0
 var _ang := 0.0
 var _vel := 0.0
+var _vib := Vector3.ZERO
 
 
 ## tira as peças do cofre da malha da carroceria (mi) e monta a malha delas
 ## aqui (filho do mesmo pai, mesma posição). false = nada pra tremer
 func separar(mi: MeshInstance3D, pontos: Dictionary) -> bool:
-	if not (mi.mesh is ArrayMesh) or not pontos.has("ARSE") or not pontos.has("WHEEL_REAR_LEFT"):
+	if not (mi.mesh is ArrayMesh) or not pontos.has("ARSE") or not pontos.has("WHEEL_REAR_LEFT") \
+			or not pontos.has("EXHAUST"):
 		return false
+	var escapes: Array = []
+	var luzes: Array = []
+	for k in pontos:
+		if k.begins_with("EXHAUST"):
+			escapes.append(pontos[k])
+		elif k.begins_with("BRAKE_LIGHT") or k.begins_with("REVERSE_LIGHT") or k.begins_with("HEAD_LIGHT"):
+			luzes.append(pontos[k])
 	var mesh: ArrayMesh = mi.mesh
 	var lo: Vector3
 	var hi: Vector3
@@ -65,13 +82,17 @@ func separar(mi: MeshInstance3D, pontos: Dictionary) -> bool:
 	for t in tri:
 		var r = _raiz(pai, t[4])
 		if not info.has(r):
-			info[r] = {"lo": Vector3.INF, "hi": -Vector3.INF, "n": 0, "mat": {}}
+			info[r] = {"lo": Vector3.INF, "hi": -Vector3.INF, "n": 0, "mat": {}, "d_esc": INF, "d_luz": INF}
 		var p: Dictionary = info[r]
 		var v: PackedVector3Array = arrs[t[0]][Mesh.ARRAY_VERTEX]
 		for k in 3:
 			var q: Vector3 = v[t[1 + k]]
 			p.lo = p.lo.min(q)
 			p.hi = p.hi.max(q)
+			for e in escapes:
+				p.d_esc = minf(p.d_esc, q.distance_to(e))
+			for l in luzes:
+				p.d_luz = minf(p.d_luz, q.distance_to(l))
 		p.n += 1
 		var nome := _nome_mat(mesh, mi, t[0])
 		p.mat[nome] = p.mat.get(nome, 0) + 1
@@ -80,59 +101,67 @@ func separar(mi: MeshInstance3D, pontos: Dictionary) -> bool:
 	var c_hi := -Vector3.INF
 	for r in info:
 		var p: Dictionary = info[r]
-		if _treme(p, lo, hi):
-			sai[r] = true
+		var tipo := _tipo(p, lo, hi)
+		if tipo == 0:
+			continue
+		sai[r] = tipo
+		pecas += 1
+		if tipo == 1:
 			c_lo = c_lo.min(p.lo)
 			c_hi = c_hi.max(p.hi)
-			pecas += 1
-	if sai.is_empty():
+	if not c_lo.is_finite():
 		return false
 	centro = (c_lo + c_hi) * 0.5
 	# duas malhas com as mesmas superfícies e materiais
-	var fica := ArrayMesh.new()
-	var treme := ArrayMesh.new()
-	var mats_fica: Array = []
-	var mats_treme: Array = []
+	var malhas := [ArrayMesh.new(), ArrayMesh.new(), ArrayMesh.new()]   # fica, motor, escape
+	var mats := [[], [], []]
 	for s in mesh.get_surface_count():
-		var i_fica := PackedInt32Array()
-		var i_treme := PackedInt32Array()
+		var ixs := [PackedInt32Array(), PackedInt32Array(), PackedInt32Array()]
 		for t in tri:
 			if t[0] != s:
 				continue
-			var ids := PackedInt32Array([t[1], t[2], t[3]])
-			if sai.has(_raiz(pai, t[4])):
-				i_treme.append_array(ids)
-			else:
-				i_fica.append_array(ids)
+			var k: int = sai.get(_raiz(pai, t[4]), 0)
+			var ix: PackedInt32Array = ixs[k]
+			ix.append_array(PackedInt32Array([t[1], t[2], t[3]]))
+			ixs[k] = ix
 		var m: Material = mi.get_surface_override_material(s)
 		if m == null:
 			m = mesh.surface_get_material(s)
-		for par in [[fica, i_fica, mats_fica], [treme, i_treme, mats_treme]]:
-			var ix: PackedInt32Array = par[1]
+		for k in 3:
+			var ix: PackedInt32Array = ixs[k]
 			if ix.is_empty():
 				continue
 			var a: Array = arrs[s].duplicate()
 			a[Mesh.ARRAY_INDEX] = ix
-			par[0].add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
-			par[2].append(m)
-		faces += i_treme.size() / 3
-	mi.mesh = fica
-	for s in mats_fica.size():
-		mi.set_surface_override_material(s, mats_fica[s])
-	malha = MeshInstance3D.new()
-	malha.name = "Motor"
-	malha.mesh = treme
-	var vermelho := OS.has_environment("MOTOR_COR")    # conferência: print_tela
-	for s in mats_treme.size():
-		var m: Material = mats_treme[s]
-		if vermelho:
-			var mr := StandardMaterial3D.new()
-			mr.albedo_color = Color(1, 0, 0)
-			m = mr
-		malha.set_surface_override_material(s, m)
-	add_child(malha)
+			malhas[k].add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
+			mats[k].append(m)
+			if k > 0:
+				faces += ix.size() / 3
+	mi.mesh = malhas[0]
+	for s in mats[0].size():
+		mi.set_surface_override_material(s, mats[0][s])
+	malha = _instancia("Motor", malhas[1], mats[1], Color(1, 0, 0))
+	malha_escape = _instancia("Escape", malhas[2], mats[2], Color(0, 0.3, 1))
 	position = mi.position
 	return true
+
+
+## conferência (print_tela com MOTOR_COR=1): motor vermelho, escape azul
+func _instancia(nome: String, m: ArrayMesh, mats: Array, cor: Color) -> MeshInstance3D:
+	if m.get_surface_count() == 0:
+		return null
+	var mi := MeshInstance3D.new()
+	mi.name = nome
+	mi.mesh = m
+	for s in mats.size():
+		var mat: Material = mats[s]
+		if OS.has_environment("MOTOR_COR"):
+			var mc := StandardMaterial3D.new()
+			mc.albedo_color = cor
+			mat = mc
+		mi.set_surface_override_material(s, mat)
+	add_child(mi)
+	return mi
 
 
 static func _cofre(pontos: Dictionary) -> Array:
@@ -147,23 +176,43 @@ static func _cofre(pontos: Dictionary) -> Array:
 	return [Vector3(-meia, 0.25, z_tras), Vector3(meia, 1.75, a.z - 0.45)]
 
 
-static func _treme(p: Dictionary, lo: Vector3, hi: Vector3) -> bool:
-	if p.n >= 300:
-		return false
-	for k in 3:
-		if p.lo[k] < lo[k] or p.hi[k] > hi[k]:
-			return false
+## 0 = fica na carroceria, 1 = motor, 2 = escape
+static func _tipo(p: Dictionary, lo: Vector3, hi: Vector3) -> int:
+	if p.n >= 300 or _proibido(_material(p)) or p.d_luz < 0.10:
+		return 0
 	var d: Vector3 = p.hi - p.lo
 	var dims := [d.x, d.y, d.z]
 	dims.sort()
-	if dims[2] >= 1.6 or (dims[0] < 0.08 and dims[2] > 0.8):
-		return false
+	var no_cofre := true
+	for k in 3:
+		if p.lo[k] < lo[k] or p.hi[k] > hi[k]:
+			no_cofre = false
+	if no_cofre and dims[2] < 1.6 and not (dims[0] < 0.08 and dims[2] > 0.8):
+		return 1
+	# canos do escape: encostam no ponto EXHAUST, atrás do banco, entre as rodas
+	if p.d_esc < 0.12 and dims[2] < 2.2 and p.hi.z <= hi.z and p.lo.x >= lo.x and p.hi.x <= hi.x:
+		return 2
+	return 0
+
+
+static func _material(p: Dictionary) -> String:
 	var maior := ""
 	for m in p.mat:
 		if maior == "" or p.mat[m] > p.mat[maior]:
 			maior = m
-	var suf := maior.get_slice("_", 1).to_lower() if "_" in maior else maior.to_lower()
-	return not (suf in ["textura", "white", "ban"])
+	return maior
+
+
+## pintura, pneu, preto, banco, direção, painéis e luzes nunca tremem
+static func _proibido(nome: String) -> bool:
+	var n := nome.to_lower()
+	var suf := n.get_slice("_", 1) if "_" in n else n
+	if suf in ["textura", "white", "ban", "black", "chair", "steer"]:
+		return true
+	for x in ["sheet", "light", "dakar"]:
+		if x in n:
+			return true
+	return false
 
 
 static func _nome_mat(mesh: ArrayMesh, mi: MeshInstance3D, s: int) -> String:
@@ -199,11 +248,13 @@ static func _unir(pai: Dictionary, a, b) -> void:
 
 ## rpm do jogo (1000..8000), carga 0..1 (car.som_carga)
 func atualizar(rpm: float, carga: float, dt: float) -> void:
-	if malha == null or dt <= 0.0:
+	if dt <= 0.0 or (malha == null and malha_escape == null):
 		return
 	var r := clampf((rpm - 1000.0) / 7000.0, 0.0, 1.0)
 	var amp := lerpf(VIB_LENTA, VIB_ALTO, r)
-	var vib := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), randf_range(-0.3, 0.3)) * amp
+	var sorteio := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), randf_range(-0.3, 0.3)) * amp
+	_vib += (sorteio - _vib) * (1.0 - exp(-dt / VIB_SUAVE))
+	var vib := _vib
 	# mola do coxim: alvo pela carga, tranco quando a carga muda
 	var w := TAU * BALANCO_HZ
 	var alvo := deg_to_rad(BALANCO_GRAUS) * clampf(carga, 0.0, 1.0)
@@ -211,4 +262,7 @@ func atualizar(rpm: float, carga: float, dt: float) -> void:
 	_vel += acc * dt
 	_ang += _vel * dt
 	var giro := Basis(Vector3(0, 0, 1), _ang)
-	malha.transform = Transform3D(giro, centro - giro * centro + vib)
+	var t := Transform3D(giro, centro - giro * centro + vib)
+	for m in [malha, malha_escape]:
+		if m:
+			m.transform = t
