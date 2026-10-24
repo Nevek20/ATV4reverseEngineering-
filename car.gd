@@ -120,6 +120,14 @@ var sfx: Node = null
 # que o jogo tem no XML e não usa, nos pontos EXHAUST). false = sem fumaça
 const FUMACA := true
 var fumaca: Node3D = null
+# melhoria nossa: o Storm (BUGGY_12) é o único sem ponto EXHAUST no
+# _points.bin (o jogo não usa esses pontos). Medido no modelo dele: boca das
+# duas ponteiras cromadas (peças de 46 faces na traseira, embaixo), viradas
+# 27° pra fora. Só a fumaça e o escape tremendo usam (frame do jogo: [ponto, direção])
+const ESCAPE_NOSSO := {
+	"BUGGY_12": [[Vector3(0.569, 0.644, -2.489), Vector3(0.45, 0.0, -0.89)],
+		[Vector3(-0.580, 0.644, -2.489), Vector3(-0.45, 0.0, -0.89)]],
+}
 # motor e escape tremendo (melhoria nossa, motor_treme.gd: peças soltas da
 # carroceria no cofre do motor; vibração pela rotação e balanço pela carga)
 const MOTOR_TREME := true
@@ -582,6 +590,14 @@ func _load_physics() -> void:
 	# do Godot por corpo(): a esquerda do jogo (x < 0) vira +X. Sem ele, no chute.
 	wheels.clear()
 	var pts := _load_points(points_file)
+	if not pts.has("EXHAUST") and ESCAPE_NOSSO.has(vehicle_id):
+		var e: Array = ESCAPE_NOSSO[vehicle_id]
+		for k in e.size():
+			var nm: String = "EXHAUST" if k == 0 else "EXHAUST%d" % (k + 1)
+			var dz: Vector3 = e[k][1].normalized()
+			var dx := Vector3.UP.cross(dz).normalized()
+			pts[nm] = e[k][0]
+			points_rot[nm] = Basis(dx, dz.cross(dx), dz)    # linha 2 = direção, como no _points.bin
 	points = pts
 	update_eye()
 	var wpos := {}

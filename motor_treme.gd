@@ -19,7 +19,8 @@ extends Node3D
 ## atrás do banco, até 2.2 m (os canos compridos que saem do motor).
 ## A gêmea espelhada de uma peça que treme também treme. AJUSTES por carro
 ## corrigem o que a regra erra (achado nos prints com MOTOR_COR=2).
-## Carro sem ponto EXHAUST (Storm, fechado, motor escondido) não treme.
+## Carro sem ponto EXHAUST não treme (o Storm ganhou um, car.gd ESCAPE_NOSSO:
+## motor escondido, só as ponteiras tremem).
 ## Movimento (escolha nossa): vibração sorteada e filtrada, mais forte na
 ## lenta (coxim de borracha) e menor no giro alto, e o balanço do torque: o
 ## motor gira em volta do virabrequim (eixo z) puxado pela carga, numa mola
@@ -114,6 +115,8 @@ func separar(mi: MeshInstance3D, pontos: Dictionary, id := "") -> bool:
 	var sai := {}
 	var c_lo := Vector3.INF
 	var c_hi := -Vector3.INF
+	var e_lo := Vector3.INF          # tudo que treme (carro sem motor à mostra: só o escape)
+	var e_hi := -Vector3.INF
 	var ajuste: Dictionary = AJUSTES.get(id, {})
 	for r in info:
 		var p: Dictionary = info[r]
@@ -129,6 +132,8 @@ func separar(mi: MeshInstance3D, pontos: Dictionary, id := "") -> bool:
 			continue
 		sai[r] = tipo
 		pecas += 1
+		e_lo = e_lo.min(p.lo)
+		e_hi = e_hi.max(p.hi)
 		if OS.has_environment("MOTOR_LISTA"):
 			var d: Vector3 = p.hi - p.lo
 			print("  %s %3d faces %-26s tam %.2f %.2f %.2f centro (%.2f, %.2f, %.2f) esc %.2f luz %.2f" % [
@@ -155,7 +160,10 @@ func separar(mi: MeshInstance3D, pontos: Dictionary, id := "") -> bool:
 				pecas += 1
 				break
 	if not c_lo.is_finite():
-		return false
+		if not e_lo.is_finite():
+			return false
+		c_lo = e_lo
+		c_hi = e_hi
 	centro = (c_lo + c_hi) * 0.5
 	# duas malhas com as mesmas superfícies e materiais
 	var malhas := [ArrayMesh.new(), ArrayMesh.new(), ArrayMesh.new()]   # fica, motor, escape

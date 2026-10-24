@@ -316,7 +316,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   EXHAUST/EXHAUST2 existem, mas o exe não lê nenhum (sem cBehaviour*/
   cRenderer*; tabela de pontos 0x550700 sem EXHAUST; vídeo sem fumaça).
   Usamos os parâmetros do efeito; taxa de emissão e saída do cano são nossas.
-  Storm não tem ponto EXHAUST (sem fumaça).
+  Storm não tem ponto EXHAUST no jogo: car.gd ESCAPE_NOSSO põe dois, medidos
+  na boca das ponteiras cromadas do modelo (±0.57, 0.64, -2.49), 27° pra fora.
 - Motor e escape tremendo (melhoria nossa, car.gd MOTOR_TREME,
   motor_treme.gd): no jogo são parte da Body e não tremem. Separação pelas
   peças soltas da malha que cabem inteiras no cofre (atrás do banco até o
@@ -330,7 +331,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Renegade). O que a regra erra vai em motor_treme.gd AJUSTES por carro
   (Viper: bloco de 8 faces e coletor; Phantom: barra em L do escape), achado
   com print_tela MOTOR_COR=2 (uma cor por peça, legenda no console,
-  MOTOR_PAGINA=1,2 pras seguintes). Storm (sem EXHAUST) não treme.
+  MOTOR_PAGINA=1,2 pras seguintes). Storm (motor escondido): só as 2
+  ponteiras tremem (pelos pontos do ESCAPE_NOSSO).
   Vibração 3 mm na lenta, filtrada (6 mm por quadro ficou "tremelento").
 - Volante tremendo (melhoria nossa, car.gd VOLANTE_TREME, _vibracao): no
   jogo nada treme (nem volante, nem mãos, nem motor: varredura do exe e
