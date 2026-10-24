@@ -17,8 +17,9 @@ extends RefCounted
 ## nível do carro.
 ##
 ## Piloto (nosso): a textura de sujeira do piloto (Characters/Textures/Dirt)
-## projetada nos 3 eixos com o nível do carro. O jeito do jogo no piloto não
-## foi achado.
+## projetada nos 3 eixos da pose de repouso (CUSTOM0/1 da malha, piloto.gd:
+## a posição animada fazia o braço andar por dentro da textura) com o nível
+## do carro. O jeito do jogo no piloto não foi achado.
 
 const TEX := "res://assets/fx/sujeira.png"
 const TEX_PILOTO := "res://assets/fx/sujeira_piloto.png"
@@ -53,8 +54,8 @@ varying vec3 p_obj;
 varying vec3 n_obj;
 
 void vertex() {
-	p_obj = VERTEX;
-	n_obj = NORMAL;
+	p_obj = CUSTOM0.xyz;
+	n_obj = CUSTOM1.xyz;
 }
 
 void fragment() {
@@ -89,6 +90,9 @@ func montar(car) -> bool:
 	# pelo caminho do modelo
 	if car.body_mi:
 		_camada(car.body_mi, car.model_path, carro)
+		if camadas == 0:
+			push_warning("Sem %s: rode o tools/gerar_buggies.py de novo pra ter a sujeira do carro." % (
+				car.model_path.get_basename() + "_camada.obj"))
 	var rodas: Array = [car.wheel_front_file, car.wheel_rear_file]
 	for mi in _malhas(car):
 		var path: String = mi.mesh.resource_path

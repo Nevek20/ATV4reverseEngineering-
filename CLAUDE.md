@@ -360,8 +360,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   UNI_TyreOverlay: lama com a cor do DustColour do chão e alfa
   WheelDirtAlpha (some no asfalto; a água lava, 0x224418), car.gd
   _roda_suja_passo. teste_derrapagem confere os 2 com a RAM. Piloto: nível
-  do carro com projeção nos 3 eixos (nosso; o jeito do jogo não foi achado).
-  Sem rodar o gerar_buggies de novo não há _camada.obj e nada suja.
+  do carro com projeção nos 3 eixos da POSE DE REPOUSO (CUSTOM0/1 da malha;
+  pela posição animada a sujeira ficava parada e o braço andava por dentro
+  dela). Nosso: o jeito do jogo no piloto não foi achado.
+  Sem rodar o gerar_buggies de novo não há _camada.obj e o carro não suja
+  (o HUD avisa).
 
 ## Pendente / ideias
 

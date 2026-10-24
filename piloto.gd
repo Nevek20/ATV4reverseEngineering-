@@ -104,8 +104,19 @@ func carregar(dir: String, cull: int) -> bool:
 	arr[Mesh.ARRAY_BONES] = PackedInt32Array(d.ossos_v)
 	arr[Mesh.ARRAY_WEIGHTS] = pes
 	arr[Mesh.ARRAY_INDEX] = idx
+	# pose de repouso em CUSTOM0/1: a sujeira (sujeira.gd) projeta por ela e
+	# fica grudada na roupa (a posição do vertex() já vem animada)
+	var rp := PackedFloat32Array()
+	var rn := PackedFloat32Array()
+	for i in pos.size():
+		rp.append_array([pos[i].x, pos[i].y, pos[i].z])
+		rn.append_array([nrm[i].x, nrm[i].y, nrm[i].z])
+	arr[Mesh.ARRAY_CUSTOM0] = rp
+	arr[Mesh.ARRAY_CUSTOM1] = rn
 	var am := ArrayMesh.new()
-	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {},
+		(Mesh.ARRAY_CUSTOM_RGB_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT)
+		| (Mesh.ARRAY_CUSTOM_RGB_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT))
 	var mat := StandardMaterial3D.new()
 	mat.albedo_texture = _textura(dir.path_join("piloto.png"))
 	mat.cull_mode = cull
