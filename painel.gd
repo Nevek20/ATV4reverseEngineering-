@@ -259,38 +259,45 @@ static func _apagar_faces(mi: MeshInstance3D, tex: String, pontos: Array) -> voi
 		mi.set_surface_override_material(s, mats[s])
 
 
-## pinta os mostradores (manchas claras grandes) com a cor do fundo da chapa;
-## os LEDs (pontinhos) ficam
+## pinta os mostradores (manchas claras grandes) com pixels do fundo da chapa
+## (sorteados, pra manter o granulado); os LEDs (pontinhos e vermelhos) ficam. Rodando pelo editor a textura vem comprimida e
+## com mipmaps (o import "Detect 3D" liga sozinho): pinta o nível 0 e refaz
+## os mipmaps, senão de longe ou de lado a placa mostrava os relógios velhos
 static func _sem_relogios(tex: Texture2D) -> Texture2D:
 	var img := tex.get_image()
 	if img.is_compressed():
 		img.decompress()
+	var mip := img.has_mipmaps()
+	img.clear_mipmaps()
 	img.convert(Image.FORMAT_RGBA8)
 	var w := img.get_width()
 	var h := img.get_height()
-	var fundo := Color(0, 0, 0)
-	var nf := 0
+	var fundo: Array[Color] = []       # pixels escuros da chapa (o granulado dela)
 	for y in h:
 		for x in w:
 			var c := img.get_pixel(x, y)
-			if c.get_luminance() < 0.2:
-				fundo += c
-				nf += 1
-	if nf > 0:
-		fundo /= nf
+			if c.get_luminance() < 0.2 and maxf(c.r, maxf(c.g, c.b)) - minf(c.r, minf(c.g, c.b)) < 0.08:
+				fundo.append(c)
+	if fundo.is_empty():
+		fundo.append(Color(0, 0, 0))
+	# manchas claras: as grandes são mostradores (disco = parte clara + 5 px, o
+	# aro escuro fica fora dela); pequenas e vermelhas FORA dos discos são os
+	# LEDs (ficam). Dentro dos discos: pedaços do aro, números e o ponteiro
 	var visto := {}
+	var pequenas := []
+	var relogios := []                 # [centro, raio]
 	for y in h:
 		for x in w:
 			if visto.has(Vector2i(x, y)) or img.get_pixel(x, y).get_luminance() < 0.55:
 				continue
 			var pilha := [Vector2i(x, y)]
+			var mancha := []
 			visto[Vector2i(x, y)] = true
 			var lo := Vector2i(x, y)
 			var hi := Vector2i(x, y)
-			var n := 0
 			while not pilha.is_empty():
 				var q: Vector2i = pilha.pop_back()
-				n += 1
+				mancha.append(q)
 				lo = Vector2i(mini(lo.x, q.x), mini(lo.y, q.y))
 				hi = Vector2i(maxi(hi.x, q.x), maxi(hi.y, q.y))
 				for dq in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
@@ -299,14 +306,43 @@ static func _sem_relogios(tex: Texture2D) -> Texture2D:
 							and img.get_pixel(r.x, r.y).get_luminance() >= 0.55:
 						visto[r] = true
 						pilha.append(r)
-			if n < 20:
-				continue
-			var cen := Vector2(lo + hi) * 0.5
-			var rr := maxf(hi.x - lo.x, hi.y - lo.y) * 0.5 + 3.0
-			for py in range(maxi(0, int(cen.y - rr)), mini(h, int(cen.y + rr) + 1)):
-				for px in range(maxi(0, int(cen.x - rr)), mini(w, int(cen.x + rr) + 1)):
-					if Vector2(px, py).distance_to(cen) <= rr:
-						img.set_pixel(px, py, fundo)
+			if mancha.size() < 20:
+				pequenas.append(mancha)
+			else:
+				relogios.append([Vector2(lo + hi) * 0.5, maxf(hi.x - lo.x, hi.y - lo.y) * 0.5 + 5.0])
+	var no_disco := func(p: Vector2) -> bool:
+		for rel in relogios:
+			if p.distance_to(rel[0]) <= rel[1]:
+				return true
+		return false
+	var protegido := {}
+	var leds: Array = []
+	for mancha in pequenas:
+		var cen := Vector2.ZERO
+		for q in mancha:
+			cen += Vector2(q)
+		if not no_disco.call(cen / mancha.size()):
+			leds.append_array(mancha)
+	for y in h:
+		for x in w:
+			var c0 := img.get_pixel(x, y)
+			if c0.r - maxf(c0.g, c0.b) > 0.25 and not no_disco.call(Vector2(x, y)):
+				leds.append(Vector2i(x, y))
+	for q in leds:
+		for dy in range(-1, 2):
+			for dx in range(-1, 2):
+				protegido[q + Vector2i(dx, dy)] = true
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1
+	for rel in relogios:
+		var cen: Vector2 = rel[0]
+		var rr: float = rel[1]
+		for py in range(maxi(0, int(cen.y - rr)), mini(h, int(cen.y + rr) + 1)):
+			for px in range(maxi(0, int(cen.x - rr)), mini(w, int(cen.x + rr) + 1)):
+				if Vector2(px, py).distance_to(cen) <= rr and not protegido.has(Vector2i(px, py)):
+					img.set_pixel(px, py, fundo[rng.randi() % fundo.size()])
+	if mip:
+		img.generate_mipmaps()
 	return ImageTexture.create_from_image(img)
 
 

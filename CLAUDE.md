@@ -393,8 +393,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   (desce/sobe) e -/= (lado) na câmera do piloto (o HUD mostra; só o
   conjunto mexe). Os relógios do modelo saem pra o nosso não ficar em cima
   de outro (pedido dele): a placa cadilac_clock do Renegade some, os
-  relógios pintados da chapa b_2 do Sphinx são repintados com o fundo
-  (_sem_relogios). O Inferno tem 5 buracos de relógio vazios em losango:
+  relógios pintados da chapa b_2 do Sphinx são repintados com pixels do
+  fundo (_sem_relogios; LED = mancha pequena ou vermelha fora dos discos).
+  Pelo editor (F5) a textura vem com mipmaps (import "Detect 3D"): pinta o
+  nível 0 e refaz os mipmaps, senão de lado os relógios velhos voltavam. O Inferno tem 5 buracos de relógio vazios em losango:
   o aro e o fundo preto saem da malha (APAGAR, _apagar_faces), e no lugar
   vão conta-giros (13 cm, pra não varar o capô), velocímetro (DO_MODELO) e
   3 auxiliares de enfeite (AUX: temperatura que esquenta no 1º minuto, óleo
