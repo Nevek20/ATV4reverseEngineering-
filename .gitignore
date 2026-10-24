@@ -15,3 +15,8 @@ unpacked/
 __pycache__/
 tools/engine_sim_dyno/es/
 tools/engine_sim_dyno/build/
+# gerados pelo Godot ao importar (cada máquina gera os seus; subir faz o
+# git pull de quem já tem travar). Os .uid já no git ficam.
+*.gd.uid
+*.translation
+som/loops/**/*.import
