@@ -215,6 +215,9 @@ def main():
         pts = open(os.path.join(a.unpacked, "other", "%d_bloco.bin" % c["pontos"]), "rb").read()
         copiar(pts, os.path.join(dados, "buggy_%02d_points.bin" % n))
         print("[+] %s em %s" % (c["nome"], out))
+    # redes das janelas e treliça do Trident: alfa do jogo de volta (o
+    # gob_tex2png salva sem alfa)
+    subprocess.run([sys.executable, os.path.join(AQUI, "alfa_texturas.py"), a.unpacked])
     print("Abra o projeto no Godot uma vez pra ele importar os .obj novos.")
 
 

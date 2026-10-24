@@ -105,6 +105,8 @@ python tools/piloto.py <unpacked>
 
 :: assets dos 12 buggies (modelo, peças, freios, rodas, pintura)
 python tools/gerar_buggies.py <unpacked> <texturas>
+:: só o alfa das texturas com furo (redes das janelas, treliça do Trident); o gerar_buggies já chama
+python tools/alfa_texturas.py <unpacked>
 
 :: motores do Engine Simulator (12 .mr) e dinamômetro sem tela (Linux)
 python tools/gerar_motores.py
@@ -199,6 +201,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   descarta a face de trás (`MODEL_CULL`). Total de materiais do .pingu em
   0xAC (0xBC conta menos).
 - Carroceria usa a textura "white" = pintura gerada (tools/gerar_pintura.py).
+- Alfa: o gob_tex2png salva sem alfa (no PS2 ele muitas vezes é brilho). Nos
+  carros só 3 texturas têm furo de verdade: mesh_grey (redes das janelas,
+  54%), Buggy_05_framework (treliça do Trident, 71%) e driver (7%).
+  tools/alfa_texturas.py devolve o alfa delas e o car.gd vira recorte
+  (_tem_alfa); as outras têm alfa cheio e não mudam.
 - Rodas sem escala (tamanho = modelo). Frente: centro gira com a balança em
   x/z e y = WHEEL.y + curso; trás: arco inteiro. O pneu afunda uns cm parado
   no jogo também.

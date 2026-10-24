@@ -827,6 +827,11 @@ func _load_model() -> void:
 			m2.albedo_color = Color(0.85, 0.85, 0.85)
 		if livery and m and m.resource_name.ends_with("_white"):
 			m2.albedo_texture = livery
+		# textura com furo no jogo (redes das janelas, treliça do Trident):
+		# tools/alfa_texturas.py devolve o alfa e aqui vira recorte
+		if m2.albedo_texture and _tem_alfa(m2.albedo_texture):
+			m2.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+			m2.alpha_scissor_threshold = 0.5
 		m2.cull_mode = MODEL_CULL
 		mi.set_surface_override_material(i, m2)
 	var aabb := mesh.get_aabb()
@@ -849,6 +854,20 @@ func _load_motor_treme() -> void:
 	else:
 		motor_treme.free()
 		motor_treme = null
+
+
+static var _alfa_cache := {}
+
+
+static func _tem_alfa(t: Texture2D) -> bool:
+	var k := t.resource_path if t.resource_path != "" else str(t.get_instance_id())
+	if not _alfa_cache.has(k):
+		var img := t.get_image()
+		if img and img.is_compressed():
+			img = img.duplicate()
+			img.decompress()
+		_alfa_cache[k] = img != null and img.detect_alpha() != Image.ALPHA_NONE
+	return _alfa_cache[k]
 
 
 ## piloto (piloto.gd): o osso ROOT da animação fica em cima do ponto ARSE
