@@ -105,6 +105,8 @@ def estado(r, veh):
         "estado_emb": r.u(ph + 0x314), "troca_t": r.f(ph + 0x2FC), "troca": r.u(ph + 0x318),
         "emb_sinal": r.f(ph + 0x320), "derrapagem": r.f(ph + 0x6C0), "ar": r.f(ph + 0x4E4),
         "esterco_vis": r.f(ph + 0x3C0), "stf": r.f(ph + 0x474),
+        # sujeira (objeto veículo+0xa80): nível 0..1 em +0xc0 (0x223e68)
+        "sujeira": r.f(r.u(veh + 0xA80) + 0xC0) if r.u(veh + 0xA80) else 0.0,
         "rodas": [],
     }
     for i in range(4):

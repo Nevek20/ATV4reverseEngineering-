@@ -133,6 +133,11 @@ const ESCAPE_NOSSO := {
 const MOTOR_TREME := true
 var motor_treme: Node3D = null
 var body_mi: MeshInstance3D = null
+# sujeira do jogo (0x223e68, _sujeira_passo) e desenho dela (sujeira.gd, com a
+# textura GEN_DIRT_DIRT em assets/fx: tools/fx_jogo.py). false = carro limpo
+const SUJEIRA := true
+var sujeira_nivel := 0.0      # objeto da sujeira (veículo+0xa80) +0xc0, 0..1
+var sujeira = null
 var som_carga := 0.0          # carga do motor pro som: acelerador x limitador x troca
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
@@ -313,6 +318,7 @@ func _ready() -> void:
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
+	_load_sujeira()               # por último: pega todas as malhas do carro
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = Vector3(2.1, 0.8, 4.8)
@@ -906,6 +912,18 @@ func _load_fumaca() -> void:
 		fumaca = null
 
 
+func _load_sujeira() -> void:
+	if not SUJEIRA:
+		return
+	if OS.has_environment("SUJEIRA"):          # prints: nível fixo
+		sujeira_nivel = clampf(float(OS.get_environment("SUJEIRA")), 0.0, 1.0)
+	sujeira = preload("res://sujeira.gd").new()
+	if not sujeira.montar(self):
+		sujeira = null
+		return
+	sujeira.atualizar(sujeira_nivel)
+
+
 func _load_sfx() -> void:
 	if not SOM_PNEU:
 		return
@@ -939,6 +957,8 @@ func _process(delta: float) -> void:
 		fumaca.atualizar(som_carga, rpm)
 	if motor_treme:
 		motor_treme.atualizar(rpm, som_carga, delta)
+	if sujeira:
+		sujeira.atualizar(sujeira_nivel)
 
 
 func _load_steering_wheel() -> void:
@@ -1411,9 +1431,27 @@ func _physics_process(dt: float) -> void:
 		jit_acc -= 1.0 / JIT_HZ
 		_wheel_jitter()
 		_vibracao(1.0 / JIT_HZ, v.dot(left), v_f)
+		_sujeira_passo()
 		if sfx:
 			sfx.passo(1.0 / JIT_HZ, v.dot(left), v_f)
 	_update_visuals(dt, v_f)
+
+
+## 0x223e68 (do update do veículo 0x203930, um por quadro = 50 Hz no PAL):
+## com roda no chão (corpo+0x8a8), piloto no carro e |v| no plano do chão
+## (0x440) >= 0.5, o nível sobe min(|v|, 15)·k·5e-5, k = maior WheelDirtRate
+## (até 1) dos materiais das rodas (veículo+0xa88; 0.2 até no asfalto, 0.3 na
+## terra úmida). Não tem dt: o passo é fixo. Vai até 1 e só zera quando o carro
+## reinicia (0x223db0); a água não limpa a carroceria no jogo, só a cor da
+## roda (0x224418, não portada). Confere com 2 save states: tests/teste_derrapagem.gd.
+func _sujeira_passo() -> void:
+	if not SUJEIRA or grounded == 0 or spd_ground < 0.5 or terrain == null:
+		return
+	var k := 0.0
+	for w in wheels:
+		if w.mat >= 0:
+			k = maxf(k, minf(terrain.taxa_sujeira(w.mat), 1.0))
+	sujeira_nivel = clampf(sujeira_nivel + minf(spd_ground, 15.0) * k * 5e-5, 0.0, 1.0)
 
 
 ## 0x20e5e8: tamanho do arrasto (N). Em kN = (Air_drag_coefficient x 0.00065 +

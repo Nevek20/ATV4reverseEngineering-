@@ -1,5 +1,5 @@
 {
- "fonte": "save states PAL do Matheus (out/2026), Renegade de fábrica no RX01, volante todo e acelerador no fundo a ~120 km/h na terra. tools/ler_savestate.py --json; relógio da corrida lido no Screenshot.png de cada .p2s. drr_3 -> drr_2 é a mesma derrapagem (1.16 s); drr_1 e drr_1.backup são outras tentativas. 110 e 170: curvas fechadas com volante todo e acelerador (110 = 1ª curva depois da largada, 113 km/h a 6.4°, sem 'Slide' no HUD; 170 = derrapando a 133 km/h); no jogo a 110 não derrapa e a 170 derrapa depois de 0.5 a 1 s. fm_*: segurando o botão R1 (\"freio de mão\" = botão da embreagem) virando e acelerando: embreagem aberta, motor no limitador, Clutch Turn em 0; fm_2b -> fm_2 é a mesma derrapagem (0.26 s); fm_1b é o carro capotando fora da pista.",
+ "fonte": "save states PAL do Matheus (out/2026), Renegade de fábrica no RX01, volante todo e acelerador no fundo a ~120 km/h na terra. tools/ler_savestate.py --json; relógio da corrida lido no Screenshot.png de cada .p2s. drr_3 -> drr_2 é a mesma derrapagem (1.16 s); drr_1 e drr_1.backup são outras tentativas. 110 e 170: curvas fechadas com volante todo e acelerador (110 = 1ª curva depois da largada, 113 km/h a 6.4°, sem 'Slide' no HUD; 170 = derrapando a 133 km/h); no jogo a 110 não derrapa e a 170 derrapa depois de 0.5 a 1 s. fm_*: segurando o botão R1 (\"freio de mão\" = botão da embreagem) virando e acelerando: embreagem aberta, motor no limitador, Clutch Turn em 0; fm_2b -> fm_2 é a mesma derrapagem (0.26 s); fm_1b é o carro capotando fora da pista. sujeira = nível do objeto da sujeira (veículo+0xa80, +0xc0), lido depois na RAM dos 6 que temos.",
  "estados": {
   "drr_3": {
    "origem": [
@@ -191,7 +191,8 @@
     }
    ],
    "relogio": 9.48,
-   "arquivo": "drr_3"
+   "arquivo": "drr_3",
+   "sujeira": 0.069057
   },
   "drr_2": {
    "origem": [
@@ -383,7 +384,8 @@
     }
    ],
    "relogio": 10.64,
-   "arquivo": "drr_2"
+   "arquivo": "drr_2",
+   "sujeira": 0.07796
   },
   "drr_1.backup": {
    "origem": [
@@ -575,7 +577,8 @@
     }
    ],
    "relogio": 11.06,
-   "arquivo": "drr_1.backup"
+   "arquivo": "drr_1.backup",
+   "sujeira": 0.082802
   },
   "drr_1": {
    "origem": [
@@ -767,7 +770,8 @@
     }
    ],
    "relogio": 36.6,
-   "arquivo": "drr_1"
+   "arquivo": "drr_1",
+   "sujeira": 0.239948
   },
   "110": {
    "origem": [
@@ -959,7 +963,8 @@
     }
    ],
    "relogio": 5.22,
-   "arquivo": "110"
+   "arquivo": "110",
+   "sujeira": 0.032833
   },
   "170": {
    "origem": [
@@ -1151,7 +1156,8 @@
     }
    ],
    "relogio": 9.26,
-   "arquivo": "170"
+   "arquivo": "170",
+   "sujeira": 0.068232
   },
   "fm_1b": {
    "origem": [

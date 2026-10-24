@@ -540,6 +540,41 @@ fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
   material do remake diz cascalho nas rodas da frente (pendente: o atrito
   também usa esse mapa).
 
+## Sujeira
+
+- Objeto da sujeira: veículo+0xa80 (0xd0 bytes, 0x223948, criado no
+  0x1fe280; também em (veículo+0xa64)+0x10). +0xc0 nível do carro, +0xc4 do
+  piloto, +0xc8 = 1 se o modo de jogo tem sujeira (0x171960).
+- **0x223e68** (do update do veículo 0x203930, um por quadro = 50 Hz no
+  PAL; sem dt): com rodas no chão (corpo+0x8a8), piloto no carro
+  (piloto+0x164 = 0) e v = |corpo+0x440| >= 0.5: d = min(v, 15)·k·5e-5,
+  k = maior min(WheelDirtRate, 1) dos materiais das rodas (veículo+0xa88,
+  registro veículo+0xd0+i·0x60, +0x54). Nível += d (0..1); o do piloto
+  também (+ piloto+0x328·0.06 se (veículo+0xa6c)+0x8c+0x18). WheelDirtRate
+  é 0.2 até no asfalto (0.3 na terra úmida): suja em qualquer chão.
+  Depois do 0x223e68 o 0x203930 põe (veículo+0xa68)+0x58 = +0xc8·nível.
+- Desenho: +0x98 é um pintor de alfa de vértice (0x3a8680, lista de malhas;
+  17 no Renegade = carroceria e peças). Tipo 1 (0x3b3a78): alfa do vértice
+  = max(alfa, nível·128), 300 vértices por quadro. Na RAM: todos os
+  vértices com o mesmo alfa (d0: 10 = 0.083·128). A textura é a da pista:
+  TrackProperties Dirt mDirtTextureName (0x1bf220, props+0x1c) =
+  GEN_DIRT_DIRT em todas (Vehicles/Generic/Textures 128x128 pro carro,
+  Characters/Textures/Dirt 256x256 pro piloto). O UV dessa camada sai no
+  microcódigo da VU1 (não achado).
+- Zera só no 0x223db0 (nível 0 e alfa 0 em todos os vértices): veículo
+  inativo no 0x203930 e o método virtual +0xb4 do veículo (0x200b80,
+  recomeço). Nada mais escreve o nível: a água NÃO limpa a carroceria.
+- Cor da roda (0x224418 -> 0x2242d0, com roda no chão; +0x10..+0x4c do
+  objeto): vai da cor atual pro DustColour (registro +0x10) com alfa
+  WheelDirtAlpha (+0x50; 0 no asfalto = só o alfa cai), taxa WheelDirtRate
+  suavizada (0.95/0.05), t += dt·giro da FL (W+0x48)·0.002 (x10·patinada
+  da RL, corpo+0x604, se passar de 0.1). Na água (veículo+0xae8) o alvo é o
+  registro DAT_007f4bf8+0x20. Quem desenha essa cor não achamos; não
+  portada.
+- Conferido (tests/teste_derrapagem.gd): drr_3 -> drr_2 (1.16 s) o jogo
+  sujou 0.0089 e o remake 0.0091. Os níveis dos save states saem no
+  ler_savestate --json ("sujeira").
+
 ## Mão (espelho)
 
 - O jogo é mão esquerda: x direita, y cima, z frente; WHEEL_*_LEFT em x < 0

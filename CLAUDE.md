@@ -35,6 +35,7 @@ volantes.gd          volantes gerados, um estilo por carro (melhoria nossa, no l
 motor_som.gd         som do motor: loops do Engine Simulator por rpm e carga (melhoria nossa)
 sfx_carro.gd         som de pneu, suspensão e pouso do jogo (portado do exe); som_jogo.gd toca os sons 989snd
 fumaca.gd            fumaça do escapamento (melhoria nossa com o efeito ExhaustSmokeTrail que o jogo não usa)
+sujeira.gd           sujeira do jogo desenhada no carro e no piloto (o nível vem do car.gd, porta do 0x223e68)
 motor_treme.gd       motor e escape tremendo (melhoria nossa): separa as peças do cofre da carroceria
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
@@ -76,7 +77,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . -s res://tests/teste_camera_passo.gd  :: câmera de órbita sem vai e volta
 %GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL e save states
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
-%GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda e 1.16 s de derrapagem
+%GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda, 1.16 s de derrapagem e sujeira
 %GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 13 carros (0 cm) e giro do volante
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
 %GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies
@@ -97,8 +98,9 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 
 :: sons de pneu, suspensão e pouso do jogo -> assets/sfx (wav + sons.json)
 python tools/sfx_jogo.py <unpacked>
-:: textura da fumaça (Sprites/Particles, caixa Dust0) -> assets/fx/fumaca.png
+:: textura da fumaça (Sprites/Particles, caixa Dust0) e da sujeira (GEN_DIRT_DIRT) -> assets/fx
 python tools/fx_jogo.py <unpacked>
+:: + print_tela com SUJEIRA=0.8 força o nível da sujeira
 
 :: piloto (malha, esqueleto, animação da direção, textura) -> assets/piloto
 python tools/piloto.py <unpacked>
@@ -347,6 +349,14 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   carro de lado, roda patinando devagar, roda travada, trancos pela
   velocidade) + pouso (0x370df0) e suspensão (0x36e498) do som + a tremida
   de curso das rodas da frente na terra (0x202760). Graus = escolha nossa.
+- Sujeira (car.gd SUJEIRA, _sujeira_passo; sujeira.gd; docs Sujeira): o
+  nível sobe min(v, 15)·WheelDirtRate·5e-5 a cada passo de 50 Hz com roda
+  no chão (suja até no asfalto), igual em todo o carro, e só zera no
+  recomeço (T no remake). A água NÃO limpa no jogo (e o RX01 não tem água).
+  Desenho: textura GEN_DIRT_DIRT com alfa = nível x alfa da textura (no
+  jogo, alfa de vértice). O UV do jogo não achamos: a projeção nos 3 eixos
+  (ESCALA 1.2 m) é nossa. teste_derrapagem confere com 2 save states
+  (0.0089 jogo, 0.0091 remake).
 
 ## Pendente / ideias
 
@@ -377,6 +387,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Câmera do piloto: referência do Matheus = cockpit do Dirt Rally 2.0
   (horizonte perto do meio, volante cortado embaixo, muita estrada).
 - Sinal do giro/direção visual: falta save state andando com volante virado.
+- Sujeira: cor da roda (0x224418: DustColour do chão, limpa na água) não
+  portada; limpar o carro na água seria melhoria nossa (o jogo não faz) e
+  precisa de água no mapa.
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).
 - Mapa de material do RX01: no save state 110 (1ª curva) o PS2 tocava
   asfalto e o mapa do remake diz cascalho nas rodas da frente

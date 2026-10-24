@@ -154,6 +154,13 @@ func amortecimento(m: int) -> float:
 	return float(materials[m].get("Damping", 0.0))
 
 
+## WheelDirtRate do material (registro +0x54): quanto suja o carro (0x223e68)
+func taxa_sujeira(m: int) -> float:
+	if m < 0 or m >= materials.size():
+		return 0.0
+	return float(materials[m].get("WheelDirtRate", 0.0))
+
+
 ## som do pneu no material (atributo SFX: Dirt, Tarmac, Gravel, Grass, Snow);
 ## o 0x377ce0 liga o material i da pista ao material de som desse nome
 func sfx(m: int) -> String:
