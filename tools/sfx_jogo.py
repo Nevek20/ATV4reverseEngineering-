@@ -17,15 +17,21 @@ Formato do banco (989snd "SBlk" v3, little endian):
     SBlk +0x16 u16 nº de sons, +0x1c tabela de sons (12 B: u8 vol, ..., u16 nº de
     grãos, u16 flags, s32 offset do 1º grão), +0x20 tabela de grãos (8 B: u32
     tipo << 24 | dado, u32 espera), +0x34 base dos dados dos grãos.
-    Tom (0x18 B): u8 prio, u8 vol, u8 CN, u8 CF, s16 pan, ..., u16 flags,
-    u32 offset e u32 tamanho das amostras.
+    Tom (0x18 B): u8 prio, s8 vol, u8 CN, u8 CF, s16 pan, s8 mapa baixo/alto,
+    s8 PBLow/PBHigh (semitons do pitch bend, +8/+9), u16 ADSR1
+    (+0xa), u16 ADSR2 (+0xc), u16 flags, u32 offset e u32 tamanho das
+    amostras. ADSR = registradores do envelope do SPU (o som_jogo.gd roda o
+    ataque e o release: parar um som é key-off, a voz desce pelo release).
     Taxa com tom 1.0 = 48000 * 2^((CN + CF/128 - 196) / 12) (registrador de
     pitch das vozes do SPU nos save states: 11025, 16000 e 22050 Hz).
-Grãos (989snd), em sequência; "espera" = tempo até o próximo grão:
+Grãos (989snd, u32 = tipo << 24 | args, s32 espera), em sequência; a espera
+vale ANTES do grão, em ticks de 240 Hz (BlockSoundHandler do 989snd, igual ao
+reimplementado no jak-project; quem roda é o som_jogo.gd):
     1 toca um tom, 5 toca um som filho (dado -> +0 vol, +0xc índice),
-    21/22 começo/fim de repetição, 25 sorteia 1 dos próximos (byte baixo = n),
-    26 espera aleatória (até dado), 27 desvio de tom aleatório (dado), 31 registrador.
-A unidade da espera não está confirmada (sons_json: "tick_s").
+    21/22 começo/fim de repetição, 25 RAND_PLAY (arg0 opções, arg1 grãos por
+    opção), 26 RAND_DELAY (0..dado ticks a mais), 27 RAND_PB (arg0 = % da
+    faixa de pitch bend), 31 SET_REGISTER_RAND (arg0 registrador, arg1..arg2
+    faixa; tom com volume < 0 lê o registrador).
 
 Uso:
     python tools/sfx_jogo.py <unpacked> [saida=assets/sfx]
@@ -46,6 +52,7 @@ def u8(d, o): return d[o]
 def u16(d, o): return struct.unpack_from("<H", d, o)[0]
 def u32(d, o): return struct.unpack_from("<I", d, o)[0]
 def s32(d, o): return struct.unpack_from("<i", d, o)[0]
+def s8(b): return b - 256 if b > 127 else b
 
 
 def ler_arquivos():
@@ -146,6 +153,8 @@ def extrair(d, nomes, pasta, rel):
             if tipo == 1:
                 t = base + dado
                 cn, cf, tvol = d[t + 2], d[t + 3], d[t + 1]
+                adsr = [u16(d, t + 0xa), u16(d, t + 0xc)]
+                pb = [s8(d[t + 8]), s8(d[t + 9])]
                 off, tam = u32(d, t + 0x10), u32(d, t + 0x14)
                 taxa = int(round(48000 * 2 ** ((cn + cf / 128.0 - 196) / 12.0)))
                 pcm, ini, fim, repete = adpcm(amostras[off:off + tam])
@@ -153,7 +162,7 @@ def extrair(d, nomes, pasta, rel):
                 gravar_wav(os.path.join(pasta, arq), pcm, taxa, (ini, fim) if repete else None)
                 prog.append(["tom", len(tons), espera])
                 tons.append({"arq": rel + "/" + arq, "vol": tvol, "taxa": taxa, "loop": repete,
-                             "ini": ini, "fim": fim, "seg": round(len(pcm) / taxa, 3)})
+                             "ini": ini, "fim": fim, "seg": round(len(pcm) / taxa, 3), "adsr": adsr, "pb": pb})
             elif tipo == 5:
                 c = base + dado
                 prog.append(["filho", u32(d, c + 0xc), d[c], espera])
@@ -162,11 +171,14 @@ def extrair(d, nomes, pasta, rel):
             elif tipo == 22:
                 prog.append(["volta", espera])
             elif tipo == 25:
-                prog.append(["sorteia", dado & 0xFF, espera])
+                prog.append(["sorteia", dado & 0xFF, espera, (dado >> 8) & 0xFF])
             elif tipo == 26:
                 prog.append(["espera_sorteada", dado, espera])
             elif tipo == 27:
                 prog.append(["desvio_tom", dado, espera])
+            elif tipo == 31:
+                prog.append(["registrador_sorteado", s8(dado & 0xFF), espera,
+                             s8((dado >> 8) & 0xFF), s8((dado >> 16) & 0xFF)])
             else:
                 prog.append(["ignora", tipo, espera])
         sons[nome] = {"indice": i, "vol": vol, "prog": prog, "tons": tons}
@@ -187,7 +199,7 @@ def main():
     saida = sys.argv[2] if len(sys.argv) > 2 else os.path.join(PROJ, "assets", "sfx")
     arqs = ler_arquivos()
     sample_banks = ler_bloco(unpacked, arqs, "Audio/SampleBanks.xml").decode("latin-1")
-    tudo = {"tick_s": 0.001, "bancos": {}}
+    tudo = {"versao": 2, "tick_hz": 240, "bancos": {}}
     for banco, caminho in BANCOS.items():
         pasta = os.path.join(saida, banco)
         os.makedirs(pasta, exist_ok=True)

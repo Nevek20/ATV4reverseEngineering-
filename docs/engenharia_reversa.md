@@ -522,7 +522,17 @@ fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
   Dono+0x178 = 0.4·anterior + 0.1·média(d susp/dt de FL e RL), limitado a ±1.
 - Roda 0x370548 (por quadro): material W+0x140 (−1 = 0) → DB+0x70+4i (pelo
   SFX do Materials.xml da pista, 0x377ce0); água se veículo+0xaec+4i > −0.05.
-  Sample novo: para, toca o outro e trava 0.07 s. Patch com Volume 0 para.
+  Sample novo: para, toca o outro e trava 0.07 s. São 2 handles por roda
+  (W+0x178/+0x17c, índice em +0x180): para o atual, troca de handle e toca
+  no outro; volume e tom só vão pro handle novo. Parar = vtable +0x1c do
+  handle (0x264f28, classe 0x587c48) -> 0x25afa8 -> 0x6773d0 = comando 0x13
+  do 989snd (StopSound): key-off, a voz desce pelo release do ADSR do tom
+  (ADSR1/ADSR2 em +0xa/+0xc do tom no banco). Dirt: ataque exponencial
+  ~0.48 s, release linear 0.17 s; loop do cascalho (GRAVELEMENT2): ataque
+  na hora, release 0.17 s. No cascalho escuro do RX01 (GRAVEL/ROCK em
+  células de 2 m misturadas com terra) a troca Gravel <-> Dirt acontece ~2
+  vezes por segundo derrapando (tests/gravar_cascalho.gd). Patch com Volume
+  0 para.
   No ar o volume vai a 0 (tom fica). susp = clamp((W+0xe8 + SuspensionOffset)
   ·SuspensionScale, 0, 1). Volume e tom: fórmulas no cabeçalho do
   sfx_carro.gd (offsets do patch: 0x2c..0x4c tom, 0x50..0x7c volume, com
@@ -534,8 +544,18 @@ fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
   passa o Threshold (subida) → toca com Probability; espera MinRetriggerTime;
   volume (1 − VolumeSpeed·(1 − spd))·Collision·SFX, tom 1.0.
 - MasterSettings: SurfaceVolume 0.5, CollisionVolume 0.8, SFXVolume 1.
-- Não confirmado: unidade das esperas dos grãos (sons.json tick_s = 1 ms),
-  como o 989snd soma volume do som, do tom e ADSR, curva de distância 3D.
+- Grãos do 989snd (som_jogo.gd), pelo BlockSoundHandler reimplementado no
+  jak-project (game/sound/989snd: player.cpp "handlers tick at 240hz",
+  blocksound_handler.cpp, sfxgrain.cpp, loader.cpp ReadGrainV2): a espera
+  (s32 depois do opcode) vale ANTES do grão; contagem = espera do próximo +
+  retorno do grão (RAND_DELAY devolve 0..dado). Opcode = tipo << 24 | 3
+  args s8: RAND_PLAY (25) opções/grãos por opção/anterior (não repete),
+  RAND_PB (27) % da faixa, SET_REGISTER_RAND (31) registrador/mín/máx. Tom:
+  vol s8 (< 0: -1..-4 registrador do som, -5 sorteado), PBLow/PBHigh em
+  +8/+9. Cascalho (Gravel = filhos GRAVELEMENT1 vol 75 + GRAVELEMENT2 127):
+  loop com espera 0..180 ticks (2.65 estalos/s), volume 90..115, ±2
+  semitons. Terra (Dirt): as 2 camadas entram juntas depois de 60 ticks.
+- Não confirmado: curva de distância 3D.
 - Achado: no save state 110 (1ª curva) o PS2 tocava asfalto e o mapa de
   material do remake diz cascalho nas rodas da frente (pendente: o atrito
   também usa esse mapa).

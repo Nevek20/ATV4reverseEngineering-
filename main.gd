@@ -53,6 +53,7 @@ const SPAWN_YAW := -154.9                 # graus, frente = +Z do carro
 
 const Car := preload("res://car.gd")
 const Terrain := preload("res://terrain.gd")
+const SomJogo := preload("res://som_jogo.gd")
 
 var car  # instância de car.gd (sem tipo estático de propósito: métodos próprios do script)
 var cam: Camera3D
@@ -265,6 +266,9 @@ func _process(delta: float) -> void:
 	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s   sujeira %d%%%s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço: embreagem (toque virando e acelerando = Clutch Turn)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC: câmera (%s)   V: próximo carro   Tab: menu de carros   F: girar o modelo   B: volante (%s)   N: som %s   Esc: sair" % [
 		int(kmh), int(kmh / 1.609), car.gear_label(), int(car.rpm), "MANUAL" if car.manual else "AUTO", int(car.sujeira_nivel * 100.0), (" (%s)" % car.sujeira.aviso if car.sujeira and car.sujeira.aviso != "" else ("" if car.sujeira else " (sem assets/fx: rode o fx_jogo)")), car.vehicle_name, ("pneus portados do jogo" if car.use_ported else "pneus antigos") + (", lateral do jogo" if car.lateral_game else ", lateral remendo"), CAM_NAMES[cam_mode], car.volante_estilo if car.sw_malha else "do jogo", ("mudo" if AudioServer.is_bus_mute(0) else (car.som.pasta.get_file() if car.som else "sem loops"))]
 	hud.text += fp
+	var aviso_som: String = SomJogo.aviso()
+	if aviso_som != "":
+		hud.text += "\n" + aviso_som
 	hud.text += "\n\nchão: " + _chao()
 
 

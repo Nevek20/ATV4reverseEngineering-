@@ -84,6 +84,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies
 %GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_ladeira.gd -- 0   :: pneu parado em barranco: som não pode piscar
+%GODOT% --path . --write-movie cascalho.avi --fixed-fps 60 -s res://tests/gravar_cascalho.gd -- 0  :: derrapando no cascalho escuro: trocas Gravel/Dirt e áudio do pneu
 %GODOT% --headless --path . -s res://tests/teste_motor_treme.gd   :: peças e faces do motor que treme nos 12 carros
 :: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
@@ -97,7 +98,7 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 :: checar um script sem abrir o editor
 %GODOT% --headless --path . --check-only --script res://car.gd
 
-:: sons de pneu, suspensão e pouso do jogo -> assets/sfx (wav + sons.json)
+:: sons de pneu, suspensão e pouso do jogo -> assets/sfx (wav + sons.json com o ADSR de cada tom)
 python tools/sfx_jogo.py <unpacked>
 :: textura da fumaça (Sprites/Particles, caixa Dust0), da sujeira (GEN_DIRT_DIRT) e da lama do pneu (UNI_TyreOverlay) -> assets/fx
 python tools/fx_jogo.py <unpacked>
@@ -317,6 +318,17 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   suspensão sai do Collide.bnk (BigSuspension/SmallSuspension) e o pneu do
   SURFACE.bnk, pelo SFX do material da pista. Só FL e RL tocam (+ Screech na
   FL no asfalto). Tom conferido com o SPU (tests/teste_sfx.gd).
+  Programa de grãos = BlockSoundHandler do 989snd (som_jogo.gd; a mesma
+  biblioteca foi reimplementada no jak-project, game/sound/989snd): relógio
+  de 240 Hz, espera de cada grão ANTES dele, RAND_PLAY sem repetir, RAND_PB
+  pela faixa PBLow/PBHigh do tom, SET_REGISTER_RAND (tom com volume < 0 lê
+  o registrador). Antes era 1 ms e espera depois: no cascalho escuro os
+  estalos de pedrinha (GRAVELEMENT1) saíam ~11/s, todos no máximo e no
+  mesmo tom ("barulho bugado"); agora 2.65/s, volume 90-115, ±2 semitons.
+  Envelope do SPU (_env_anda, ADSR de cada tom): parar é key-off (StopSound,
+  0x264f28), a voz desce pelo release (0.17 s na terra e no cascalho) e a
+  terra sobe em ~0.5 s. sons.json sem "versao" 2 = sfx_jogo.py antigo (o HUD
+  avisa).
   Mistura NOSSA por cima (o Matheus achou o pneu rolando cansativo e alto):
   sfx_carro.gd SO_DERRAPANDO (pneu só derrapando, patinando ou travado;
   ROLAGEM = quanto do rolar reto fica) e GANHO_PNEU 0.6. Patinada só conta
