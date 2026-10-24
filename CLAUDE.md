@@ -385,8 +385,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   o aro e o fundo preto saem da malha (APAGAR, _apagar_faces), e no lugar
   vão conta-giros (13 cm, pra não varar o capô), velocímetro (DO_MODELO) e
   3 auxiliares de enfeite (AUX: temperatura que esquenta no 1º minuto, óleo
-  pelo giro, voltagem 12.4/14.1). No Renegade o Matheus não quis
-  auxiliares (as placas lisas do painel ficam). Velocímetro = 1.06 x velocidade pra frente
+  pelo giro, voltagem 12.4/14.1). No Renegade as 3 placas lisas do painel
+  saem e 2 auxiliares vão presos no conjunto, um de cada lado (AUX_CONJUNTO,
+  nos círculos que o Matheus marcou no print). Velocímetro = 1.06 x velocidade pra frente
   (como o do jogo); conta-giros até o limitador + 1000. Telas 2D em
   SubViewport (texto sai certo: base com determinante -1 dentro do espelho).
 

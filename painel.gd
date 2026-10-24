@@ -38,7 +38,10 @@ const REPINTAR := {"BUGGY_04": "_b_2"}              # textura com relógios pint
 # (Inferno: os losangos dos 5 buracos de relógio, aro chassis_comp03 e fundo preto)
 const _BURACOS_INFERNO := [[Vector3(0.01, 1.376, 0.61), 0.1], [Vector3(-0.233, 1.33, 0.593), 0.05],
 	[Vector3(-0.137, 1.33, 0.593), 0.05], [Vector3(0.154, 1.33, 0.593), 0.05], [Vector3(0.254, 1.33, 0.593), 0.05]]
-const APAGAR := {"BUGGY_02": [["chassis_comp03", _BURACOS_INFERNO], ["_black", _BURACOS_INFERNO]]}
+# (Renegade: as 3 placas quadradas lisas do painel, um texel da cadilac_engine)
+const APAGAR := {"BUGGY_02": [["chassis_comp03", _BURACOS_INFERNO], ["_black", _BURACOS_INFERNO]],
+	"BUGGY_10": [["cadilac_engine", [[Vector3(-0.573, 1.338, 0.691), 0.06],
+		[Vector3(-0.669, 1.338, 0.693), 0.06], [Vector3(-0.3, 1.34, 0.692), 0.06]]]]}
 # relógios auxiliares de enfeite (temperatura, óleo, voltagem; o Matheus pediu
 # "que finjam fazer algo") nos buracos livres do Inferno: [tipo, centro, normal, diâmetro]
 const AUX := {
@@ -46,10 +49,16 @@ const AUX := {
 		["oleo", Vector3(-0.138, 1.333, 0.59), Vector3(0.0, 0.34, -0.94), 0.075],
 		["volt", Vector3(0.254, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.075]],
 }
+# auxiliares presos no conjunto (andam com ele): [tipo, posição no plano do
+# conjunto em relação ao centro do conta-giros (m, x direita, y cima), diâmetro].
+# Renegade: nos círculos que o Matheus marcou no print, um de cada lado
+const AUX_CONJUNTO := {
+	"BUGGY_10": [["temp", Vector2(-0.105, 0.038), 0.06], ["oleo", Vector2(0.165, 0.032), 0.06]],
+}
 # ajuste por carro (m, no plano do conjunto): x = pra direita, y = pra cima.
 # Números do Matheus com as teclas 9/0 e -/= (out/2026)
 const AJUSTE := {
-	"BUGGY_10": Vector2(0.0, -0.06),
+	"BUGGY_10": Vector2(-0.01, -0.06),
 	"BUGGY_01": Vector2(0.0, -0.015),
 	"BUGGY_03": Vector2(0.0, -0.03),
 	"BUGGY_05": Vector2(-0.01, -0.02),
@@ -178,6 +187,8 @@ func _conjunto(falta: Array) -> bool:
 	for k in falta:
 		var d: float = {"rpm": d_rpm, "vel": d_vel, "marcha": 0.05, "luz": 0.0}[k]
 		_instrumento(k, lugar[k], n, d, true, conjunto)
+	for a in AUX_CONJUNTO.get(car.vehicle_id, []):
+		_instrumento(a[0], ancora + b.x * a[1].x + b.y * a[1].y, n, a[2], true, conjunto)
 	_suporte(ancora, b, ce - eixo * 0.06)
 	return true
 
