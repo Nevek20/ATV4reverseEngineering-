@@ -324,8 +324,14 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   chapas/travessas e peças grandes. A textura "engie/engine" NÃO serve: é um
   atlas usado no painel, na frente e na gaiola. Conferido com prints
   vermelhos x normais (Sphinx, Phantom, McKenzies, Viper, Hurricane, Trident:
-  só o metal do cofre). Amplitude exagerada (6 mm na lenta) pra aparecer na
-  câmera de corrida (1 px ~ 8 mm a 6 m).
+  só o metal do cofre). Também ficam de fora: lanternas (10 cm dos pontos
+  BRAKE_LIGHT etc.), vigas/tubos retos (até 8 faces e > 30 cm; compridos e
+  finos), chapas deitadas; a gêmea espelhada entra junto (os 2 escapes do
+  Renegade). O que a regra erra vai em motor_treme.gd AJUSTES por carro
+  (Viper: bloco de 8 faces e coletor; Phantom: barra em L do escape), achado
+  com print_tela MOTOR_COR=2 (uma cor por peça, legenda no console,
+  MOTOR_PAGINA=1,2 pras seguintes). Storm (sem EXHAUST) não treme.
+  Vibração 3 mm na lenta, filtrada (6 mm por quadro ficou "tremelento").
 - Volante tremendo (melhoria nossa, car.gd VOLANTE_TREME, _vibracao): no
   jogo nada treme (nem volante, nem mãos, nem motor: varredura do exe e
   vídeo). A força é a do motor pequeno da vibração do CONTROLE (0x202ab8:

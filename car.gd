@@ -828,7 +828,7 @@ func _load_motor_treme() -> void:
 		return
 	motor_treme = preload("res://motor_treme.gd").new()
 	motor_treme.name = "MotorTreme"
-	if motor_treme.separar(body_mi, points):
+	if motor_treme.separar(body_mi, points, vehicle_id):
 		model_root.add_child(motor_treme)
 	else:
 		motor_treme.free()

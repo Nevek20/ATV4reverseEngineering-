@@ -17,7 +17,8 @@ extends Node3D
 ## de 40 cm; ou até 8 faces e mais de 30 cm), chapas deitadas (menos de 25 cm
 ## de altura e mais de 0.3 m²). Escape: as peças a menos de 12 cm dos pontos EXHAUST,
 ## atrás do banco, até 2.2 m (os canos compridos que saem do motor).
-## A gêmea espelhada de uma peça que treme também treme.
+## A gêmea espelhada de uma peça que treme também treme. AJUSTES por carro
+## corrigem o que a regra erra (achado nos prints com MOTOR_COR=2).
 ## Carro sem ponto EXHAUST (Storm, fechado, motor escondido) não treme.
 ## Movimento (escolha nossa): vibração sorteada e filtrada, mais forte na
 ## lenta (coxim de borracha) e menor no giro alto, e o balanço do torque: o
@@ -33,6 +34,17 @@ const BALANCO_GRAUS := 3.0        # inclinação com carga cheia
 const BALANCO_HZ := 3.0           # frequência da mola do coxim
 const BALANCO_AMORT := 0.25       # amortecimento (fração do crítico)
 
+# ajustes por carro (conferidos nos prints com MOTOR_COR=2): peça pelo centro
+# da caixa dela (frame do modelo, 3 cm de folga). "motor" entra, "fica" sai
+const AJUSTES := {
+	# o bloco é uma caixa de 8 faces com as polias na textura; o coletor da
+	# direita é mais comprido que o da esquerda; travessa fina atrás
+	"BUGGY_09": {"motor": [Vector3(0.04, 1.01, -2.18), Vector3(0.26, 0.93, -2.24)],
+		"fica": [Vector3(0.00, 0.91, -2.88)]},
+	# barra traseira em L e os dois suportes dela: encostam no ponto do escape
+	"BUGGY_06": {"fica": [Vector3(0.00, 1.07, -2.99), Vector3(-0.10, 1.08, -2.98), Vector3(0.10, 1.08, -2.98)]},
+}
+
 var malha: MeshInstance3D         # peças do motor
 var malha_escape: MeshInstance3D  # canos do escape (tremem junto)
 var centro := Vector3.ZERO        # centro do motor (frame do modelo)
@@ -45,7 +57,7 @@ var _vib := Vector3.ZERO
 
 ## tira as peças do cofre da malha da carroceria (mi) e monta a malha delas
 ## aqui (filho do mesmo pai, mesma posição). false = nada pra tremer
-func separar(mi: MeshInstance3D, pontos: Dictionary) -> bool:
+func separar(mi: MeshInstance3D, pontos: Dictionary, id := "") -> bool:
 	if not (mi.mesh is ArrayMesh) or not pontos.has("ARSE") or not pontos.has("WHEEL_REAR_LEFT") \
 			or not pontos.has("EXHAUST"):
 		return false
@@ -102,9 +114,17 @@ func separar(mi: MeshInstance3D, pontos: Dictionary) -> bool:
 	var sai := {}
 	var c_lo := Vector3.INF
 	var c_hi := -Vector3.INF
+	var ajuste: Dictionary = AJUSTES.get(id, {})
 	for r in info:
 		var p: Dictionary = info[r]
 		var tipo := _tipo(p, lo, hi)
+		var c: Vector3 = (p.lo + p.hi) * 0.5
+		for q in ajuste.get("motor", []):
+			if c.distance_to(q) < 0.03:
+				tipo = 1
+		for q in ajuste.get("fica", []):
+			if c.distance_to(q) < 0.03:
+				tipo = 0
 		if tipo == 0:
 			continue
 		sai[r] = tipo
