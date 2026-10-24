@@ -36,6 +36,7 @@ motor_som.gd         som do motor: loops do Engine Simulator por rpm e carga (me
 sfx_carro.gd         som de pneu, suspensão e pouso do jogo (portado do exe); som_jogo.gd toca os sons 989snd
 fumaca.gd            fumaça do escapamento (melhoria nossa com o efeito ExhaustSmokeTrail que o jogo não usa)
 sujeira.gd           sujeira do jogo na pintura e lama nas rodas, pelo 2º UV (_camada.obj); nível e cor vêm do car.gd
+painel.gd            painel funcional (melhoria nossa): ponteiros, marcha e luz de troca, amador x PRO
 motor_treme.gd       motor e escape tremendo (melhoria nossa): separa as peças do cofre da carroceria
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
@@ -100,7 +101,7 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 python tools/sfx_jogo.py <unpacked>
 :: textura da fumaça (Sprites/Particles, caixa Dust0), da sujeira (GEN_DIRT_DIRT) e da lama do pneu (UNI_TyreOverlay) -> assets/fx
 python tools/fx_jogo.py <unpacked>
-:: + print_tela com SUJEIRA=0.8 força o nível da sujeira
+:: + print_tela com SUJEIRA=0.8 força o nível da sujeira, PAINEL=6900,137 fixa rpm e km/h no painel
 
 :: piloto (malha, esqueleto, animação da direção, textura) -> assets/piloto
 python tools/piloto.py <unpacked>
@@ -367,6 +368,20 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   sem o fx_jogo novo não há lama_pneu.png e o pneu não suja (o HUD avisa).
   No RX01 (taxa 0.2) a lama do pneu cresce devagar e quase só patinando
   (x10) e some no asfalto (alfa 0); na lama do Hinter Valley a taxa é 3.0.
+- Painel funcional (melhoria nossa, car.gd PAINEL, painel.gd): no jogo os
+  relógios são textura parada e 9 dos 12 buggies não têm. Amador (Level do
+  vehicles.xml: Mosquito, Inferno, Trident, Sphinx) = conta-giros e
+  velocímetro de ponteiro, fundo branco; PRO = os dois + marcha digital +
+  luz de troca (5 LEDs de 85% ao rpm de troca, piscam no limitador), fundo
+  preto (escolha do Matheus). Por cima dos que o modelo tem (DO_MODELO):
+  Renegade (placa cadilac_clock_index), Sphinx (2 relógios pintados do
+  meio da chapa b_2, achados pelo UV; o da frente fica atrás do X do
+  volante), Inferno (buraco grande do meio + pequeno da direita). O resto
+  vai num conjunto preso na coluna, na linha do olho pela metade de cima do
+  aro, subindo até caber na câmera do piloto (McKenzies). Velocímetro = 1.06
+  x velocidade pra frente (como o do jogo); conta-giros até o limitador +
+  1000. Telas 2D em SubViewport (texto sai certo: base com determinante -1
+  dentro do espelho).
 
 ## Pendente / ideias
 

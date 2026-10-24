@@ -136,6 +136,9 @@ var body_mi: MeshInstance3D = null
 # sujeira do jogo (0x223e68, _sujeira_passo) e desenho dela (sujeira.gd, com a
 # textura GEN_DIRT_DIRT em assets/fx: tools/fx_jogo.py). false = carro limpo
 const SUJEIRA := true
+# painel funcional (melhoria nossa, painel.gd): ponteiros, marcha e luz de troca
+const PAINEL := true
+var painel: Node3D = null
 var sujeira_nivel := 0.0      # objeto da sujeira (veículo+0xa80) +0xc0, 0..1
 var sujeira = null
 # lama das rodas (0x224418/0x2242d0, mesmo objeto +0x10..+0x4c): vira a
@@ -324,6 +327,7 @@ func _ready() -> void:
 	_load_model()                 # antes da física: define model_offset
 	_load_physics()
 	_load_piloto()                # depois da física: precisa do ponto ARSE
+	_load_painel()
 	_load_motor_treme()
 	_load_som()
 	_load_sfx()
@@ -922,6 +926,18 @@ func _load_fumaca() -> void:
 		fumaca = null
 
 
+func _load_painel() -> void:
+	if not PAINEL:
+		return
+	painel = preload("res://painel.gd").new()
+	painel.name = "Painel"
+	painel.position = model_offset
+	model_root.add_child(painel)
+	if not painel.montar(self):
+		painel.queue_free()
+		painel = null
+
+
 func _load_sujeira() -> void:
 	if not SUJEIRA:
 		return
@@ -971,6 +987,8 @@ func _process(delta: float) -> void:
 		motor_treme.atualizar(rpm, som_carga, delta)
 	if sujeira:
 		sujeira.atualizar(sujeira_nivel, roda_cor)
+	if painel:
+		painel.atualizar(delta)
 
 
 func _load_steering_wheel() -> void:
