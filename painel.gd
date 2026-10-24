@@ -14,7 +14,9 @@ extends Node3D
 ## Os relógios do modelo saem pra o nosso não ficar em cima de outro
 ## (pedido do Matheus): a placa do relógio do Renegade some e os relógios
 ## pintados da chapa do Sphinx são repintados com o fundo da chapa. O
-## Inferno tem buracos de relógio vazios: os nossos vão neles (DO_MODELO).
+## Inferno tem buracos de relógio vazios: os nossos vão neles (DO_MODELO) e
+## os 3 que sobram ganham auxiliares de enfeite (AUX: temperatura, óleo,
+## voltagem), como as 3 placas quadradas do painel do Renegade (APAGAR).
 ##
 ## Valores: rpm do motor (car.rpm), velocímetro como o do jogo (1.06 x a
 ## velocidade pra frente, tests/teste_entrada.gd), marcha do car.gear_label().
@@ -28,18 +30,38 @@ const DO_MODELO := {
 	# o grande do meio e o pequeno à direita dele (o da esquerda fica atrás da
 	# mão); 13 cm no grande pra não varar o capô (o buraco tem 15.6)
 	"BUGGY_02": {"rpm": [Vector3(0.01, 1.377, 0.606), Vector3(0.0, 0.34, -0.94), 0.13],
-		"vel": [Vector3(0.154, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.07]},
+		"vel": [Vector3(0.154, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.075]},
 }
 const ESCONDER := {"BUGGY_10": "cadilac_clock"}     # textura da placa do relógio
 const REPINTAR := {"BUGGY_04": "_b_2"}              # textura com relógios pintados
-# ajuste por carro (m, no plano do conjunto): x = pra direita, y = pra cima.
-# Do teste do Matheus (out/2026): "abaixar um pouco" no Mosquito, Trident e Kraken
-const AJUSTE := {
-	"BUGGY_01": Vector2(0.0, -0.015),
-	"BUGGY_03": Vector2(0.0, -0.015),
-	"BUGGY_07": Vector2(0.0, -0.015),
+# placas quadradas no painel (cor lisa, um texel da textura): saem da malha
+# pra dar lugar aos auxiliares. [textura, centros, raio]
+const APAGAR := {"BUGGY_10": ["cadilac_engine", [Vector3(-0.573, 1.338, 0.691),
+	Vector3(-0.669, 1.338, 0.693), Vector3(-0.3, 1.34, 0.692)], 0.06]}
+# relógios auxiliares de enfeite (temperatura, óleo, voltagem; o Matheus pediu
+# "que finjam fazer algo") nos buracos livres do Inferno e no lugar das placas
+# do Renegade: [tipo, centro, normal, diâmetro]
+const AUX := {
+	"BUGGY_02": [["temp", Vector3(-0.233, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.075],
+		["oleo", Vector3(-0.138, 1.333, 0.59), Vector3(0.0, 0.34, -0.94), 0.075],
+		["volt", Vector3(0.254, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.075]],
+	"BUGGY_10": [["volt", Vector3(-0.669, 1.338, 0.693), Vector3(0.0, 0.62, -0.78), 0.065],
+		["oleo", Vector3(-0.573, 1.338, 0.691), Vector3(0.0, 0.62, -0.78), 0.085],
+		["temp", Vector3(-0.3, 1.34, 0.692), Vector3(0.0, 0.62, -0.78), 0.085]],
 }
-const LADO := ["BUGGY_06"]    # volante tampa o conjunto: do lado direito dele
+# ajuste por carro (m, no plano do conjunto): x = pra direita, y = pra cima.
+# Números do Matheus com as teclas 9/0 e -/= (out/2026)
+const AJUSTE := {
+	"BUGGY_10": Vector2(0.0, -0.06),
+	"BUGGY_01": Vector2(0.0, -0.015),
+	"BUGGY_03": Vector2(0.0, -0.03),
+	"BUGGY_05": Vector2(-0.01, -0.02),
+	"BUGGY_07": Vector2(-0.01, -0.05),
+	"BUGGY_09": Vector2(0.0, 0.01),
+}
+# o volante tampa o conjunto: do lado direito dele (Phantom; McKenzies e
+# Hurricane pedidos pelo Matheus; Storm em teste)
+const LADO := ["BUGGY_06", "BUGGY_08", "BUGGY_11", "BUGGY_12"]
 const NA_FRENTE := 0.004      # nosso mostrador acima do buraco do modelo (m)
 const DIST := 0.13            # conjunto: além do aro, na linha do olho (m)
 const ALTURA_ARO := 0.5       # ponto do aro que o olho mira (x raio, pra cima)
@@ -63,12 +85,11 @@ var t := 0.0
 var fixo := Vector2(-1, -1)   # prints: PAINEL="rpm,km/h" fixa os ponteiros
 var ajuste := Vector2.ZERO    # AJUSTE + teclas
 var base_ajuste := Basis()
-var origem := Vector3.ZERO
+var conjunto: Node3D = null   # o que as teclas movem (o do modelo fica)
 
 
 func montar(c) -> bool:
 	car = c
-	origem = position
 	pro = _nivel(car.vehicle_id) == "Pro"
 	if OS.has_environment("PAINEL"):
 		var f := OS.get_environment("PAINEL").split(",")
@@ -86,18 +107,20 @@ func montar(c) -> bool:
 	for k in tem:
 		if k in tipos:
 			var m: Array = tem[k]
-			_instrumento(k, m[0] + m[1].normalized() * NA_FRENTE, m[1], m[2], false)
-			base_ajuste = _base(m[1])
+			_instrumento(k, m[0] + m[1].normalized() * NA_FRENTE, m[1], m[2], false, self)
+	for a in AUX.get(car.vehicle_id, []):
+		_instrumento(a[0], a[1] + a[2].normalized() * NA_FRENTE, a[2], a[3], false, self)
 	if not falta.is_empty() and not _conjunto(falta) and tem.is_empty():
 		return false
 	mover(AJUSTE.get(car.vehicle_id, Vector2.ZERO))
 	return true
 
 
-## desloca o painel no plano dele (teclas 9/0 e -/= na câmera do piloto)
+## desloca o conjunto no plano dele (teclas 9/0 e -/= na câmera do piloto)
 func mover(d: Vector2) -> void:
 	ajuste += d
-	position = origem + base_ajuste.x * ajuste.x + base_ajuste.y * ajuste.y
+	if conjunto:
+		conjunto.position = base_ajuste.x * ajuste.x + base_ajuste.y * ajuste.y
 
 
 ## conjunto atrás do volante com o que falta
@@ -140,6 +163,9 @@ func _conjunto(falta: Array) -> bool:
 		sobe += 0.01
 	var b := _base(n)
 	base_ajuste = b
+	conjunto = Node3D.new()
+	conjunto.name = "Conjunto"
+	add_child(conjunto)
 	var lugar := {}
 	if pro:
 		lugar.rpm = ancora
@@ -151,7 +177,7 @@ func _conjunto(falta: Array) -> bool:
 		lugar.vel = ancora + b.x * (d_vel * 0.5 + GAP * 0.5)
 	for k in falta:
 		var d: float = {"rpm": d_rpm, "vel": d_vel, "marcha": 0.05, "luz": 0.0}[k]
-		_instrumento(k, lugar[k], n, d, true)
+		_instrumento(k, lugar[k], n, d, true, conjunto)
 	_suporte(ancora, b, ce - eixo * 0.06)
 	return true
 
@@ -175,6 +201,45 @@ func _tirar_do_modelo() -> void:
 			var m2: BaseMaterial3D = m.duplicate()
 			m2.albedo_texture = _sem_relogios(m.albedo_texture)
 			mi.set_surface_override_material(s, m2)
+	if APAGAR.has(car.vehicle_id):
+		var ap: Array = APAGAR[car.vehicle_id]
+		_apagar_faces(mi, ap[0], ap[1], ap[2])
+
+
+## tira da malha os triângulos de uma textura perto dos pontos (frame do modelo)
+static func _apagar_faces(mi: MeshInstance3D, tex: String, pontos: Array, raio: float) -> void:
+	var velha: Mesh = mi.mesh
+	var nova := ArrayMesh.new()
+	var mats := []
+	for s in velha.get_surface_count():
+		var arr := velha.surface_get_arrays(s)
+		var m: Material = mi.get_active_material(s)
+		var tp := ""
+		if m is BaseMaterial3D and m.albedo_texture:
+			tp = m.albedo_texture.resource_path
+		if tex in tp:
+			var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+			var ix: PackedInt32Array = arr[Mesh.ARRAY_INDEX]
+			if ix.is_empty():
+				ix = PackedInt32Array(range(vs.size()))
+			var fica := PackedInt32Array()
+			for t in range(0, ix.size(), 3):
+				var c := (vs[ix[t]] + vs[ix[t + 1]] + vs[ix[t + 2]]) / 3.0
+				var longe := true
+				for p in pontos:
+					if c.distance_to(p) < raio:
+						longe = false
+						break
+				if longe:
+					fica.append_array([ix[t], ix[t + 1], ix[t + 2]])
+			if fica.is_empty():
+				continue
+			arr[Mesh.ARRAY_INDEX] = fica
+		nova.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+		mats.append(m)
+	mi.mesh = nova
+	for s in mats.size():
+		mi.set_surface_override_material(s, mats[s])
 
 
 ## pinta os mostradores (manchas claras grandes) com a cor do fundo da chapa;
@@ -236,9 +301,24 @@ func atualizar(delta: float) -> void:
 	if fixo.x >= 0.0:
 		v_f = fixo.y
 		k = 1.0
+	var carga := clampf(rpm / car.P.get("lim_on", 8000.0), 0.0, 1.0)
+	var k_aux := 1.0 if fixo.x >= 0.0 else 1.0 - exp(-delta / 0.6)
 	for m in mostradores:
-		var alvo: float = rpm / 1000.0 if m.tipo == "rpm" else absf(v_f)
-		var novo: float = m.valor + (alvo - m.valor) * k
+		var alvo: float = absf(v_f)
+		var kk := k
+		match m.tipo:
+			"rpm":
+				alvo = rpm / 1000.0
+			"temp":   # esquenta no primeiro minuto e sobe um pouco com o giro
+				alvo = 60.0 + 30.0 * (1.0 - exp(-t / 60.0)) + 8.0 * carga
+				kk = k_aux
+			"oleo":   # pressão pelo giro
+				alvo = 20.0 + 60.0 * carga
+				kk = k_aux
+			"volt":   # alternador carregando acima da lenta
+				alvo = 12.4 if rpm < 1100.0 else 14.1
+				kk = k_aux
+		var novo: float = m.valor + (alvo - m.valor) * kk
 		if absf(novo - m.valor) > 0.0005 * m.maximo:
 			m.valor = novo
 			m.queue_redraw()
@@ -267,11 +347,11 @@ static func _base(n: Vector3) -> Basis:
 	return Basis(x, y, z)
 
 
-func _instrumento(tipo: String, p: Vector3, n: Vector3, d: float, caixa: bool) -> void:
+func _instrumento(tipo: String, p: Vector3, n: Vector3, d: float, caixa: bool, pai: Node3D) -> void:
 	var no := Node3D.new()
 	no.name = "Painel_" + tipo
 	no.transform = Transform3D(_base(n), p)
-	add_child(no)
+	pai.add_child(no)
 	if tipo == "luz":
 		_leds(no)
 		return
@@ -286,6 +366,23 @@ func _instrumento(tipo: String, p: Vector3, n: Vector3, d: float, caixa: bool) -
 		m.tipo = tipo
 		m.maximo = rpm_max if tipo == "rpm" else vel_max
 		m.vermelho = car.P.get("lim_on", 8000.0) / 1000.0 if tipo == "rpm" else -1.0
+		match tipo:
+			"temp":
+				m.minimo = 50.0
+				m.maximo = 130.0
+				m.vermelho = 115.0
+				m.marcas = [[50.0, "C"], [90.0, "90"], [130.0, "H"]]
+				m.rotulo = "TEMP °C"
+			"oleo":
+				m.maximo = 100.0
+				m.marcas = [[0.0, "0"], [50.0, "50"], [100.0, "100"]]
+				m.rotulo = "ÓLEO psi"
+			"volt":
+				m.minimo = 8.0
+				m.maximo = 16.0
+				m.marcas = [[8.0, "8"], [12.0, "12"], [16.0, "16"]]
+				m.rotulo = "VOLTS"
+		m.valor = m.minimo
 		m.preto = pro
 		tela = m
 		mostradores.append(m)
@@ -382,7 +479,7 @@ func _suporte(ancora: Vector3, b: Basis, coluna: Vector3) -> void:
 	var x := y.cross(Vector3.FORWARD if absf(y.dot(Vector3.FORWARD)) < 0.9 else Vector3.RIGHT).normalized()
 	h.transform = Transform3D(Basis(x, y, x.cross(y)), de + v * 0.5)
 	h.material_override = _preto()
-	add_child(h)
+	conjunto.add_child(h)
 
 
 static func _metal(escuro: bool) -> StandardMaterial3D:
@@ -418,13 +515,16 @@ static func _nivel(id: String) -> String:
 ## do relógio até o máximo embaixo à direita
 class Mostrador extends Node2D:
 	var tipo := "rpm"
+	var minimo := 0.0
 	var maximo := 9.0
 	var vermelho := -1.0
 	var preto := false
 	var valor := 0.0
+	var marcas := []              # auxiliares: [valor, texto]
+	var rotulo := ""
 
 	func _ang(v: float) -> float:
-		return deg_to_rad(135.0 + 270.0 * clampf(v / maximo, 0.0, 1.04))
+		return deg_to_rad(135.0 + 270.0 * clampf((v - minimo) / (maximo - minimo), -0.02, 1.04))
 
 	func _draw() -> void:
 		var c := Vector2(128, 128)
@@ -435,6 +535,18 @@ class Mostrador extends Node2D:
 		draw_circle(c, r, fundo)
 		if vermelho > 0.0:
 			draw_arc(c, r - 14, _ang(vermelho), _ang(maximo), 32, Color(0.85, 0.08, 0.05), 12.0)
+		if not marcas.is_empty():
+			# auxiliar: 8 traços, texto só nas marcas, letras maiores
+			for i in 9:
+				var a := _ang(minimo + (maximo - minimo) * i / 8.0)
+				var dirv := Vector2(cos(a), sin(a))
+				draw_line(c + dirv * (r - (24 if i % 2 == 0 else 14)), c + dirv * (r - 4), tinta, 5.0 if i % 2 == 0 else 3.0)
+			for mk in marcas:
+				var dirv := Vector2(cos(_ang(mk[0])), sin(_ang(mk[0])))
+				draw_string(fonte, c + dirv * (r - 50) + Vector2(-30, 12), mk[1], HORIZONTAL_ALIGNMENT_CENTER, 60, 32, tinta)
+			draw_string(fonte, c + Vector2(-70, 66), rotulo, HORIZONTAL_ALIGNMENT_CENTER, 140, 24, tinta)
+			_ponteiro(c, r)
+			return
 		var passo := 1.0 if tipo == "rpm" else (20.0 if maximo <= 200.0 else 40.0)
 		var n := int(round(maximo / passo))
 		for i in n * 2 + 1:
@@ -449,6 +561,9 @@ class Mostrador extends Node2D:
 				draw_string(fonte, p + Vector2(-24, 9), txt, HORIZONTAL_ALIGNMENT_CENTER, 48, 24, tinta)
 		draw_string(fonte, c + Vector2(-60, 52), "x1000 RPM" if tipo == "rpm" else "km/h",
 			HORIZONTAL_ALIGNMENT_CENTER, 120, 18, tinta)
+		_ponteiro(c, r)
+
+	func _ponteiro(c: Vector2, r: float) -> void:
 		var a := _ang(valor)
 		var d := Vector2(cos(a), sin(a))
 		var lado := Vector2(-d.y, d.x)

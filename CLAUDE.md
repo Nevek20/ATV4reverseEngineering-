@@ -373,16 +373,20 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   vehicles.xml: Mosquito, Inferno, Trident, Sphinx) = conta-giros e
   velocímetro de ponteiro, fundo branco; PRO = os dois + marcha digital +
   luz de troca (5 LEDs de 85% ao rpm de troca, piscam no limitador), fundo
-  preto (escolha do Matheus). Conjunto preso na coluna, atrás do volante: o
-  topo logo abaixo da borda de dentro do aro como o olho da câmera do piloto
-  vê, sem sair por baixo da tela; se não cabe (Phantom), do lado direito do
-  volante. AJUSTE por carro (painel.gd) com os números que o Matheus acha
-  na câmera do piloto: 9/0 desce/sobe, -/= lado (o HUD mostra). Os relógios
-  do modelo saem pra o nosso não ficar em cima de outro (pedido dele): a
-  placa cadilac_clock do Renegade some e os relógios pintados da chapa b_2
-  do Sphinx são repintados com o fundo (painel.gd _sem_relogios). O Inferno
-  tem buracos de relógio vazios: os nossos vão neles (DO_MODELO, 13 cm no
-  grande pra não varar o capô). Velocímetro = 1.06 x velocidade pra frente
+  preto (escolha do Matheus). Conjunto preso na coluna, atrás do volante, na
+  linha do olho pela metade de cima do aro (sobe até caber na câmera do
+  piloto); LADO = do lado direito do volante (Phantom, McKenzies, Hurricane,
+  Storm: o volante tampava). AJUSTE por carro = números do Matheus com 9/0
+  (desce/sobe) e -/= (lado) na câmera do piloto (o HUD mostra; só o
+  conjunto mexe). Os relógios do modelo saem pra o nosso não ficar em cima
+  de outro (pedido dele): a placa cadilac_clock do Renegade some, os
+  relógios pintados da chapa b_2 do Sphinx são repintados com o fundo
+  (_sem_relogios) e as 3 placas quadradas lisas do painel do Renegade saem
+  da malha (APAGAR, _apagar_faces). O Inferno tem 5 buracos de relógio
+  vazios: conta-giros (13 cm, pra não varar o capô) e velocímetro neles
+  (DO_MODELO); nos 3 que sobram e no lugar das placas do Renegade vão
+  auxiliares de enfeite (AUX: temperatura que esquenta no 1º minuto, óleo
+  pelo giro, voltagem 12.4/14.1). Velocímetro = 1.06 x velocidade pra frente
   (como o do jogo); conta-giros até o limitador + 1000. Telas 2D em
   SubViewport (texto sai certo: base com determinante -1 dentro do espelho).
 
