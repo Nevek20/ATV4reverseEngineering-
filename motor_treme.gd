@@ -13,8 +13,11 @@ extends Node3D
 ## sem textura), luzes ("light" e peças a menos de 10 cm dos pontos
 ## BRAKE_LIGHT/REVERSE_LIGHT/HEAD_LIGHT: as lanternas mexiam), chapas e
 ## travessas (espessura < 8 cm e mais de 80 cm), peças grandes (mais de 300
-## faces ou 1.6 m). Escape: as peças a menos de 12 cm dos pontos EXHAUST,
+## faces ou 1.6 m), vigas e tubos (até 30 faces, compridos 3x a largura e mais
+## de 40 cm; ou até 8 faces e mais de 30 cm), chapas deitadas (menos de 25 cm
+## de altura e mais de 0.3 m²). Escape: as peças a menos de 12 cm dos pontos EXHAUST,
 ## atrás do banco, até 2.2 m (os canos compridos que saem do motor).
+## A gêmea espelhada de uma peça que treme também treme.
 ## Carro sem ponto EXHAUST (Storm, fechado, motor escondido) não treme.
 ## Movimento (escolha nossa): vibração sorteada e filtrada, mais forte na
 ## lenta (coxim de borracha) e menor no giro alto, e o balanço do torque: o
@@ -106,9 +109,31 @@ func separar(mi: MeshInstance3D, pontos: Dictionary) -> bool:
 			continue
 		sai[r] = tipo
 		pecas += 1
+		if OS.has_environment("MOTOR_LISTA"):
+			var d: Vector3 = p.hi - p.lo
+			print("  %s %3d faces %-26s tam %.2f %.2f %.2f centro (%.2f, %.2f, %.2f) esc %.2f luz %.2f" % [
+				["", "MOTOR ", "ESCAPE"][tipo], p.n, _material(p), d.x, d.y, d.z,
+				(p.lo.x + p.hi.x) / 2, (p.lo.y + p.hi.y) / 2, (p.lo.z + p.hi.z) / 2, p.d_esc, p.d_luz])
 		if tipo == 1:
 			c_lo = c_lo.min(p.lo)
 			c_hi = c_hi.max(p.hi)
+	# a gêmea do outro lado (mesmas faces e tamanho, centro com x trocado)
+	# treme junto: no Renegade só um dos escapes passava no limite de 12 cm
+	for r in info:
+		if sai.has(r):
+			continue
+		var p: Dictionary = info[r]
+		if _proibido(_material(p)) or p.d_luz < 0.10:
+			continue
+		var c: Vector3 = (p.lo + p.hi) * 0.5
+		for r2 in sai.keys():
+			var q: Dictionary = info[r2]
+			var c2: Vector3 = (q.lo + q.hi) * 0.5
+			if q.n == p.n and absf(c.x + c2.x) < 0.02 and absf(c.y - c2.y) < 0.02 and absf(c.z - c2.z) < 0.02 \
+					and ((p.hi - p.lo) - (q.hi - q.lo)).length() < 0.03:
+				sai[r] = sai[r2]
+				pecas += 1
+				break
 	if not c_lo.is_finite():
 		return false
 	centro = (c_lo + c_hi) * 0.5
@@ -142,8 +167,46 @@ func separar(mi: MeshInstance3D, pontos: Dictionary) -> bool:
 		mi.set_surface_override_material(s, mats[0][s])
 	malha = _instancia("Motor", malhas[1], mats[1], Color(1, 0, 0))
 	malha_escape = _instancia("Escape", malhas[2], mats[2], Color(0, 0.3, 1))
+	if OS.get_environment("MOTOR_COR") == "2":
+		_cores_por_peca(tri, arrs, pai, sai, info)
 	position = mi.position
 	return true
+
+
+## conferência (MOTOR_COR=2): cada peça que treme numa cor, com legenda no console
+func _cores_por_peca(tri: Array, arrs: Array, pai: Dictionary, sai: Dictionary, info: Dictionary) -> void:
+	const CORES := [Color(1, 0, 0), Color(0, 0.8, 0), Color(0, 0.3, 1), Color(1, 1, 0), Color(1, 0, 1),
+		Color(0, 1, 1), Color(1, 0.5, 0), Color(0.5, 0, 1), Color(0.6, 0.3, 0.1), Color(1, 1, 1), Color(0.1, 0.1, 0.1), Color(1, 0.6, 0.7)]
+	const NOMES := ["vermelho", "verde", "azul", "amarelo", "magenta", "ciano", "laranja", "roxo", "marrom", "branco", "preto", "rosa"]
+	for m in [malha, malha_escape]:
+		if m:
+			m.visible = false
+	var k := -1
+	var pag := int(OS.get_environment("MOTOR_PAGINA")) if OS.has_environment("MOTOR_PAGINA") else 0
+	for r in sai:
+		k += 1
+		if k < pag * CORES.size() or k >= (pag + 1) * CORES.size():
+			continue
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for t in tri:
+			if _raiz(pai, t[4]) != r:
+				continue
+			var v: PackedVector3Array = arrs[t[0]][Mesh.ARRAY_VERTEX]
+			for j in 3:
+				st.add_vertex(v[t[1 + j]])
+		st.generate_normals()
+		var mi := MeshInstance3D.new()
+		mi.mesh = st.commit()
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = CORES[k % CORES.size()]
+		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		mi.material_override = mat
+		add_child(mi)
+		var p: Dictionary = info[r]
+		var c: Vector3 = (p.lo + p.hi) * 0.5
+		print("  peça %2d %-8s %3d faces %-24s centro (%.2f, %.2f, %.2f) tam (%.2f, %.2f, %.2f)%s" % [k, NOMES[k % NOMES.size()],
+			p.n, _material(p), c.x, c.y, c.z, p.hi.x - p.lo.x, p.hi.y - p.lo.y, p.hi.z - p.lo.z, ""])
 
 
 ## conferência (print_tela com MOTOR_COR=1): motor vermelho, escape azul
@@ -183,6 +246,17 @@ static func _tipo(p: Dictionary, lo: Vector3, hi: Vector3) -> int:
 	var d: Vector3 = p.hi - p.lo
 	var dims := [d.x, d.y, d.z]
 	dims.sort()
+	# vigas e tubos da estrutura: compridos e finos, com poucas faces (no
+	# Bulldog e no Phantom as vigas de sustentação do motor tremiam)
+	if p.n <= 30 and dims[2] >= 0.4 and dims[2] >= 3.0 * dims[1]:
+		return 0
+	# tubo reto ou chapa simples (até 8 faces e mais de 30 cm): os triângulos
+	# laterais e as diagonais do Trident, os montantes do Bulldog
+	if p.n <= 8 and dims[2] >= 0.3:
+		return 0
+	# chapa deitada (tampa do cofre do Phantom): baixa e larga
+	if d.y < 0.25 and d.x * d.z > 0.3:
+		return 0
 	var no_cofre := true
 	for k in 3:
 		if p.lo[k] < lo[k] or p.hi[k] > hi[k]:

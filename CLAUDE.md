@@ -81,6 +81,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
 %GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies
 %GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states
+%GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_ladeira.gd -- 0   :: pneu parado em barranco: som não pode piscar
 %GODOT% --headless --path . -s res://tests/teste_motor_treme.gd   :: peças e faces do motor que treme nos 12 carros
 :: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
@@ -305,6 +306,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   suspensão sai do Collide.bnk (BigSuspension/SmallSuspension) e o pneu do
   SURFACE.bnk, pelo SFX do material da pista. Só FL e RL tocam (+ Screech na
   FL no asfalto). Tom conferido com o SPU (tests/teste_sfx.gd).
+  Mistura NOSSA por cima (o Matheus achou o pneu rolando cansativo e alto):
+  sfx_carro.gd SO_DERRAPANDO (pneu só derrapando, patinando ou travado;
+  ROLAGEM = quanto do rolar reto fica) e GANHO_PNEU 0.6. Patinada só conta
+  com o pneu escorregando > 1 m/s (PATINA_MIN): parado num barranco a
+  patinada medida divide por quase zero e o som piscava (teste_ladeira).
 - Fumaça do escapamento (melhoria nossa, car.gd FUMACA, fumaca.gd): o jogo
   NÃO solta fumaça. O efeito ExhaustSmokeTrail (xml 01416) e os pontos
   EXHAUST/EXHAUST2 existem, mas o exe não lê nenhum (sem cBehaviour*/
