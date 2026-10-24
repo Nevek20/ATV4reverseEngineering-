@@ -101,7 +101,8 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 python tools/sfx_jogo.py <unpacked>
 :: textura da fumaça (Sprites/Particles, caixa Dust0), da sujeira (GEN_DIRT_DIRT) e da lama do pneu (UNI_TyreOverlay) -> assets/fx
 python tools/fx_jogo.py <unpacked>
-:: + print_tela com SUJEIRA=0.8 força o nível da sujeira, PAINEL=6900,137 fixa rpm e km/h no painel
+:: + print_tela com SUJEIRA=0.8 força o nível da sujeira, PAINEL=6900,137 fixa rpm e km/h no painel,
+::   SEM_PAINEL=1 esconde o nosso (pra ver o que sobrou do modelo)
 
 :: piloto (malha, esqueleto, animação da direção, textura) -> assets/piloto
 python tools/piloto.py <unpacked>
@@ -385,10 +386,12 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   o aro e o fundo preto saem da malha (APAGAR, _apagar_faces), e no lugar
   vão conta-giros (13 cm, pra não varar o capô), velocímetro (DO_MODELO) e
   3 auxiliares de enfeite (AUX: temperatura que esquenta no 1º minuto, óleo
-  pelo giro, voltagem 12.4/14.1). No Renegade as 3 placas lisas do painel
-  saem e 2 auxiliares vão presos no conjunto, um de cada lado (AUX_CONJUNTO,
-  nos círculos que o Matheus marcou no print). Velocímetro = 1.06 x velocidade pra frente
-  (como o do jogo); conta-giros até o limitador + 1000. Telas 2D em
+  pelo giro, voltagem 12.4/14.1). No Renegade as 3 placas lisas do painel,
+  as caixas pretas atrás delas e o "V" embaixo do volante (2 barras sem
+  textura da coluna até o painel; APAGAR com textura "") saem e 2
+  auxiliares vão presos no conjunto, um de cada lado (AUX_CONJUNTO, nos
+  círculos que o Matheus marcou no print). Velocímetro = 1.06 x velocidade
+  pra frente (como o do jogo); conta-giros até o limitador + 1000. Telas 2D em
   SubViewport (texto sai certo: base com determinante -1 dentro do espelho).
 
 ## Pendente / ideias

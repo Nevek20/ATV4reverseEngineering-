@@ -38,10 +38,16 @@ const REPINTAR := {"BUGGY_04": "_b_2"}              # textura com relógios pint
 # (Inferno: os losangos dos 5 buracos de relógio, aro chassis_comp03 e fundo preto)
 const _BURACOS_INFERNO := [[Vector3(0.01, 1.376, 0.61), 0.1], [Vector3(-0.233, 1.33, 0.593), 0.05],
 	[Vector3(-0.137, 1.33, 0.593), 0.05], [Vector3(0.154, 1.33, 0.593), 0.05], [Vector3(0.254, 1.33, 0.593), 0.05]]
-# (Renegade: as 3 placas quadradas lisas do painel, um texel da cadilac_engine)
+# (Renegade: as 3 placas quadradas lisas do painel, um texel da cadilac_engine,
+# as caixas pretas atrás delas e do relógio, e o "V" embaixo do volante, 2 barras
+# sem textura da coluna até o painel que apareciam entre os nossos relógios;
+# "" = superfície sem textura)
 const APAGAR := {"BUGGY_02": [["chassis_comp03", _BURACOS_INFERNO], ["_black", _BURACOS_INFERNO]],
 	"BUGGY_10": [["cadilac_engine", [[Vector3(-0.573, 1.338, 0.691), 0.06],
-		[Vector3(-0.669, 1.338, 0.693), 0.06], [Vector3(-0.3, 1.34, 0.692), 0.06]]]]}
+		[Vector3(-0.669, 1.338, 0.693), 0.06], [Vector3(-0.3, 1.34, 0.692), 0.06]]],
+		["_black", [[Vector3(-0.437, 1.314, 0.7), 0.1], [Vector3(-0.559, 1.322, 0.711), 0.075],
+			[Vector3(-0.312, 1.331, 0.718), 0.075]]],
+		["", [[Vector3(-0.534, 1.212, 0.837), 0.1], [Vector3(-0.334, 1.212, 0.837), 0.1]]]]}
 # relógios auxiliares de enfeite (temperatura, óleo, voltagem; o Matheus pediu
 # "que finjam fazer algo") nos buracos livres do Inferno: [tipo, centro, normal, diâmetro]
 const AUX := {
@@ -122,6 +128,7 @@ func montar(c) -> bool:
 	if not falta.is_empty() and not _conjunto(falta) and tem.is_empty():
 		return false
 	mover(AJUSTE.get(car.vehicle_id, Vector2.ZERO))
+	visible = OS.get_environment("SEM_PAINEL") != "1"     # prints: só o que sobrou do modelo
 	return true
 
 
@@ -227,7 +234,7 @@ static func _apagar_faces(mi: MeshInstance3D, tex: String, pontos: Array) -> voi
 		var tp := ""
 		if m is BaseMaterial3D and m.albedo_texture:
 			tp = m.albedo_texture.resource_path
-		if tex in tp:
+		if (tp == "") if tex == "" else (tex in tp):
 			var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
 			var ix: PackedInt32Array = arr[Mesh.ARRAY_INDEX]
 			if ix.is_empty():
