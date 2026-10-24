@@ -381,12 +381,12 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   conjunto mexe). Os relógios do modelo saem pra o nosso não ficar em cima
   de outro (pedido dele): a placa cadilac_clock do Renegade some, os
   relógios pintados da chapa b_2 do Sphinx são repintados com o fundo
-  (_sem_relogios) e as 3 placas quadradas lisas do painel do Renegade saem
-  da malha (APAGAR, _apagar_faces). O Inferno tem 5 buracos de relógio
-  vazios: conta-giros (13 cm, pra não varar o capô) e velocímetro neles
-  (DO_MODELO); nos 3 que sobram e no lugar das placas do Renegade vão
-  auxiliares de enfeite (AUX: temperatura que esquenta no 1º minuto, óleo
-  pelo giro, voltagem 12.4/14.1). Velocímetro = 1.06 x velocidade pra frente
+  (_sem_relogios). O Inferno tem 5 buracos de relógio vazios em losango:
+  o aro e o fundo preto saem da malha (APAGAR, _apagar_faces), e no lugar
+  vão conta-giros (13 cm, pra não varar o capô), velocímetro (DO_MODELO) e
+  3 auxiliares de enfeite (AUX: temperatura que esquenta no 1º minuto, óleo
+  pelo giro, voltagem 12.4/14.1). No Renegade o Matheus não quis
+  auxiliares (as placas lisas do painel ficam). Velocímetro = 1.06 x velocidade pra frente
   (como o do jogo); conta-giros até o limitador + 1000. Telas 2D em
   SubViewport (texto sai certo: base com determinante -1 dentro do espelho).
 

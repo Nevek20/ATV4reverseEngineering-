@@ -14,9 +14,9 @@ extends Node3D
 ## Os relógios do modelo saem pra o nosso não ficar em cima de outro
 ## (pedido do Matheus): a placa do relógio do Renegade some e os relógios
 ## pintados da chapa do Sphinx são repintados com o fundo da chapa. O
-## Inferno tem buracos de relógio vazios: os nossos vão neles (DO_MODELO) e
-## os 3 que sobram ganham auxiliares de enfeite (AUX: temperatura, óleo,
-## voltagem), como as 3 placas quadradas do painel do Renegade (APAGAR).
+## Inferno tem 5 buracos de relógio vazios em losango: os aros e o fundo
+## preto saem da malha (APAGAR) e no lugar vão os nossos (DO_MODELO) e 3
+## auxiliares de enfeite (AUX: temperatura, óleo, voltagem).
 ##
 ## Valores: rpm do motor (car.rpm), velocímetro como o do jogo (1.06 x a
 ## velocidade pra frente, tests/teste_entrada.gd), marcha do car.gear_label().
@@ -34,20 +34,17 @@ const DO_MODELO := {
 }
 const ESCONDER := {"BUGGY_10": "cadilac_clock"}     # textura da placa do relógio
 const REPINTAR := {"BUGGY_04": "_b_2"}              # textura com relógios pintados
-# placas quadradas no painel (cor lisa, um texel da textura): saem da malha
-# pra dar lugar aos auxiliares. [textura, centros, raio]
-const APAGAR := {"BUGGY_10": ["cadilac_engine", [Vector3(-0.573, 1.338, 0.691),
-	Vector3(-0.669, 1.338, 0.693), Vector3(-0.3, 1.34, 0.692)], 0.06]}
+# peças do modelo que saem da malha: [parte do nome da textura, [[centro, raio], ...]]
+# (Inferno: os losangos dos 5 buracos de relógio, aro chassis_comp03 e fundo preto)
+const _BURACOS_INFERNO := [[Vector3(0.01, 1.376, 0.61), 0.1], [Vector3(-0.233, 1.33, 0.593), 0.05],
+	[Vector3(-0.137, 1.33, 0.593), 0.05], [Vector3(0.154, 1.33, 0.593), 0.05], [Vector3(0.254, 1.33, 0.593), 0.05]]
+const APAGAR := {"BUGGY_02": [["chassis_comp03", _BURACOS_INFERNO], ["_black", _BURACOS_INFERNO]]}
 # relógios auxiliares de enfeite (temperatura, óleo, voltagem; o Matheus pediu
-# "que finjam fazer algo") nos buracos livres do Inferno e no lugar das placas
-# do Renegade: [tipo, centro, normal, diâmetro]
+# "que finjam fazer algo") nos buracos livres do Inferno: [tipo, centro, normal, diâmetro]
 const AUX := {
 	"BUGGY_02": [["temp", Vector3(-0.233, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.075],
 		["oleo", Vector3(-0.138, 1.333, 0.59), Vector3(0.0, 0.34, -0.94), 0.075],
 		["volt", Vector3(0.254, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.075]],
-	"BUGGY_10": [["volt", Vector3(-0.669, 1.338, 0.693), Vector3(0.0, 0.62, -0.78), 0.065],
-		["oleo", Vector3(-0.573, 1.338, 0.691), Vector3(0.0, 0.62, -0.78), 0.085],
-		["temp", Vector3(-0.3, 1.34, 0.692), Vector3(0.0, 0.62, -0.78), 0.085]],
 }
 # ajuste por carro (m, no plano do conjunto): x = pra direita, y = pra cima.
 # Números do Matheus com as teclas 9/0 e -/= (out/2026)
@@ -58,9 +55,12 @@ const AJUSTE := {
 	"BUGGY_05": Vector2(-0.01, -0.02),
 	"BUGGY_07": Vector2(-0.01, -0.05),
 	"BUGGY_09": Vector2(0.0, 0.01),
+	"BUGGY_08": Vector2(-0.04, 0.0),
+	"BUGGY_11": Vector2(-0.02, 0.04),
+	"BUGGY_12": Vector2(0.08, 0.01),
 }
-# o volante tampa o conjunto: do lado direito dele (Phantom; McKenzies e
-# Hurricane pedidos pelo Matheus; Storm em teste)
+# o volante tampa o conjunto: do lado direito dele (Phantom; McKenzies,
+# Hurricane e Storm pedidos pelo Matheus)
 const LADO := ["BUGGY_06", "BUGGY_08", "BUGGY_11", "BUGGY_12"]
 const NA_FRENTE := 0.004      # nosso mostrador acima do buraco do modelo (m)
 const DIST := 0.13            # conjunto: além do aro, na linha do olho (m)
@@ -201,13 +201,12 @@ func _tirar_do_modelo() -> void:
 			var m2: BaseMaterial3D = m.duplicate()
 			m2.albedo_texture = _sem_relogios(m.albedo_texture)
 			mi.set_surface_override_material(s, m2)
-	if APAGAR.has(car.vehicle_id):
-		var ap: Array = APAGAR[car.vehicle_id]
-		_apagar_faces(mi, ap[0], ap[1], ap[2])
+	for ap in APAGAR.get(car.vehicle_id, []):
+		_apagar_faces(mi, ap[0], ap[1])
 
 
 ## tira da malha os triângulos de uma textura perto dos pontos (frame do modelo)
-static func _apagar_faces(mi: MeshInstance3D, tex: String, pontos: Array, raio: float) -> void:
+static func _apagar_faces(mi: MeshInstance3D, tex: String, pontos: Array) -> void:
 	var velha: Mesh = mi.mesh
 	var nova := ArrayMesh.new()
 	var mats := []
@@ -227,7 +226,7 @@ static func _apagar_faces(mi: MeshInstance3D, tex: String, pontos: Array, raio: 
 				var c := (vs[ix[t]] + vs[ix[t + 1]] + vs[ix[t + 2]]) / 3.0
 				var longe := true
 				for p in pontos:
-					if c.distance_to(p) < raio:
+					if c.distance_to(p[0]) < p[1]:
 						longe = false
 						break
 				if longe:
