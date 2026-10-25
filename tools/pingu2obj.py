@@ -40,6 +40,7 @@ Uso:
 """
 
 import argparse
+import hashlib
 import os
 import struct
 
@@ -383,6 +384,10 @@ def main():
         report = []
         if not args.no_mtl:
             slots, mats, mtl, report = build_materials(f, d, strips, args.out, args.tex, args.copy_tex)
+        # o Godot só reimporta o .obj quando ELE muda (o .mtl não conta): a
+        # assinatura do .mtl vai num comentário, senão um .mtl novo (com
+        # textura) fica com o material velho importado (sem textura, branco)
+        assin = "# mtl %s\n" % hashlib.md5(mtl.encode()).hexdigest()[:12] if mtl else ""
         # peças separadas (ex: volante), cada uma no seu .obj.
         # Sintaxe das tiras: "44,53,234-242" pega tiras inteiras;
         # "233[12-26]" pega só os vértices 12 a 26 da tira 233 (às vezes uma
@@ -417,7 +422,7 @@ def main():
                                     [c[1] for c in chosen] if slots else None,
                                     name + ".mtl" if mtl else None, mats)
             with open(os.path.join(args.out, f"{name}_{part}.obj"), "w") as fo:
-                fo.write(pobj)
+                fo.write(assin + pobj)
             print(f"  peça '{part}': {len(chosen)} tiras, {pnt} triângulos -> {name}_{part}.obj")
         flat = [p for pieces in body for p in pieces]
         obj, nv, nt = to_obj([p[0] for p in flat], name,
@@ -426,7 +431,7 @@ def main():
         if nt < args.min_tris:
             continue
         with open(os.path.join(args.out, name + ".obj"), "w") as fo:
-            fo.write(obj)
+            fo.write(assin + obj)
         # camada (2ª textura pelo 2º UV): só as tiras que têm, já sem as peças separadas
         cam = [p for p in flat if p[2] is not None and p[2] >= 0]
         if cam:

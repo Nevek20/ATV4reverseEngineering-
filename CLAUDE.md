@@ -139,6 +139,10 @@ python re/exe_util.py SCES_546.88 str NOME | jal 0xENDERECO | words 0xEND 32
 
 Na nuvem (Claude Code web) o `.claude/hooks/session-start.sh` instala o
 Godot 4.7.1 de Linux, Pillow e zstandard e já deixa `$GODOT` pronto.
+O projeto roda em Forward+ (padrão) e o xvfb só tem OpenGL (Compatibility,
+conta de cor diferente). Pra ver igual ao PC: `apt-get install -y
+mesa-vulkan-drivers` e rodar com `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json`
+e `--rendering-method forward_plus --rendering-driver vulkan` (lavapipe, lento).
 Os arquivos do jogo ficam no repo privado `Nevek20/atv4-dados` (exe,
 stream, unpacked). As texturas não vão pra lá: saem do unpacked com
 `python tools/gob_tex2png.py <dados>/unpacked/gob --out <dados>/texturas`
@@ -237,6 +241,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   carroceria, rodas, peças, volante do jogo e os shaders por cima (sujeira,
   ventoinha: car.cor_k()). Sem rodar o gerar_buggies de novo o .obj velho
   funciona, só sem o acima de 1.0.
+- Import do Godot: o .obj só é reimportado quando ELE muda; o .mtl não conta.
+  Um gerar_buggies com a pasta de texturas errada (out/2026) gerou .mtl sem
+  textura e o carro ficou branco; rodar de novo com a pasta certa não
+  adiantava (o .obj saía igual). O pingu2obj põe "# mtl <md5>" no topo do
+  .obj e o gerar_buggies para se a pasta de texturas não tiver .png.
 - Lanterna de freio (melhoria nossa, car.gd LUZ_FREIO, luzes.gd): o jogo
   não usa os pontos BRAKE_LIGHT (nenhuma string no exe). Lente = faces até
   15 cm do ponto que são vermelhas na cor final (textura x cor do vértice);
