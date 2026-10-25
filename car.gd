@@ -351,6 +351,11 @@ const TRAVA_MPH := 2.0
 const TRAVA_INI := -0.25
 const TRAVA_FIM := -1.0
 var test_input = null         # {thr, brk, steer} pra testes automáticos
+# false desliga as melhorias nossas (volante girando e gerado, mãos na IK,
+# som do Engine Simulator, fumaça, painel, motor tremendo e animado, luzes,
+# farol, volante tremendo): fica só o que o jogo faz. main.gd desliga nos
+# trucks até a base deles ser conferida com os save states
+var melhorias := true
 
 
 func _ready() -> void:
@@ -936,7 +941,7 @@ func _load_model() -> void:
 
 ## depois da física (precisa dos pontos ARSE, rodas e EXHAUST)
 func _load_motor_treme() -> void:
-	if not MOTOR_TREME or body_mi == null:
+	if not (MOTOR_TREME and melhorias) or body_mi == null:
 		return
 	motor_treme = preload("res://motor_treme.gd").new()
 	motor_treme.name = "MotorTreme"
@@ -948,7 +953,7 @@ func _load_motor_treme() -> void:
 
 
 func _load_luzes() -> void:
-	if not LUZ_FREIO or body_mi == null:
+	if not (LUZ_FREIO and melhorias) or body_mi == null:
 		return
 	luzes = preload("res://luzes.gd").new()
 	luzes.name = "Luzes"
@@ -960,7 +965,7 @@ func _load_luzes() -> void:
 
 
 func _load_farol() -> void:
-	if not FAROL or body_mi == null:
+	if not (FAROL and melhorias) or body_mi == null:
 		return
 	farol = preload("res://farol.gd").new()
 	farol.name = "Farol"
@@ -972,7 +977,7 @@ func _load_farol() -> void:
 
 
 func _load_motor_anima() -> void:
-	if not MOTOR_ANIMA or body_mi == null:
+	if not (MOTOR_ANIMA and melhorias) or body_mi == null:
 		return
 	motor_anima = preload("res://motor_anima.gd").new()
 	motor_anima.name = "MotorAnima"
@@ -1070,7 +1075,7 @@ func _load_piloto() -> void:
 	piloto.name = "Piloto"
 	piloto.position = model_offset + points["ARSE"] - piloto.root_pos
 	model_root.add_child(piloto)
-	if MAOS_NO_VOLANTE and VOLANTE_GIRA and sw_pivot:
+	if MAOS_NO_VOLANTE and VOLANTE_GIRA and melhorias and sw_pivot:
 		var vol: Dictionary = pecas.get("volante", {})
 		# aro no frame do esqueleto (o piloto não gira em relação ao modelo)
 		piloto.prender_no_volante(sw_centro() - (points["ARSE"] - piloto.root_pos), SW_AXIS, vol.get("raio", 0.19))
@@ -1082,7 +1087,7 @@ func sw_centro() -> Vector3:
 
 
 func _load_fumaca() -> void:
-	if not FUMACA:
+	if not (FUMACA and melhorias):
 		return
 	fumaca = preload("res://fumaca.gd").new()
 	fumaca.name = "Fumaca"
@@ -1093,7 +1098,7 @@ func _load_fumaca() -> void:
 
 
 func _load_painel() -> void:
-	if not PAINEL:
+	if not (PAINEL and melhorias):
 		return
 	painel = preload("res://painel.gd").new()
 	painel.name = "Painel"
@@ -1130,7 +1135,7 @@ func _load_sfx() -> void:
 
 
 func _load_som() -> void:
-	if not SOM_MOTOR:
+	if not (SOM_MOTOR and melhorias):
 		return
 	var dir: String = preload("res://motor_som.gd").pasta_do_carro(vehicle_id)
 	if dir == "":
@@ -1175,7 +1180,7 @@ func _load_steering_wheel() -> void:
 	sw_pivot.position = model_offset + SW_CENTER
 	model_root.add_child(sw_pivot)
 	var mi := MeshInstance3D.new()
-	if VOLANTE_NOSSO:
+	if VOLANTE_NOSSO and melhorias:
 		sw_pivot.add_child(mi)
 		sw_malha = mi
 		sw_ponta_coluna = _ponta_coluna()
@@ -1827,7 +1832,7 @@ func _vibracao(dt: float, v_l: float, v_f: float) -> void:
 			_susp_acima[k] = acima
 	else:
 		_susp_acima = [false, false]
-	if not VOLANTE_TREME:
+	if not (VOLANTE_TREME and melhorias):
 		return
 	pancada = maxf(pancada * exp(-dt / PANCADA_SOLTA), tranco)
 	# alvo do giro: sorteio pela vibração, tranco com sinal sorteado, e a
@@ -2833,7 +2838,7 @@ func _update_visuals(dt: float, _v_f: float) -> void:
 		rider_s = clampf(rider_s + minf(1.0 / dt, 30.0) * (steer - rider_s) * dt, -1.0, 1.0)
 	if dt > 0.0:
 		treme += (_treme_alvo - treme) * (1.0 - exp(-dt / TREME_SUAVE))
-	if sw_pivot and VOLANTE_GIRA:
+	if sw_pivot and VOLANTE_GIRA and melhorias:
 		var giro := -rider_s * SW_TURNS
 		if piloto and piloto.no_volante():
 			giro = piloto.giro_volante(rider_s)

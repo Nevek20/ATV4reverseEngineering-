@@ -111,12 +111,12 @@ func _overrides() -> bool:
 
 ## mesmo que main.spawn_vehicle, mas com as trocas das variáveis de ambiente
 func _spawn(i: int) -> void:
-	var v: Dictionary = main.VEHICLES[i]
+	var v: Dictionary = main.frota()[i]
 	main.car.queue_free()
 	main.veh_idx = i
 	var c = Car.new()
 	c.asset_dir = OS.get_environment("PASTA") if OS.has_environment("PASTA") else v.dir
-	c.data_files = ["res://data/vehicles/buggy_base.xml", v.data]
+	c.data_files = main.dados(v)
 	c.points_file = OS.get_environment("PONTOS") if OS.has_environment("PONTOS") else v.points
 	c.vehicle_id = v.id
 	c.tune_override = v.get("tune", {})
@@ -130,6 +130,7 @@ func _spawn(i: int) -> void:
 		c.FP_BACK = v.fp[1]
 		c.FP_PITCH = v.fp[2]
 	c.vehicle_name = "%s (%s)" % [v.name, v.id]
+	c.melhorias = not v.id.begins_with("TRUCK")
 	c.terrain = main.terrain
 	main.add_child(c)
 	main.car = c
@@ -365,7 +366,7 @@ func _process_multi() -> bool:
 	if frames < 90:
 		return false
 	if frames == 90:
-		medidas.veiculo = main.VEHICLES[veh].name
+		medidas.veiculo = main.frota()[veh].name
 		medidas.pontos = car.points_file
 		medidas.pecas = car.pecas.get("pecas", {})
 		medidas.rodas = [car.wheel_front_file, car.wheel_rear_file]

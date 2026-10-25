@@ -1,9 +1,11 @@
 """
 gerar_buggies.py
 =================
-Gera os assets dos 12 buggies como o jogo carrega na corrida: carroceria,
-peças da suspensão, freios, rodas e pintura de fábrica. Também copia a
-física (15144+N) e o arquivo de pontos pra data/vehicles.
+Gera os assets dos 12 buggies (ou dos 12 trucks, --classe truck) como o
+jogo carrega na corrida: carroceria, peças da suspensão, freios, rodas e
+pintura de fábrica. Também copia a física e o arquivo de pontos pra
+data/vehicles: buggy = 15144+N (o 1º é a própria base), truck = o arquivo de
+Setup/VehicleParams/Truck/TRUCK_NN.xml (o do TRUCK_03 é vazio: só a base).
 
 Nada de adivinhar bloco pela posição: o jogo abre cada arquivo pelo caminho
 e data/arquivos.tsv (re/indice_archive.py) diz em que bloco do unpacked cada
@@ -11,8 +13,8 @@ caminho está. Pra cada carro:
     Chassis   = DefaultConfig Chassis (data/vehicles.xml), ex. CHASSIS_Buggy_10
     Roda      = DefaultConfig Wheel, ex. TYRE_GENERIC_MEDIUM
     Peças     = grupo "High" do ComponentMap do carro (unpacked/xml/14881)
-    Arquivo   = /Vehicles/Buggy/Models_4K/Chassis/<Chassis>/<Model>.pingu
-                /Vehicles/Buggy/Models_4K/Wheel/<Roda>/<FrontWheel|RearWheel>.pingu
+    Arquivo   = /Vehicles/<Buggy|Truck>/Models_4K/Chassis/<Chassis>/<Model>.pingu
+                /Vehicles/<Buggy|Truck>/Models_4K/Wheel/<Roda>/<FrontWheel|RearWheel>.pingu
 Se o arquivo 4K não tem bloco próprio (ficou cru dentro de um raw, ex. as
 hastes do Renegade), usa o mesmo caminho no Models_5K (mesma malha).
 
@@ -23,6 +25,7 @@ Uso (na pasta do projeto):
     python tools/gerar_buggies.py <unpacked> <texturas>
     python tools/gerar_buggies.py <unpacked> <texturas> --so 2,3
     python tools/gerar_buggies.py <unpacked> <texturas> --tabela   (só lista)
+    python tools/gerar_buggies.py <unpacked> <texturas> --classe truck
 <texturas> é a pasta que o gob_tex2png.py gerou. Sem ela, procura uma pasta
 "texturas" do lado da unpacked. Se a pasta não existe ou não tem .png, para
 antes de mexer em qualquer coisa (o pingu2obj escreveria os .mtl sem
@@ -48,6 +51,15 @@ NOMES = ["Mosquito", "Inferno", "Trident", "Sphinx", "Bulldog", "Phantom",
          "Kraken V8", "McKenzies", "Viper", "Renegade", "Hurricane", "Storm"]
 # pasta em assets/ (Renegade e Sphinx mantêm as pastas antigas)
 PASTA = {4: "sphinx", 10: "renegade"}
+# trucks: nome do menu do jogo (text/15205_en.txt, TRUCK_NN)
+NOMES_TRUCK = ["Buccaneer", "Shockwave", "Shinto", "Jericho", "Punisher", "Panther",
+               "Herbst Truggy", "Herbst TT", "Hammerhead", "Fireball", "Goliath", "Chimera"]
+CLASSES = {
+    "buggy": {"id": "BUGGY", "pasta": "Buggy", "nomes": NOMES,
+              "assets": lambda n: PASTA.get(n, "buggy_%02d" % n), "dados": "buggy_%02d"},
+    "truck": {"id": "TRUCK", "pasta": "Truck", "nomes": NOMES_TRUCK,
+              "assets": lambda n: "truck_%02d" % n, "dados": "truck_%02d"},
+}
 # o volante vem grudado na carroceria no jogo; o tools/volante.py acha as
 # tiras dele e o pingu2obj separa num .obj próprio (melhoria do remake: ele
 # gira com a direção). No Renegade dá o mesmo que a marcação manual
@@ -75,11 +87,11 @@ def bloco(arqs, caminho):
     return int(m.group(1)) if m and f[1] else None
 
 
-def config_xml():
-    """chassis, roda, mapa e câmeras de cada buggy, do data/vehicles.xml"""
+def config_xml(prefixo="BUGGY"):
+    """chassis, roda, mapa e câmeras de cada veículo, do data/vehicles.xml"""
     s = open(os.path.join(PROJ, "data", "vehicles.xml"), encoding="latin-1").read()
     out = {}
-    for m in re.finditer(r'<Vehicle Name="(BUGGY_\d\d)".*?</Vehicle>', s, re.S):
+    for m in re.finditer(r'<Vehicle Name="(%s_\d\d)".*?</Vehicle>' % prefixo, s, re.S):
         blk = m.group(0)
         out[m.group(1)] = {
             "chassis": re.search(r'DefaultConfig[^>]*Chassis="([^"]+)"', blk).group(1),
@@ -104,14 +116,15 @@ def mapa_high(unpacked, nome):
     return out
 
 
-def mapear(unpacked):
+def mapear(unpacked, classe="buggy"):
     arqs = ler_arquivos()
-    cfg = config_xml()
+    k = CLASSES[classe]
+    cfg = config_xml(k["id"])
     carros = []
     for n in range(1, 13):
-        vid = "BUGGY_%02d" % n
-        c = dict(cfg[vid], n=n, id=vid, nome=NOMES[n - 1], pecas={}, rodas={}, faltando=[])
-        base = "Vehicles/Buggy/%s/Chassis/%s/" % (LOD, c["chassis"])
+        vid = "%s_%02d" % (k["id"], n)
+        c = dict(cfg[vid], n=n, id=vid, nome=k["nomes"][n - 1], pecas={}, rodas={}, faltando=[])
+        base = "Vehicles/%s/%s/Chassis/%s/" % (k["pasta"], LOD, c["chassis"])
         c["pontos"] = bloco(arqs, base + "Body.pts")
         for tipo, model, pos, _ in mapa_high(unpacked, c["mapa"]):
             if tipo == "Chassis":
@@ -121,16 +134,29 @@ def mapear(unpacked):
                 if b is None:
                     c["faltando"].append(model)
                     continue
-                c["pecas"][pos] = b
+                # 2 modelos na mesma posição (Axle e Rear_Arm no RearAxle dos trucks)
+                c["pecas"][pos if pos not in c["pecas"] else pos + "/" + model] = b
             elif tipo == "Wheel":
-                b = bloco(arqs, "Vehicles/Buggy/%s/Wheel/%s/%s.pingu" % (LOD, c["roda"], model))
+                b = bloco(arqs, "Vehicles/%s/%s/Wheel/%s/%s.pingu" % (k["pasta"], LOD, c["roda"], model))
                 if b is None:
                     c["faltando"].append(model)
                     continue
                 c["rodas"][model] = b
                 c.setdefault("posicoes_roda", []).append(pos)
+        # física: o arquivo do jogo pelo caminho (vazio = só a base)
+        c["fisica"] = arqs.get(("Setup/VehicleParams/%s/%s.xml" % (k["pasta"], vid)).lower(), (None,))[0]
         carros.append(c)
     return carros
+
+
+def _ler_fonte(unpacked, fonte):
+    """bytes de uma fonte do arquivos.tsv: "xml/N_root.xml" ou "raw/x.bin+off"
+    (as cruas pequenas, como o TRUCK_03.xml vazio, vão até o fim do XML)"""
+    arq, _, off = fonte.partition("+")
+    d = open(os.path.join(unpacked, arq), "rb").read()[int(off or 0):]
+    if arq.startswith("raw/"):
+        d = d[:d.index(b"/>") + 2] + b"\n" if d.lstrip().startswith(b"<Root") and b"/>" in d[:64] else d
+    return d
 
 
 def copiar(dados, dst):
@@ -158,6 +184,7 @@ def main():
     ap.add_argument("--assets", default=os.path.join(PROJ, "assets"))
     ap.add_argument("--so", help="só esses carros (ex: 2,3)")
     ap.add_argument("--tabela", action="store_true", help="só mostra os blocos")
+    ap.add_argument("--classe", default="buggy", choices=sorted(CLASSES))
     a = ap.parse_args()
     if not a.texturas:
         a.texturas = os.path.join(os.path.dirname(os.path.abspath(a.unpacked)), "texturas")
@@ -169,7 +196,8 @@ def main():
                  "    nada foi mexido nos assets.")
     print(f"[+] texturas: {a.texturas} ({len(pngs)} .png)")
 
-    carros = mapear(a.unpacked)
+    k = CLASSES[a.classe]
+    carros = mapear(a.unpacked, a.classe)
     so = {int(x) for x in a.so.split(",")} if a.so else None
     for c in carros:
         print("%2d %-10s %-17s %-15s corpo %s pontos %s rodas %s peças %d%s" % (
@@ -186,7 +214,7 @@ def main():
         if so and c["n"] not in so:
             continue
         n = c["n"]
-        out = os.path.join(a.assets, PASTA.get(n, "buggy_%02d" % n))
+        out = os.path.join(a.assets, k["assets"](n))
         os.makedirs(out, exist_ok=True)
         vol = None
         corpo = os.path.join(a.unpacked, "other", "%d_bloco.bin" % c["pecas"]["Body"])
@@ -223,10 +251,13 @@ def main():
         json.dump(info, open(os.path.join(out, "pecas.json"), "w"), indent=1)
         # física e pontos (dados pequenos, ficam no git). O XML vai com fim de
         # linha LF, igual ao git, senão no Windows aparece como modificado
-        xml = open(os.path.join(a.unpacked, "xml", "%d_root.xml" % (15144 + n)), "rb").read()
-        copiar(xml.replace(b"\r\n", b"\n"), os.path.join(dados, "buggy_%02d.xml" % n))
+        if a.classe == "buggy":
+            xml = open(os.path.join(a.unpacked, "xml", "%d_root.xml" % (15144 + n)), "rb").read()
+        else:
+            xml = _ler_fonte(a.unpacked, c["fisica"])
+        copiar(xml.replace(b"\r\n", b"\n"), os.path.join(dados, (k["dados"] % n) + ".xml"))
         pts = open(os.path.join(a.unpacked, "other", "%d_bloco.bin" % c["pontos"]), "rb").read()
-        copiar(pts, os.path.join(dados, "buggy_%02d_points.bin" % n))
+        copiar(pts, os.path.join(dados, (k["dados"] % n) + "_points.bin"))
         print("[+] %s em %s" % (c["nome"], out))
     # redes das janelas e treliça do Trident: alfa do jogo de volta (o
     # gob_tex2png salva sem alfa)

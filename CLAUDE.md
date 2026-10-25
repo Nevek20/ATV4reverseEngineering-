@@ -30,7 +30,7 @@ camera_jitter.gd     tremida da câmera (Perlin por velocidade, só na terra, e 
 camera_piloto.gd     câmera do piloto (melhoria nossa): força G na cabeça, FOV e borrão pela velocidade, olhar pra curva e olhar livre
 suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
-main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V)
+main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V); VEHICLES = buggies, TRUCKS, frota() = os dois
 piloto.gd            piloto do jogo sentado no ARSE, braços pela direção (STEER_LEFT)
 volantes.gd          volantes gerados, um estilo por carro (melhoria nossa, no lugar do do jogo)
 motor_som.gd         som do motor: loops do Engine Simulator por rpm e carga (melhoria nossa)
@@ -44,7 +44,7 @@ luzes.gd             lanterna de freio e luz de ré acesas (melhoria nossa): len
 farol.gd             farol aceso (melhoria nossa, no estilo da lanterna de freio) nas lentes de farol do modelo; H liga
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
-assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas; sfx (sons) e fx (fumaça) do jogo (fora do git)
+assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, truck_NN, rodas; sfx (sons) e fx (fumaça) do jogo (fora do git)
 tests/               teste de física sem tela + rodar_testes.py
 tools/               scripts Python de extração (pingu2obj, pintura, savestate)
 som/engine_sim/      um .mr do Engine Simulator por buggy (gerados por tools/gerar_motores.py)
@@ -125,6 +125,7 @@ python tools/piloto.py <unpacked>
 
 :: assets dos 12 buggies (modelo, peças, freios, rodas, pintura; + <modelo>_camada.obj com o 2º UV)
 python tools/gerar_buggies.py <unpacked> [<texturas>]   :: sem a pasta: "texturas" do lado da unpacked; para se não achar .png
+python tools/gerar_buggies.py <unpacked> [<texturas>] --classe truck   :: os 12 trucks -> assets/truck_NN, data/vehicles/truck_NN*
 :: só o alfa das texturas com furo (redes das janelas, treliça do Trident); o gerar_buggies já chama
 python tools/alfa_texturas.py <unpacked>
 :: só a pintura (cores, logos e número "00"; --numero 27, --sem-decalques); depois reimportar no Godot
@@ -540,7 +541,28 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   pra frente (como o do jogo); conta-giros até o limitador + 1000. Telas 2D em
   SubViewport (texto sai certo: base com determinante -1 dentro do espelho).
 
+- Trucks (out/2026, base): 12 (TRUCK_01..12, nomes do menu do jogo em
+  text/15205_en.txt: Buccaneer, Shockwave, Shinto, Jericho, Punisher, Panther,
+  Herbst Truggy, Herbst TT, Hammerhead, Fireball, Goliath, Chimera). Física =
+  data/vehicles/truck_base.xml (Setup/VehicleParams/Truck/TRUCK.xml, mesmo
+  formato do buggy, outros números) + truck_NN.xml pelo caminho do arquivo
+  (o TRUCK_03.xml do jogo é vazio: só a base). Chassis trocados: TRUCK_04 usa
+  o CHASSIS_Truck_11, TRUCK_11 o CHASSIS_Truck_12, TRUCK_12 o Dakar (a
+  pintura é do chassis: gerar_pintura acha pelo vehicles.xml). Mapas:
+  TruckCompMap_B1/B2 (LeftFrame, RightFrame, FrontLeft/RightBrake, RearAxle
+  com 2 modelos, Axle e Rear_Arm; o Rear_Arm do Shinto no 4K é vazio),
+  TruckCompMap_A2 (Punisher, RearFreeAxle), BuggyCompMap_A1 (Panther, igual
+  buggy) e RallyCompMap (Chimera, igual Storm). As melhorias nossas ficam
+  desligadas nos trucks (car.gd melhorias, main.gd) até a base ser conferida
+  com save states.
+
 ## Pendente / ideias
+
+- Trucks: portar os cCompPlace do eixo rígido (LeftFrame, RightFrame,
+  FrontLeft/RightBrake, RearAxle, RearFreeAxle); hoje essas peças não
+  aparecem e as rodas dos mapas B/A ficam no jeito "rally". Conferir física,
+  suspensão e câmera com save states de trucks (o Matheus vai gravar).
+  Tração: car.gd REAR_DRIVE vale pra todos (conferir nos trucks).
 
 - Pneu e aro comprados (hipótese: troca de textura, ver docs/assets.md).
 - Batida: o RX01 do remake só tem o relevo (sem paredes, cercas e pedras do

@@ -43,6 +43,38 @@ const VEHICLES := [
 	{"name": "Storm", "id": "BUGGY_12", "cams": "LanciaCam", "dir": "res://assets/buggy_12",
 		"data": "res://data/vehicles/buggy_12.xml", "points": "res://data/vehicles/buggy_12_points.bin", "fp": [0.33, 0.46, 0.00]},
 ]
+# física: base da classe + o arquivo do veículo
+const BASE_BUGGY := "res://data/vehicles/buggy_base.xml"
+const BASE_TRUCK := "res://data/vehicles/truck_base.xml"     # Setup/VehicleParams/Truck/TRUCK.xml
+# os 12 trucks na ordem da lista do jogo (tools/gerar_buggies.py --classe truck),
+# nomes do menu do jogo (text/15205_en.txt). Ficam fora do VEHICLES pra os
+# testes dos buggies não mudarem; o menu, o V e o print_tela usam frota()
+const TRUCKS := [
+	{"name": "Buccaneer", "id": "TRUCK_01", "cams": "TruckCamSet_01", "dir": "res://assets/truck_01",
+		"data": "res://data/vehicles/truck_01.xml", "points": "res://data/vehicles/truck_01_points.bin", "base": BASE_TRUCK},
+	{"name": "Shockwave", "id": "TRUCK_02", "cams": "TruckCamSet_02", "dir": "res://assets/truck_02",
+		"data": "res://data/vehicles/truck_02.xml", "points": "res://data/vehicles/truck_02_points.bin", "base": BASE_TRUCK},
+	{"name": "Shinto", "id": "TRUCK_03", "cams": "TruckCamSet_03", "dir": "res://assets/truck_03",
+		"data": "res://data/vehicles/truck_03.xml", "points": "res://data/vehicles/truck_03_points.bin", "base": BASE_TRUCK},
+	{"name": "Jericho", "id": "TRUCK_04", "cams": "TruckCamSet_11", "dir": "res://assets/truck_04",
+		"data": "res://data/vehicles/truck_04.xml", "points": "res://data/vehicles/truck_04_points.bin", "base": BASE_TRUCK},
+	{"name": "Punisher", "id": "TRUCK_05", "cams": "TruckCamSet_05", "dir": "res://assets/truck_05",
+		"data": "res://data/vehicles/truck_05.xml", "points": "res://data/vehicles/truck_05_points.bin", "base": BASE_TRUCK},
+	{"name": "Panther", "id": "TRUCK_06", "cams": "TruckCamSet_06", "dir": "res://assets/truck_06",
+		"data": "res://data/vehicles/truck_06.xml", "points": "res://data/vehicles/truck_06_points.bin", "base": BASE_TRUCK},
+	{"name": "Herbst Truggy", "id": "TRUCK_07", "cams": "TruckCamSet_07", "dir": "res://assets/truck_07",
+		"data": "res://data/vehicles/truck_07.xml", "points": "res://data/vehicles/truck_07_points.bin", "base": BASE_TRUCK},
+	{"name": "Herbst TT", "id": "TRUCK_08", "cams": "TruckCamSet_08", "dir": "res://assets/truck_08",
+		"data": "res://data/vehicles/truck_08.xml", "points": "res://data/vehicles/truck_08_points.bin", "base": BASE_TRUCK},
+	{"name": "Hammerhead", "id": "TRUCK_09", "cams": "TruckCamSet_09", "dir": "res://assets/truck_09",
+		"data": "res://data/vehicles/truck_09.xml", "points": "res://data/vehicles/truck_09_points.bin", "base": BASE_TRUCK},
+	{"name": "Fireball", "id": "TRUCK_10", "cams": "TruckCamSet_10", "dir": "res://assets/truck_10",
+		"data": "res://data/vehicles/truck_10.xml", "points": "res://data/vehicles/truck_10_points.bin", "base": BASE_TRUCK},
+	{"name": "Goliath", "id": "TRUCK_11", "cams": "TruckCamSet_11", "dir": "res://assets/truck_11",
+		"data": "res://data/vehicles/truck_11.xml", "points": "res://data/vehicles/truck_11_points.bin", "base": BASE_TRUCK},
+	{"name": "Chimera", "id": "TRUCK_12", "cams": "TruckCamSet_12", "dir": "res://assets/truck_12",
+		"data": "res://data/vehicles/truck_12.xml", "points": "res://data/vehicles/truck_12_points.bin", "base": BASE_TRUCK},
+]
 var veh_idx := 0
 # largada do RX_01: centro das 4 rodas e direção do carro nos 6 save states
 # parados na largada (tests/ref_ram_chao.json), passados pro remake por
@@ -97,16 +129,26 @@ func _ready() -> void:
 	cam_piloto.car = car
 
 
+## buggies + trucks (menu, V, print_tela); os testes dos buggies usam só VEHICLES
+static func frota() -> Array:
+	return VEHICLES + TRUCKS
+
+
+## arquivos de física do veículo: base da classe + o dele
+static func dados(v: Dictionary) -> Array:
+	return [v.get("base", BASE_BUGGY), v.data]
+
+
 func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
 	var manual := false
 	if car != null:
 		manual = car.manual
 		car.queue_free()
 	veh_idx = i
-	var v: Dictionary = VEHICLES[i]
+	var v: Dictionary = frota()[i]
 	car = Car.new()
 	car.asset_dir = v.dir
-	car.data_files = ["res://data/vehicles/buggy_base.xml", v.data]
+	car.data_files = dados(v)
 	car.points_file = v.points
 	car.vehicle_id = v.id
 	car.tune_override = v.get("tune", {})
@@ -116,6 +158,7 @@ func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
 		car.FP_BACK = v.fp[1]
 		car.FP_PITCH = v.fp[2]
 	car.vehicle_name = "%s (%s)" % [v.name, v.id]
+	car.melhorias = not v.id.begins_with("TRUCK")   # trucks: só o do jogo por enquanto
 	car.terrain = terrain
 	add_child(car)
 	car.manual = manual
@@ -184,7 +227,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				car.limpar_sujeira()        # recomeço da corrida: o jogo zera (0x223db0)
 				reset_camera()
 			KEY_V:
-				_swap_vehicle((veh_idx + 1) % VEHICLES.size())
+				_swap_vehicle((veh_idx + 1) % frota().size())
 			KEY_F:
 				car.flip_model()
 			KEY_B:
@@ -214,7 +257,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # ------------------------------------------------------------ menu de carros
 var menu: ItemList
-var menu_idx := []                       # linha do menu -> índice em VEHICLES
+var menu_idx := []                       # linha do menu -> índice em frota()
 
 
 func _make_menu(layer: CanvasLayer) -> void:
@@ -226,12 +269,13 @@ func _make_menu(layer: CanvasLayer) -> void:
 	menu.offset_top = 12
 	menu.auto_height = true
 	menu.add_theme_font_size_override("font_size", 18)
-	# ordem da lista do jogo (BUGGY_01..12), as variações logo depois
-	var order := range(VEHICLES.size())
-	order.sort_custom(func(a, b): return [VEHICLES[a].id, a] < [VEHICLES[b].id, b])
+	# ordem da lista do jogo (BUGGY_01..12, TRUCK_01..12), as variações logo depois
+	var todos := frota()
+	var order := range(todos.size())
+	order.sort_custom(func(a, b): return [todos[a].id, a] < [todos[b].id, b])
 	for i in order:
-		var v: Dictionary = VEHICLES[i]
-		menu.add_item("%d. %s" % [v.id.to_int(), v.name])
+		var v: Dictionary = todos[i]
+		menu.add_item("%s%d. %s" % ["Truck " if v.id.begins_with("TRUCK") else "", v.id.to_int(), v.name])
 		menu_idx.append(i)
 	menu.item_activated.connect(func(row): _swap_vehicle(menu_idx[row]); _toggle_menu())
 	menu.item_clicked.connect(func(row, _p, _b): _swap_vehicle(menu_idx[row]); _toggle_menu())
@@ -315,7 +359,7 @@ var jit_acc := 0.0                        # passos de 1/60 das câmeras presas
 
 
 func _make_cameras() -> void:
-	var cs: String = VEHICLES[veh_idx].cams
+	var cs: String = frota()[veh_idx].cams
 	gcams = [
 		GameCamera.load_set(CAM_XML, cs, "FollowOrbitNear"),
 		GameCamera.load_set(CAM_XML, cs, "FollowOrbitFar"),

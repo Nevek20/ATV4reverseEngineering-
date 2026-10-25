@@ -58,6 +58,14 @@ BED_ESCALA = 100000.0             # .bed: fração da textura x 100000
 NUMERO = "00"                     # perfil novo do jogo
 
 
+def chassis(veh):
+    """DefaultConfig Chassis do veículo no data/vehicles.xml ("" se não achar)"""
+    s = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data",
+                          "vehicles.xml"), encoding="latin-1").read()
+    m = re.search(r'<Vehicle Name="%s".*?Chassis="([^"]+)"' % re.escape(veh.upper()), s, re.S)
+    return m.group(1) if m else ""
+
+
 def achar_xml(xml_dir, prefixo):
     alvo = f'Path="{prefixo}_Base"'
     for f in sorted(os.listdir(xml_dir)):
@@ -260,9 +268,11 @@ def decalques(img, s, src, veh, numero, log=print):
 def montar(src, veh, trocar=None, numero=NUMERO, com_decalques=True, log=print):
     """pintura do veículo (Image RGB) ou None; trocar = {"BASE": (r, g, b)...}"""
     prefixo = re.sub(r"^BUGGY", "Buggy", veh, flags=re.I)
-    prefixo = re.sub(r"^TRUCK", "Truck", prefixo, flags=re.I)
     if prefixo == "Buggy_12":
         prefixo = "Lancia"          # o Storm usa as texturas Lancia_*
+    elif veh.upper().startswith("TRUCK"):
+        # a pintura é do chassis (TRUCK_04 usa o CHASSIS_Truck_11, TRUCK_12 o Dakar)
+        prefixo = chassis(veh).replace("CHASSIS_", "") or re.sub(r"^TRUCK", "Truck", veh, flags=re.I)
     xml_nome, s = achar_xml(os.path.join(src, "xml"), prefixo)
     if not s:
         log(f"[!] não achei o XML da pintura de {prefixo}")
