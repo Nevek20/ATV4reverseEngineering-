@@ -23,6 +23,7 @@ extends SceneTree
 ##   PILOTO=0                   esconde o piloto (pra ver o volante)
 ##   CAM_OFF=0,1.6,-4 CAM_ALVO=0,1,-2  câmera livre (frame do jogo)
 ##   PICK=x,y;x,y               imprime o triângulo do carro em cada pixel
+##   CULL=0                     carroceria com as 2 faces (sem descartar a de trás)
 ##   PASTA=res://assets/buggy_02 (pasta com o pecas.json)  PONTOS=res://...
 ##   RODA_F=res://...  RODA_T=res://...
 ##                              troca pasta/pontos/rodas sem mexer no main.gd
@@ -225,6 +226,14 @@ func _camera(v: String) -> void:
 	var t := car.global_transform
 	if OS.has_environment("VOLANTE"):
 		car.trocar_volante(OS.get_environment("VOLANTE"))
+	if OS.get_environment("CULL") == "0" and car.body_mi:
+		# diagnóstico: carroceria com as 2 faces (sem descartar a de trás)
+		for i in car.body_mi.mesh.get_surface_count():
+			var m: Material = car.body_mi.get_active_material(i)
+			if m is BaseMaterial3D:
+				var m2: BaseMaterial3D = m.duplicate()
+				m2.cull_mode = BaseMaterial3D.CULL_DISABLED
+				car.body_mi.set_surface_override_material(i, m2)
 	if OS.get_environment("PILOTO") == "0" and car.piloto:
 		for ch in car.piloto.get_children():
 			if ch is Node3D:

@@ -163,6 +163,14 @@ const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
 # de trás pode ser descartada (painéis de duas faces não piscam mais).
 # Modelos gerados com o pingu2obj antigo precisam de CULL_DISABLED.
 const MODEL_CULL := BaseMaterial3D.CULL_BACK
+# carroceria fechada (melhoria nossa: só a nossa câmera do piloto fica dentro
+# dela). A casca do jogo só tem a face de fora e de dentro do Storm via-se a
+# estrada pelas chapas. _face_de_dentro dá a face de dentro às chapas que não
+# têm (as de 2 faces já modeladas ficam, senão piscam): na pintura ("white")
+# vira FORRO (de dentro não se vê a pintura de fora espelhada), no resto a
+# mesma textura.
+const CABINE_FECHADA := ["BUGGY_12"]
+const FORRO := Color(0.16, 0.16, 0.17)
 
 # O jogo é mão esquerda (x direita, y cima, z frente; esquerda do jogo = x < 0
 # no modelo) e o Godot é mão direita. Tudo que vem do jogo em frame do modelo
@@ -865,6 +873,8 @@ func _load_model() -> void:
 	mi.position = model_offset
 	model_root.add_child(mi)
 	body_mi = mi
+	if vehicle_id in CABINE_FECHADA:
+		_face_de_dentro(mi)
 	_load_steering_wheel()
 
 
@@ -891,6 +901,65 @@ func _load_motor_anima() -> void:
 	else:
 		motor_anima.free()
 		motor_anima = null
+
+
+## copia virada (ordem dos vértices e normal) de cada triângulo que não tem
+## gêmeo do outro lado (mesmos 3 pontos); fica numa malha filha
+func _face_de_dentro(mi: MeshInstance3D) -> void:
+	var mesh: Mesh = mi.mesh
+	var chave := func(a: Vector3, b: Vector3, c: Vector3) -> Array:
+		var k := [Vector3i((a * 1000.0).round()), Vector3i((b * 1000.0).round()), Vector3i((c * 1000.0).round())]
+		k.sort()
+		return k
+	var existe := {}
+	var arrs: Array = []
+	for s in mesh.get_surface_count():
+		var a := mesh.surface_get_arrays(s)
+		arrs.append(a)
+		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
+		var ix := PackedInt32Array(range(vs.size()))
+		if a[Mesh.ARRAY_INDEX] != null:
+			ix = a[Mesh.ARRAY_INDEX]
+		for t in range(0, ix.size(), 3):
+			var k: Array = chave.call(vs[ix[t]], vs[ix[t + 1]], vs[ix[t + 2]])
+			existe[k] = existe.get(k, 0) + 1
+	var dentro := ArrayMesh.new()
+	var mats: Array = []
+	var forro := StandardMaterial3D.new()
+	forro.albedo_color = FORRO
+	forro.roughness = 0.9
+	forro.cull_mode = MODEL_CULL
+	for s in arrs.size():
+		var a: Array = arrs[s].duplicate()
+		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
+		var ix := PackedInt32Array(range(vs.size()))
+		if a[Mesh.ARRAY_INDEX] != null:
+			ix = a[Mesh.ARRAY_INDEX]
+		var novo := PackedInt32Array()
+		for t in range(0, ix.size(), 3):
+			if existe[chave.call(vs[ix[t]], vs[ix[t + 1]], vs[ix[t + 2]])] > 1:
+				continue                  # chapa de 2 faces: já tem o lado de dentro
+			novo.append_array([ix[t], ix[t + 2], ix[t + 1]])
+		if novo.is_empty():
+			continue
+		if a[Mesh.ARRAY_NORMAL] != null:
+			var ns: PackedVector3Array = a[Mesh.ARRAY_NORMAL]
+			for i in ns.size():
+				ns[i] = -ns[i]
+			a[Mesh.ARRAY_NORMAL] = ns
+		a[Mesh.ARRAY_TANGENT] = null
+		a[Mesh.ARRAY_INDEX] = novo
+		dentro.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
+		var m: Material = mi.get_active_material(s)
+		mats.append(forro if m and m.resource_name.ends_with("_white") else m)
+	if dentro.get_surface_count() == 0:
+		return
+	var d := MeshInstance3D.new()
+	d.name = "FaceDeDentro"
+	d.mesh = dentro
+	for s in mats.size():
+		d.set_surface_override_material(s, mats[s])
+	mi.add_child(d)
 
 
 static var _alfa_cache := {}

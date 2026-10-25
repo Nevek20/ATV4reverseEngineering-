@@ -68,7 +68,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 :: print do carro parado (na nuvem: xvfb-run -a ... --rendering-driver opengl3)
 %GODOT% --path . -s res://tests/print_tela.gd -- print.png lado
 :: + CAM_OFF=0.3,0.9,-4 CAM_ALVO=0,0.85,-2.6 câmera livre (frame do jogo); PICK=x,y;x,y diz
-::   a malha, textura, UV e ponto do jogo embaixo de cada pixel do print
+::   a malha, textura, UV e ponto do jogo embaixo de cada pixel do print; CULL=0 carroceria com as 2 faces
 
 :: peças da suspensão x RAM do jogo (100 matrizes, 6 carros), tremida e chão
 %GODOT% --headless --path . -s res://tests/teste_pecas.gd
@@ -299,6 +299,15 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   o ajuste fica indefinido e o pulso ia 7 cm pra dentro (braço em
   zigue-zague). No volante todo a mão de fora vai perto do topo e o
   antebraço passa na frente da câmera (pendente).
+- Cabine fechada (melhoria nossa, car.gd CABINE_FECHADA, _face_de_dentro):
+  a casca do jogo só tem a face de fora (ninguém entra no carro no jogo). No
+  Storm, o único fechado, a nossa câmera do piloto via a estrada pelas portas,
+  teto e piso. Cada triângulo sem gêmeo do outro lado ganha uma cópia virada
+  (os de 2 faces já modelados ficam, senão piscam): na pintura "white" com
+  FORRO cinza (de dentro não aparece a pintura de fora espelhada), no resto
+  a mesma textura (a rede da janela aparece por dentro). Por fora só muda o
+  que se vê pela janela. print_tela CULL=0 desliga o descarte da face de
+  trás na carroceria (diagnóstico).
 - Volantes gerados (melhoria nossa, car.gd VOLANTE_NOSSO, volantes.gd): o
   do jogo tem aro de 6 a 12 lados e raios tortos; 8 carros usam o mesmo X
   furado girado ~20°. No lugar vai um volante redondo e centralizado, no
