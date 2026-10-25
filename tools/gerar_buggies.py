@@ -23,7 +23,10 @@ Uso (na pasta do projeto):
     python tools/gerar_buggies.py <unpacked> <texturas>
     python tools/gerar_buggies.py <unpacked> <texturas> --so 2,3
     python tools/gerar_buggies.py <unpacked> <texturas> --tabela   (só lista)
-<texturas> é a pasta que o gob_tex2png.py gerou.
+<texturas> é a pasta que o gob_tex2png.py gerou. Sem ela, procura uma pasta
+"texturas" do lado da unpacked. Se a pasta não existe ou não tem .png, para
+antes de mexer em qualquer coisa (o pingu2obj escreveria os .mtl sem
+textura e o carro inteiro ficaria branco).
 """
 
 import argparse
@@ -151,11 +154,20 @@ def pingu(unpacked, tex, bloco_, out, split=()):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("unpacked")
-    ap.add_argument("texturas")
+    ap.add_argument("texturas", nargs="?")
     ap.add_argument("--assets", default=os.path.join(PROJ, "assets"))
     ap.add_argument("--so", help="só esses carros (ex: 2,3)")
     ap.add_argument("--tabela", action="store_true", help="só mostra os blocos")
     a = ap.parse_args()
+    if not a.texturas:
+        a.texturas = os.path.join(os.path.dirname(os.path.abspath(a.unpacked)), "texturas")
+    pngs = [f for f in os.listdir(a.texturas) if f.endswith(".png")] if os.path.isdir(a.texturas) else []
+    if len(pngs) < 100 and not a.tabela:
+        sys.exit(f"[!] pasta de texturas não achada ou quase vazia ({len(pngs)} .png): {a.texturas}\n"
+                 "    é a que o gob_tex2png.py gera (uns 6 min):\n"
+                 "    python tools/gob_tex2png.py <unpacked>/gob --out <pasta>/texturas\n"
+                 "    nada foi mexido nos assets.")
+    print(f"[+] texturas: {a.texturas} ({len(pngs)} .png)")
 
     carros = mapear(a.unpacked)
     so = {int(x) for x in a.so.split(",")} if a.so else None

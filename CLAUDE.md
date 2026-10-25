@@ -120,7 +120,7 @@ python tools/fx_jogo.py <unpacked>
 python tools/piloto.py <unpacked>
 
 :: assets dos 12 buggies (modelo, peças, freios, rodas, pintura; + <modelo>_camada.obj com o 2º UV)
-python tools/gerar_buggies.py <unpacked> <texturas>
+python tools/gerar_buggies.py <unpacked> [<texturas>]   :: sem a pasta: "texturas" do lado da unpacked; para se não achar .png
 :: só o alfa das texturas com furo (redes das janelas, treliça do Trident); o gerar_buggies já chama
 python tools/alfa_texturas.py <unpacked>
 :: só a pintura (cores, logos e número "00"; --numero 27, --sem-decalques); depois reimportar no Godot
