@@ -38,6 +38,7 @@ fumaca.gd            fumaça do escapamento (melhoria nossa com o efeito Exhaust
 sujeira.gd           sujeira do jogo na pintura e lama nas rodas, pelo 2º UV (_camada.obj); nível e cor vêm do car.gd
 painel.gd            painel funcional (melhoria nossa): ponteiros, marcha e luz de troca, amador x PRO
 motor_treme.gd       motor e escape tremendo (melhoria nossa): separa as peças do cofre da carroceria
+motor_anima.gd       ventoinhas girando e polias + correia 3D (melhoria nossa) por cima do desenho do jogo
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas; sfx (sons) e fx (fumaça) do jogo (fora do git)
@@ -66,6 +67,8 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 
 :: print do carro parado (na nuvem: xvfb-run -a ... --rendering-driver opengl3)
 %GODOT% --path . -s res://tests/print_tela.gd -- print.png lado
+:: + CAM_OFF=0.3,0.9,-4 CAM_ALVO=0,0.85,-2.6 câmera livre (frame do jogo); PICK=x,y;x,y diz
+::   a malha, textura, UV e ponto do jogo embaixo de cada pixel do print
 
 :: peças da suspensão x RAM do jogo (100 matrizes, 6 carros), tremida e chão
 %GODOT% --headless --path . -s res://tests/teste_pecas.gd
@@ -86,6 +89,8 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_ladeira.gd -- 0   :: pneu parado em barranco: som não pode piscar
 %GODOT% --path . --write-movie cascalho.avi --fixed-fps 60 -s res://tests/gravar_cascalho.gd -- 0  :: derrapando no cascalho escuro: trocas Gravel/Dirt e áudio do pneu
 %GODOT% --headless --path . -s res://tests/teste_motor_treme.gd   :: peças e faces do motor que treme nos 12 carros
+%GODOT% --headless --path . -s res://tests/teste_motor_anima.gd   :: ventoinhas, polias e correia nos 12 (nada some, correia encosta)
+%GODOT% --path . --write-movie motor.avi --fixed-fps 60 -s res://tests/gravar_motor.gd -- 7   :: prévia: lenta, 7000 e volta (CAM_OFF/CAM_ALVO)
 :: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
@@ -357,6 +362,24 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   MOTOR_PAGINA=1,2 pras seguintes). Storm (motor escondido): só as 2
   ponteiras tremem (pelos pontos do ESCAPE_NOSSO).
   Vibração 3 mm na lenta, filtrada (6 mm por quadro ficou "tremelento").
+- Motor animado (melhoria nossa, car.gd MOTOR_ANIMA, motor_anima.gd): no
+  jogo nada gira (ventoinha e polia são desenho parado na textura).
+  Ventoinhas dos radiadores (textura "black" centro (89, 26) r 23 px; Trident
+  "tube02" (48, 48) r 15): os triângulos da placa (caixa do UV com o centro
+  do círculo; uma peça do cockpit do Renegade usa só um pedaço e fica) saem
+  pra uma malha com shader que gira o círculo da textura. Elétricas (escolha
+  do Matheus): 3 voltas/s fixas. 2 no Renegade, Sphinx, Mosquito, Inferno,
+  Trident e McKenzies, 1 no Bulldog. Polias e correia 3D (escolha dele, no
+  lugar de só girar o desenho): a "chassis_tri02" tem 2 polias desenhadas
+  ((99, 23) r 9 e (100, 51) r 8 px; no Phantom e no McKenzies o UV dá uma
+  volta na textura); onde caem (Phantom, Kraken, McKenzies, Viper) vira
+  cilindro do raio desenhado com a tampa = o desenho do jogo girando, e uma
+  correia pelas tangentes de fora com nervuras correndo. Faces em planos
+  diferentes (Phantom e Viper): tampas no plano da mais saliente. Giro
+  "legível": polia maior 1 volta/s a cada 1000 rpm (o real, 17 a 133
+  voltas/s, é só um disco borrado), borrão do quanto girou no quadro. Presas
+  na malha "Motor" (tremem junto). Trident fica sem polia: lá a textura cai
+  esticada em outras peças.
 - Volante tremendo (melhoria nossa, car.gd VOLANTE_TREME, _vibracao): no
   jogo nada treme (nem volante, nem mãos, nem motor: varredura do exe e
   vídeo). A força é a do motor pequeno da vibração do CONTROLE (0x202ab8:

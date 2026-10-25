@@ -101,6 +101,7 @@ var fixo := Vector2(-1, -1)   # prints: PAINEL="rpm,km/h" fixa os ponteiros
 var ajuste := Vector2.ZERO    # AJUSTE + teclas
 var base_ajuste := Basis()
 var conjunto: Node3D = null   # o que as teclas movem (o do modelo fica)
+var apagadas := 0             # faces do modelo que saíram (APAGAR; os testes descontam)
 
 
 func montar(c) -> bool:
@@ -220,14 +221,15 @@ func _tirar_do_modelo() -> void:
 			m2.albedo_texture = _sem_relogios(m.albedo_texture)
 			mi.set_surface_override_material(s, m2)
 	for ap in APAGAR.get(car.vehicle_id, []):
-		_apagar_faces(mi, ap[0], ap[1])
+		apagadas += _apagar_faces(mi, ap[0], ap[1])
 
 
 ## tira da malha os triângulos de uma textura perto dos pontos (frame do modelo)
-static func _apagar_faces(mi: MeshInstance3D, tex: String, pontos: Array) -> void:
+static func _apagar_faces(mi: MeshInstance3D, tex: String, pontos: Array) -> int:
 	var velha: Mesh = mi.mesh
 	var nova := ArrayMesh.new()
 	var mats := []
+	var saiu := 0
 	for s in velha.get_surface_count():
 		var arr := velha.surface_get_arrays(s)
 		var m: Material = mi.get_active_material(s)
@@ -249,6 +251,7 @@ static func _apagar_faces(mi: MeshInstance3D, tex: String, pontos: Array) -> voi
 						break
 				if longe:
 					fica.append_array([ix[t], ix[t + 1], ix[t + 2]])
+			saiu += (ix.size() - fica.size()) / 3
 			if fica.is_empty():
 				continue
 			arr[Mesh.ARRAY_INDEX] = fica
@@ -257,6 +260,7 @@ static func _apagar_faces(mi: MeshInstance3D, tex: String, pontos: Array) -> voi
 	mi.mesh = nova
 	for s in mats.size():
 		mi.set_surface_override_material(s, mats[s])
+	return saiu
 
 
 ## pinta os mostradores (manchas claras grandes) com pixels do fundo da chapa

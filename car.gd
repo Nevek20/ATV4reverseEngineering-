@@ -132,6 +132,10 @@ const ESCAPE_NOSSO := {
 # carroceria no cofre do motor; vibração pela rotação e balanço pela carga)
 const MOTOR_TREME := true
 var motor_treme: Node3D = null
+# motor animado (melhoria nossa, motor_anima.gd): ventoinhas dos radiadores
+# girando (elétricas) e polias e correia 3D por cima das polias desenhadas
+const MOTOR_ANIMA := true
+var motor_anima: Node = null
 var body_mi: MeshInstance3D = null
 # sujeira do jogo (0x223e68, _sujeira_passo) e desenho dela (sujeira.gd, com a
 # textura GEN_DIRT_DIRT em assets/fx: tools/fx_jogo.py). false = carro limpo
@@ -329,6 +333,7 @@ func _ready() -> void:
 	_load_piloto()                # depois da física: precisa do ponto ARSE
 	_load_painel()
 	_load_motor_treme()
+	_load_motor_anima()
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
@@ -876,6 +881,18 @@ func _load_motor_treme() -> void:
 		motor_treme = null
 
 
+func _load_motor_anima() -> void:
+	if not MOTOR_ANIMA or body_mi == null:
+		return
+	motor_anima = preload("res://motor_anima.gd").new()
+	motor_anima.name = "MotorAnima"
+	if motor_anima.montar(self):
+		add_child(motor_anima)
+	else:
+		motor_anima.free()
+		motor_anima = null
+
+
 static var _alfa_cache := {}
 
 
@@ -985,6 +1002,8 @@ func _process(delta: float) -> void:
 		fumaca.atualizar(som_carga, rpm)
 	if motor_treme:
 		motor_treme.atualizar(rpm, som_carga, delta)
+	if motor_anima:
+		motor_anima.atualizar(delta, rpm)
 	if sujeira:
 		sujeira.atualizar(sujeira_nivel, roda_cor)
 	if painel:

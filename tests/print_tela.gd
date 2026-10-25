@@ -21,6 +21,8 @@ extends SceneTree
 ##   VOLANTE_COR=1              pinta o volante solto de vermelho (vista "volante")
 ##   VOLANTE=kart               troca o estilo do volante gerado (volantes.gd)
 ##   PILOTO=0                   esconde o piloto (pra ver o volante)
+##   CAM_OFF=0,1.6,-4 CAM_ALVO=0,1,-2  câmera livre (frame do jogo)
+##   PICK=x,y;x,y               imprime o triângulo do carro em cada pixel
 ##   PASTA=res://assets/buggy_02 (pasta com o pecas.json)  PONTOS=res://...
 ##   RODA_F=res://...  RODA_T=res://...
 ##                              troca pasta/pontos/rodas sem mexer no main.gd
@@ -149,8 +151,66 @@ func _process(_dt: float) -> bool:
 	if frames == 95:
 		root.get_viewport().get_texture().get_image().save_png(out)
 		print("print salvo em ", out)
+		if OS.has_environment("PICK"):
+			for xy in OS.get_environment("PICK").split(";", false):
+				var q := xy.split(",")
+				_pick(Vector2(float(q[0]), float(q[1])))
 		return true
 	return false
+
+
+## PICK=x,y;x,y (pixels do print): o triângulo do carro embaixo de cada ponto
+## (malha, textura, UV em pixels, ponto e normal no frame do modelo do jogo)
+func _pick(px: Vector2) -> void:
+	var cam := root.get_viewport().get_camera_3d()
+	var o := cam.project_ray_origin(px)
+	var d := cam.project_ray_normal(px)
+	var melhor := INF
+	var info := "nada"
+	var car: Node3D = main.car
+	var pilha: Array = [car]
+	while not pilha.is_empty():
+		var n: Node = pilha.pop_back()
+		pilha.append_array(n.get_children())
+		if not (n is MeshInstance3D) or not n.is_visible_in_tree() or n.mesh == null:
+			continue
+		var mi: MeshInstance3D = n
+		var xf := mi.global_transform
+		for s in mi.mesh.get_surface_count():
+			var arr := mi.mesh.surface_get_arrays(s)
+			var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+			var uvs = arr[Mesh.ARRAY_TEX_UV]
+			var ix := PackedInt32Array(range(vs.size()))
+			if arr[Mesh.ARRAY_INDEX] != null:
+				ix = arr[Mesh.ARRAY_INDEX]
+			for t in range(0, ix.size(), 3):
+				var a := xf * vs[ix[t]]
+				var b := xf * vs[ix[t + 1]]
+				var c := xf * vs[ix[t + 2]]
+				var hit = Geometry3D.ray_intersects_triangle(o, d, a, b, c)
+				if hit == null:
+					hit = Geometry3D.ray_intersects_triangle(o, d, a, c, b)
+				if hit == null:
+					continue
+				var dist: float = o.distance_to(hit)
+				if dist >= melhor:
+					continue
+				melhor = dist
+				var m: Material = mi.get_active_material(s)
+				var tex := ""
+				var tam := Vector2(1, 1)
+				if m is BaseMaterial3D and m.albedo_texture:
+					tex = m.albedo_texture.resource_path.get_file()
+					tam = m.albedo_texture.get_size()
+				var bc := Geometry3D.get_triangle_barycentric_coords(hit, a, b, c)
+				var uv := Vector2.ZERO
+				if uvs != null and uvs.size() > 0:
+					uv = uvs[ix[t]] * bc.x + uvs[ix[t + 1]] * bc.y + uvs[ix[t + 2]] * bc.z
+				var jogo: Vector3 = car.model_root.global_transform.affine_inverse() * hit
+				var nrm := (b - a).cross(c - a).normalized()
+				info = "%s sup %d %s uv (%.1f, %.1f) jogo (%.3f, %.3f, %.3f) normal (%.2f, %.2f, %.2f)" % [
+					mi.name, s, tex, uv.x * tam.x, uv.y * tam.y, jogo.x, jogo.y, jogo.z, nrm.x, nrm.y, nrm.z]
+	print("PICK %s: %s" % [px, info])
 
 
 func _camera(v: String) -> void:
@@ -236,6 +296,13 @@ func _camera(v: String) -> void:
 		for w in car.wheels:
 			if not w.front and w.left:
 				alvo = t.affine_inverse() * w.pivot.global_position
+	# CAM_OFF=x,y,z e CAM_ALVO=x,y,z: câmera livre (frame do jogo, como OFFS)
+	if OS.has_environment("CAM_OFF"):
+		var p := OS.get_environment("CAM_OFF").split(",")
+		off = Vector3(float(p[0]), float(p[1]), float(p[2]))
+	if OS.has_environment("CAM_ALVO"):
+		var p := OS.get_environment("CAM_ALVO").split(",")
+		alvo = Vector3(float(p[0]), float(p[1]), float(p[2])) * car.ESPELHO
 	var cam: Camera3D = root.get_node_or_null("CamPrint")
 	if cam == null:
 		cam = Camera3D.new()
