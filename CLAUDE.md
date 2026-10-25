@@ -26,7 +26,7 @@ desmontado no Ghidra. Nada de "parece certo": cada número tem que ter fonte
 ```
 car.gd               física do carro (portada do exe), visual das rodas
 game_camera.gd       câmera de corrida do jogo (componentes do exe, 1/60 s)
-camera_jitter.gd     tremida da câmera (Perlin por velocidade, só na terra)
+camera_jitter.gd     tremida da câmera (Perlin por velocidade, só na terra, e sorteio na batida)
 camera_piloto.gd     câmera do piloto (melhoria nossa): força G na cabeça, FOV e borrão pela velocidade, olhar pra curva e olhar livre
 suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
@@ -78,6 +78,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . -s res://tests/teste_chao.gd
 %GODOT% --headless --path . -s res://tests/teste_mao.gd     :: espelho (lado das peças, esterço)
 %GODOT% --headless --path . -s res://tests/teste_tremida_camera.gd
+set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Storm na parede: velocidade da batida e tremida da câmera
 %GODOT% --headless --path . -s res://tests/teste_freio.gd   :: patinada, ABS e trava
 %GODOT% --headless --path . -s res://tests/teste_roda.gd    :: giro das rodas por torque (no ar, preso)
 %GODOT% --headless --path . -s res://tests/teste_camera_passo.gd  :: câmera de órbita sem vai e volta
@@ -516,9 +517,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 ## Pendente / ideias
 
 - Pneu e aro comprados (hipótese: troca de textura, ver docs/assets.md).
-- Tremida da câmera na BATIDA (a por velocidade já está, camera_jitter.gd):
-  precisa do sistema de colisão do corpo (corpo+0x7a0); fórmula em
-  docs/engenharia_reversa.md, Câmera.
+- Batida: o RX01 do remake só tem o relevo (sem paredes, cercas e pedras do
+  jogo), então a tremida da batida só aparece quando o casco bate no chão.
+  Trava do 0x380418 (veículo+0xa6c/0xa74/0xa78) não portada.
 - Som do motor (melhoria nossa, plano combinado com o Matheus): o jogo só
   tem 3 bancos de motor (02/03/04, XMLs 00002/00004/00005) repetidos nos 12
   buggies (o Mosquito soa igual ao Kraken V8). Plano: o Matheus monta cada

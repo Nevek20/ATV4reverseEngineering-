@@ -326,12 +326,26 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   data/ruido_camera.bin). Direção nova = dir + direita·n1 + cima·n2,
   matriz refeita (0x61e010). Órbita: 70 a 100 mph, Amp 0.03, Freq 0.3;
   capô/para-choque: 0 a 75 mph, Amp 0.04, Freq 0.25.
-  Batida (NÃO portada, falta o sistema de colisão): última colisão do corpo
-  (corpo+0x7a0 + idx·0x40, idx = corpo+0x860, −1 sem) dá c = rampa da
-  velocidade (CollisionSpeedFor*) × rampa da massa do outro (+0x60 → +0x78,
-  CollisionMassFor*) × CollisionJitterMagMax; amp = max(c, amp)·Decay por
-  passo (com trava por veículo+0xa74/0xa78), somando sorteio uniforme
-  [−amp, amp) nas duas componentes (x·31415821+1 mod 2^30, semente 0x8383a8).
+  Batida (portada, camera_jitter.gd + car.gd batida): a cada passo de física
+  o 0x215140 anda na lista de contatos do corpo (corpo+0x1f0, próximo em +4)
+  e o 0x215248 guarda até 3 registros de 0x40 em corpo+0x7a0, ordenados pela
+  velocidade (índices em corpo+0x860.., −1 = vazio, quantos em +0x86c):
+  +0 = |contato+0x64| (velocidade do ponto na normal, m/s), +0x10 normal
+  (contato+0x30), +0x20 ponto (contato+0x10), +0x34 outro corpo (contato+0xc
+  → +0x1d4; 0 em parede e chão). Contato com outro carro (+0x68 == 2) entra
+  nos dois, com a normal negada. A câmera lê o maior (idx[0]): c = rampa da
+  velocidade (abaixo de CollisionSpeedForStartJitter 0, acima do Max 1) ×
+  rampa da massa do outro (+0x60 → +0x78, t, CollisionMassFor*; só com outro
+  corpo) × CollisionJitterMagMax; amp (componente[4]) = max(c, amp)·Decay a
+  cada passo de 1/60 e, com amp > 1e-6, soma um sorteio uniforme [−amp, amp)
+  em n1 e n2 (x·31415821+1 mod 2^30 / 2^30, semente global 0x8383a8). Trava
+  (não portada): com (veículo+0xa6c)+0x8c → +0x18 ≠ 0, +0xa78 = 0, +0xa74 ≥
+  0.5 e amp ≤ 1e-6 a batida não começa. Save state crash_Storm (parede de
+  pedra, 44 km/h): 1 registro de 0.08 m/s (encostado), normal (−0.38, 0,
+  −0.93), sem outro corpo; um registro velho de 4.86 m/s; órbita perto com
+  MagMax 0.05, Decay 0.93, 4/44 m/s, amp 0.0124. No remake a velocidade é a
+  do ponto ANTES do passo que achou o contato (o solver do Godot já tirou a
+  aproximação). tests/teste_batida.gd.
 - Câmeras montadas (MountOnHood/Front): PosOffset no frame do modelo,
   Orientation.X em graus, FOV fixo. MountOnFront fica dentro da carroceria
   (não desenha o carro).

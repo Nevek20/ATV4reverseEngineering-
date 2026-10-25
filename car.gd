@@ -284,6 +284,15 @@ var jit_acc := 0.0
 var spd_ground := 0.0         # corpo+0x440: velocidade no plano do chão (m/s)
 var jit_order := []           # índices das rodas na ordem do jogo: FL, RL, FR, RR
 var jitter_chao := 0.0        # veículo+0xac0: média do WheelJitter embaixo de FL, RL, FR no chão (câmera)
+# batida (0x215140): a cada passo o jogo guarda os contatos do casco por
+# |contato+0x64| = velocidade do ponto na normal (m/s) e a câmera lê o maior
+# (camera_jitter.gd). Aqui o solver do Godot já tirou essa velocidade quando o
+# contato aparece, então vale a velocidade do ponto ANTES do passo que achou o
+# contato. No save state da batida (crash_Storm): parede de pedra, outro corpo
+# nenhum, 4.86 m/s num registro velho e 0.08 m/s encostado.
+var batida := 0.0             # corpo+0x7a0: maior velocidade de contato do último passo (m/s)
+var _v_antes := Vector3.ZERO
+var _w_antes := Vector3.ZERO
 
 # melhoria nossa: o volante treme (as mãos vão junto pela IK). No jogo ele não
 # treme; a força vem do que o jogo usa pra sacudir o CONTROLE e pro som:
@@ -364,6 +373,8 @@ func _ready() -> void:
 	shape.shape = box
 	shape.position = Vector3(0, 0.95, 0)
 	add_child(shape)
+	contact_monitor = true            # batida: contatos do casco (_batida_passo)
+	max_contacts_reported = 8
 	for w in wheels:
 		_make_wheel_mesh(w)
 	if suspension and not pecas.is_empty() and not points.is_empty():
@@ -1270,6 +1281,8 @@ func reset_to(pos: Vector3, yaw: float) -> void:
 	global_transform = Transform3D(Basis(Vector3.UP, yaw), pos)
 	reset_physics_interpolation()   # teleporte: não interpolar do lugar antigo
 	pos_ant = pos
+	_v_antes = Vector3.ZERO         # o contato do lugar antigo não vira batida
+	_w_antes = Vector3.ZERO
 	reset_drivetrain()
 
 
@@ -1347,6 +1360,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # ------------------------------------------------------------------ física
 func _physics_process(dt: float) -> void:
+	_batida_passo()
 	# ---- comandos
 	var thr_raw := 0.0
 	var brk_raw := 0.0
@@ -1617,6 +1631,20 @@ func _physics_process(dt: float) -> void:
 ## terra úmida). Não tem dt: o passo é fixo. Vai até 1 e só zera quando o carro
 ## reinicia (0x223db0); a água não limpa a carroceria no jogo, só a cor da
 ## roda (0x224418, não portada). Confere com 2 save states: tests/teste_derrapagem.gd.
+## 0x215140: maior velocidade na normal dos contatos do casco no último passo,
+## com a velocidade do ponto de antes desse passo (_v_antes, _w_antes)
+func _batida_passo() -> void:
+	batida = 0.0
+	var st := PhysicsServer3D.body_get_direct_state(get_rid())
+	if st:
+		var com := global_transform * center_of_mass
+		for i in st.get_contact_count():
+			var vp := _v_antes + _w_antes.cross(st.get_contact_local_position(i) - com)
+			batida = maxf(batida, absf(vp.dot(st.get_contact_local_normal(i))))
+	_v_antes = linear_velocity
+	_w_antes = angular_velocity
+
+
 func _sujeira_passo() -> void:
 	if not SUJEIRA or grounded == 0 or spd_ground < 0.5 or terrain == null:
 		return

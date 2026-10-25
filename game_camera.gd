@@ -323,8 +323,9 @@ func _step(dt: float, s: Dictionary, terrain) -> void:
 	if ld.length() > 1e-5:
 		dir = ld.normalized()
 
-	# 0x380418 tremida: só na terra (WheelJitter) e acima de JitterSpeedStart
-	dir = CameraJitter.aplicar(dir, jit.passo(dt, s.get("speed", 0.0), s.get("chao", 0.0)))
+	# 0x380418 tremida: na terra (WheelJitter) acima de JitterSpeedStart e na batida
+	dir = CameraJitter.aplicar(dir, jit.passo(dt, s.get("speed", 0.0), s.get("chao", 0.0),
+		s.get("batida", 0.0)))
 
 	# 0x3806a0 zoom por velocidade, aproxima com fração dt por passo
 	var zf := 0.0

@@ -328,7 +328,7 @@ func cam_state() -> Dictionary:
 	var v: Vector3 = car.linear_velocity
 	return {
 		"tp": tp, "basis": b, "vel": v, "v_f": v.dot(b.z),
-		"speed": v.length(), "chao": car.jitter_chao,
+		"speed": v.length(), "chao": car.jitter_chao, "batida": car.batida,
 		"air_time": car.air_time, "grounded": car.grounded,
 		"ground_n": ground_normal(tp.x, tp.z),
 	}
@@ -420,4 +420,4 @@ func _passo_tremida(delta: float, j, s: Dictionary) -> void:
 	jit_acc += minf(delta, 0.25)
 	while jit_acc >= GameCamera.STEP:
 		jit_acc -= GameCamera.STEP
-		j.passo(GameCamera.STEP, s.speed, s.chao)
+		j.passo(GameCamera.STEP, s.speed, s.chao, s.batida)
