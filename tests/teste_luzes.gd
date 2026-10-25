@@ -63,7 +63,7 @@ func _conferir() -> void:
 	for k in 30:
 		lz.atualizar(1.0 / 60.0, 0.0)
 	var aceso_solto: float = lz.aceso
-	var ok: bool = ok_cor and lz.faces >= 2 and aceso_freando > 0.99 and aceso_solto < 0.01
+	var ok: bool = ok_cor and lz.faces >= 2 and lz.halos >= 2 and aceso_freando > 0.99 and aceso_solto < 0.01
 	falhas += 0 if ok else 1
-	print(linha + "  lente %3d faces  freando %.2f solto %.2f  %s" % [
-		lz.faces, aceso_freando, aceso_solto, "ok" if ok else "FALHA"])
+	print(linha + "  lente %3d faces, %d halos  freando %.2f solto %.2f  %s" % [
+		lz.faces, lz.halos, aceso_freando, aceso_solto, "ok" if ok else "FALHA"])

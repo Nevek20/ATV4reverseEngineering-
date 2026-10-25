@@ -240,7 +240,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - Lanterna de freio (melhoria nossa, car.gd LUZ_FREIO, luzes.gd): o jogo
   não usa os pontos BRAKE_LIGHT (nenhuma string no exe). Lente = faces até
   15 cm do ponto que são vermelhas na cor final (textura x cor do vértice);
-  uma cópia por cima soma a cor dela x 6 (blend_add), pelo brake_in (0x390, inclui o freio que o jogo segura parado:
+  uma cópia por cima soma a cor dela x 6 + um miolo rosado (blend_add) e cada
+  lanterna ganha um halo virado pra câmera (só de trás; só somar vermelho não
+  aparecia: a lente apagada já é vermelho puro), pelo brake_in (0x390, inclui o freio que o jogo segura parado:
   acende na largada; zera na ré pelo freio). 4 a 34 faces por carro. Sem
   OmniLight: de dia pintava gaiola, estepe e chão de rosa.
 - Alfa: o gob_tex2png salva sem alfa (no PS2 ele muitas vezes é brilho). Nos

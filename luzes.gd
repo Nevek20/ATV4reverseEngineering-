@@ -7,9 +7,12 @@ extends Node3D
 ##
 ## As faces da lente = perto de um ponto (RAIO) e vermelhas na cor final
 ## (textura x cor do vértice, em linear). Elas ganham uma cópia por cima, um
-## pouco pra fora pela normal, que SOMA a própria cor (blend_add) vezes GANHO
-## quando o freio aperta. Sem luz pontual: de dia um OmniLight vermelho
-## pintava gaiola, estepe e chão de rosa (fica pra noite, se tiver).
+## pouco pra fora pela normal, que SOMA a cor dela vezes GANHO + MIOLO quando
+## o freio aperta. Só somar vermelho não aparecia: a lente apagada já é
+## vermelho puro (vértice 1.3 x sol), então o miolo puxa pro rosado claro e
+## cada lanterna ganha um HALO (brilho em volta, virado pra câmera, só de
+## trás: some quando a câmera sai da frente da lente). Sem luz pontual: de
+## dia um OmniLight vermelho pintava gaiola, estepe e chão de rosa.
 ## Freio = brake_in (o suavizado do jogo, 0x390): inclui o freio que o jogo
 ## segura parado (0x202df0), então acende parado na largada, e zera na ré
 ## pelo freio. Acende e apaga em ACENDE / APAGA segundos (lâmpada).
@@ -22,7 +25,12 @@ const LIGA := 0.05            # brake_in acima disso = freando
 const ACENDE := 0.06          # s
 const APAGA := 0.15           # s
 const GANHO := 6.0            # quanto a lente soma de luz acesa (x a cor dela)
+const MIOLO := Color(0.45, 0.10, 0.06)   # + isso (linear): a lente acesa clareia
 const AFASTA := 0.002         # m: cópia pra fora da face (sem brigar no z)
+const HALO_TAM := Vector2(0.18, 0.45)    # m: diâmetro = 2.2 x a lente, entre esses
+const HALO_FORCA := 1.2
+const HALO_COR := Color(1.0, 0.10, 0.04)
+const JUNTA := 0.10           # m: pontos mais perto que isso viram um (TAIL_LIGHT x BRAKE_LIGHT)
 
 const SHADER := """
 shader_type spatial;
@@ -33,6 +41,7 @@ uniform float aceso = 0.0;
 uniform float ganho = 6.0;
 uniform float afasta = 0.002;
 uniform float cor_k = 0.0;
+uniform vec3 miolo = vec3(0.45, 0.10, 0.06);
 
 vec3 cor_v(vec3 c) {
 	if (cor_k <= 0.0) {
@@ -47,13 +56,43 @@ void vertex() {
 
 void fragment() {
 	vec3 t = tem_tex ? texture(tex, UV).rgb : vec3(1.0);
-	ALBEDO = t * cor_v(COLOR.rgb) * aceso * ganho;
+	ALBEDO = (t * cor_v(COLOR.rgb) * ganho + miolo) * aceso;
+}
+"""
+
+# brilho em volta da lanterna: quadrado virado pra câmera (montado na vista),
+# puxado PUXA pra frente (não some dentro da caixa da lanterna), mais forte
+# quanto mais a lente olha pra câmera
+const SHADER_HALO := """
+shader_type spatial;
+render_mode blend_add, unshaded, cull_disabled, depth_draw_never, shadows_disabled, skip_vertex_transform, fog_disabled;
+uniform float aceso = 0.0;
+uniform float tam = 0.3;
+uniform vec3 frente = vec3(0.0, 0.0, -1.0);
+uniform vec3 cor = vec3(1.0, 0.1, 0.04);
+uniform float forca = 1.2;
+uniform float puxa = 0.12;
+varying float ver;
+
+void vertex() {
+	vec3 c = (MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+	vec3 f = normalize((MODELVIEW_MATRIX * vec4(frente, 0.0)).xyz);
+	vec3 cam = normalize(-c);
+	ver = smoothstep(0.0, 0.5, dot(f, cam));
+	VERTEX = c + vec3(VERTEX.xy * tam, 0.0) + cam * puxa;
+}
+
+void fragment() {
+	float a = clamp(1.0 - length(UV - vec2(0.5)) * 2.0, 0.0, 1.0);
+	a *= a;
+	ALBEDO = mix(cor, vec3(1.0, 0.55, 0.45), a * a) * a * aceso * forca * ver;
 }
 """
 
 var car = null
 var faces := 0                    # quantas faces de lente achou
 var aceso := 0.0
+var halos := 0
 var _mats: Array[ShaderMaterial] = []
 var _imgs := {}
 
@@ -67,8 +106,9 @@ func montar(c) -> bool:
 	var pts: Array[Vector3] = []
 	for k in car.points:
 		for p in PONTOS:
-			if String(k).begins_with(p):
-				pts.append(car.points[k])
+			var q: Vector3 = car.points[k]
+			if String(k).begins_with(p) and pts.all(func(o): return o.distance_to(q) > JUNTA):
+				pts.append(q)
 	if pts.is_empty():
 		return false
 	var sh := Shader.new()
@@ -76,6 +116,10 @@ func montar(c) -> bool:
 	var malha := ArrayMesh.new()
 	var mesh: ArrayMesh = mi.mesh
 	var k_cor: float = car.cor_k()
+	# por ponto: soma dos centros, das normais, nº de faces e caixa da lente
+	var grupos: Array = []
+	for p in pts:
+		grupos.append({"c": Vector3.ZERO, "n": Vector3.ZERO, "k": 0, "lo": Vector3.INF, "hi": -Vector3.INF})
 	for s in mesh.get_surface_count():
 		var a := mesh.surface_get_arrays(s)
 		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
@@ -87,18 +131,19 @@ func montar(c) -> bool:
 		var img := _imagem(tex)
 		var cols = a[Mesh.ARRAY_COLOR]
 		var uvs = a[Mesh.ARRAY_TEX_UV]
+		var nrs = a[Mesh.ARRAY_NORMAL]
 		var novo := PackedInt32Array()
 		for t in range(0, ix.size(), 3):
 			var i0 := ix[t]
 			var i1 := ix[t + 1]
 			var i2 := ix[t + 2]
 			var cen := (vs[i0] + vs[i1] + vs[i2]) / 3.0
-			var perto := false
-			for p in pts:
-				if cen.distance_to(p) < RAIO:
-					perto = true
-					break
-			if not perto:
+			var perto := -1
+			for j in pts.size():
+				if cen.distance_to(pts[j]) < RAIO and (perto < 0 or
+						cen.distance_to(pts[j]) < cen.distance_to(pts[perto])):
+					perto = j
+			if perto < 0:
 				continue
 			var cor := Color(1, 1, 1)
 			if img and uvs != null:
@@ -109,6 +154,14 @@ func montar(c) -> bool:
 				cor = Color(cor.r * cv.r * k_cor, cor.g * cv.g * k_cor, cor.b * cv.b * k_cor)
 			if cor.r > MIN_R and cor.r > VERMELHO * cor.g and cor.r > VERMELHO * cor.b:
 				novo.append_array([i0, i1, i2])
+				var g: Dictionary = grupos[perto]
+				g.c += cen
+				g.k += 1
+				if nrs != null:
+					g.n += nrs[i0] + nrs[i1] + nrs[i2]
+				for v in [vs[i0], vs[i1], vs[i2]]:
+					g.lo = g.lo.min(v)
+					g.hi = g.hi.max(v)
 		if novo.is_empty():
 			continue
 		var b: Array = a.duplicate()
@@ -122,6 +175,7 @@ func montar(c) -> bool:
 		mat.set_shader_parameter("ganho", GANHO)
 		mat.set_shader_parameter("afasta", AFASTA)
 		mat.set_shader_parameter("cor_k", k_cor)
+		mat.set_shader_parameter("miolo", Vector3(MIOLO.r, MIOLO.g, MIOLO.b))
 		malha.surface_set_material(malha.get_surface_count() - 1, mat)
 		_mats.append(mat)
 		faces += novo.size() / 3
@@ -132,6 +186,30 @@ func montar(c) -> bool:
 	lente.mesh = malha
 	lente.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.add_child(lente)
+	var sh_halo := Shader.new()
+	sh_halo.code = SHADER_HALO
+	for g in grupos:
+		if g.k == 0:
+			continue
+		var n: Vector3 = g.n.normalized() if g.n.length() > 0.0 else Vector3(0, 0, -1)
+		var ext: Vector3 = g.hi - g.lo
+		var q := QuadMesh.new()
+		var mat := ShaderMaterial.new()
+		mat.shader = sh_halo
+		mat.set_shader_parameter("tam", clampf(2.2 * maxf(ext.x, maxf(ext.y, ext.z)), HALO_TAM.x, HALO_TAM.y))
+		mat.set_shader_parameter("frente", n)
+		mat.set_shader_parameter("cor", Vector3(HALO_COR.r, HALO_COR.g, HALO_COR.b))
+		mat.set_shader_parameter("forca", HALO_FORCA)
+		q.material = mat
+		var h := MeshInstance3D.new()
+		h.name = "Halo"
+		h.mesh = q
+		h.position = g.c / float(g.k) + n * 0.02
+		h.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		h.extra_cull_margin = 1.0
+		mi.add_child(h, true)
+		_mats.append(mat)
+		halos += 1
 	return true
 
 
