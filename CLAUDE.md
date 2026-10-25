@@ -88,7 +88,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 13 carros (0 cm) e giro do volante
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
 %GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies
-%GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states
+%GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states; material da FL x RAM
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_ladeira.gd -- 0   :: pneu parado em barranco: som não pode piscar
 %GODOT% --path . --write-movie cascalho.avi --fixed-fps 60 -s res://tests/gravar_cascalho.gd -- 0  :: derrapando no cascalho escuro: trocas Gravel/Dirt e áudio do pneu
 %GODOT% --headless --path . -s res://tests/teste_motor_treme.gd   :: peças e faces do motor que treme nos 12 carros
@@ -248,6 +248,16 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Alturas e material saem do stream (tools/extrair_material.py), conferidos
   com a RAM (tests/teste_chao.gd). Diagonal da célula (i+1, j)-(i, j+1) = a
   do HeightMapShape3D. Material i = Material_(i+1) do data/materials_rx01.xml.
+- Mapa de material do RX01 CONFERIDO (out/2026): o material da FL na RAM
+  (veículo+0xa88[0]) bate com o mapa no ponto de contato em drr_1, drr_3 e
+  110; no 170 a roda está 1.2 mm depois da divisa da célula (o material da
+  RAM é do passo seguinte). No 110 o PS2 tocava asfalto com as rodas da
+  frente no cascalho porque elas saíram do asfalto 0.07 s antes: o loop do
+  asfalto leva 0.34 s pra apagar (release) e o do cascalho só entra 0.25 s
+  depois (espera do grão). Não tem malha de estrada por cima do relevo.
+  tests/teste_sfx.gd confere os 2 (material x RAM e "som atrás do chão").
+  O "grip" do ref_derrapagem.json NÃO é o atrito do material (0.80 até no
+  asfalto).
 - Material do chão: só o atrito (pneu) e o Damping (arrasto do chão,
   0x20e5e8) mexem na física do buggy. Hardness, Sink e Bounciness o jogo
   carrega e não lê (varredura do exe, docs Terreno). Não "portar" eles.
@@ -492,7 +502,3 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   portada: o RX01 não tem água. Reflexo menor com o carro sujo
   (0x22ace8, 1 - nível) não portado. Sujeira do piloto como o jogo.
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).
-- Mapa de material do RX01: no save state 110 (1ª curva) o PS2 tocava
-  asfalto e o mapa do remake diz cascalho nas rodas da frente
-  (tests/teste_sfx.gd avisa). O atrito do pneu usa o mesmo mapa: conferir
-  (pode ser uma malha de estrada por cima do relevo).

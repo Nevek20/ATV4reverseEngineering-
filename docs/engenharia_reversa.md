@@ -556,9 +556,15 @@ fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
   loop com espera 0..180 ticks (2.65 estalos/s), volume 90..115, ±2
   semitons. Terra (Dirt): as 2 camadas entram juntas depois de 60 ticks.
 - Não confirmado: curva de distância 3D.
-- Achado: no save state 110 (1ª curva) o PS2 tocava asfalto e o mapa de
-  material do remake diz cascalho nas rodas da frente (pendente: o atrito
-  também usa esse mapa).
+- Save state 110 (1ª curva): o PS2 tocava asfalto e o mapa diz cascalho nas
+  rodas da frente, mas o material da FL na RAM (veículo+0xa88[0]) também é o
+  5 (GRAVEL/ROCK): o mapa está certo. As rodas saíram do asfalto 0.07 s
+  antes (andando pra trás pela velocidade, 113 km/h); o loop do asfalto
+  (Tarmac, ADSR2 0x9fcd, release linear shift 13) leva 0.34 s pra apagar
+  depois do key-off e o loop do cascalho (GRAVELEMENT2) só entra 60 ticks
+  (0.25 s) depois, então só as vozes do asfalto tocavam. tests/teste_sfx.gd
+  confere ("som atrás do chão" e "material: FL RAM x mapa"; no 170 a FL
+  está 1.2 mm depois da divisa da célula e a RAM já tem a célula seguinte).
 
 ## Sujeira
 

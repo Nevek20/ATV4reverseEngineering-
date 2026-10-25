@@ -12,6 +12,7 @@ extends SceneTree
 const Car := preload("res://car.gd")
 const Main := preload("res://main.gd")
 const Terrain := preload("res://terrain.gd")
+const SomJogo := preload("res://som_jogo.gd")
 const PASSO := 1.0 / 50.0
 const TOL := 0.02
 
@@ -22,6 +23,7 @@ var som: Dictionary
 var fila := []
 var falhas := 0
 var avisos: Array = []
+var mapa_ram: Array = []
 var pior := 0.0
 
 
@@ -52,8 +54,10 @@ func _physics_process(_dt: float) -> bool:
 		print("teste_sfx: FALHA (sem assets/sfx: python tools/sfx_jogo.py <unpacked>)")
 		return true
 	if fila.is_empty():
+		for a in mapa_ram:
+			print("material: " + a)
 		for a in avisos:
-			print("AVISO mapa de material: " + a)
+			print("som atrás do chão: " + a)
 		print("teste_sfx: %s (pior diferença de tom %.4f, tolerância %.2f)" % ["ok" if falhas == 0 else "FALHA", pior, TOL])
 		return true
 	var nome: String = fila.pop_front()
@@ -67,12 +71,36 @@ func _physics_process(_dt: float) -> bool:
 		if w.hit:
 			var p: Vector3 = Terrain.do_jogo(Vector3(c[0], c[1], c[2]))
 			w.mat = terrain.material_at(p.x, p.z)
-			# o mapa de material do remake pode discordar do jogo (110: o mapa
-			# diz cascalho/terra e o PS2 tocava asfalto). Aqui o teste é da conta
-			# do som, então a roda vai pro material que o jogo tocava
+			# o som pode estar atrás do chão: a roda acabou de trocar de
+			# material e as vozes do som de antes ainda descem pelo release
+			# (no 110 a frente saiu do asfalto 0.06 s antes; o asfalto leva 0.34 s
+			# pra apagar e o loop do cascalho só entra 60 ticks = 0.25 s depois).
+			# Aqui o teste é do tom, então a roda vai pro material que o jogo tocava
 			if terrain.sfx(w.mat) != r.chao:
-				avisos.append("%s roda %d: mapa %s, PS2 tocava %s" % [nome, i, terrain.sfx(w.mat), r.chao])
+				var t_troca := _desde(c, e.vel, r.chao)
+				var rel := _release(r.chao)
+				avisos.append("%s roda %d: mapa %s, PS2 ainda tocava %s: saiu dele %.2f s antes, o release dura %.2f s (%s)" % [
+					nome, i, terrain.sfx(w.mat), r.chao, t_troca, rel, "explicado" if t_troca <= rel else "SEM EXPLICAÇÃO"])
+				if t_troca > rel:
+					falhas += 1
 				w.mat = _material(r.chao)
+	# material da FL na RAM (veículo+0xa88[0]) x mapa no ponto de contato dela
+	if e.has("roda_suja") and e.roda_suja.has("mat"):
+		var c0: Array = e.rodas[0].contato
+		var p0 := Terrain.do_jogo(Vector3(c0[0], c0[1], c0[2]))
+		var no_mapa: int = terrain.material_at(p0.x, p0.z)
+		var ram := int(e.roda_suja.mat)
+		if no_mapa != ram:
+			# na borda de uma célula o material da RAM é do passo seguinte
+			var borda := false
+			for dx in [-0.05, 0.0, 0.05]:
+				for dz in [-0.05, 0.0, 0.05]:
+					borda = borda or terrain.material_at(p0.x + dx, p0.z + dz) == ram
+			mapa_ram.append("%s FL: RAM %d, mapa %d (%s)" % [nome, ram, no_mapa, "borda de célula" if borda else "DIFERENTE"])
+			if not borda:
+				falhas += 1
+		else:
+			mapa_ram.append("%s FL: RAM %d = mapa" % [nome, ram])
 	var bas: Basis = car.global_transform.basis
 	car.sfx.passo(PASSO, car.linear_velocity.dot(bas.x), car.linear_velocity.dot(bas.z))
 	var st: Array = car.sfx.estado()      # [nome, volume, tom] de FL, RL, FL secundário
@@ -95,6 +123,38 @@ func _physics_process(_dt: float) -> bool:
 
 
 ## primeiro material da pista com esse som
+## quanto tempo atrás (s) o contato saiu do chão de som "nome", andando pra
+## trás pela velocidade (frame do jogo)
+func _desde(c: Array, vel: Array, nome: String) -> float:
+	var p := Vector3(c[0], c[1], c[2])
+	var v := Vector3(vel[0], vel[1], vel[2])
+	for k in 200:
+		var t := k * 0.005
+		var q := Terrain.do_jogo(p - v * t)
+		if terrain.sfx(terrain.material_at(q.x, q.z)) == nome:
+			return t
+	return INF
+
+
+## tempo do release (key-off até zero) do loop do chão "nome" (ADSR do 1º tom)
+func _release(nome: String) -> float:
+	var mat: Dictionary = car.sfx.materiais.get(nome, {})
+	var pat: Dictionary = car.sfx.patches.get(mat.get("SurfacePatch", ""), {})
+	if not pat.has("looping"):
+		return 0.0
+	var b: Dictionary = SomJogo.banco().bancos.get("Surface", {})
+	var som: Dictionary = b.get(pat.looping.sample, {})
+	var tons: Array = som.get("tons", [])
+	if tons.is_empty() or not tons[0].has("adsr"):
+		return 0.0
+	var v := {"a1": int(tons[0].adsr[0]), "a2": int(tons[0].adsr[1]), "fase": 3, "nivel": 32767.0}
+	var t := 0.0
+	while v.fase < 4 and t < 5.0:
+		SomJogo._env_anda(v, 48.0)
+		t += 0.001
+	return t
+
+
 func _material(nome: String) -> int:
 	for m in terrain.materials.size():
 		if terrain.sfx(m) == nome:
