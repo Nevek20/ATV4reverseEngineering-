@@ -120,6 +120,9 @@ python tools/piloto.py <unpacked>
 python tools/gerar_buggies.py <unpacked> <texturas>
 :: só o alfa das texturas com furo (redes das janelas, treliça do Trident); o gerar_buggies já chama
 python tools/alfa_texturas.py <unpacked>
+:: só a pintura (cores, logos e número "00"; --numero 27, --sem-decalques); depois reimportar no Godot
+python tools/gerar_pintura.py <unpacked> BUGGY_10 assets/renegade
+python tests/teste_pintura.py <unpacked>      :: caixas do .bed x quadros do número (12 carros) e logos do DefaultDecals
 
 :: motores do Engine Simulator (12 .mr) e dinamômetro sem tela (Linux)
 python tools/gerar_motores.py
@@ -214,6 +217,14 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   descarta a face de trás (`MODEL_CULL`). Total de materiais do .pingu em
   0xAC (0xBC conta menos).
 - Carroceria usa a textura "white" = pintura gerada (tools/gerar_pintura.py).
+  Logos e número (camadas Decal e Box/Text do XML 150xx, docs Pintura):
+  caixas do .bed = fração x 100000 (não é 16.16); a k-ésima Decal de uma área
+  usa o <ÁREA><k> do DefaultDecals (HOOD1, SIDE3, REARWING1); KeepAspect
+  encaixa o logo na caixa e DEPOIS gira; número = "00" do perfil novo, altura
+  = caixa x 0.55. Conferido no print do Renegade (ITP, ATTACK, OUTERWEARS,
+  00, elf na ordem). Sphinx e BUGGY_03 ficam sem logo (o vehicles.xml deles
+  tem chaves de moto). Depois de gerar, o Godot precisa reimportar a
+  pintura.png (abrir o editor ou `--headless --import`), senão usa a velha.
 - Alfa: o gob_tex2png salva sem alfa (no PS2 ele muitas vezes é brilho). Nos
   carros só 3 texturas têm furo de verdade: mesh_grey (redes das janelas,
   54%), Buggy_05_framework (treliça do Trident, 71%) e driver (7%).
@@ -471,7 +482,6 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 ## Pendente / ideias
 
 - Pneu e aro comprados (hipótese: troca de textura, ver docs/assets.md).
-- Decalques e número na pintura (camadas Decal/Text do XML 150xx).
 - Tremida da câmera na BATIDA (a por velocidade já está, camera_jitter.gd):
   precisa do sistema de colisão do corpo (corpo+0x7a0); fórmula em
   docs/engenharia_reversa.md, Câmera.

@@ -660,6 +660,44 @@ fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
 
 - Textura "white" gerada em tempo real pelas camadas do XML 150xx
   (Buggy_NN_Base/Primary/Secondary/Detail + cores + decalques + número).
+  tools/gerar_pintura.py faz igual.
+- Camadas (vtables em 0x59e9a8 Text, 0x59e9f0 Box, 0x59ea38 Decal,
+  0x59eb10 Sprite; [parse, desenha]): Sprite 0x2fecf8/0x2fedf8, Text
+  0x2ffe30/0x2fffd8, Box 0x2ffac8/0x2ffc40, Decal 0x2ff9c0/0x2ffa40.
+  Construtores 0x3011c0 (Sprite: Aspect 1, KeepAspect 0, Rotation 0) e
+  0x301678 (Text: Scale 1, Aspect 1, Fit 0).
+- Box: lê a caixa do .bed (cantos 0 e 2) e põe o centro e o tamanho no
+  contexto (NDC, y pra cima = topo da imagem).
+- .bed (caixas, logos, glifos): u8 1, u8 1, nome.tga, u16 largura, altura,
+  quantos; cada item u16 pontos, pontos (s32 x, s32 y), nome, u16 0xffff.
+  Coordenadas inteiras = fração da textura x 100000 (máximo 100000 exato;
+  22656 = 29/128 na HUD_Digital). Lidas como 16.16 dão ~1.53 no fim da
+  textura: com 1.5 as caixas saíam 1.7% pra fora (4 px em 512). Conferido
+  nos quadros claros do número de 12 carros (escala 1.00) e nos logos.
+- Sprite: cor = Diffuse x 128 (128 = 1.0). KeepAspect: se a caixa
+  (largura/altura/Aspect) é mais larga que o retângulo do logo, encolhe a
+  largura, senão a altura (logo inteiro dentro da caixa, centrado). Depois
+  gira Rotation graus em volta do centro, anti-horário na imagem: o logo
+  encaixa na caixa deitada e fica em pé depois (os ATTACK nas faixas pretas
+  verticais do teto do Renegade). Reflection (0x5513a0: 0 None, 1
+  Horizontal, 2 Vertical, 3 Both) desenha 2 ou 4 metades espelhadas.
+- Text: largura e altura do texto pela fonte, x vezes Aspect x 4/3 (desfaz a
+  correção da tela 4:3, então o dígito sai na proporção da textura; o "01"
+  do HUD na tela mede 0.73 e o glifo 0.70). Fit (tabela 0x551480: 0 No,
+  1 Vertical, 2 Horizontal, 3 Both): Vertical = altura do texto = altura da
+  caixa, Horizontal = largura, Both = o menor; vezes Scale. Centrado, gira
+  em volta do centro. Diffuse preto = número preto (o glifo é branco).
+- Decal: DecalArea + ordem. A k-ésima camada Decal de uma área usa o logo
+  <ÁREA sem espaço><k> do DefaultDecals do vehicles.xml (HOOD1, SIDE3,
+  REARWING1 de "Rear Wing"...), pelo nome na BuggyLogos.bed (sem diferença
+  de maiúscula). Conferido no print do Renegade: lado direito, de trás pra
+  frente, ITP, ATTACK com OUTERWEARS embaixo, o número e elf (SIDE3, SIDE2,
+  SIDE4, número, SIDE1). BUGGY_03 e BUGGY_04 (Sphinx) têm no vehicles.xml as
+  chaves de moto (FRONT_01, NOSE...): nenhuma bate, ficam sem logo.
+- Número: o texto da camada PLAYER_NUMBER é o número do perfil; perfil novo
+  = nome "PLAYER", número "00" (0x56b0a0, ao lado de mRiderNumber). O print
+  do save state mostra 2 dígitos pretos no quadro branco. Os pilotos da IA
+  têm o número no Setup/AIPlayers.xml (00 a 99).
 
 ## Save state do PCSX2
 

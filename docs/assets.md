@@ -86,7 +86,8 @@ Speedrun do Sphinx (Amateur National Buggy, 26m39s) no repo `atv4-dados`,
 pasta `videos/` (720p, 60 fps, 6 partes de ~5 min). A câmera fica atrás do
 carro quase o tempo todo; de lado só nas curvas e nos saltos.
 - Pintura do speedrun: V grande azul (camada Secondary) e laterais laranja
-  (Primary). Teto com listras vermelho/branco/azul (decalque, ainda não feito).
+  (Primary). Teto com listras vermelho/branco/azul: decalque escolhido pelo
+  jogador (o Sphinx de fábrica não tem logo), não dá pra saber qual no vídeo.
 - De trás: balança cinza até a roda, aro aparecendo por dentro embaixo.
 
 ## Comandos
