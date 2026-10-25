@@ -27,6 +27,7 @@ extends SceneTree
 ##   COR_VERTICE=0              sem a cor do vértice do jogo (só a textura, como antes)
 ##   FREIO=1 / FREIO=0          lanterna de freio acesa / apagada (luzes.gd; parado
 ##                              o jogo segura o freio, então sem isso sai acesa)
+##   RE=1 / RE=0                luz de ré acesa / apagada (luzes.gd)
 ##   PASTA=res://assets/buggy_02 (pasta com o pecas.json)  PONTOS=res://...
 ##   RODA_F=res://...  RODA_T=res://...
 ##                              troca pasta/pontos/rodas sem mexer no main.gd

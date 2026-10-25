@@ -1,8 +1,9 @@
 extends SceneTree
-## Lanterna de freio (luzes.gd, melhoria nossa) e cor do vértice (car.gd
-## COR_VERTICE) nos 12 buggies: quantas faces de lente acharam perto dos
-## pontos BRAKE_LIGHT, se a cor final delas é vermelha, se os materiais do jogo
-## usam a cor do vértice e se a lanterna acende freando e apaga solta.
+## Lanterna de freio e luz de ré (luzes.gd, melhoria nossa) e cor do vértice
+## (car.gd COR_VERTICE) nos 12 buggies: quantas faces de lente acharam perto
+## dos pontos BRAKE_LIGHT (vermelhas) e REVERSE_LIGHT (brancas, só nos carros
+## que têm o ponto), se os materiais do jogo usam a cor do vértice e se as
+## luzes acendem (freando, de ré) e apagam.
 ## Uso: godot --headless --path . -s res://tests/teste_luzes.gd
 const Car := preload("res://car.gd")
 const Main := preload("res://main.gd")
@@ -56,14 +57,20 @@ func _conferir() -> void:
 		print(linha + "  sem lente achada  %s" % ("ok" if ok_cor else "FALHA"))
 		falhas += 0 if ok_cor else 1
 		return
-	# acende freando, apaga soltando
+	# acende freando / de ré, apaga soltando
 	for k in 30:
-		lz.atualizar(1.0 / 60.0, 1.0)
-	var aceso_freando: float = lz.aceso
+		lz.atualizar(1.0 / 60.0, 1.0, true)
+	var aceso_freando: float = lz.aceso.freio
+	var aceso_re: float = lz.aceso.re
 	for k in 30:
-		lz.atualizar(1.0 / 60.0, 0.0)
-	var aceso_solto: float = lz.aceso
-	var ok: bool = ok_cor and lz.faces >= 2 and lz.halos >= 2 and aceso_freando > 0.99 and aceso_solto < 0.01
+		lz.atualizar(1.0 / 60.0, 0.0, false)
+	var solto: float = lz.aceso.freio + lz.aceso.re
+	var tem_re: bool = car.points.keys().any(func(k): return String(k).begins_with("REVERSE_LIGHT"))
+	var ok_re: bool = not tem_re or (lz.faces.re >= 1 and lz.halos.re >= 1 and aceso_re > 0.99)
+	var ok: bool = ok_cor and ok_re and lz.faces.freio >= 2 and lz.halos.freio >= 2 \
+		and aceso_freando > 0.99 and solto < 0.01
 	falhas += 0 if ok else 1
-	print(linha + "  lente %3d faces, %d halos  freando %.2f solto %.2f  %s" % [
-		lz.faces, lz.halos, aceso_freando, aceso_solto, "ok" if ok else "FALHA"])
+	print(linha + "  freio %3d faces %d halos  ré %s  acesa %.2f/%.2f solta %.2f  %s" % [
+		lz.faces.freio, lz.halos.freio,
+		("%2d faces %d halos" % [lz.faces.re, lz.halos.re]) if tem_re else "(sem ponto)",
+		aceso_freando, aceso_re, solto, "ok" if ok else "FALHA"])

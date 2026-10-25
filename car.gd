@@ -136,8 +136,9 @@ var motor_treme: Node3D = null
 # girando (elétricas) e polias e correia 3D por cima das polias desenhadas
 const MOTOR_ANIMA := true
 var motor_anima: Node = null
-# lanterna de freio acesa (melhoria nossa, luzes.gd: o jogo não usa os pontos
-# BRAKE_LIGHT; a lente é vermelha pela cor do vértice ou pela textura)
+# lanterna de freio e luz de ré acesas (melhoria nossa, luzes.gd: o jogo não
+# usa os pontos BRAKE_LIGHT/REVERSE_LIGHT; a lente é da cor da luz pela cor do
+# vértice ou pela textura)
 const LUZ_FREIO := true
 var luzes: Node = null
 var body_mi: MeshInstance3D = null
@@ -1125,7 +1126,7 @@ func _process(delta: float) -> void:
 	if motor_anima:
 		motor_anima.atualizar(delta, rpm)
 	if luzes:
-		luzes.atualizar(delta, brake_in)
+		luzes.atualizar(delta, brake_in, gear == -1)
 	if sujeira:
 		sujeira.atualizar(sujeira_nivel, roda_cor)
 	if painel:

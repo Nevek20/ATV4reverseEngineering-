@@ -40,7 +40,7 @@ sujeira.gd           sujeira do jogo na pintura e lama nas rodas, pelo 2º UV (_
 painel.gd            painel funcional (melhoria nossa): ponteiros, marcha e luz de troca, amador x PRO
 motor_treme.gd       motor e escape tremendo (melhoria nossa): separa as peças do cofre da carroceria
 motor_anima.gd       ventoinhas girando e polias + correia 3D (melhoria nossa) por cima do desenho do jogo
-luzes.gd             lanterna de freio acesa freando (melhoria nossa): lente achada pela cor do vértice/textura
+luzes.gd             lanterna de freio e luz de ré acesas (melhoria nossa): lente pelos pixels da cor da luz
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas; sfx (sons) e fx (fumaça) do jogo (fora do git)
@@ -95,7 +95,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . -s res://tests/teste_motor_treme.gd   :: peças e faces do motor que treme nos 12 carros
 %GODOT% --headless --path . -s res://tests/teste_motor_anima.gd   :: ventoinhas, polias e correia nos 12 (nada some, correia encosta)
 %GODOT% --headless --path . -s res://tests/teste_luzes.gd         :: cor do vértice nos materiais e lanterna de freio nos 12 (acende e apaga)
-:: + print_tela com FREIO=1 força a lanterna acesa, COR_VERTICE=0 tira a cor do vértice (antes x depois)
+:: + print_tela com FREIO=1/0 e RE=1/0 forçam lanterna e ré acesas/apagadas, COR_VERTICE=0 tira a cor do vértice
 %GODOT% --path . --write-movie motor.avi --fixed-fps 60 -s res://tests/gravar_motor.gd -- 7   :: prévia: lenta, 7000 e volta (CAM_OFF/CAM_ALVO)
 :: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
@@ -246,13 +246,18 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   textura e o carro ficou branco; rodar de novo com a pasta certa não
   adiantava (o .obj saía igual). O pingu2obj põe "# mtl <md5>" no topo do
   .obj e o gerar_buggies para se a pasta de texturas não tiver .png.
-- Lanterna de freio (melhoria nossa, car.gd LUZ_FREIO, luzes.gd): o jogo
-  não usa os pontos BRAKE_LIGHT (nenhuma string no exe). Lente = faces até
-  15 cm do ponto que são vermelhas na cor final (textura x cor do vértice);
-  uma cópia por cima soma a cor dela x 6 + um miolo rosado (blend_add) e cada
-  lanterna ganha um halo virado pra câmera (só de trás; só somar vermelho não
-  aparecia: a lente apagada já é vermelho puro), pelo brake_in (0x390, inclui o freio que o jogo segura parado:
-  acende na largada; zera na ré pelo freio). 4 a 34 faces por carro. Sem
+- Lanterna de freio e luz de ré (melhoria nossa, car.gd LUZ_FREIO,
+  luzes.gd): o jogo não usa os pontos BRAKE_LIGHT/REVERSE_LIGHT (nenhuma
+  string no exe). Lente = PIXELS da cor da luz (vermelho no freio, branco na
+  ré) na cor final (textura x cor do vértice) até 15/12 cm do ponto,
+  amostrados a cada 1 cm no triângulo; a cópia por cima soma a cor x 6 + um
+  miolo claro só nesses pixels (máscara no shader) e cada lanterna ganha um
+  halo virado pra câmera (só de trás) no centro e tamanho dos pixels acesos.
+  No Storm a lanterna é pintada na textura (vermelho + branco da ré) em
+  triângulos grandes: acender o triângulo inteiro desenhava triângulos
+  claros. Freio = brake_in (0x390, inclui o freio que o jogo segura parado:
+  acende na largada; zera na ré pelo freio); ré = marcha -1. Ré só nos 5
+  com REVERSE_LIGHT (Mosquito, Bulldog, McKenzies, Viper, Storm). Sem
   OmniLight: de dia pintava gaiola, estepe e chão de rosa.
 - Alfa: o gob_tex2png salva sem alfa (no PS2 ele muitas vezes é brilho). Nos
   carros só 3 texturas têm furo de verdade: mesh_grey (redes das janelas,
