@@ -136,11 +136,15 @@ var motor_treme: Node3D = null
 # girando (elétricas) e polias e correia 3D por cima das polias desenhadas
 const MOTOR_ANIMA := true
 var motor_anima: Node = null
-# lanterna de freio e luz de ré acesas (melhoria nossa, luzes.gd: o jogo não
-# usa os pontos BRAKE_LIGHT/REVERSE_LIGHT; a lente é da cor da luz pela cor do
-# vértice ou pela textura)
+# lanterna de freio e luz de ré acesas (melhoria nossa, luzes.gd: a lente da
+# cor da luz acende e ganha um halo nosso; o jogo põe só um halo laranja com
+# raios nos pontos BRAKE_LIGHT/REVERSE_LIGHT, VehicleHaloMap.xml)
 const LUZ_FREIO := true
 var luzes: Node = null
+# farol aceso (melhoria nossa, farol.gd): o halo "Night" do jogo, que nenhum
+# carro do jogo usa, nas lâmpadas do modelo (Hurricane, Storm); H liga
+const FAROL := true
+var farol: Node = null
 var body_mi: MeshInstance3D = null
 # sujeira do jogo (0x223e68, _sujeira_passo) e desenho dela (sujeira.gd, com a
 # textura GEN_DIRT_DIRT em assets/fx: tools/fx_jogo.py). false = carro limpo
@@ -364,6 +368,7 @@ func _ready() -> void:
 	_load_motor_treme()
 	_load_motor_anima()
 	_load_luzes()
+	_load_farol()
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
@@ -954,6 +959,20 @@ func _load_luzes() -> void:
 		luzes = null
 
 
+func _load_farol() -> void:
+	if not FAROL or body_mi == null:
+		return
+	farol = preload("res://farol.gd").new()
+	farol.name = "Farol"
+	if farol.montar(self):
+		add_child(farol)
+	else:
+		if farol.aviso != "":
+			push_warning(farol.aviso)
+		farol.free()
+		farol = null
+
+
 func _load_motor_anima() -> void:
 	if not MOTOR_ANIMA or body_mi == null:
 		return
@@ -1138,6 +1157,8 @@ func _process(delta: float) -> void:
 		motor_anima.atualizar(delta, rpm)
 	if luzes:
 		luzes.atualizar(delta, brake_in, gear == -1)
+	if farol:
+		farol.atualizar(delta)
 	if sujeira:
 		sujeira.atualizar(sujeira_nivel, roda_cor)
 	if painel:

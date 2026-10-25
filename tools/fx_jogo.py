@@ -15,11 +15,14 @@ mDirtTextureName, igual em todas). Carro: Vehicles/Generic/Textures (128x128),
 piloto: Characters/Textures/Dirt (256x256). Marrom com alfa de mancha.
 Lama dos pneus: UNI_TyreOverlay (128x128, 4 bits; igual nos pneus do jogo),
 só o alfa conta (o jogo troca a cor da paleta pela lama do chão).
+Halo (farol.gd): Sprites/lightglow2alpha (128x64), o desenho é o alfa (o RGB é
+branco); caixas GLOW e SPIKE do .bed -> halo.json (u0, v0, u1, v1).
 
 Uso:
     python tools/fx_jogo.py <unpacked> [saida=assets/fx]
 """
 
+import json
 import os
 import struct
 import sys
@@ -86,6 +89,20 @@ def main():
             raise SystemExit(nome + ": " + str(info))
         im.convert("RGBA").save(os.path.join(saida, png))
         print(nome, im.size, "->", os.path.join(saida, png))
+
+    gob, _, _ = caminho(unpacked, arqs, "Sprites/lightglow2alpha.bog")
+    im, info = convert(gob)
+    if im is None:
+        raise SystemExit("lightglow2alpha.bog: " + str(info))
+    im.convert("RGBA").save(os.path.join(saida, "halo.png"))
+    bed_arq, off, tam = caminho(unpacked, arqs, "Sprites/lightglow2alpha.bed")
+    with open(bed_arq, "rb") as f:
+        f.seek(off)
+        bed = f.read(tam)
+    caixas = {nome: caixa(bed, nome) for nome in ("GLOW", "RING", "SPIKE")}
+    with open(os.path.join(saida, "halo.json"), "w") as f:
+        json.dump(caixas, f, indent=1)
+    print("lightglow2alpha", im.size, caixas, "->", os.path.join(saida, "halo.png"))
 
 
 if __name__ == "__main__":

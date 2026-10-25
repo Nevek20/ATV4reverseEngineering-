@@ -283,14 +283,54 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   9..16 A_FRAME/A_FRAME_END, 21..24 SHOCKS_BOTTOM/TOP_FRONT, 25..28
   SHOCK_PISTON/CHAMBER, 29/30 SpareWheel, 31 LIGHTRIG, 32 BUMPER). Nomes
   também em 0x55070c. "Esquerda" do jogo = x < 0 no modelo.
-- BRAKE_LIGHT, BRAKE_LIGHT2, TAIL_LIGHT, REVERSE_LIGHT, HEAD_LIGHT: estão
-  nos arquivos de pontos mas o exe não tem nenhuma dessas strings (nem
-  "brake"/"tail" em outra forma): o jogo não acende lanterna. A lente é só
-  a cor do modelo (cor do vértice vermelha ou textura vermelha). Farol só
-  aparece como peça comprada (componente Lighting no ponto LIGHTRIG, id 31);
-  se ele acende de verdade ainda não foi visto.
+- BRAKE_LIGHT*, REVERSE_LIGHT*: o exe não tem as strings porque os nomes
+  vêm do Setup/VehicleHaloMap.xml (seção Halos abaixo): o jogo põe um halo
+  neles. A lente em si não muda (cor do vértice vermelha ou textura).
+  TAIL_LIGHT (Bulldog) não está no mapa. Nenhum carro tem HEAD_LIGHT.
+  Farol comprado = componente Lighting no ponto LIGHTRIG (id 31), só modelo.
 - CoM do XML em coordenadas do modelo. Corpo físico +0x70 = CoM; veículo
   +0xaa0 = origem do modelo (= CoM − R·CoM_local).
+
+## Halos (brilho das luzes do carro)
+
+- Setup/VehicleHaloMap.xml (data/vehicle_halo_map.xml, loader 0x22a400 ->
+  0x22a568, singleton DAT_007f7248, 0x40 por entrada: +0 nome do ponto, +8
+  HaloName, +0x10 Behaviour, +0x20 Normal, +0x30 Offset). Behaviour pela
+  tabela 0x55084c: Brake 0, Reverse 1, Night 2. Entradas: BRAKE_LIGHT1-6
+  "BrakeLight", REVERSE_LIGHT1-2 "ReverseLight", HEAD_LIGHT1-3
+  "ReverseLight" (Night), FRONT_HALO1-10 "HaloTestLight1-5" e REAR_HALO1-5
+  "RearHaloTestLight" (Night, Offset y -0.11).
+- 0x225cf8 monta os halos do carro: pra cada entrada do mapa que tem ponto
+  no modelo (0x62fd48), cria um registro de 0x90 em (render+0x1e0, conta em
+  +0x1d4) e põe na lista do comportamento (render+0xf60 + b*0x70: ponteiros
+  em +0x10, conta em +0x4; render = veículo+0xb00). O halo vem do
+  Setup/VehicleHalos.xml (data/vehicle_halos.xml) com 4 níveis (LOWEST, LOW,
+  MID, HIGH) de B1Halo: Texture, ZedBias e Layers (TextureBox, Width,
+  Height, Angle, SizeScale, AngleScale, Colour; parse 0x22a8a8/0x26c458).
+- 0x203930 (por quadro, render do veículo) liga o campo +0x24 de cada
+  registro: Brake = carro ativo e (0x9d0+0xf4)+0x2b8 != 0 e freio suavizado
+  (corpo+0x390) >= 0.1, e com (0x205200)+0x10 == 0 também acende de ré;
+  Reverse = 0x2040b8 (ré); Night = carro ativo (vtable+0x84 do 0x9d0). Nos
+  save states a chave +0x2b8 é 1.
+- 0x2260a0: leva os halos pro mundo e, por instância, +0x1c0 (força) sobe
+  dt*4 até 1 quando está ligado e foi desenhado no quadro (0x2295c0: +0x4c
+  == quadro atual), e zera na hora desligado. O desenho em si é no VU1/GS
+  (0x26d328 monta os registradores): AngleScale, SizeScale e ZedBias não
+  foram decifrados.
+- RAM: Renegade (a.p2s) 2 halos de freio em (±0.60, 1.92, -1.55) acesos com
+  freio 1.0; Storm 2 de freio + 1 de ré. Screenshot.png dos save states:
+  brilho laranja com raios em ±0.4 rad (nível HIGH). Tamanho medido: miolo
+  ~6 px com as lanternas do Renegade 82 px uma da outra (1.2 m) e raio
+  vertical ~0.75 m: Width/Height x 0.3 m.
+- Textura Sprites/lightglow2alpha (128x64): o desenho é o alfa (RGB branco).
+  Caixas do .bed (fração x 100000): GLOW (0, 0)-(0.509, 0.9375), RING
+  (0.600, 0.247)-(0.850, 0.747), SPIKE (0.865, 0)-(0.958, 1). O alfa não
+  chega a 0 na borda (12/255 no GLOW, 40 na ponta do SPIKE).
+- Nenhum carro do jogo tem HEAD_LIGHT/FRONT_HALO/REAR_HALO (varredura do
+  unpacked): o farol Night existe e nunca aparece. Os LIGHTRIG comprados
+  (root.xml Lighting, mIsPhysical false, 8 modelos x Small/Large pelo
+  LightRigCategory do vehicles.xml; .pfn só com chassis_comp03, dirt,
+  light_64, light2_64, mesh_grey) não têm pontos: são só modelo.
 
 ## Câmera (BuggyCamSet_NN em data/cameras.xml = 14880)
 

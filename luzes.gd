@@ -1,8 +1,11 @@
 extends Node3D
-## Lanterna de freio e luz de ré acesas (melhoria nossa, car.gd LUZ_FREIO). O
-## jogo carrega os pontos BRAKE_LIGHT/BRAKE_LIGHT2 (TAIL_LIGHT no Bulldog) e
-## REVERSE_LIGHT do modelo e não usa: nenhuma string no exe, a lanterna é só
-## a cor do modelo. A lente vem da cor do vértice (vidro claro x vértice
+## Lanterna de freio e luz de ré acesas (melhoria nossa, car.gd LUZ_FREIO). No
+## jogo a lente não muda: o VehicleHaloMap.xml (data/vehicle_halo_map.xml) põe
+## nos pontos BRAKE_LIGHT* e REVERSE_LIGHT* um halo (VehicleHalos.xml: brilho
+## laranja 1, 0.25, 0 com raios; o da ré branco quente) que o 0x203930 acende
+## com o freio (0x390) >= 0.1 ou engatado de ré (aparece nos prints dos save
+## states, farol.gd tem o desenho). O Matheus preferiu manter o nosso (lente
+## acesa + halo vermelho). A lente vem da cor do vértice (vidro claro x vértice
 ## vermelho 167, 24, 24) ou da textura (Inferno, pintura do Storm).
 ##
 ## Lente = os PIXELS da cor da luz (vermelho no freio, branco na ré) na cor

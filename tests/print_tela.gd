@@ -28,6 +28,7 @@ extends SceneTree
 ##   FREIO=1 / FREIO=0          lanterna de freio acesa / apagada (luzes.gd; parado
 ##                              o jogo segura o freio, então sem isso sai acesa)
 ##   RE=1 / RE=0                luz de ré acesa / apagada (luzes.gd)
+##   FAROL=1 / FAROL=0          farol aceso / apagado (farol.gd)
 ##   PASTA=res://assets/buggy_02 (pasta com o pecas.json)  PONTOS=res://...
 ##   RODA_F=res://...  RODA_T=res://...
 ##                              troca pasta/pontos/rodas sem mexer no main.gd

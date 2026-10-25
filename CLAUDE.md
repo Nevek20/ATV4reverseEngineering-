@@ -41,6 +41,7 @@ painel.gd            painel funcional (melhoria nossa): ponteiros, marcha e luz 
 motor_treme.gd       motor e escape tremendo (melhoria nossa): separa as peças do cofre da carroceria
 motor_anima.gd       ventoinhas girando e polias + correia 3D (melhoria nossa) por cima do desenho do jogo
 luzes.gd             lanterna de freio e luz de ré acesas (melhoria nossa): lente pelos pixels da cor da luz
+farol.gd             farol aceso (melhoria nossa com o halo "Night" do jogo) nas lentes de farol do modelo; H liga
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, rodas; sfx (sons) e fx (fumaça) do jogo (fora do git)
@@ -96,6 +97,8 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --headless --path . -s res://tests/teste_motor_treme.gd   :: peças e faces do motor que treme nos 12 carros
 %GODOT% --headless --path . -s res://tests/teste_motor_anima.gd   :: ventoinhas, polias e correia nos 12 (nada some, correia encosta)
 %GODOT% --headless --path . -s res://tests/teste_luzes.gd         :: cor do vértice nos materiais e lanterna de freio nos 12 (acende e apaga)
+%GODOT% --headless --path . -s res://tests/teste_farol.gd         :: farol: lentes achadas (Hurricane 2, Storm 6), camadas do halo, acende 4/s
+:: + print_tela com FAROL=1/0 força o farol aceso/apagado
 :: + print_tela com FREIO=1/0 e RE=1/0 forçam lanterna e ré acesas/apagadas, COR_VERTICE=0 tira a cor do vértice
 %GODOT% --path . --write-movie motor.avi --fixed-fps 60 -s res://tests/gravar_motor.gd -- 7   :: prévia: lenta, 7000 e volta (CAM_OFF/CAM_ALVO)
 :: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem
@@ -112,7 +115,8 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 
 :: sons de pneu, suspensão e pouso do jogo -> assets/sfx (wav + sons.json com o ADSR de cada tom)
 python tools/sfx_jogo.py <unpacked>
-:: textura da fumaça (Sprites/Particles, caixa Dust0), da sujeira (GEN_DIRT_DIRT) e da lama do pneu (UNI_TyreOverlay) -> assets/fx
+:: textura da fumaça (Sprites/Particles, caixa Dust0), da sujeira (GEN_DIRT_DIRT), da lama do pneu (UNI_TyreOverlay)
+:: e do halo (Sprites/lightglow2alpha + halo.json com as caixas) -> assets/fx
 python tools/fx_jogo.py <unpacked>
 :: + print_tela com SUJEIRA=0.8 força o nível da sujeira, PAINEL=6900,137 fixa rpm e km/h no painel,
 ::   SEM_PAINEL=1 esconde o nosso (pra ver o que sobrou do modelo)
@@ -247,9 +251,24 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   textura e o carro ficou branco; rodar de novo com a pasta certa não
   adiantava (o .obj saía igual). O pingu2obj põe "# mtl <md5>" no topo do
   .obj e o gerar_buggies para se a pasta de texturas não tiver .png.
+- Halos do jogo (out/2026; até então achávamos que o jogo não usava os
+  pontos BRAKE_LIGHT, porque o nome não está no exe): Setup/VehicleHaloMap.xml
+  (data/vehicle_halo_map.xml) liga nome de ponto -> halo (VehicleHalos.xml,
+  data/vehicle_halos.xml) + comportamento: BRAKE_LIGHT1-6 "BrakeLight"/Brake,
+  REVERSE_LIGHT1-2 "ReverseLight"/Reverse, HEAD_LIGHT1-3 / FRONT_HALO1-10 /
+  REAR_HALO1-5 / Night. O 0x203930 acende por quadro: freio com 0x390 >= 0.1,
+  ré engatada, Night sempre (carro ativo); 0x2260a0 sobe 4/s e apaga na hora.
+  RAM: halos de freio acesos com freio 1.0 (a.p2s, storm.p2s); nos prints do
+  Screenshot.png aparece o brilho laranja com raios. Nenhum carro do jogo tem
+  ponto HEAD_LIGHT/FRONT_HALO: o farol "Night" existe e nunca aparece. Os
+  LIGHTRIG comprados (Lighting, 8 modelos Small/Large pelo LightRigCategory,
+  mIsPhysical false) são só modelo, sem halo. Desenho: textura
+  Sprites/lightglow2alpha (o desenho é o alfa; caixas GLOW e SPIKE), uma
+  camada por Layer, tamanho Width/Height x 0.3 m (medido nos prints), nível
+  HIGH (os raios a ±0.4 rad aparecem). docs/engenharia_reversa.md, Halos.
 - Lanterna de freio e luz de ré (melhoria nossa, car.gd LUZ_FREIO,
-  luzes.gd): o jogo não usa os pontos BRAKE_LIGHT/REVERSE_LIGHT (nenhuma
-  string no exe). Lente = PIXELS da cor da luz (vermelho no freio, branco na
+  luzes.gd): no lugar do halo do jogo (o Matheus preferiu o nosso, out/2026).
+  Lente = PIXELS da cor da luz (vermelho no freio, branco na
   ré) na cor final (textura x cor do vértice) até 15/12 cm do ponto,
   amostrados a cada 1 cm no triângulo; a cópia por cima soma a cor x 6 + um
   miolo claro só nesses pixels (máscara no shader) e cada lanterna ganha um
@@ -260,6 +279,16 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   acende na largada; zera na ré pelo freio); ré = marcha -1. Ré só nos 5
   com REVERSE_LIGHT (Mosquito, Bulldog, McKenzies, Viper, Storm). Sem
   OmniLight: de dia pintava gaiola, estepe e chão de rosa.
+- Farol (melhoria nossa, car.gd FAROL, farol.gd; H no jogo liga e desliga,
+  vale pra todos): o halo do HEAD_LIGHT do jogo (ReverseLight, HIGH, 7
+  camadas) nas lentes de farol do modelo: faces com textura light_64 ou
+  headlight, agrupadas pelos vértices, viradas pra frente pela NORMAL do jogo
+  (a ordem dos vértices vem virada do pingu2obj). Só o Hurricane (2) e o
+  Storm (2 faróis + 4 milhas) têm; no Mosquito a light_64 é a lanterna de
+  trás. Nossos: borda de cada camada indo a 0 (a textura tem até 12/255 no
+  canto do GLOW e somando 4 milhas aparecia o quadrado) e o halo só de frente.
+  AngleScale/SizeScale/ZedBias não portados (o desenho é no VU1). Sem
+  assets/fx/halo.png (fx_jogo novo) fica sem farol (aviso no console).
 - Alfa: o gob_tex2png salva sem alfa (no PS2 ele muitas vezes é brilho). Nos
   carros só 3 texturas têm furo de verdade: mesh_grey (redes das janelas,
   54%), Buggy_05_framework (treliça do Trident, 71%) e driver (7%).
@@ -547,3 +576,4 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   portada: o RX01 não tem água. Reflexo menor com o carro sujo
   (0x22ace8, 1 - nível) não portado. Sujeira do piloto como o jogo.
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).
+  Os LIGHTRIG são só modelo (sem halo); o Matheus acha feios.
