@@ -27,6 +27,7 @@ desmontado no Ghidra. Nada de "parece certo": cada número tem que ter fonte
 car.gd               física do carro (portada do exe), visual das rodas
 game_camera.gd       câmera de corrida do jogo (componentes do exe, 1/60 s)
 camera_jitter.gd     tremida da câmera (Perlin por velocidade, só na terra)
+camera_piloto.gd     câmera do piloto (melhoria nossa): força G na cabeça, FOV e borrão pela velocidade, olhar pra curva e olhar livre
 suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
 main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V)
@@ -79,6 +80,8 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . -s res://tests/teste_freio.gd   :: patinada, ABS e trava
 %GODOT% --headless --path . -s res://tests/teste_roda.gd    :: giro das rodas por torque (no ar, preso)
 %GODOT% --headless --path . -s res://tests/teste_camera_passo.gd  :: câmera de órbita sem vai e volta
+%GODOT% --headless --path . -s res://tests/teste_camera_piloto.gd :: câmera do piloto: freada, curva, FOV, borrão, mouse (números de projeto)
+%GODOT% --path . --write-movie camera.avi --fixed-fps 60 -s res://tests/gravar_camera.gd -- 0   :: prévia: acelera, freia, curva e olha pro lado (EFEITOS=0 sem efeitos)
 %GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL e save states
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
 %GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda, 1.16 s de derrapagem, sujeira e lama das rodas
@@ -299,6 +302,21 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   o ajuste fica indefinido e o pulso ia 7 cm pra dentro (braço em
   zigue-zague). No volante todo a mão de fora vai perto do topo e o
   antebraço passa na frente da câmera (pendente).
+- Câmera do piloto (melhoria nossa, camera_piloto.gd, main.gd modo 4): o
+  olho fica no lugar calibrado (car.gd FP_*) e por cima vêm os efeitos de
+  velocidade (referência do Matheus: The Crew Motorfest, com o olhar livre do
+  Forza), cada um com chave em CameraPiloto.efeitos pro menu de opções; G liga
+  e desliga todos. Força G: a cabeça é uma mola de pescoço (1.6 Hz, 70% do
+  crítico) no frame do carro, empurrada pela aceleração medida a cada passo
+  de 50 Hz (1 g de freada = 5 cm pra frente e olha pra baixo; curva = pra
+  fora e inclina). Limite de 8 cm (6 de lado) chegando aos poucos (tanh): a
+  freada do Renegade dá 1.8 g e com corte seco a cabeça grudava no limite. FOV +12° de 36 a 216 km/h. Olha pra curva: 60% do ângulo
+  de deriva + 0.15 s de guinada, até 25°. Borrão: zoom radial só nas bordas
+  de 72 a 200 km/h (CanvasLayer embaixo do HUD). Olhar livre: analógico
+  direito ou mouse com o botão direito (150° pros lados, 35° pra cima e pra
+  baixo), volta sozinho; a cabeça gira em volta do pescoço (10 cm atrás do
+  olho). Sem efeitos a câmera olha reto (a de antes virava 1/4 do volante;
+  o print_tela ainda usa essa, car.first_person_xf).
 - Cabine fechada (melhoria nossa, car.gd CABINE_FECHADA, _face_de_dentro):
   a casca do jogo só tem a face de fora (ninguém entra no carro no jogo). No
   Storm, o único fechado, a nossa câmera do piloto via a estrada pelas portas,

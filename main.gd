@@ -54,12 +54,14 @@ const SPAWN_YAW := -154.9                 # graus, frente = +Z do carro
 const Car := preload("res://car.gd")
 const Terrain := preload("res://terrain.gd")
 const SomJogo := preload("res://som_jogo.gd")
+const CameraPiloto := preload("res://camera_piloto.gd")
 
 var car  # instância de car.gd (sem tipo estático de propósito: métodos próprios do script)
 var cam: Camera3D
 var hud: Label
 var cam_mode := 0                        # 0 perto, 1 longe, 2 capô, 3 para-choque, 4 piloto
 var terrain
+var cam_piloto                           # camera_piloto.gd: efeitos de velocidade e olhar livre
 
 
 func _ready() -> void:
@@ -88,6 +90,10 @@ func _ready() -> void:
 	hud.add_theme_constant_override("outline_size", 6)
 	layer.add_child(hud)
 	_make_menu(layer)
+	cam_piloto = CameraPiloto.new()
+	cam_piloto.name = "CameraPiloto"
+	add_child(cam_piloto)
+	cam_piloto.car = car
 
 
 func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
@@ -166,6 +172,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		match event.physical_keycode:
 			KEY_C:
 				cam_mode = (cam_mode + 1) % 5
+			KEY_G:
+				cam_piloto.ligado = not cam_piloto.ligado
 			KEY_R:
 				var p: Vector3 = car.global_position
 				car.reset_to(Vector3(p.x, terrain.height_at(p.x, p.z) + 1.5, p.z), car.global_rotation.y)
@@ -194,6 +202,11 @@ func _unhandled_input(event: InputEvent) -> void:
 						KEY_MINUS: Vector2(-0.01, 0), KEY_EQUAL: Vector2(0.01, 0)}[event.physical_keycode])
 			KEY_ESCAPE:
 				get_tree().quit()
+	# olhar livre na câmera do piloto: botão direito do mouse apertado
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
+		cam_piloto.mouse_botao(event.pressed and cam_mode == 4)
+	elif event is InputEventMouseMotion and cam_mode == 4:
+		cam_piloto.mouse_arrasto(event.relative)
 
 
 # ------------------------------------------------------------ menu de carros
@@ -259,8 +272,8 @@ func _process(delta: float) -> void:
 	var kmh: float = car.linear_velocity.length() * 3.6
 	var fp := ""
 	if cam_mode == 4:
-		fp = "\n\npiloto: altura %.2f (1/2)  distância %.2f (3/4)  inclinação %.2f (5/6)  campo de visão %.0f° (7/8)" % [
-			car.FP_UP, car.FP_BACK, car.FP_PITCH, car.FP_FOV]
+		fp = "\n\npiloto: altura %.2f (1/2)  distância %.2f (3/4)  inclinação %.2f (5/6)  campo de visão %.0f° (7/8)  efeitos %s (G)" % [
+			car.FP_UP, car.FP_BACK, car.FP_PITCH, car.FP_FOV, "ligados" if cam_piloto.ligado else "desligados"]
 		if car.painel:
 			fp += "\npainel: lado %+.2f (-/=)  altura %+.2f (9/0)" % [car.painel.ajuste.x, car.painel.ajuste.y]
 	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s   sujeira %d%%%s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço: embreagem (toque virando e acelerando = Clutch Turn)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC: câmera (%s)   V: próximo carro   Tab: menu de carros   F: girar o modelo   B: volante (%s)   N: som %s   Esc: sair" % [
@@ -328,6 +341,9 @@ func ground_normal(x: float, z: float) -> Vector3:
 
 
 func reset_camera() -> void:
+	if cam_piloto:
+		cam_piloto.car = car
+		cam_piloto.reiniciar()
 	if gcams.is_empty():
 		_make_cameras()
 	var s := cam_state()
@@ -360,10 +376,17 @@ func _update_camera(delta: float) -> void:
 		gcams[cam_mode].apply(cam, s.tp)
 		return
 
+	if cam_piloto.car != car:
+		cam_piloto.car = car
+		cam_piloto.reiniciar()
+	cam_piloto.atualizar_tela(cam_mode == 4)
 	if cam_mode == 4:
-		# primeira pessoa (não é do jogo): nos olhos do piloto
+		# primeira pessoa (não é do jogo): nos olhos do piloto, com os efeitos
+		# de velocidade e o olhar livre do camera_piloto.gd
 		cam.keep_aspect = Camera3D.KEEP_HEIGHT
-		var fp: Transform3D = car.first_person_xf()
+		var bx: Basis = car.get_global_transform_interpolated().basis.orthonormalized()
+		cam_piloto.passo_quadro(delta, bx.transposed() * car.linear_velocity, car.angular_velocity.dot(bx.y))
+		var fp: Transform3D = cam_piloto.transformada(bx, car.driver_eye(), car.FP_PITCH)
 		if TREMIDA_PILOTO:
 			if jit_piloto == null:
 				jit_piloto = GameCamera.CameraJitter.carregar(CAM_XML, "MountOnHood")
@@ -371,7 +394,7 @@ func _update_camera(delta: float) -> void:
 			var d: Vector3 = GameCamera.CameraJitter.aplicar(-fp.basis.z, jit_piloto.n)
 			fp.basis = Basis.looking_at(d, fp.basis.y)
 		cam.global_transform = fp
-		cam.fov = car.FP_FOV
+		cam.fov = car.FP_FOV + cam_piloto.fov_extra
 		cam.near = car.FP_NEAR
 		return
 
