@@ -216,8 +216,8 @@ func montar(c) -> bool:
 ## freio 0..1 (brake_in); a lâmpada sobe em ACENDE e desce em APAGA
 func atualizar(delta: float, freio: float) -> void:
 	var alvo := 1.0 if freio > LIGA else 0.0
-	if OS.get_environment("FREIO") == "1":       # print_tela: lanterna acesa
-		alvo = 1.0
+	if OS.has_environment("FREIO"):              # print_tela: 1 acesa, 0 apagada
+		alvo = 1.0 if OS.get_environment("FREIO") == "1" else 0.0
 	var vel := 1.0 / (ACENDE if alvo > aceso else APAGA)
 	aceso = move_toward(aceso, alvo, delta * vel)
 	for m in _mats:
