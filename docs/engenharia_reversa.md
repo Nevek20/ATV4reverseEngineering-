@@ -283,6 +283,12 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   9..16 A_FRAME/A_FRAME_END, 21..24 SHOCKS_BOTTOM/TOP_FRONT, 25..28
   SHOCK_PISTON/CHAMBER, 29/30 SpareWheel, 31 LIGHTRIG, 32 BUMPER). Nomes
   também em 0x55070c. "Esquerda" do jogo = x < 0 no modelo.
+- BRAKE_LIGHT, BRAKE_LIGHT2, TAIL_LIGHT, REVERSE_LIGHT, HEAD_LIGHT: estão
+  nos arquivos de pontos mas o exe não tem nenhuma dessas strings (nem
+  "brake"/"tail" em outra forma): o jogo não acende lanterna. A lente é só
+  a cor do modelo (cor do vértice vermelha ou textura vermelha). Farol só
+  aparece como peça comprada (componente Lighting no ponto LIGHTRIG, id 31);
+  se ele acende de verdade ainda não foi visto.
 - CoM do XML em coordenadas do modelo. Corpo físico +0x70 = CoM; veículo
   +0xaa0 = origem do modelo (= CoM − R·CoM_local).
 

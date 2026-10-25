@@ -136,6 +136,10 @@ var motor_treme: Node3D = null
 # girando (elétricas) e polias e correia 3D por cima das polias desenhadas
 const MOTOR_ANIMA := true
 var motor_anima: Node = null
+# lanterna de freio acesa (melhoria nossa, luzes.gd: o jogo não usa os pontos
+# BRAKE_LIGHT; a lente é vermelha pela cor do vértice ou pela textura)
+const LUZ_FREIO := true
+var luzes: Node = null
 var body_mi: MeshInstance3D = null
 # sujeira do jogo (0x223e68, _sujeira_passo) e desenho dela (sujeira.gd, com a
 # textura GEN_DIRT_DIRT em assets/fx: tools/fx_jogo.py). false = carro limpo
@@ -163,6 +167,13 @@ const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
 # de trás pode ser descartada (painéis de duas faces não piscam mais).
 # Modelos gerados com o pingu2obj antigo precisam de CULL_DISABLED.
 const MODEL_CULL := BaseMaterial3D.CULL_BACK
+# cor do vértice do jogo: o PS2 multiplica a textura por ela (sombra "assada"
+# no modelo e a cor das lanternas: vidro claro na textura x vértice vermelho).
+# 0x80 = 1.0, vai até 2.0. pecas.json "cor_vertice" 2 = pingu2obj novo, que
+# guarda codificada (docs/assets.md); sem ela = antigo, cortada em 1.0.
+# false = só a textura (como era até out/2026: lanterna branca)
+const COR_VERTICE := true
+const COR_K_SRGB := 255.0 / 128.0   # no albedo (sRGB) vira o COR_K do pingu2obj
 # carroceria fechada (melhoria nossa: só a nossa câmera do piloto fica dentro
 # dela). A casca do jogo só tem a face de fora e de dentro do Storm via-se a
 # estrada pelas chapas. _face_de_dentro dá a face de dentro às chapas que não
@@ -342,6 +353,7 @@ func _ready() -> void:
 	_load_painel()
 	_load_motor_treme()
 	_load_motor_anima()
+	_load_luzes()
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
@@ -362,6 +374,33 @@ func _ready() -> void:
 		susp_vis.build(self, points, points_rot, asset_dir, pecas.get("pecas", {}),
 			pecas.get("rally", false), pecas.get("estepe", []), spare_mesh)
 	_load_sujeira()               # por último: precisa das rodas e das peças
+
+
+## material de uma malha do jogo (carroceria, rodas, peças, volante do
+## jogo): descarta a face de trás e multiplica pela cor do vértice
+func material_do_jogo(m: StandardMaterial3D) -> void:
+	m.cull_mode = MODEL_CULL
+	if not _com_cor_vertice():
+		return
+	m.vertex_color_use_as_albedo = true
+	m.vertex_color_is_srgb = true
+	if int(pecas.get("cor_vertice", 1)) >= 2:
+		var c := m.albedo_color
+		m.albedo_color = Color(c.r * COR_K_SRGB, c.g * COR_K_SRGB, c.b * COR_K_SRGB, c.a)
+
+
+## a mesma conta pros shaders nossos que desenham por cima de malha do jogo
+## (sujeira, ventoinha): multiplicador linear da cor do vértice, 0 = sem
+func cor_k() -> float:
+	if not _com_cor_vertice():
+		return 0.0
+	if int(pecas.get("cor_vertice", 1)) >= 2:
+		return pow((COR_K_SRGB + 0.055) / 1.055, 2.4)
+	return 1.0
+
+
+static func _com_cor_vertice() -> bool:
+	return COR_VERTICE and OS.get_environment("COR_VERTICE") != "0"    # print_tela: antes x depois
 
 
 ## pecas.json (tools/gerar_buggies.py): modelo, peças e rodas do carro
@@ -795,7 +834,7 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 			var m := mesh.surface_get_material(i)
 			if m is StandardMaterial3D:
 				var m2: StandardMaterial3D = m.duplicate()
-				m2.cull_mode = MODEL_CULL
+				material_do_jogo(m2)
 				mi.set_surface_override_material(i, m2)
 		# component map (14881): Mirror="1" nas rodas da esquerda do jogo
 		# (o pivô está no frame do jogo, dentro do espelho)
@@ -865,7 +904,7 @@ func _load_model() -> void:
 		if m2.albedo_texture and _tem_alfa(m2.albedo_texture):
 			m2.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 			m2.alpha_scissor_threshold = 0.5
-		m2.cull_mode = MODEL_CULL
+		material_do_jogo(m2)
 		mi.set_surface_override_material(i, m2)
 	var aabb := mesh.get_aabb()
 	var c := aabb.get_center()
@@ -889,6 +928,18 @@ func _load_motor_treme() -> void:
 	else:
 		motor_treme.free()
 		motor_treme = null
+
+
+func _load_luzes() -> void:
+	if not LUZ_FREIO or body_mi == null:
+		return
+	luzes = preload("res://luzes.gd").new()
+	luzes.name = "Luzes"
+	if luzes.montar(self):
+		add_child(luzes)
+	else:
+		luzes.free()
+		luzes = null
 
 
 func _load_motor_anima() -> void:
@@ -1073,6 +1124,8 @@ func _process(delta: float) -> void:
 		motor_treme.atualizar(rpm, som_carga, delta)
 	if motor_anima:
 		motor_anima.atualizar(delta, rpm)
+	if luzes:
+		luzes.atualizar(delta, brake_in)
 	if sujeira:
 		sujeira.atualizar(sujeira_nivel, roda_cor)
 	if painel:
@@ -1105,7 +1158,7 @@ func _load_steering_wheel() -> void:
 	for i in mesh.get_surface_count():
 		var m := mesh.surface_get_material(i)
 		var m2: StandardMaterial3D = m.duplicate() if m is StandardMaterial3D else StandardMaterial3D.new()
-		m2.cull_mode = MODEL_CULL
+		material_do_jogo(m2)
 		mi.set_surface_override_material(i, m2)
 	sw_pivot.add_child(mi)
 

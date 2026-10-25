@@ -108,7 +108,7 @@ func _mesh_instance(mesh: Mesh) -> MeshInstance3D:
 	for i in mesh.get_surface_count():
 		var m := mesh.surface_get_material(i)
 		var m2: StandardMaterial3D = m.duplicate() if m is StandardMaterial3D else StandardMaterial3D.new()
-		m2.cull_mode = car.MODEL_CULL
+		car.material_do_jogo(m2)
 		mi.set_surface_override_material(i, m2)
 	add_child(mi)
 	mi.position = off

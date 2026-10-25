@@ -24,6 +24,8 @@ extends SceneTree
 ##   CAM_OFF=0,1.6,-4 CAM_ALVO=0,1,-2  câmera livre (frame do jogo)
 ##   PICK=x,y;x,y               imprime o triângulo do carro em cada pixel
 ##   CULL=0                     carroceria com as 2 faces (sem descartar a de trás)
+##   COR_VERTICE=0              sem a cor do vértice do jogo (só a textura, como antes)
+##   FREIO=1                    lanterna de freio acesa (luzes.gd)
 ##   PASTA=res://assets/buggy_02 (pasta com o pecas.json)  PONTOS=res://...
 ##   RODA_F=res://...  RODA_T=res://...
 ##                              troca pasta/pontos/rodas sem mexer no main.gd

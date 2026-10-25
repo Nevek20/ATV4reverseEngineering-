@@ -106,6 +106,14 @@ volante:43,46,47,144[16-28],145-150`, cubo + aro); os outros ainda não.
 - Malha em pacotes VIF (tiras de triângulos): UNPACK V4-32 posição (bit
   ADC 0x8000 no 4º campo = não fecha triângulo), V3-8 normal, V4-32/V2-32
   UV, V4-8 cor. Ver cabeçalho do pingu2obj.py.
+- Cor do vértice (V4-8): 0x80 = 1.0, até 255 = 2.0, alfa sempre 0x80. O PS2
+  multiplica a textura por ela: sombra "assada" (média 0.4 a 0.66 na
+  carroceria) e a cor das lanternas (vidro claro da chassis_comp03 x vértice
+  167, 24, 24 no Renegade). O .obj sai com sRGB(linear(c/128) / COR_K),
+  COR_K = linear(255/128) = 4.909; o car.gd (material_do_jogo) liga
+  vertex_color_is_srgb e multiplica o albedo por 255/128 (sRGB), que dá
+  exatamente linear(c/128). pecas.json "cor_vertice": 2 marca o .obj novo;
+  sem ela o car.gd lê o .obj antigo (cortado em 1.0) sem o fator.
 - Lotes de material: registros de 0x50 bytes a partir de 0xD0; total em
   0xAC (0xBC às vezes conta menos); +0x14 slot de textura, +0x28 início,
   +0x48 nº de tiras. Lista de nomes de textura = o .pfn do mesmo nome, que

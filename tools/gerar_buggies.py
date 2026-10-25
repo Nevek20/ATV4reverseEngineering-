@@ -202,6 +202,7 @@ def main():
             # RallyCompMap põe a roda em FrontLeftWheel (sem balança no meio)
             "rally": any(p.endswith("Wheel") and "Frame" not in p for p in pos_rodas),
             "estepe": [p for p in pos_rodas if p.startswith("SpareWheel")],
+            "cor_vertice": pingu2obj.COR_VERSAO,
         }
         if vol:
             info["volante"] = {"centro": [round(v, 4) for v in vol["centro"]],

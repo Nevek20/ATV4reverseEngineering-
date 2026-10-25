@@ -34,10 +34,18 @@ uniform sampler2D tex : source_color, filter_linear_mipmap, repeat_enable;
 uniform vec4 cor = vec4(1.0);     // rodas: cor da lama; carro: branco
 uniform float nivel = 0.0;        // carro: alfa do vértice; rodas: 1
 uniform bool so_alfa = false;     // rodas: a cor sai da paleta trocada
+uniform float cor_k = 0.0;        // cor do vértice do jogo (car.gd cor_k; 0 = sem)
+
+vec3 cor_v(vec3 c) {
+	if (cor_k <= 0.0) {
+		return vec3(1.0);
+	}
+	return mix(pow((c + 0.055) / 1.055, vec3(2.4)), c / 12.92, lessThan(c, vec3(0.04045))) * cor_k;
+}
 
 void fragment() {
 	vec4 t = texture(tex, UV);
-	ALBEDO = so_alfa ? cor.rgb : t.rgb;
+	ALBEDO = (so_alfa ? cor.rgb : t.rgb) * cor_v(COLOR.rgb);
 	ALPHA = t.a * cor.a * nivel;
 }
 """
@@ -83,10 +91,12 @@ func montar(car) -> bool:
 	if not ResourceLoader.exists(TEX):
 		return false
 	carro = _material(SHADER_CAMADA, load(TEX))
+	carro.set_shader_parameter("cor_k", car.cor_k())
 	if ResourceLoader.exists(TEX_LAMA):
 		lama = _material(SHADER_CAMADA, load(TEX_LAMA))
 		lama.set_shader_parameter("so_alfa", true)
 		lama.set_shader_parameter("nivel", 1.0)
+		lama.set_shader_parameter("cor_k", car.cor_k())
 	# carroceria: a malha dela pode ter sido trocada (motor_treme), então vai
 	# pelo caminho do modelo
 	if car.body_mi:

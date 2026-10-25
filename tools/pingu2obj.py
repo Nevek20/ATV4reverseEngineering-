@@ -25,6 +25,13 @@ Camada: o lote de material pode ter uma 2ª textura (registro +0x18, com
 UNI_TyreOverlay (lama do pneu). Essas tiras saem também num <nome>_camada.obj
 com o 2º UV (car.gd / sujeira.gd).
 
+Cor do vértice: 0x80 = 1.0 e passa disso (até 255 = 2.0; alfa sempre 0x80).
+O PS2 multiplica a textura por ela: é a sombra "assada" no modelo e a cor
+das lanternas (vidro claro na textura x vértice vermelho 167, 24, 24). O .obj
+só guarda de 0 a 1, então sai codificada: sRGB de (linear(c/128) / COR_K),
+com COR_K = linear(255/128). O car.gd desfaz (o Godot passa a cor de sRGB pra
+linear e o material multiplica por COR_K).
+
 Uso:
     python pingu2obj.py unpacked\\other\\19998_bloco.bin
     python pingu2obj.py unpacked\\other --out modelos
@@ -35,6 +42,24 @@ Uso:
 import argparse
 import os
 import struct
+
+
+def _lin(c):
+    """sRGB -> linear (a conta do Godot, sem cortar acima de 1)"""
+    return c / 12.92 if c < 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+
+def _srgb(x):
+    return x * 12.92 if x < 0.0031308 else 1.055 * x ** (1 / 2.4) - 0.055
+
+
+COR_K = _lin(255 / 128.0)     # o vértice mais claro possível (2.0)
+COR_VERSAO = 2                # pecas.json "cor_vertice" (sem = cortada em 1.0)
+
+
+def cor_obj(c):
+    """cor do jogo (c/128, até 2.0) -> 0..1 do .obj"""
+    return _srgb(_lin(c) / COR_K)
 
 
 def sub_strip(st, a, b):
@@ -114,8 +139,8 @@ def parse(d):
             elif ccmd == 0x64:      # V2-32: s, t
                 uvs = [struct.unpack_from("<2f", d, q + 4 + 8 * i) for i in range(num)]
                 q += 4 + 8 * num
-            elif ccmd == 0x6E:      # V4-8: RGBA (0x80 = 1.0)
-                colors = [tuple(min(1.0, c / 128.0) for c in d[q + 4 + 4 * i:q + 7 + 4 * i])
+            elif ccmd == 0x6E:      # V4-8: RGBA (0x80 = 1.0, até 2.0)
+                colors = [tuple(c / 128.0 for c in d[q + 4 + 4 * i:q + 7 + 4 * i])
                           for i in range(num)]
                 q += 4 + 4 * num
             else:
@@ -252,7 +277,8 @@ def to_obj(strips, name, slots=None, mtl_name=None, mat_names=None, uv2=False):
     for (verts, normals, uvs, colors, adc, _off), slot in zip(strips, slots):
         mat = (mat_names or {}).get(slot, "sem_textura")
         for (x, y, z), c in zip(verts, colors):
-            lines.append(f"v {x:.6f} {y:.6f} {z:.6f} {c[0]:.3f} {c[1]:.3f} {c[2]:.3f}")
+            r, g, b = (cor_obj(k) for k in c)
+            lines.append(f"v {x:.6f} {y:.6f} {z:.6f} {r:.4f} {g:.4f} {b:.4f}")
         for uv in uvs:
             s, t = uv[2:4] if uv2 and len(uv) == 4 else uv[:2]
             lines.append(f"vt {s:.6f} {1.0 - t:.6f}")

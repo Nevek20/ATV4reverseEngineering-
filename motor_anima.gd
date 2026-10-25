@@ -56,6 +56,14 @@ uniform vec2 centro;                     // centro do círculo (px)
 uniform float raio;                      // px
 uniform float ang = 0.0;                 // rad
 uniform float rastro = 0.0;              // rad que andou no quadro (borrão)
+uniform float cor_k = 0.0;        // cor do vértice do jogo (car.gd cor_k; 0 = sem)
+
+vec3 cor_v(vec3 c) {
+	if (cor_k <= 0.0) {
+		return vec3(1.0);
+	}
+	return mix(pow((c + 0.055) / 1.055, vec3(2.4)), c / 12.92, lessThan(c, vec3(0.04045))) * cor_k;
+}
 
 void fragment() {
 	vec2 p = UV * tam;
@@ -76,6 +84,7 @@ void fragment() {
 	} else {
 		ALBEDO = textureGrad(tex, UV, gx, gy).rgb;
 	}
+	ALBEDO *= cor_v(COLOR.rgb);
 }
 """
 
@@ -304,6 +313,7 @@ func _rotor(tex: Texture2D, centro: Vector2, raio: float) -> ShaderMaterial:
 	m.set_shader_parameter("tam", tex.get_size())
 	m.set_shader_parameter("centro", centro)
 	m.set_shader_parameter("raio", raio)
+	m.set_shader_parameter("cor_k", car.cor_k())
 	return m
 
 
