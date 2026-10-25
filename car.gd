@@ -141,8 +141,8 @@ var motor_anima: Node = null
 # raios nos pontos BRAKE_LIGHT/REVERSE_LIGHT, VehicleHaloMap.xml)
 const LUZ_FREIO := true
 var luzes: Node = null
-# farol aceso (melhoria nossa, farol.gd): o halo "Night" do jogo, que nenhum
-# carro do jogo usa, nas lâmpadas do modelo (Hurricane, Storm); H liga
+# farol aceso (melhoria nossa, farol.gd): lente e brilho como a lanterna de
+# freio, nas lâmpadas do modelo (Hurricane, Storm); H liga e desliga
 const FAROL := true
 var farol: Node = null
 var body_mi: MeshInstance3D = null
@@ -967,8 +967,6 @@ func _load_farol() -> void:
 	if farol.montar(self):
 		add_child(farol)
 	else:
-		if farol.aviso != "":
-			push_warning(farol.aviso)
 		farol.free()
 		farol = null
 
