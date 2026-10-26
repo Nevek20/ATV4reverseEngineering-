@@ -47,7 +47,7 @@ data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peça
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, truck_NN, rodas; sfx (sons) e fx (fumaça) do jogo (fora do git)
 tests/               teste de física sem tela + rodar_testes.py
 tools/               scripts Python de extração (pingu2obj, pintura, savestate)
-som/engine_sim/      um .mr do Engine Simulator por buggy (gerados por tools/gerar_motores.py)
+som/engine_sim/      um .mr do Engine Simulator por buggy (NN_) e por truck (tNN_, t13 = Silverado), tools/gerar_motores.py
 som/loops/           loops .wav de cada motor (lenta, on/off a cada 500 rpm), tools/gravar_loops.py
 re/                  engenharia reversa: scripts do Ghidra, exe_util, dumps
 docs/                engenharia_reversa.md (mapa do exe), derrapagem.md (código da derrapagem legível), assets.md, som_motor.md
@@ -91,7 +91,7 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda, 1.16 s de derrapagem, sujeira e lama das rodas
 %GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 13 carros (0 cm) e giro do volante
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
-%GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies
+%GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies, 12 trucks e o bônus
 %GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states; material da FL x RAM
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_ladeira.gd -- 0   :: pneu parado em barranco: som não pode piscar
 %GODOT% --path . --write-movie cascalho.avi --fixed-fps 60 -s res://tests/gravar_cascalho.gd -- 0  :: derrapando no cascalho escuro: trocas Gravel/Dirt e áudio do pneu
@@ -626,6 +626,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Trident e Viper com escape/filtro escolhidos de ouvido entre variantes.
   Zumbido ou apito num tom só = filtro mild_exhaust do engine-sim (pico em
   133 Hz), não o tamanho do tubo (som/engine_sim/LEIA-ME.md).
+  Trucks (out/2026): 13 motores (t01..t12 + t13 Silverado), carro real pelo
+  modelo 3D ou escolha nossa variando a família (docs/som_motor.md, Trucks);
+  o som do motor toca nos trucks mesmo com as outras melhorias desligadas
+  (car.gd _load_som); pasta pelo id (motor_som.pasta_do_carro, tNN_) ou pela
+  entrada "som" do main.gd (bônus). Falta o Matheus ouvir.
 - Piloto: montar a textura dele como o jogo (5 camadas por parte + cores do
   perfil; hoje usa o rider_fury pronto), LOD MID/LOW, piloto feminino.
 - Câmera do piloto: referência do Matheus = cockpit do Dirt Rally 2.0

@@ -41,6 +41,37 @@ GM LS, Ferrari F136 V8, LFA V10, Merlin V12, Ferrari 412 T2, BMW M52B28,
 Chevy 454 de caminhão. Não tem VW a ar: sai do EJ25 (também boxer 4).
 Não achei se o engine-sim simula turbo ou compressor.
 
+## Motor por truck (out/2026)
+
+Carro real reconhecido no modelo 3D do jogo (carroceria renderizada de 4
+lados + texturas; o jogo não tem descrição nem logo, fora a Silverado
+resgatada). Onde a base é um trophy truck sem marca, o motor é escolha nossa,
+variando a família pra não soarem iguais. HP = o de fábrica do jogo
+(Drive_torque x 250 com as peças de fábrica do vehicles.xml). Os de "turbo de
+mentira" passam do que um aspirado daquele tamanho dá (o engine-sim não tem
+sobrealimentação: energia do combustível maior faz o papel).
+
+| Truck | Carro real (base) | Certeza | HP / kg | Motor | Por quê |
+|---|---|---|---|---|---|
+| Buccaneer (01) | Jeep Wrangler YJ (faróis quadrados) | alta | 272 / 1700 | AMC 4.6 stroker 6 em linha | o 4.0 do Jeep com o virabrequim do 4.2, preparação clássica |
+| Shockwave (02) | SUV 2 portas anos 80 (Bronco II / S-10 Blazer) | média-baixa | 270 / 1800 | Ford 4.0 SOHC V6 60° | troca comum no Bronco II; V6 60° (o Bulldog é 90°) |
+| Shinto (03) | Chevrolet C10/K10 "quadradona" 1981-87 | alta | 255 / 1500 | Chevy 350 carburado, escape único | o da C10 |
+| Jericho (04) | Ford F-150 SuperCab 1997-2003 (ou Tundra) | média | 288 / 1600 | Ford 5.4 Triton SOHC V8 | o da F-150 |
+| Punisher (05) | trophy truck sem marca | - | 504 / 1800 | Ford 351 Windsor, carburador | escolha nossa |
+| Panther (06) | truggy de tubo | - | 510 / 1700 | Toyota 2JZ-GTE 6 em linha (turbo de mentira) | escolha nossa, o diferente do grupo |
+| Herbst Truggy (07) | "Landshark" da Terrible Herbst (Smithbuilt, 1995) | alta | 540 / 2000 | Ford 460 big-block | o real era Ford V8 (cilindrada não achada) |
+| Herbst TT (08) | Ford F-150 Trophy Truck da Terrible Herbst | alta | 638 / 2200 | Ford 427 Windsor (Roush) | Ford V8 de trophy truck |
+| Hammerhead (09) | trophy truck (frente lembra Silverado 99-02) | baixa | 504 / 1800 | Dodge 360 Magnum | escolha nossa (Mopar) |
+| Fireball (10) | Ford F-100 1953-56 | alta | 551 / 1500 | Ford 292 Y-block com compressor (turbo de mentira) | o Y-block saía com compressor Paxton de fábrica em 1957; ordem 1-5-4-8-6-3-7-2 |
+| Goliath (11) | trophy truck sem marca | - | 698 / 1900 | Chevy 572 big-block | escolha nossa, o mais forte |
+| Chimera (12) | Mitsubishi Pajero Evolution (Dakar) | média-alta | 695 / 1750 | Mitsubishi 6G74 3.5 V6 60° (turbo de mentira) | o do Pajero |
+| Silverado (bônus) | Chevrolet Silverado 2003-06 (logo na textura) | certa | 288 / 1600 | Chevy 5.3 Vortec LM7 | o de fábrica dá 285 cv |
+
+Os .mr saem do tools/gerar_motores.py (t01..t13), os loops vão pra
+som/loops/tNN_* e o tocador acha pela id (o bônus pela entrada "som" do
+main.gd). O som do motor vale nos trucks mesmo com as outras melhorias
+desligadas neles.
+
 ## Gravação (Matheus)
 
 - Uma pasta por carro, `som/buggy_NN/`, com `on_<rpm>.ogg` (acelerando,

@@ -81,7 +81,7 @@ const TRUCKS := [
 	# TruckCamSet_04 (tools/gerar_buggies.py BONUS)
 	{"name": "Silverado", "id": "TRUCK_04", "cams": "TruckCamSet_04", "dir": "res://assets/truck_bonus",
 		"data": "res://data/vehicles/truck_bonus.xml", "points": "res://data/vehicles/truck_bonus_points.bin",
-		"base": BASE_TRUCK, "bonus": true},
+		"base": BASE_TRUCK, "bonus": true, "som": "res://som/loops/t13_silverado_chevy_53_vortec"},
 ]
 var veh_idx := 0
 # largada do RX_01: centro das 4 rodas e direção do carro nos 6 save states
@@ -159,6 +159,7 @@ func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
 	car.data_files = dados(v)
 	car.points_file = v.points
 	car.vehicle_id = v.id
+	car.som_pasta = v.get("som", "")
 	car.tune_override = v.get("tune", {})
 	car.livery_file = v.get("livery", "pintura.png")
 	if v.has("fp"):

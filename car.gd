@@ -48,6 +48,7 @@ var vehicle_name := "Renegade (Buggy)"
 # VehicleData.factory_tuning. Os valores abaixo são os do Renegade (BUGGY_10),
 # conferidos no save state: torque 0.81, final 0.61, massa e embreagem no máximo.
 var vehicle_id := "BUGGY_10"
+var som_pasta := ""            # pasta dos loops do motor, se não for a do id (o bônus)
 var tune_override := {}       # ex.: {"engine": 0.3} pra simular peças compradas
 var TUNE_ENGINE := 0.81       # Internals L3 + Management L2 + Header L2 + Intake L3 + Exhaust L3
 var TUNE_BRAKE := 0.9         # Brake_Level2
@@ -1135,9 +1136,11 @@ func _load_sfx() -> void:
 
 
 func _load_som() -> void:
-	if not (SOM_MOTOR and melhorias):
+	# o som do motor vale também nos trucks (as outras melhorias ficam
+	# desligadas neles até a base ser conferida): não mexe na física
+	if not SOM_MOTOR:
 		return
-	var dir: String = preload("res://motor_som.gd").pasta_do_carro(vehicle_id)
+	var dir: String = som_pasta if som_pasta != "" else preload("res://motor_som.gd").pasta_do_carro(vehicle_id)
 	if dir == "":
 		return
 	som = preload("res://motor_som.gd").new()

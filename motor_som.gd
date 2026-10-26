@@ -46,13 +46,18 @@ var _rpm := -1.0               # rpm do jogo filtrado
 var r_real := 0.0              # conferência: rpm real tocando agora
 
 
-## pasta dos loops do carro (som/loops/NN_*), pelo id do vehicles.xml
+## pasta dos loops do carro pelo id do vehicles.xml: som/loops/NN_* nos
+## buggies, som/loops/tNN_* nos trucks (o bônus passa a pasta dele, car.som_pasta)
 static func pasta_do_carro(id: String) -> String:
-	var n := id.trim_prefix("BUGGY_").to_int()
-	if n <= 0:
+	var prefixo := ""
+	if id.begins_with("BUGGY_"):
+		prefixo = "%02d_" % id.trim_prefix("BUGGY_").to_int()
+	elif id.begins_with("TRUCK_"):
+		prefixo = "t%02d_" % id.trim_prefix("TRUCK_").to_int()
+	if prefixo == "" or prefixo.begins_with("00") or prefixo.begins_with("t00"):
 		return ""
 	for d in DirAccess.get_directories_at(PASTA):
-		if d.begins_with("%02d_" % n):
+		if d.begins_with(prefixo):
 			return PASTA.path_join(d)
 	return ""
 
