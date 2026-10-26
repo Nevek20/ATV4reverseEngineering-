@@ -441,12 +441,35 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   0.33561218·v·[trava])·U(0.1, 0.9), + 0.25·v em 10% das chamadas, ×0.07.
   Não usa rpm. No remake vira a tremida do volante (car.gd _vibracao,
   melhoria nossa).
-- Conferido: tests/teste_pecas.gd compara 100 matrizes de 6 carros
-  (Renegade, Sphinx, Inferno, Bulldog, Phantom, Storm) com a RAM dos save
-  states parados na largada, erro < 0.01 mm. Classes das rodas de rally:
-  método +0x1c 0x1fd1c0 FL, 0x1fd248 FR, 0x1fd2d0 RL, 0x1fd358 RR; estepe
-  0x1fd730. Os caminhos carregados na RAM (Models_4K/Chassis/..., Wheel/...)
-  são os mesmos do pecas.json de cada carro.
+- Trucks (TruckCompMap_B1/B2, A2), conferido com a RAM do Goliath:
+  - Classe k da tabela 0x5502c8 -> vtable 0x580898 - k·0x28, método
+    +0x1c: 2 LeftFrame 0x1fc1d8, 3 RightFrame 0x1fc278, 6 RearAxle 0x1fc428,
+    12 FrontLeftBrake 0x1fc7d0, 13 FrontRightBrake 0x1fc858, 20
+    RearFreeAxle 0x1fcc10.
+  - Ajudantes: 0x222078 curso visual, 0x2220c8 W+0x10 (ponto de repouso,
+    relativo ao CoM), 0x2221b8 W+0x20 (direção da suspensão, (0, 1, 0)),
+    0x222310 CoM (corpo+0x364 -> +0xc10). 0x6894e0 = tanf.
+  - LeftFrame / RightFrame (0x21e0b8 / 0x21e1f0, translação 0x21e158 /
+    0x21e290): Rz(tan(x / W.x)) em volta do A_FRAME_LEFT / RIGHT (tan
+    mesmo, não atan). W = entrada 1 / 2 da tabela de ids do carro, que o
+    jogo enche pelo começo do nome na ordem do arquivo: no truck é o
+    WHEEL_FRONT_*_VISUAL, que vem antes do WHEEL_FRONT_*.
+  - FrontLeftBrake / FrontRightBrake (0x221308 / 0x221468): eixo-ângulo
+    (W+0x20, esterço P+0x44) em volta de W, + W+0x20·x.
+  - RearAxle (0x21e998 / 0x21eba8; os 2 modelos, Axle e Rear_Arm, usam a
+    mesma pose): ponto do eixo 0x21e838. a0 = (0, ARM_PIVOT.y,
+    ARM_PIVOT.z); m = meio dos centros das rodas de trás (WHEEL_REAR_* +
+    (0, x, 0)) com m.x = 0; a = acos(norm(AXLE_ANCHOR − a0)·norm(m − a0)),
+    negativo se AXLE_ANCHOR.y < m.y; R = Rx(−a) em volta de a0 (Goliath
+    parado: 12.73°).
+  - RearFreeAxle (0x21ee00): identidade, sobe (x_RL + x_RR)/2.
+  - Rodas desses mapas = as do rally (WHEEL + x).
+- Conferido: tests/teste_pecas.gd compara 110 matrizes de 7 carros
+  (Renegade, Sphinx, Inferno, Bulldog, Phantom, Storm e o truck Goliath)
+  com a RAM dos save states parados, erro < 0.01 mm. Classes das rodas de
+  rally: método +0x1c 0x1fd1c0 FL, 0x1fd248 FR, 0x1fd2d0 RL, 0x1fd358 RR;
+  estepe 0x1fd730. Os caminhos carregados na RAM (Models_4K/Chassis/...,
+  Wheel/...) são os mesmos do pecas.json de cada carro.
 
 ## Piloto e volante
 

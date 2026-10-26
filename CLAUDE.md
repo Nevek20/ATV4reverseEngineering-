@@ -73,7 +73,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 :: + CAM_OFF=0.3,0.9,-4 CAM_ALVO=0,0.85,-2.6 câmera livre (frame do jogo); PICK=x,y;x,y diz
 ::   a malha, textura, UV e ponto do jogo embaixo de cada pixel do print; CULL=0 carroceria com as 2 faces
 
-:: peças da suspensão x RAM do jogo (100 matrizes, 6 carros), tremida e chão
+:: peças da suspensão x RAM do jogo (110 matrizes, 6 buggies + Goliath), tremida e chão
 %GODOT% --headless --path . -s res://tests/teste_pecas.gd
 %GODOT% --headless --path . -s res://tests/teste_tremida.gd
 %GODOT% --headless --path . -s res://tests/teste_chao.gd
@@ -225,6 +225,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   de 6 carros (save states em atv4-dados/savestates: Bulldog, Phantom,
   Storm, Inferno; Renegade e Sphinx são os a.p2s/b.p2s), inclusive a frente
   do Bulldog em x, a traseira do Phantom e o Storm em z, rally e estepe.
+  Trucks (eixo rígido): LeftFrame/RightFrame giram tan(x / W.x) (tan, não
+  atan) com W = WHEEL_FRONT_*_VISUAL (o jogo acha o ponto pelo começo do
+  nome, na ordem do arquivo); RearAxle (Axle + Rear_Arm) gira em volta do
+  ARM_PIVOT até o meio das rodas de trás. Goliath (goliath_dirt_budget.p2s)
+  bate com erro 0 (docs Peças, suspension_visual.pose_truck).
 - Modelos: o pingu2obj vira os triângulos pelas normais do jogo e o Godot
   descarta a face de trás (`MODEL_CULL`). Total de materiais do .pingu em
   0xAC (0xBC conta menos).
@@ -554,14 +559,17 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   TruckCompMap_A2 (Punisher, RearFreeAxle), BuggyCompMap_A1 (Panther, igual
   buggy) e RallyCompMap (Chimera, igual Storm). As melhorias nossas ficam
   desligadas nos trucks (car.gd melhorias, main.gd) até a base ser conferida
-  com save states.
+  com save states. Goliath parado (RAM): massa 1.90 t, marchas
+  21.9/14.3/10.6/8.5/7.0, final 1.1636, CoM (0, 0.85, -0.609), curso máx
+  0.55 / 0.76 = remake. Motor e embreagem da RAM = peças de motor 1.0
+  (embreagem 1.023 = fully_tuned); de fábrica o vehicles.xml dá 0.81.
 
 ## Pendente / ideias
 
-- Trucks: portar os cCompPlace do eixo rígido (LeftFrame, RightFrame,
-  FrontLeft/RightBrake, RearAxle, RearFreeAxle); hoje essas peças não
-  aparecem e as rodas dos mapas B/A ficam no jeito "rally". Conferir física,
-  suspensão e câmera com save states de trucks (o Matheus vai gravar).
+- Trucks: conferir física e câmera com mais save states (parado na
+  largada com a câmera assentada, Punisher acelerando e virando). No do
+  Goliath a câmera tinha trocado 1.57 s antes (suavização 17.85/s) e o
+  zoom 0.60 fica fora do FollowFar (0.36-0.46): não dá pra comparar.
   Tração: car.gd REAR_DRIVE vale pra todos (conferir nos trucks).
 
 - Pneu e aro comprados (hipótese: troca de textura, ver docs/assets.md).
