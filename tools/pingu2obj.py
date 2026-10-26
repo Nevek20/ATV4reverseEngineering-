@@ -11,13 +11,26 @@ tira de triângulos (triangle strip):
     xx xx 01 60   UNPACK S-32   nº de vértices (+ flags)
     xx xx NN 6C   UNPACK V4-32  posição x, y, z + flag ADC no 4º campo
     xx xx NN 6A   UNPACK V3-8   normal (3 bytes com sinal)
-    xx xx NN 6C   UNPACK V4-32  UV (s, t) + 2º conjunto de UV
+    xx xx NN 6C   UNPACK V4-32  UV (s, t) + 2º conjunto de UV (s2, t2)
       ou NN 64    UNPACK V2-32  UV (s, t)
     xx xx NN 6E   UNPACK V4-8   cor RGBA
     00 00 00 17   MSCNT         manda a VU1 desenhar
 
     O 4º campo da posição tem o bit ADC (0x8000): quando ligado, aquele
     vértice NÃO fecha triângulo (é assim que a tira "recomeça").
+
+Camada: o lote de material pode ter uma 2ª textura (registro +0x18, com
++0x08 = 2) desenhada por cima pelo 2º UV. A pintura das carrocerias tem a
+"dirt" (a sujeira: o jogo troca pela textura da pista) e as rodas a
+UNI_TyreOverlay (lama do pneu). Essas tiras saem também num <nome>_camada.obj
+com o 2º UV (car.gd / sujeira.gd).
+
+Cor do vértice: 0x80 = 1.0 e passa disso (até 255 = 2.0; alfa sempre 0x80).
+O PS2 multiplica a textura por ela: é a sombra "assada" no modelo e a cor
+das lanternas (vidro claro na textura x vértice vermelho 167, 24, 24). O .obj
+só guarda de 0 a 1, então sai codificada: sRGB de (linear(c/128) / COR_K),
+com COR_K = linear(255/128). O car.gd desfaz (o Godot passa a cor de sRGB pra
+linear e o material multiplica por COR_K).
 
 Uso:
     python pingu2obj.py unpacked\\other\\19998_bloco.bin
@@ -27,8 +40,27 @@ Uso:
 """
 
 import argparse
+import hashlib
 import os
 import struct
+
+
+def _lin(c):
+    """sRGB -> linear (a conta do Godot, sem cortar acima de 1)"""
+    return c / 12.92 if c < 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+
+def _srgb(x):
+    return x * 12.92 if x < 0.0031308 else 1.055 * x ** (1 / 2.4) - 0.055
+
+
+COR_K = _lin(255 / 128.0)     # o vértice mais claro possível (2.0)
+COR_VERSAO = 2                # pecas.json "cor_vertice" (sem = cortada em 1.0)
+
+
+def cor_obj(c):
+    """cor do jogo (c/128, até 2.0) -> 0..1 do .obj"""
+    return _srgb(_lin(c) / COR_K)
 
 
 def sub_strip(st, a, b):
@@ -103,13 +135,13 @@ def parse(d):
             if cnum != num:
                 break
             if ccmd == 0x6C:        # V4-32: s, t, s2, t2
-                uvs = [struct.unpack_from("<2f", d, q + 4 + 16 * i) for i in range(num)]
+                uvs = [struct.unpack_from("<4f", d, q + 4 + 16 * i) for i in range(num)]
                 q += 4 + 16 * num
             elif ccmd == 0x64:      # V2-32: s, t
                 uvs = [struct.unpack_from("<2f", d, q + 4 + 8 * i) for i in range(num)]
                 q += 4 + 8 * num
-            elif ccmd == 0x6E:      # V4-8: RGBA (0x80 = 1.0)
-                colors = [tuple(min(1.0, c / 128.0) for c in d[q + 4 + 4 * i:q + 7 + 4 * i])
+            elif ccmd == 0x6E:      # V4-8: RGBA (0x80 = 1.0, até 2.0)
+                colors = [tuple(c / 128.0 for c in d[q + 4 + 4 * i:q + 7 + 4 * i])
                           for i in range(num)]
                 q += 4 + 4 * num
             else:
@@ -123,7 +155,8 @@ def parse(d):
 def read_batches(d):
     """lotes de material do cabeçalho do pingu: registros de 0x50 bytes
     a partir de 0xd0. Campo +0x14 = slot de textura (-1 = sem textura),
-    +0x28 = onde o lote começa, +0x48 = quantas tiras ele tem."""
+    +0x28 = onde o lote começa, +0x48 = quantas tiras ele tem, +0x08 = quantas
+    texturas e +0x18 = slot da 2ª (camada, pelo 2º UV)."""
     if d[0x10:0x18] != b"gniPi2SP":
         return []
     # 0xBC conta só parte dos lotes; o total fica em 0xAC (no Sphinx, 21531:
@@ -138,12 +171,13 @@ def read_batches(d):
             break
         w = struct.unpack_from("<20I", d, o)
         slot = w[5] if w[5] != 0xFFFFFFFF else -1
-        out.append({"slot": slot, "start": w[10], "strips": w[18]})
+        camada = w[6] if w[2] >= 2 and w[6] != 0xFFFFFFFF else -1
+        out.append({"slot": slot, "camada": camada, "start": w[10], "strips": w[18]})
     out.sort(key=lambda b: b["start"])
     return out
 
 
-def assign_batches(strips, batches):
+def assign_batches(strips, batches, campo="slot"):
     """as tiras aparecem no arquivo na mesma ordem dos lotes, então é só
     distribuir na sequência usando a contagem de cada lote.
 
@@ -156,7 +190,7 @@ def assign_batches(strips, batches):
     if sum(b["strips"] for b in batches) == len(strips):
         out = []
         for b in batches:
-            out += [b["slot"]] * b["strips"]
+            out += [b[campo]] * b["strips"]
         return out
     starts = [b["start"] for b in batches]
     out = []
@@ -165,7 +199,7 @@ def assign_batches(strips, batches):
         i = 0
         while i + 1 < len(starts) and starts[i + 1] <= off:
             i += 1
-        out.append(batches[i]["slot"])
+        out.append(batches[i][campo])
     return out
 
 
@@ -233,7 +267,7 @@ def safe_name(name):
     return re.sub(r"[^A-Za-z0-9_.\-]", "_", name)[:60]
 
 
-def to_obj(strips, name, slots=None, mtl_name=None, mat_names=None):
+def to_obj(strips, name, slots=None, mtl_name=None, mat_names=None, uv2=False):
     lines = [f"# {name} - convertido de .pingu (ATV Offroad Fury 4)"]
     if mtl_name:
         lines.append(f"mtllib {mtl_name}")
@@ -244,8 +278,10 @@ def to_obj(strips, name, slots=None, mtl_name=None, mat_names=None):
     for (verts, normals, uvs, colors, adc, _off), slot in zip(strips, slots):
         mat = (mat_names or {}).get(slot, "sem_textura")
         for (x, y, z), c in zip(verts, colors):
-            lines.append(f"v {x:.6f} {y:.6f} {z:.6f} {c[0]:.3f} {c[1]:.3f} {c[2]:.3f}")
-        for s, t in uvs:
+            r, g, b = (cor_obj(k) for k in c)
+            lines.append(f"v {x:.6f} {y:.6f} {z:.6f} {r:.4f} {g:.4f} {b:.4f}")
+        for uv in uvs:
+            s, t = uv[2:4] if uv2 and len(uv) == 4 else uv[:2]
             lines.append(f"vt {s:.6f} {1.0 - t:.6f}")
         for nx, ny, nz in normals:
             lines.append(f"vn {nx:.4f} {ny:.4f} {nz:.4f}")
@@ -348,11 +384,17 @@ def main():
         report = []
         if not args.no_mtl:
             slots, mats, mtl, report = build_materials(f, d, strips, args.out, args.tex, args.copy_tex)
+        # o Godot só reimporta o .obj quando ELE muda (o .mtl não conta): a
+        # assinatura do .mtl vai num comentário, senão um .mtl novo (com
+        # textura) fica com o material velho importado (sem textura, branco)
+        assin = "# mtl %s\n" % hashlib.md5(mtl.encode()).hexdigest()[:12] if mtl else ""
         # peças separadas (ex: volante), cada uma no seu .obj.
         # Sintaxe das tiras: "44,53,234-242" pega tiras inteiras;
         # "233[12-26]" pega só os vértices 12 a 26 da tira 233 (às vezes uma
         # tira do PS2 junta duas peças, separadas por um recomeço ADC).
-        body = [(st, sl) for st, sl in zip(strips, slots or [None] * len(strips))]
+        batches = read_batches(d)
+        cams = assign_batches(strips, batches, "camada") if batches else [-1] * len(strips)
+        body = [(st, sl, cm) for st, sl, cm in zip(strips, slots or [None] * len(strips), cams)]
         body = [[b] for b in body]          # cada tira pode virar vários pedaços
         for spec in args.split:
             part, _, ranges = spec.partition(":")
@@ -365,10 +407,10 @@ def main():
                     a, b = int(a), int(b or a)
                     if i >= len(strips):
                         continue
-                    st, sl = strips[i], (slots[i] if slots else None)
-                    chosen.append((sub_strip(st, a, b + 1), sl))
+                    st, sl, cm = strips[i], (slots[i] if slots else None), cams[i]
+                    chosen.append((sub_strip(st, a, b + 1), sl, cm))
                     rest = [x for x in (sub_strip(st, 0, a), sub_strip(st, b + 1, len(st[0]))) if x]
-                    body[i] = [(x, sl) for x in rest]
+                    body[i] = [(x, sl, cm) for x in rest]
                 else:
                     a, _, b = tok.partition("-")
                     for i in range(int(a), int(b or a) + 1):
@@ -380,7 +422,7 @@ def main():
                                     [c[1] for c in chosen] if slots else None,
                                     name + ".mtl" if mtl else None, mats)
             with open(os.path.join(args.out, f"{name}_{part}.obj"), "w") as fo:
-                fo.write(pobj)
+                fo.write(assin + pobj)
             print(f"  peça '{part}': {len(chosen)} tiras, {pnt} triângulos -> {name}_{part}.obj")
         flat = [p for pieces in body for p in pieces]
         obj, nv, nt = to_obj([p[0] for p in flat], name,
@@ -389,7 +431,17 @@ def main():
         if nt < args.min_tris:
             continue
         with open(os.path.join(args.out, name + ".obj"), "w") as fo:
-            fo.write(obj)
+            fo.write(assin + obj)
+        # camada (2ª textura pelo 2º UV): só as tiras que têm, já sem as peças separadas
+        cam = [p for p in flat if p[2] is not None and p[2] >= 0]
+        if cam:
+            nomes = texture_names(f)[1]
+            tex_cam = sorted({nomes[p[2]] if p[2] < len(nomes) else "slot_%d" % p[2] for p in cam})
+            cobj, _, cnt = to_obj([p[0] for p in cam], f"{name}_camada " + " ".join(tex_cam), uv2=True)
+            with open(os.path.join(args.out, name + "_camada.obj"), "w") as fo:
+                fo.write(cobj)
+            if len(files) == 1:
+                print(f"  camada {', '.join(tex_cam)}: {len(cam)} tiras, {cnt} triângulos -> {name}_camada.obj")
         if mtl:
             with open(os.path.join(args.out, name + ".mtl"), "w") as fo:
                 fo.write(mtl)

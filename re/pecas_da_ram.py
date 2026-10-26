@@ -2,8 +2,8 @@
 pecas_da_ram.py
 ================
 Tira de um save state do PCSX2 (parado, de preferência na largada) as
-matrizes reais das peças do buggy (balanças, freios, amortecedores, rodas,
-estepe) e o curso de cada roda, no formato de tests/ref_ram_pecas.json.
+matrizes reais das peças do buggy ou truck (balanças, freios, amortecedores,
+rodas, estepe, braços e eixo de trás dos trucks) e o curso de cada roda, no formato de tests/ref_ram_pecas.json.
 
 Acha os objetos cCompPlace_* pela vtable (0x5801e0..0x580898) e a classe
 pelo método +0x1c lido no exe. Veículo em 0xc7eb00 (igual nos 6 saves).
@@ -25,7 +25,10 @@ METH = {0x1fc5f0: 'Frame_FL', 0x1fc550: 'Frame_FR', 0x1fc730: 'Frame_RL', 0x1fc6
         0x1fd3e0: 'Wheel_FL', 0x1fd468: 'Wheel_FR', 0x1fd4f0: 'Wheel_RL', 0x1fd578: 'Wheel_RR',
         # RallyCompMap (FrontLeftWheel...) e estepe
         0x1fd1c0: 'Wheel_FL', 0x1fd248: 'Wheel_FR', 0x1fd2d0: 'Wheel_RL', 0x1fd358: 'Wheel_RR',
-        0x1fd730: 'Spare'}
+        0x1fd730: 'Spare',
+        # trucks (TruckCompMap_A2/B1/B2)
+        0x1fc1d8: 'LeftFrame', 0x1fc278: 'RightFrame', 0x1fc7d0: 'FrontLeftBrake',
+        0x1fc858: 'FrontRightBrake', 0x1fc428: 'RearAxle', 0x1fcc10: 'RearFreeAxle'}
 VEH = 0xc7eb00
 
 

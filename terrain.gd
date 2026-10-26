@@ -91,6 +91,12 @@ static func load_materials(path: String) -> Array:
 			while out.size() <= i:
 				out.append({"pneu": {}})
 			out[i] = at
+		elif nome == "DustColour" and i >= 0:
+			# cor da poeira (registro +0x10): a lama das rodas puxa pra ela (0x2242d0)
+			out[i]["DustColour"] = Color(x.get_named_attribute_value_safe("R").to_float(),
+				x.get_named_attribute_value_safe("G").to_float(),
+				x.get_named_attribute_value_safe("B").to_float(),
+				x.get_named_attribute_value_safe("A").to_float())
 		elif nome == "Overrides" and i >= 0:
 			for k in x.get_attribute_count():
 				var p := x.get_attribute_value(k).split(" ", false)
@@ -152,6 +158,13 @@ func amortecimento(m: int) -> float:
 	if m < 0 or m >= materials.size():
 		return 0.0
 	return float(materials[m].get("Damping", 0.0))
+
+
+## WheelDirtRate do material (registro +0x54): quanto suja o carro (0x223e68)
+func taxa_sujeira(m: int) -> float:
+	if m < 0 or m >= materials.size():
+		return 0.0
+	return float(materials[m].get("WheelDirtRate", 0.0))
 
 
 ## som do pneu no material (atributo SFX: Dirt, Tarmac, Gravel, Grass, Snow);

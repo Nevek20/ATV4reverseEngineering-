@@ -1,0 +1,62 @@
+{
+ "bulldog": {
+  "set": "BuggyCamSet_05",
+  "altura_origem": -0.0501,
+  "frente_y": 0.0322,
+  "atras": 5.04,
+  "y": 2.285,
+  "lado": -0.001,
+  "zoom": 0.5,
+  "taxa": 40.08
+ },
+ "inferno": {
+  "set": "BuggyCamSet_02",
+  "altura_origem": 0.2202,
+  "frente_y": 0.0278,
+  "atras": 6.25,
+  "y": 2.684,
+  "lado": -0.001,
+  "zoom": 0.5,
+  "taxa": 40.08
+ },
+ "phantom": {
+  "set": "BuggyCamSet_06",
+  "altura_origem": -0.0703,
+  "frente_y": 0.0239,
+  "atras": 5.951,
+  "y": 2.78,
+  "lado": -0.001,
+  "zoom": 0.5,
+  "taxa": 40.08
+ },
+ "storm": {
+  "set": "LanciaCam",
+  "altura_origem": 0.0724,
+  "frente_y": 0.0261,
+  "atras": 5.65,
+  "y": 2.49,
+  "lado": -0.001,
+  "zoom": 0.5,
+  "taxa": 40.08
+ },
+ "buccaneer": {
+  "set": "TruckCamSet_01",
+  "altura_origem": 0.1387,
+  "frente_y": -0.0143,
+  "atras": 6.87,
+  "y": 3.007,
+  "lado": -0.001,
+  "zoom": 0.5,
+  "taxa": 40.02
+ },
+ "goliath": {
+  "set": "TruckCamSet_11",
+  "altura_origem": 0.0208,
+  "frente_y": -0.0804,
+  "atras": 7.654,
+  "y": 3.396,
+  "lado": -0.001,
+  "zoom": 0.5,
+  "taxa": 40.02
+ }
+}

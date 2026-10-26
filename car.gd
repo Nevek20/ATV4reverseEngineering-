@@ -48,6 +48,7 @@ var vehicle_name := "Renegade (Buggy)"
 # VehicleData.factory_tuning. Os valores abaixo são os do Renegade (BUGGY_10),
 # conferidos no save state: torque 0.81, final 0.61, massa e embreagem no máximo.
 var vehicle_id := "BUGGY_10"
+var som_pasta := ""            # pasta dos loops do motor, se não for a do id (o bônus)
 var tune_override := {}       # ex.: {"engine": 0.3} pra simular peças compradas
 var TUNE_ENGINE := 0.81       # Internals L3 + Management L2 + Header L2 + Intake L3 + Exhaust L3
 var TUNE_BRAKE := 0.9         # Brake_Level2
@@ -120,11 +121,50 @@ var sfx: Node = null
 # que o jogo tem no XML e não usa, nos pontos EXHAUST). false = sem fumaça
 const FUMACA := true
 var fumaca: Node3D = null
+# melhoria nossa: o Storm (BUGGY_12) é o único sem ponto EXHAUST no
+# _points.bin (o jogo não usa esses pontos). Medido no modelo dele: boca das
+# duas ponteiras cromadas (peças de 46 faces na traseira, embaixo), viradas
+# 27° pra fora. Só a fumaça e o escape tremendo usam (frame do jogo: [ponto, direção])
+const ESCAPE_NOSSO := {
+	"BUGGY_12": [[Vector3(0.569, 0.644, -2.489), Vector3(0.45, 0.0, -0.89)],
+		[Vector3(-0.580, 0.644, -2.489), Vector3(-0.45, 0.0, -0.89)]],
+}
 # motor e escape tremendo (melhoria nossa, motor_treme.gd: peças soltas da
 # carroceria no cofre do motor; vibração pela rotação e balanço pela carga)
 const MOTOR_TREME := true
 var motor_treme: Node3D = null
+# motor animado (melhoria nossa, motor_anima.gd): ventoinhas dos radiadores
+# girando (elétricas) e polias e correia 3D por cima das polias desenhadas
+const MOTOR_ANIMA := true
+var motor_anima: Node = null
+# lanterna de freio e luz de ré acesas (melhoria nossa, luzes.gd: a lente da
+# cor da luz acende e ganha um halo nosso; o jogo põe só um halo laranja com
+# raios nos pontos BRAKE_LIGHT/REVERSE_LIGHT, VehicleHaloMap.xml)
+const LUZ_FREIO := true
+var luzes: Node = null
+# farol aceso (melhoria nossa, farol.gd): lente e brilho como a lanterna de
+# freio, nas lâmpadas do modelo (Hurricane, Storm); H liga e desliga
+const FAROL := true
+var farol: Node = null
 var body_mi: MeshInstance3D = null
+# sujeira do jogo (0x223e68, _sujeira_passo) e desenho dela (sujeira.gd, com a
+# textura GEN_DIRT_DIRT em assets/fx: tools/fx_jogo.py). false = carro limpo
+const SUJEIRA := true
+# painel funcional (melhoria nossa, painel.gd): ponteiros, marcha e luz de troca
+const PAINEL := true
+var painel: Node3D = null
+var sujeira_nivel := 0.0      # objeto da sujeira (veículo+0xa80) +0xc0, 0..1
+var sujeira = null
+# lama das rodas (0x224418/0x2242d0, mesmo objeto +0x10..+0x4c): vira a
+# paleta da UNI_TyreOverlay (0x224148). Alvo = DustColour do chão com alfa
+# WheelDirtAlpha (0 no asfalto: a lama some aos poucos)
+var roda_de := Color(0, 0, 0, 0)        # +0x10 cor de onde saiu
+var roda_para := Color(0, 0, 0, 0)      # +0x20 alvo
+var roda_cor := Color(0, 0, 0, 0)       # +0x30 cor de agora
+var roda_mat := -1                      # +0x40 material do chão da FL
+var roda_t := 0.0                       # +0x44 quanto já foi (0..1)
+var roda_taxa := 0.0                    # +0x48 WheelDirtRate suavizada
+var roda_taxa_alvo := 0.0               # +0x4c
 var som_carga := 0.0          # carga do motor pro som: acelerador x limitador x troca
 var DRIVER_EYE := Vector3(-0.434, 1.78, -0.12)   # Renegade; nos outros vem do ponto ARSE
 const EYE_FROM_ARSE := Vector3(0.047, 0.78, -0.169)   # medido no Renegade (ARSE -> olho)
@@ -133,6 +173,21 @@ const MAX_STEER := 1.0        # steer já é normalizado (-1..1)
 # de trás pode ser descartada (painéis de duas faces não piscam mais).
 # Modelos gerados com o pingu2obj antigo precisam de CULL_DISABLED.
 const MODEL_CULL := BaseMaterial3D.CULL_BACK
+# cor do vértice do jogo: o PS2 multiplica a textura por ela (sombra "assada"
+# no modelo e a cor das lanternas: vidro claro na textura x vértice vermelho).
+# 0x80 = 1.0, vai até 2.0. pecas.json "cor_vertice" 2 = pingu2obj novo, que
+# guarda codificada (docs/assets.md); sem ela = antigo, cortada em 1.0.
+# false = só a textura (como era até out/2026: lanterna branca)
+const COR_VERTICE := true
+const COR_K_SRGB := 255.0 / 128.0   # no albedo (sRGB) vira o COR_K do pingu2obj
+# carroceria fechada (melhoria nossa: só a nossa câmera do piloto fica dentro
+# dela). A casca do jogo só tem a face de fora e de dentro do Storm via-se a
+# estrada pelas chapas. _face_de_dentro dá a face de dentro às chapas que não
+# têm (as de 2 faces já modeladas ficam, senão piscam): na pintura ("white")
+# vira FORRO (de dentro não se vê a pintura de fora espelhada), no resto a
+# mesma textura.
+const CABINE_FECHADA := ["BUGGY_12"]
+const FORRO := Color(0.16, 0.16, 0.17)
 
 # O jogo é mão esquerda (x direita, y cima, z frente; esquerda do jogo = x < 0
 # no modelo) e o Godot é mão direita. Tudo que vem do jogo em frame do modelo
@@ -234,6 +289,15 @@ var jit_acc := 0.0
 var spd_ground := 0.0         # corpo+0x440: velocidade no plano do chão (m/s)
 var jit_order := []           # índices das rodas na ordem do jogo: FL, RL, FR, RR
 var jitter_chao := 0.0        # veículo+0xac0: média do WheelJitter embaixo de FL, RL, FR no chão (câmera)
+# batida (0x215140): a cada passo o jogo guarda os contatos do casco por
+# |contato+0x64| = velocidade do ponto na normal (m/s) e a câmera lê o maior
+# (camera_jitter.gd). Aqui o solver do Godot já tirou essa velocidade quando o
+# contato aparece, então vale a velocidade do ponto ANTES do passo que achou o
+# contato. No save state da batida (crash_Storm): parede de pedra, outro corpo
+# nenhum, 4.86 m/s num registro velho e 0.08 m/s encostado.
+var batida := 0.0             # corpo+0x7a0: maior velocidade de contato do último passo (m/s)
+var _v_antes := Vector3.ZERO
+var _w_antes := Vector3.ZERO
 
 # melhoria nossa: o volante treme (as mãos vão junto pela IK). No jogo ele não
 # treme; a força vem do que o jogo usa pra sacudir o CONTROLE e pro som:
@@ -288,6 +352,11 @@ const TRAVA_MPH := 2.0
 const TRAVA_INI := -0.25
 const TRAVA_FIM := -1.0
 var test_input = null         # {thr, brk, steer} pra testes automáticos
+# false desliga as melhorias nossas (volante girando e gerado, mãos na IK,
+# som do Engine Simulator, fumaça, painel, motor tremendo e animado, luzes,
+# farol, volante tremendo): fica só o que o jogo faz. main.gd desliga nos
+# trucks até a base deles ser conferida com os save states
+var melhorias := true
 
 
 func _ready() -> void:
@@ -301,7 +370,11 @@ func _ready() -> void:
 	_load_model()                 # antes da física: define model_offset
 	_load_physics()
 	_load_piloto()                # depois da física: precisa do ponto ARSE
+	_load_painel()
 	_load_motor_treme()
+	_load_motor_anima()
+	_load_luzes()
+	_load_farol()
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
@@ -311,6 +384,8 @@ func _ready() -> void:
 	shape.shape = box
 	shape.position = Vector3(0, 0.95, 0)
 	add_child(shape)
+	contact_monitor = true            # batida: contatos do casco (_batida_passo)
+	max_contacts_reported = 8
 	for w in wheels:
 		_make_wheel_mesh(w)
 	if suspension and not pecas.is_empty() and not points.is_empty():
@@ -321,6 +396,34 @@ func _ready() -> void:
 			spare_mesh = load(wheel_rear_file) as Mesh
 		susp_vis.build(self, points, points_rot, asset_dir, pecas.get("pecas", {}),
 			pecas.get("rally", false), pecas.get("estepe", []), spare_mesh)
+	_load_sujeira()               # por último: precisa das rodas e das peças
+
+
+## material de uma malha do jogo (carroceria, rodas, peças, volante do
+## jogo): descarta a face de trás e multiplica pela cor do vértice
+func material_do_jogo(m: StandardMaterial3D) -> void:
+	m.cull_mode = MODEL_CULL
+	if not _com_cor_vertice():
+		return
+	m.vertex_color_use_as_albedo = true
+	m.vertex_color_is_srgb = true
+	if int(pecas.get("cor_vertice", 1)) >= 2:
+		var c := m.albedo_color
+		m.albedo_color = Color(c.r * COR_K_SRGB, c.g * COR_K_SRGB, c.b * COR_K_SRGB, c.a)
+
+
+## a mesma conta pros shaders nossos que desenham por cima de malha do jogo
+## (sujeira, ventoinha): multiplicador linear da cor do vértice, 0 = sem
+func cor_k() -> float:
+	if not _com_cor_vertice():
+		return 0.0
+	if int(pecas.get("cor_vertice", 1)) >= 2:
+		return pow((COR_K_SRGB + 0.055) / 1.055, 2.4)
+	return 1.0
+
+
+static func _com_cor_vertice() -> bool:
+	return COR_VERTICE and OS.get_environment("COR_VERTICE") != "0"    # print_tela: antes x depois
 
 
 ## pecas.json (tools/gerar_buggies.py): modelo, peças e rodas do carro
@@ -582,6 +685,14 @@ func _load_physics() -> void:
 	# do Godot por corpo(): a esquerda do jogo (x < 0) vira +X. Sem ele, no chute.
 	wheels.clear()
 	var pts := _load_points(points_file)
+	if not pts.has("EXHAUST") and ESCAPE_NOSSO.has(vehicle_id):
+		var e: Array = ESCAPE_NOSSO[vehicle_id]
+		for k in e.size():
+			var nm: String = "EXHAUST" if k == 0 else "EXHAUST%d" % (k + 1)
+			var dz: Vector3 = e[k][1].normalized()
+			var dx := Vector3.UP.cross(dz).normalized()
+			pts[nm] = e[k][0]
+			points_rot[nm] = Basis(dx, dz.cross(dx), dz)    # linha 2 = direção, como no _points.bin
 	points = pts
 	update_eye()
 	var wpos := {}
@@ -746,7 +857,7 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 			var m := mesh.surface_get_material(i)
 			if m is StandardMaterial3D:
 				var m2: StandardMaterial3D = m.duplicate()
-				m2.cull_mode = MODEL_CULL
+				material_do_jogo(m2)
 				mi.set_surface_override_material(i, m2)
 		# component map (14881): Mirror="1" nas rodas da esquerda do jogo
 		# (o pivô está no frame do jogo, dentro do espelho)
@@ -811,7 +922,12 @@ func _load_model() -> void:
 			m2.albedo_color = Color(0.85, 0.85, 0.85)
 		if livery and m and m.resource_name.ends_with("_white"):
 			m2.albedo_texture = livery
-		m2.cull_mode = MODEL_CULL
+		# textura com furo no jogo (redes das janelas, treliça do Trident):
+		# tools/alfa_texturas.py devolve o alfa e aqui vira recorte
+		if m2.albedo_texture and _tem_alfa(m2.albedo_texture):
+			m2.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+			m2.alpha_scissor_threshold = 0.5
+		material_do_jogo(m2)
 		mi.set_surface_override_material(i, m2)
 	var aabb := mesh.get_aabb()
 	var c := aabb.get_center()
@@ -819,20 +935,131 @@ func _load_model() -> void:
 	mi.position = model_offset
 	model_root.add_child(mi)
 	body_mi = mi
+	if vehicle_id in CABINE_FECHADA:
+		_face_de_dentro(mi)
 	_load_steering_wheel()
 
 
 ## depois da física (precisa dos pontos ARSE, rodas e EXHAUST)
 func _load_motor_treme() -> void:
-	if not MOTOR_TREME or body_mi == null:
+	if not (MOTOR_TREME and melhorias) or body_mi == null:
 		return
 	motor_treme = preload("res://motor_treme.gd").new()
 	motor_treme.name = "MotorTreme"
-	if motor_treme.separar(body_mi, points):
+	if motor_treme.separar(body_mi, points, vehicle_id):
 		model_root.add_child(motor_treme)
 	else:
 		motor_treme.free()
 		motor_treme = null
+
+
+func _load_luzes() -> void:
+	if not (LUZ_FREIO and melhorias) or body_mi == null:
+		return
+	luzes = preload("res://luzes.gd").new()
+	luzes.name = "Luzes"
+	if luzes.montar(self):
+		add_child(luzes)
+	else:
+		luzes.free()
+		luzes = null
+
+
+func _load_farol() -> void:
+	if not (FAROL and melhorias) or body_mi == null:
+		return
+	farol = preload("res://farol.gd").new()
+	farol.name = "Farol"
+	if farol.montar(self):
+		add_child(farol)
+	else:
+		farol.free()
+		farol = null
+
+
+func _load_motor_anima() -> void:
+	if not (MOTOR_ANIMA and melhorias) or body_mi == null:
+		return
+	motor_anima = preload("res://motor_anima.gd").new()
+	motor_anima.name = "MotorAnima"
+	if motor_anima.montar(self):
+		add_child(motor_anima)
+	else:
+		motor_anima.free()
+		motor_anima = null
+
+
+## copia virada (ordem dos vértices e normal) de cada triângulo que não tem
+## gêmeo do outro lado (mesmos 3 pontos); fica numa malha filha
+func _face_de_dentro(mi: MeshInstance3D) -> void:
+	var mesh: Mesh = mi.mesh
+	var chave := func(a: Vector3, b: Vector3, c: Vector3) -> Array:
+		var k := [Vector3i((a * 1000.0).round()), Vector3i((b * 1000.0).round()), Vector3i((c * 1000.0).round())]
+		k.sort()
+		return k
+	var existe := {}
+	var arrs: Array = []
+	for s in mesh.get_surface_count():
+		var a := mesh.surface_get_arrays(s)
+		arrs.append(a)
+		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
+		var ix := PackedInt32Array(range(vs.size()))
+		if a[Mesh.ARRAY_INDEX] != null:
+			ix = a[Mesh.ARRAY_INDEX]
+		for t in range(0, ix.size(), 3):
+			var k: Array = chave.call(vs[ix[t]], vs[ix[t + 1]], vs[ix[t + 2]])
+			existe[k] = existe.get(k, 0) + 1
+	var dentro := ArrayMesh.new()
+	var mats: Array = []
+	var forro := StandardMaterial3D.new()
+	forro.albedo_color = FORRO
+	forro.roughness = 0.9
+	forro.cull_mode = MODEL_CULL
+	for s in arrs.size():
+		var a: Array = arrs[s].duplicate()
+		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
+		var ix := PackedInt32Array(range(vs.size()))
+		if a[Mesh.ARRAY_INDEX] != null:
+			ix = a[Mesh.ARRAY_INDEX]
+		var novo := PackedInt32Array()
+		for t in range(0, ix.size(), 3):
+			if existe[chave.call(vs[ix[t]], vs[ix[t + 1]], vs[ix[t + 2]])] > 1:
+				continue                  # chapa de 2 faces: já tem o lado de dentro
+			novo.append_array([ix[t], ix[t + 2], ix[t + 1]])
+		if novo.is_empty():
+			continue
+		if a[Mesh.ARRAY_NORMAL] != null:
+			var ns: PackedVector3Array = a[Mesh.ARRAY_NORMAL]
+			for i in ns.size():
+				ns[i] = -ns[i]
+			a[Mesh.ARRAY_NORMAL] = ns
+		a[Mesh.ARRAY_TANGENT] = null
+		a[Mesh.ARRAY_INDEX] = novo
+		dentro.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
+		var m: Material = mi.get_active_material(s)
+		mats.append(forro if m and m.resource_name.ends_with("_white") else m)
+	if dentro.get_surface_count() == 0:
+		return
+	var d := MeshInstance3D.new()
+	d.name = "FaceDeDentro"
+	d.mesh = dentro
+	for s in mats.size():
+		d.set_surface_override_material(s, mats[s])
+	mi.add_child(d)
+
+
+static var _alfa_cache := {}
+
+
+static func _tem_alfa(t: Texture2D) -> bool:
+	var k := t.resource_path if t.resource_path != "" else str(t.get_instance_id())
+	if not _alfa_cache.has(k):
+		var img := t.get_image()
+		if img and img.is_compressed():
+			img = img.duplicate()
+			img.decompress()
+		_alfa_cache[k] = img != null and img.detect_alpha() != Image.ALPHA_NONE
+	return _alfa_cache[k]
 
 
 ## piloto (piloto.gd): o osso ROOT da animação fica em cima do ponto ARSE
@@ -849,7 +1076,7 @@ func _load_piloto() -> void:
 	piloto.name = "Piloto"
 	piloto.position = model_offset + points["ARSE"] - piloto.root_pos
 	model_root.add_child(piloto)
-	if MAOS_NO_VOLANTE and VOLANTE_GIRA and sw_pivot:
+	if MAOS_NO_VOLANTE and VOLANTE_GIRA and melhorias and sw_pivot:
 		var vol: Dictionary = pecas.get("volante", {})
 		# aro no frame do esqueleto (o piloto não gira em relação ao modelo)
 		piloto.prender_no_volante(sw_centro() - (points["ARSE"] - piloto.root_pos), SW_AXIS, vol.get("raio", 0.19))
@@ -861,7 +1088,7 @@ func sw_centro() -> Vector3:
 
 
 func _load_fumaca() -> void:
-	if not FUMACA:
+	if not (FUMACA and melhorias):
 		return
 	fumaca = preload("res://fumaca.gd").new()
 	fumaca.name = "Fumaca"
@@ -869,6 +1096,32 @@ func _load_fumaca() -> void:
 	if not fumaca.montar(self):
 		fumaca.queue_free()
 		fumaca = null
+
+
+func _load_painel() -> void:
+	if not (PAINEL and melhorias):
+		return
+	painel = preload("res://painel.gd").new()
+	painel.name = "Painel"
+	painel.position = model_offset
+	model_root.add_child(painel)
+	if not painel.montar(self):
+		painel.queue_free()
+		painel = null
+
+
+func _load_sujeira() -> void:
+	if not SUJEIRA:
+		return
+	if OS.has_environment("SUJEIRA"):          # prints: nível fixo (e lama de terra nas rodas)
+		sujeira_nivel = clampf(float(OS.get_environment("SUJEIRA")), 0.0, 1.0)
+		if terrain and terrain.materials.size() > 0:
+			roda_cor = Color(terrain.materials[0].get("DustColour", Color.BLACK), 0.8 * sujeira_nivel)
+	sujeira = preload("res://sujeira.gd").new()
+	if not sujeira.montar(self):
+		sujeira = null
+		return
+	sujeira.atualizar(sujeira_nivel, roda_cor)
 
 
 func _load_sfx() -> void:
@@ -883,9 +1136,11 @@ func _load_sfx() -> void:
 
 
 func _load_som() -> void:
+	# o som do motor vale também nos trucks (as outras melhorias ficam
+	# desligadas neles até a base ser conferida): não mexe na física
 	if not SOM_MOTOR:
 		return
-	var dir: String = preload("res://motor_som.gd").pasta_do_carro(vehicle_id)
+	var dir: String = som_pasta if som_pasta != "" else preload("res://motor_som.gd").pasta_do_carro(vehicle_id)
 	if dir == "":
 		return
 	som = preload("res://motor_som.gd").new()
@@ -904,6 +1159,16 @@ func _process(delta: float) -> void:
 		fumaca.atualizar(som_carga, rpm)
 	if motor_treme:
 		motor_treme.atualizar(rpm, som_carga, delta)
+	if motor_anima:
+		motor_anima.atualizar(delta, rpm)
+	if luzes:
+		luzes.atualizar(delta, brake_in, gear == -1)
+	if farol:
+		farol.atualizar(delta)
+	if sujeira:
+		sujeira.atualizar(sujeira_nivel, roda_cor)
+	if painel:
+		painel.atualizar(delta)
 
 
 func _load_steering_wheel() -> void:
@@ -918,7 +1183,7 @@ func _load_steering_wheel() -> void:
 	sw_pivot.position = model_offset + SW_CENTER
 	model_root.add_child(sw_pivot)
 	var mi := MeshInstance3D.new()
-	if VOLANTE_NOSSO:
+	if VOLANTE_NOSSO and melhorias:
 		sw_pivot.add_child(mi)
 		sw_malha = mi
 		sw_ponta_coluna = _ponta_coluna()
@@ -932,7 +1197,7 @@ func _load_steering_wheel() -> void:
 	for i in mesh.get_surface_count():
 		var m := mesh.surface_get_material(i)
 		var m2: StandardMaterial3D = m.duplicate() if m is StandardMaterial3D else StandardMaterial3D.new()
-		m2.cull_mode = MODEL_CULL
+		material_do_jogo(m2)
 		mi.set_surface_override_material(i, m2)
 	sw_pivot.add_child(mi)
 
@@ -1043,6 +1308,8 @@ func reset_to(pos: Vector3, yaw: float) -> void:
 	global_transform = Transform3D(Basis(Vector3.UP, yaw), pos)
 	reset_physics_interpolation()   # teleporte: não interpolar do lugar antigo
 	pos_ant = pos
+	_v_antes = Vector3.ZERO         # o contato do lugar antigo não vira batida
+	_w_antes = Vector3.ZERO
 	reset_drivetrain()
 
 
@@ -1120,6 +1387,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # ------------------------------------------------------------------ física
 func _physics_process(dt: float) -> void:
+	_batida_passo()
 	# ---- comandos
 	var thr_raw := 0.0
 	var brk_raw := 0.0
@@ -1376,9 +1644,91 @@ func _physics_process(dt: float) -> void:
 		jit_acc -= 1.0 / JIT_HZ
 		_wheel_jitter()
 		_vibracao(1.0 / JIT_HZ, v.dot(left), v_f)
+		_sujeira_passo()
+		_roda_suja_passo(1.0 / JIT_HZ)
 		if sfx:
 			sfx.passo(1.0 / JIT_HZ, v.dot(left), v_f)
 	_update_visuals(dt, v_f)
+
+
+## 0x223e68 (do update do veículo 0x203930, um por quadro = 50 Hz no PAL):
+## com roda no chão (corpo+0x8a8), piloto no carro e |v| no plano do chão
+## (0x440) >= 0.5, o nível sobe min(|v|, 15)·k·5e-5, k = maior WheelDirtRate
+## (até 1) dos materiais das rodas (veículo+0xa88; 0.2 até no asfalto, 0.3 na
+## terra úmida). Não tem dt: o passo é fixo. Vai até 1 e só zera quando o carro
+## reinicia (0x223db0); a água não limpa a carroceria no jogo, só a cor da
+## roda (0x224418, não portada). Confere com 2 save states: tests/teste_derrapagem.gd.
+## 0x215140: maior velocidade na normal dos contatos do casco no último passo,
+## com a velocidade do ponto de antes desse passo (_v_antes, _w_antes)
+func _batida_passo() -> void:
+	batida = 0.0
+	var st := PhysicsServer3D.body_get_direct_state(get_rid())
+	if st:
+		var com := global_transform * center_of_mass
+		for i in st.get_contact_count():
+			var vp := _v_antes + _w_antes.cross(st.get_contact_local_position(i) - com)
+			batida = maxf(batida, absf(vp.dot(st.get_contact_local_normal(i))))
+	_v_antes = linear_velocity
+	_w_antes = angular_velocity
+
+
+func _sujeira_passo() -> void:
+	if not SUJEIRA or grounded == 0 or spd_ground < 0.5 or terrain == null:
+		return
+	var k := 0.0
+	for w in wheels:
+		if w.mat >= 0:
+			k = maxf(k, minf(terrain.taxa_sujeira(w.mat), 1.0))
+	sujeira_nivel = clampf(sujeira_nivel + minf(spd_ground, 15.0) * k * 5e-5, 0.0, 1.0)
+
+
+## 0x224418 + 0x2242d0 (do 0x203930, depois da sujeira): com roda no chão e
+## material embaixo da FL (veículo+0xa88[0]), quando o material muda a cor
+## parte da de agora pro DustColour dele (alfa = WheelDirtAlpha; com alfa 0
+## só o alfa cai). t sobe giro da FL (W+0x48)·dt·0.002·WheelDirtRate
+## suavizada (0.95/0.05), x 10·patinada da RL (0x604) se passar de 1. Na água
+## (veículo+0xae8) o alvo é o registro DAT_007f4bf8+0x20 (o RX01 não tem
+## água). Confere com a RAM: tests/teste_derrapagem.gd.
+func _roda_suja_passo(dt: float) -> void:
+	if not SUJEIRA or grounded == 0 or terrain == null:
+		return
+	var fl: Dictionary = wheels[0]
+	if fl.mat < 0 or fl.mat >= terrain.materials.size():
+		return
+	var p: float = fl.omega * dt * 0.002
+	var pat := clampf(wheels[2].sr, 0.0, 1.0)
+	if pat * 10.0 > 1.0:
+		p *= pat * 10.0
+	if fl.mat != roda_mat:
+		var m: Dictionary = terrain.materials[fl.mat]
+		var alfa := float(m.get("WheelDirtAlpha", 0.0))
+		var poeira: Color = m.get("DustColour", Color(0, 0, 0, 0))
+		roda_mat = fl.mat
+		roda_t = 0.0
+		roda_de = roda_cor
+		roda_taxa_alvo = float(m.get("WheelDirtRate", 0.0))
+		if roda_de.a < 1e-6:
+			roda_de = Color(poeira, 0.0)
+			roda_para = Color(poeira, alfa)
+		elif alfa > 1e-6:
+			roda_para = Color(poeira, alfa)
+		else:
+			roda_para.a = alfa
+	roda_taxa = roda_taxa * 0.95 + roda_taxa_alvo * 0.05
+	roda_t = clampf(roda_t + p * roda_taxa, 0.0, 1.0)
+	roda_cor = roda_de.lerp(roda_para, roda_t)
+
+
+## recomeço (0x223db0): carro e rodas limpos
+func limpar_sujeira() -> void:
+	sujeira_nivel = 0.0
+	roda_de = Color(0, 0, 0, 0)
+	roda_para = Color(0, 0, 0, 0)
+	roda_cor = Color(0, 0, 0, 0)
+	roda_mat = -1
+	roda_t = 0.0
+	roda_taxa = 0.0
+	roda_taxa_alvo = 0.0
 
 
 ## 0x20e5e8: tamanho do arrasto (N). Em kN = (Air_drag_coefficient x 0.00065 +
@@ -1485,7 +1835,7 @@ func _vibracao(dt: float, v_l: float, v_f: float) -> void:
 			_susp_acima[k] = acima
 	else:
 		_susp_acima = [false, false]
-	if not VOLANTE_TREME:
+	if not (VOLANTE_TREME and melhorias):
 		return
 	pancada = maxf(pancada * exp(-dt / PANCADA_SOLTA), tranco)
 	# alvo do giro: sorteio pela vibração, tranco com sinal sorteado, e a
@@ -2491,7 +2841,7 @@ func _update_visuals(dt: float, _v_f: float) -> void:
 		rider_s = clampf(rider_s + minf(1.0 / dt, 30.0) * (steer - rider_s) * dt, -1.0, 1.0)
 	if dt > 0.0:
 		treme += (_treme_alvo - treme) * (1.0 - exp(-dt / TREME_SUAVE))
-	if sw_pivot and VOLANTE_GIRA:
+	if sw_pivot and VOLANTE_GIRA and melhorias:
 		var giro := -rider_s * SW_TURNS
 		if piloto and piloto.no_volante():
 			giro = piloto.giro_volante(rider_s)

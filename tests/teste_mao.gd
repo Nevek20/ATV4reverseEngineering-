@@ -32,7 +32,10 @@ func _initialize() -> void:
 	ref_pecas = JSON.parse_string(FileAccess.get_file_as_string("res://tests/ref_ram_pecas.json"))
 	ref_chao = JSON.parse_string(FileAccess.get_file_as_string("res://tests/ref_ram_chao.json"))
 	for nome in ref_pecas:
-		carros.append([nome, _carro(int(ref_pecas[nome].veh), true)])
+		# trucks (índice depois dos buggies em Main.frota()) não têm balança:
+		# as peças deles o teste_pecas confere
+		if int(ref_pecas[nome].veh) < Main.VEHICLES.size():
+			carros.append([nome, _carro(int(ref_pecas[nome].veh), true)])
 	sem_susp = _carro(0, false)
 
 

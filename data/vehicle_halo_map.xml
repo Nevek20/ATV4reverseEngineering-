@@ -1,0 +1,106 @@
+<Root FileVersion="1.0000000">
+   <BRAKE_LIGHT HaloName="BrakeLight" Behaviour="Brake">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="0" z="0"/>
+   </BRAKE_LIGHT>
+   <BRAKE_LIGHT2 HaloName="BrakeLight" Behaviour="Brake">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="0" z="0"/>
+   </BRAKE_LIGHT2>
+   <BRAKE_LIGHT3 HaloName="BrakeLight" Behaviour="Brake">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="0" z="0"/>
+   </BRAKE_LIGHT3>
+   <BRAKE_LIGHT4 HaloName="BrakeLight" Behaviour="Brake">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="0" z="0"/>
+   </BRAKE_LIGHT4>
+   <BRAKE_LIGHT5 HaloName="BrakeLight" Behaviour="Brake">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="0" z="0"/>
+   </BRAKE_LIGHT5>
+   <BRAKE_LIGHT6 HaloName="BrakeLight" Behaviour="Brake">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="0" z="0"/>
+   </BRAKE_LIGHT6>
+   <REVERSE_LIGHT HaloName="ReverseLight" Behaviour="Reverse">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="0" z="0"/>
+   </REVERSE_LIGHT>
+   <REVERSE_LIGHT2 HaloName="ReverseLight" Behaviour="Reverse">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="0" z="0"/>
+   </REVERSE_LIGHT2>
+   <HEAD_LIGHT HaloName="ReverseLight" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </HEAD_LIGHT>
+   <HEAD_LIGHT2 HaloName="ReverseLight" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </HEAD_LIGHT2>
+   <HEAD_LIGHT3 HaloName="ReverseLight" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </HEAD_LIGHT3>
+   <FRONT_HALO1 HaloName="HaloTestLight" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </FRONT_HALO1>
+   <FRONT_HALO2 HaloName="HaloTestLight2" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </FRONT_HALO2>
+   <FRONT_HALO3 HaloName="HaloTestLight3" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </FRONT_HALO3>
+   <FRONT_HALO4 HaloName="HaloTestLight4" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </FRONT_HALO4>
+   <FRONT_HALO5 HaloName="HaloTestLight5" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </FRONT_HALO5>
+   <FRONT_HALO6 HaloName="HaloTestLight4" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </FRONT_HALO6>
+   <FRONT_HALO7 HaloName="HaloTestLight3" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </FRONT_HALO7>
+   <FRONT_HALO8 HaloName="HaloTestLight2" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </FRONT_HALO8>
+   <FRONT_HALO9 HaloName="HaloTestLight" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </FRONT_HALO9>
+   <FRONT_HALO10 HaloName="HaloTestLight" Behaviour="Night">
+      <Normal x="0" y="0" z="1"/>
+      <Offset x="0" y="0" z="0"/>
+   </FRONT_HALO10>
+   <REAR_HALO1 HaloName="RearHaloTestLight" Behaviour="Night">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="-0.11" z="0"/>
+   </REAR_HALO1>
+   <REAR_HALO2 HaloName="RearHaloTestLight" Behaviour="Night">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="-0.11" z="0"/>
+   </REAR_HALO2>
+   <REAR_HALO3 HaloName="RearHaloTestLight" Behaviour="Night">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="-0.11" z="0"/>
+   </REAR_HALO3>
+   <REAR_HALO4 HaloName="RearHaloTestLight" Behaviour="Night">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="-0.11" z="0"/>
+   </REAR_HALO4>
+   <REAR_HALO5 HaloName="RearHaloTestLight" Behaviour="Night">
+      <Normal x="0" y="0" z="-1"/>
+      <Offset x="0" y="-0.11" z="0"/>
+   </REAR_HALO5>
+</Root>

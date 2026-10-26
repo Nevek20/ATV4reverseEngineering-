@@ -66,8 +66,16 @@ def procurar_pinos(m, passo, quer):
     os intervalos de ignição pedidos (lista ou conjunto aceito)."""
     npinos = len(m["pinos"])
     opcoes = [i * passo for i in range(npinos)]
-    for perm in itertools.permutations(opcoes[1:]):
+    lados = [m["bancadas"]]
+    if m.get("tdc_auto"):
+        # o lado de cada bancada depende da marca: tenta as duas
+        lados.append([(-b, f) for b, f in m["bancadas"]])
+    for m["bancadas"], perm in itertools.product(lados, itertools.permutations(opcoes[1:])):
         m["pinos"] = [0] + list(perm)
+        if m.get("tdc_auto"):
+            # tdc que põe o 1º da ordem no PMS de ignição em 0
+            c = m["cil"][m["ordem"][0]]
+            m["tdc"] = (m["bancadas"][c["b"]][0] + 90 - m["pinos"][c["pino"]]) % 360
         ang = ignicoes(m)
         if ang is None:
             continue
@@ -98,6 +106,8 @@ def cil(b, pino, esc=0, prim=0.0, adm=0):
 
 
 BUGGY = dict(massa=1100, area_frente=(70, 60), cx=0.45, pneu=15.0, atrito=300)
+# trucks: massa de fábrica do jogo (truck_NN.xml + peças) e pneu maior
+TRUCK = dict(BUGGY, area_frente=(80, 72), cx=0.5, pneu=17.0, atrito=400)
 # marchas na proporção do Renegade no save state (18.2/11.9/8.9/7.1/5.9)
 MARCHAS = [18.2 / 5.9, 11.9 / 5.9, 8.9 / 5.9, 7.1 / 5.9, 1.0]
 
@@ -387,6 +397,302 @@ MOTORES.append(dict(
 ))
 
 
+# ---------------------------------------------------------------- trucks
+# Um motor por truck (docs/som_motor.md, Trucks): o do carro real quando a
+# base foi reconhecida no modelo 3D, escolha nossa (variando a família) nos
+# trophy trucks sem marca. cv = HP de fábrica do jogo (Drive_torque x 250 com
+# as peças de fábrica, truck_NN.xml); massa = a de fábrica do jogo.
+
+def ford_v8(prim):
+    """Ford: 1-4 na bancada direita, 5-8 na esquerda; pinos (1,5) (2,6) (3,7)
+    (4,8). O virabrequim (cruzado, 90°) sai da ordem de ignição."""
+    return dict(bancadas=[(-45, False), (45, True)], pinos=[0, 0, 0, 0], passo_pino=90,
+                intervalos_ok={90}, tdc_auto=True,
+                cil={1: cil(0, 0, 0, prim[0]), 2: cil(0, 1, 0, prim[1]), 3: cil(0, 2, 0, prim[2]),
+                     4: cil(0, 3, 0, prim[3]), 5: cil(1, 0, 1, prim[0]), 6: cil(1, 1, 1, prim[1]),
+                     7: cil(1, 2, 1, prim[2]), 8: cil(1, 3, 1, prim[3])})
+
+
+def gm_v8(prim, um_escape=False):
+    """Chevy/Mopar: ímpares numa bancada, pares na outra, pinos (1,2) (3,4)
+    (5,6) (7,8): o mesmo virabrequim do 454/LS do engine-sim."""
+    e = 0 if um_escape else 1
+    return dict(tdc=45, bancadas=[(-45, False), (45, True)], pinos=[0, 270, 90, 180],
+                cil={1: cil(0, 0, 0, prim[0]), 3: cil(0, 1, 0, prim[1]), 5: cil(0, 2, 0, prim[2]),
+                     7: cil(0, 3, 0, prim[3]), 2: cil(1, 0, e, prim[0]), 4: cil(1, 1, e, prim[1]),
+                     6: cil(1, 2, e, prim[2]), 8: cil(1, 3, e, prim[3])})
+
+
+def i6(prim, escapes=(0, 0, 0, 0, 0, 0)):
+    """6 em linha, ordem 1-5-3-6-2-4: pinos (1,6) 0°, (2,5) 120°, (3,4) 240°."""
+    return dict(tdc=90, bancadas=[(0, False)], pinos=[0, 120, 240, 240, 120, 0],
+                cil={n: cil(0, n - 1, escapes[n - 1], prim[n - 1]) for n in range(1, 7)},
+                ordem=[1, 5, 3, 6, 2, 4])
+
+
+def v6_60(lado_a, lado_b, prim):
+    """V6 60° de ignição a cada 120° (pino próprio por cilindro, como os
+    virabrequins de 6 moentes)."""
+    c = {}
+    for n in lado_a:
+        c[n] = cil(0, 0, 0, prim)
+    for n in lado_b:
+        c[n] = cil(1, 0, 1, prim)
+    return dict(tdc=90, bancadas=[(-30, False), (30, True)], pinos=None, intervalo=120, cil=c)
+
+
+def caminhao(kg):
+    return dict(TRUCK, massa=kg)
+
+
+# t01 Buccaneer (Jeep Wrangler YJ): AMC 4.6 stroker (o 4.0 com o virabrequim do 4.2)
+MOTORES.append(dict(
+    arq="t01_buccaneer_amc_46_i6", no="amc_46_stroker", nome="AMC 4.6 stroker [I6]",
+    buggy="Buccaneer (Jeep Wrangler YJ)", cv=272, lenta=700, corte=5500,
+    **i6([20, 18, 16, 16, 18, 20]),
+    diam=98.4, curso=99.0, biela=149.2, alt_comp=1.4, cr=9.6,
+    massa_biela=640, massa_pistao=520, massa_vira=27.0, massa_volante=12.0, raio_volante=6.5,
+    atrito_vira=8.0,
+    fluxo=(230, 175), dutos=(1.6, 1.4), lift_scale=1.0,
+    adm=dict(dur=212, gamma=1.1, lift=470), esc=dict(dur=218, gamma=1.1, lift=470),
+    centros=(112, 114), raio_base=0.75,
+    admissoes=[dict(fluxo=650, runner=200, runner_len=14.0, lenta=0.996, plenum=1.5, decay=0.5)],
+    escapes=[dict(saida=900, prim_len=20, prim_fluxo=350, compr=110, vol=4.0, ir="real_engine_0")],
+    avanco=[(0, 10), (1000, 10), (2000, 20), (3000, 28), (4000, 32), (6000, 32)],
+    combustivel=dict(mte=2.5, mbe=0.85), jitter=0.4, freq=14000, limitador=0.12,
+    partida=(150, 250), embreagem=350, veiculo=caminhao(1700),
+))
+
+# t02 Shockwave (Bronco II / S-10 Blazer): Ford 4.0 SOHC Cologne V6 60°
+MOTORES.append(dict(
+    arq="t02_shockwave_ford_40_v6", no="ford_40_sohc", nome="Ford 4.0 SOHC [V6 60]",
+    buggy="Shockwave (Bronco II)", cv=270, lenta=750, corte=6200,
+    ordem=[1, 4, 2, 5, 3, 6], **v6_60([1, 2, 3], [4, 5, 6], 18),
+    diam=100.4, curso=84.4, biela=143.0, alt_comp=1.2, cr=9.7,
+    massa_biela=560, massa_pistao=450, massa_vira=18.0, massa_volante=10.0, raio_volante=6.0,
+    atrito_vira=5.0,
+    fluxo=(235, 180), dutos=(1.6, 1.4), lift_scale=1.0,
+    adm=dict(dur=220, gamma=1.0, lift=440), esc=dict(dur=224, gamma=1.0, lift=440),
+    centros=(112, 112), raio_base=0.7,
+    admissoes=[dict(fluxo=700, runner=220, runner_len=12.0, lenta=0.996, plenum=1.2, decay=0.5)],
+    escapes=[dict(saida=1000, prim_len=18, prim_fluxo=350, compr=90, vol=0.4, ir="minimal_muffling_01"),
+             dict(saida=1000, prim_len=18, prim_fluxo=350, compr=110, vol=0.4, ir="minimal_muffling_01")],
+    avanco=[(0, 12), (1000, 12), (2000, 22), (3000, 30), (4000, 34), (7000, 34)],
+    combustivel=dict(mte=2.5, mbe=0.85), jitter=0.4, freq=16000, limitador=0.1,
+    partida=(120, 300), embreagem=330, veiculo=caminhao(1800),
+))
+
+# t03 Shinto (Chevrolet C10 1981-87): Chevy 350 carburado, escape único de picape
+MOTORES.append(dict(
+    arq="t03_shinto_chevy_350", no="chevy_350_c10", nome="Chevrolet 350 [V8, carb, C10]",
+    buggy="Shinto (Chevrolet C10)", cv=255, lenta=650, corte=5500,
+    ordem=[1, 8, 4, 3, 6, 5, 7, 2], **gm_v8([16, 12, 8, 4], um_escape=True),
+    diam=4.00 * 25.4, curso=3.48 * 25.4, biela=5.7 * 25.4, alt_comp=1.56, cr=8.5,
+    massa_biela=600, massa_pistao=580, massa_vira=23.0, massa_volante=14.0, raio_volante=7.0,
+    atrito_vira=9.0,
+    fluxo=(190, 140), dutos=(1.75, 1.5), lift_scale=1.0,
+    adm=dict(dur=196, gamma=0.8, lift=410), esc=dict(dur=204, gamma=0.8, lift=420),
+    centros=(112, 116), raio_base=0.6,
+    admissoes=[dict(fluxo=600, runner=160, runner_len=7.0, lenta=0.992, plenum=1.5, decay=0.5)],
+    # as duas bancadas num cano só (Y): batida irregular de picape de série
+    escapes=[dict(saida=500, prim_len=14, prim_fluxo=110, compr=150, vol=5.0, ir="default_0")],
+    avanco=[(0, 8), (1000, 8), (2000, 18), (3000, 28), (4000, 34), (6000, 34)],
+    combustivel=dict(mte=3.0, mbe=0.85), jitter=0.5, freq=10000, limitador=0.2,
+    partida=(200, 200), embreagem=380, veiculo=caminhao(1500),
+))
+
+# t04 Jericho (Ford F-150 1997-2003): Ford 5.4 Triton SOHC 2 válvulas (modular)
+MOTORES.append(dict(
+    arq="t04_jericho_ford_54", no="ford_54_triton", nome="Ford 5.4 Triton [V8, SOHC]",
+    buggy="Jericho (Ford F-150)", cv=288, lenta=650, corte=5500,
+    ordem=[1, 3, 7, 2, 6, 5, 4, 8], **ford_v8([12, 9, 6, 3]),
+    diam=90.2, curso=105.8, biela=169.1, alt_comp=1.1, cr=9.0,
+    massa_biela=620, massa_pistao=520, massa_vira=26.0, massa_volante=13.0, raio_volante=7.0,
+    atrito_vira=10.0,
+    fluxo=(200, 150), dutos=(1.7, 1.5), lift_scale=1.0,
+    adm=dict(dur=200, gamma=1.1, lift=400), esc=dict(dur=206, gamma=1.1, lift=400),
+    centros=(116, 116), raio_base=0.65,
+    admissoes=[dict(fluxo=650, runner=170, runner_len=16.0, lenta=0.994, plenum=2.0, decay=0.5)],
+    escapes=[dict(saida=800, prim_len=24, prim_fluxo=300, compr=120, vol=4.0, ir="real_engine_1"),
+             dict(saida=800, prim_len=24, prim_fluxo=300, compr=150, vol=4.0, ir="real_engine_1")],
+    avanco=[(0, 10), (1000, 10), (2000, 20), (3000, 30), (4000, 36), (6000, 36)],
+    combustivel=dict(mte=2.5, mbe=0.9), jitter=0.4, freq=10000, limitador=0.15,
+    partida=(200, 200), embreagem=420, veiculo=caminhao(1600),
+))
+
+# t05 Punisher (trophy truck): Ford 351 Windsor de carburador, headers abertos
+MOTORES.append(dict(
+    arq="t05_punisher_ford_351w", no="ford_351w", nome="Ford 351 Windsor [V8, carb]",
+    buggy="Punisher (trophy truck)", cv=504, lenta=800, corte=6500,
+    ordem=[1, 3, 7, 2, 6, 5, 4, 8], **ford_v8([30, 28, 26, 24]),
+    diam=4.00 * 25.4, curso=3.50 * 25.4, biela=5.956 * 25.4, alt_comp=1.6, cr=10.5,
+    massa_biela=650, massa_pistao=560, massa_vira=24.0, massa_volante=11.0, raio_volante=7.0,
+    atrito_vira=12.0,
+    fluxo=(270, 200), dutos=(2.0, 1.75), lift_scale=1.0,
+    adm=dict(dur=236, gamma=0.9, lift=560), esc=dict(dur=244, gamma=0.9, lift=570),
+    centros=(108, 112), raio_base=0.7,
+    admissoes=[dict(fluxo=900, runner=240, runner_len=8.0, lenta=0.994, plenum=1.6, decay=0.5)],
+    escapes=[dict(saida=1400, prim_len=32, prim_fluxo=550, compr=60, vol=0.4, ir="minimal_muffling_03"),
+             dict(saida=1400, prim_len=32, prim_fluxo=550, compr=62, vol=0.4, ir="minimal_muffling_03")],
+    avanco=[(0, 14), (1000, 14), (2000, 24), (3000, 32), (4000, 34), (7000, 34)],
+    combustivel=dict(mte=3.0, mbe=0.9), jitter=0.6, freq=10000, limitador=0.15,
+    partida=(200, 200), embreagem=650, veiculo=caminhao(1800),
+))
+
+# t06 Panther (truggy): Toyota 2JZ-GTE 3.0 6 em linha, turbo de mentira
+MOTORES.append(dict(
+    arq="t06_panther_toyota_2jz", no="toyota_2jz_gte", nome="Toyota 2JZ-GTE [I6, turbo]",
+    buggy="Panther (truggy)", cv=510, lenta=850, corte=7200,
+    **i6([12, 12, 12, 12, 12, 12]),
+    diam=86.0, curso=86.0, biela=142.0, alt_comp=1.2, cr=8.5,
+    massa_biela=560, massa_pistao=420, massa_vira=21.0, massa_volante=7.0, raio_volante=5.5,
+    atrito_vira=4.0,
+    fluxo=(250, 190), dutos=(1.45, 1.3), lift_scale=1.0,
+    adm=dict(dur=240, gamma=1.0, lift=400), esc=dict(dur=236, gamma=1.0, lift=390),
+    centros=(110, 112), raio_base=0.6,
+    admissoes=[dict(fluxo=900, runner=260, runner_len=9.0, lenta=0.998, plenum=1.8, decay=0.5)],
+    # 6 em 1 num cano só, filtro "sharp" (som mais áspero, de turbo de corrida)
+    escapes=[dict(saida=1400, prim_len=16, prim_fluxo=450, compr=70, vol=4.0, ir="sharp_0")],
+    avanco=[(0, 12), (1000, 12), (2000, 20), (3000, 28), (4000, 32), (8000, 32)],
+    combustivel=dict(mte=2.5, mbe=0.85, energia=48.1), jitter=0.3, freq=18000, limitador=0.06,
+    partida=(100, 300), embreagem=500, veiculo=caminhao(1700),
+))
+
+# t07 Herbst Truggy (Landshark da Terrible Herbst): Ford 460 big-block
+MOTORES.append(dict(
+    arq="t07_herbst_truggy_ford_460", no="ford_460", nome="Ford 460 [V8 big-block]",
+    buggy="Herbst Truggy (Landshark)", cv=540, lenta=700, corte=6000,
+    ordem=[1, 5, 4, 2, 6, 3, 7, 8], **ford_v8([30, 28, 26, 24]),
+    diam=4.36 * 25.4, curso=3.85 * 25.4, biela=6.605 * 25.4, alt_comp=1.7, cr=10.0,
+    massa_biela=850, massa_pistao=760, massa_vira=32.0, massa_volante=14.0, raio_volante=7.5,
+    atrito_vira=14.0,
+    fluxo=(280, 205), dutos=(2.2, 1.85), lift_scale=1.0,
+    adm=dict(dur=230, gamma=0.9, lift=560), esc=dict(dur=238, gamma=0.9, lift=570),
+    centros=(110, 114), raio_base=0.7,
+    admissoes=[dict(fluxo=1000, runner=260, runner_len=9.0, lenta=0.993, plenum=2.2, decay=0.5)],
+    escapes=[dict(saida=1300, prim_len=34, prim_fluxo=500, compr=110, vol=4.0, ir="default_0"),
+             dict(saida=1300, prim_len=34, prim_fluxo=500, compr=150, vol=4.0, ir="default_0")],
+    avanco=[(0, 12), (1000, 12), (2000, 22), (3000, 30), (4000, 34), (7000, 34)],
+    combustivel=dict(mte=3.0, mbe=0.9), jitter=0.5, freq=9000, limitador=0.18,
+    partida=(250, 200), embreagem=750, veiculo=caminhao(2000),
+))
+
+# t08 Herbst TT (Ford F-150 Trophy Truck da Herbst): Ford 427 Windsor (Roush)
+MOTORES.append(dict(
+    arq="t08_herbst_tt_ford_427w", no="ford_427w", nome="Ford 427 Windsor [V8, Roush]",
+    buggy="Herbst TT (Ford F-150 Trophy Truck)", cv=638, lenta=850, corte=7000,
+    ordem=[1, 3, 7, 2, 6, 5, 4, 8], **ford_v8([32, 30, 28, 26]),
+    diam=4.125 * 25.4, curso=4.00 * 25.4, biela=6.2 * 25.4, alt_comp=1.18, cr=11.0,
+    massa_biela=600, massa_pistao=500, massa_vira=25.0, massa_volante=10.0, raio_volante=7.0,
+    atrito_vira=14.0,
+    fluxo=(330, 240), dutos=(2.3, 1.9), lift_scale=1.0,
+    adm=dict(dur=246, gamma=0.9, lift=620), esc=dict(dur=252, gamma=0.9, lift=620),
+    centros=(108, 112), raio_base=0.75,
+    admissoes=[dict(fluxo=1200, runner=280, runner_len=8.0, lenta=0.994, plenum=1.8, decay=0.5)],
+    escapes=[dict(saida=1600, prim_len=34, prim_fluxo=650, compr=70, vol=0.4, ir="minimal_muffling_01"),
+             dict(saida=1600, prim_len=34, prim_fluxo=650, compr=72, vol=0.4, ir="minimal_muffling_01")],
+    avanco=[(0, 14), (1000, 14), (2000, 24), (3000, 32), (4000, 34), (8000, 34)],
+    combustivel=dict(mte=3.0, mbe=0.95), jitter=0.6, freq=10000, limitador=0.15,
+    partida=(250, 200), embreagem=850, veiculo=caminhao(2200),
+))
+
+# t09 Hammerhead (trophy truck, escolha nossa): Dodge 360 Magnum (Mopar)
+MOTORES.append(dict(
+    arq="t09_hammerhead_dodge_360", no="dodge_360_magnum", nome="Dodge 360 Magnum [V8]",
+    buggy="Hammerhead (trophy truck)", cv=504, lenta=750, corte=6200,
+    ordem=[1, 8, 4, 3, 6, 5, 7, 2], **gm_v8([28, 26, 24, 22]),
+    diam=4.00 * 25.4, curso=3.58 * 25.4, biela=6.123 * 25.4, alt_comp=1.68, cr=10.5,
+    massa_biela=700, massa_pistao=600, massa_vira=26.0, massa_volante=12.0, raio_volante=7.0,
+    atrito_vira=12.0,
+    fluxo=(270, 200), dutos=(2.0, 1.75), lift_scale=1.0,
+    adm=dict(dur=232, gamma=0.9, lift=540), esc=dict(dur=240, gamma=0.9, lift=550),
+    centros=(110, 114), raio_base=0.7,
+    admissoes=[dict(fluxo=950, runner=240, runner_len=10.0, lenta=0.994, plenum=1.8, decay=0.5)],
+    escapes=[dict(saida=1300, prim_len=30, prim_fluxo=500, compr=90, vol=4.0, ir="real_engine_2"),
+             dict(saida=1300, prim_len=30, prim_fluxo=500, compr=140, vol=4.0, ir="real_engine_2")],
+    avanco=[(0, 12), (1000, 12), (2000, 22), (3000, 30), (4000, 34), (7000, 34)],
+    combustivel=dict(mte=3.0, mbe=0.9), jitter=0.5, freq=10000, limitador=0.15,
+    partida=(200, 200), embreagem=650, veiculo=caminhao(1800),
+))
+
+# t10 Fireball (Ford F-100 1953-56): Ford 292 Y-block com compressor (a Ford
+# vendia o Y-block com compressor Paxton de fábrica em 1957). Ordem de ignição
+# própria do Y-block, 1-5-4-8-6-3-7-2
+MOTORES.append(dict(
+    arq="t10_fireball_ford_292_yblock", no="ford_292_yblock", nome="Ford 292 Y-block [V8, compressor]",
+    buggy="Fireball (Ford F-100)", cv=551, lenta=650, corte=5800,
+    ordem=[1, 5, 4, 8, 6, 3, 7, 2], **ford_v8([20, 18, 16, 14]),
+    diam=3.75 * 25.4, curso=3.30 * 25.4, biela=6.24 * 25.4, alt_comp=1.75, cr=8.5,
+    massa_biela=650, massa_pistao=600, massa_vira=25.0, massa_volante=15.0, raio_volante=7.5,
+    atrito_vira=10.0,
+    fluxo=(230, 170), dutos=(1.8, 1.55), lift_scale=1.0,
+    adm=dict(dur=220, gamma=0.8, lift=480), esc=dict(dur=226, gamma=0.8, lift=480),
+    centros=(112, 114), raio_base=0.6,
+    admissoes=[dict(fluxo=800, runner=220, runner_len=8.0, lenta=0.993, plenum=1.5, decay=0.5)],
+    escapes=[dict(saida=1000, prim_len=20, prim_fluxo=300, compr=150, vol=4.0, ir="real_engine_0"),
+             dict(saida=1000, prim_len=20, prim_fluxo=300, compr=190, vol=4.0, ir="real_engine_0")],
+    avanco=[(0, 8), (1000, 8), (2000, 18), (3000, 26), (4000, 30), (6000, 30)],
+    combustivel=dict(mte=3.0, mbe=0.85, energia=48.1), jitter=0.6, freq=9000, limitador=0.2,
+    partida=(200, 180), embreagem=700, veiculo=caminhao(1500),
+))
+
+# t11 Goliath (trophy truck, escolha nossa): Chevy 572 big-block, o mais forte
+MOTORES.append(dict(
+    arq="t11_goliath_chevy_572", no="chevy_572", nome="Chevrolet 572 [V8 big-block]",
+    buggy="Goliath (trophy truck)", cv=698, lenta=750, corte=6500,
+    ordem=[1, 8, 4, 3, 6, 5, 7, 2], **gm_v8([34, 32, 30, 28]),
+    diam=4.56 * 25.4, curso=4.375 * 25.4, biela=6.535 * 25.4, alt_comp=1.27, cr=10.5,
+    massa_biela=900, massa_pistao=700, massa_vira=36.0, massa_volante=14.0, raio_volante=7.5,
+    atrito_vira=18.0,
+    fluxo=(340, 250), dutos=(2.4, 2.0), lift_scale=1.0,
+    adm=dict(dur=244, gamma=0.9, lift=640), esc=dict(dur=252, gamma=0.9, lift=640),
+    centros=(108, 112), raio_base=0.75,
+    admissoes=[dict(fluxo=1300, runner=300, runner_len=8.0, lenta=0.992, plenum=2.4, decay=0.5)],
+    escapes=[dict(saida=1700, prim_len=36, prim_fluxo=700, compr=60, vol=0.4, ir="minimal_muffling_02"),
+             dict(saida=1700, prim_len=36, prim_fluxo=700, compr=62, vol=0.4, ir="minimal_muffling_02")],
+    avanco=[(0, 14), (1000, 14), (2000, 24), (3000, 32), (4000, 34), (7000, 34)],
+    combustivel=dict(mte=3.0, mbe=0.95), jitter=0.6, freq=9000, limitador=0.18,
+    partida=(300, 200), embreagem=950, veiculo=caminhao(1900),
+))
+
+# t12 Chimera (Mitsubishi Pajero Evolution, Dakar): 3.5 V6 6G74, turbo de mentira
+MOTORES.append(dict(
+    arq="t12_chimera_mitsubishi_6g74", no="mitsubishi_6g74", nome="Mitsubishi 6G74 3.5 [V6 60, Dakar]",
+    buggy="Chimera (Pajero Evolution)", cv=695, lenta=850, corte=7000,
+    ordem=[1, 2, 3, 4, 5, 6], **v6_60([1, 3, 5], [2, 4, 6], 14),
+    diam=93.0, curso=85.8, biela=152.0, alt_comp=1.1, cr=10.0,
+    massa_biela=520, massa_pistao=400, massa_vira=17.0, massa_volante=7.0, raio_volante=5.5,
+    atrito_vira=4.0,
+    fluxo=(250, 190), dutos=(1.5, 1.35), lift_scale=1.0,
+    adm=dict(dur=240, gamma=1.0, lift=420), esc=dict(dur=236, gamma=1.0, lift=410),
+    centros=(110, 112), raio_base=0.6,
+    admissoes=[dict(fluxo=1000, runner=280, runner_len=8.0, lenta=0.998, plenum=1.6, decay=0.5)],
+    escapes=[dict(saida=1300, prim_len=16, prim_fluxo=450, compr=80, vol=4.0, ir="real_engine_1"),
+             dict(saida=1300, prim_len=16, prim_fluxo=450, compr=82, vol=4.0, ir="real_engine_1")],
+    avanco=[(0, 12), (1000, 12), (2000, 20), (3000, 28), (4000, 32), (8000, 32)],
+    combustivel=dict(mte=2.5, mbe=0.85, energia=48.1), jitter=0.3, freq=16000, limitador=0.06,
+    partida=(100, 300), embreagem=650, veiculo=caminhao(1750),
+))
+
+# t13 Silverado (bônus resgatado, Chevrolet Silverado 2003-06): 5.3 Vortec LM7
+MOTORES.append(dict(
+    arq="t13_silverado_chevy_53_vortec", no="chevy_53_vortec", nome="Chevrolet 5.3 Vortec LM7 [V8]",
+    buggy="Silverado (bonus, Chevrolet Silverado)", cv=288, lenta=650, corte=6000,
+    ordem=[1, 8, 7, 2, 6, 5, 4, 3], **gm_v8([20, 16, 12, 8]),
+    diam=96.0, curso=92.0, biela=6.098 * 25.4, alt_comp=1.3, cr=9.5,
+    massa_biela=650, massa_pistao=480, massa_vira=24.0, massa_volante=13.0, raio_volante=7.5,
+    atrito_vira=12.0,
+    fluxo=(220, 165), dutos=(2.0, 1.6), lift_scale=1.0,
+    adm=dict(dur=190, gamma=1.1, lift=466), esc=dict(dur=191, gamma=1.1, lift=457),
+    centros=(116, 116), raio_base=1.0,
+    admissoes=[dict(fluxo=700, runner=160, runner_len=14.0, lenta=0.996, plenum=1.6, decay=0.5)],
+    escapes=[dict(saida=900, prim_len=26, prim_fluxo=350, compr=130, vol=4.0, ir="default_0"),
+             dict(saida=900, prim_len=26, prim_fluxo=350, compr=170, vol=4.0, ir="default_0")],
+    avanco=[(0, 12), (1000, 12), (2000, 20), (3000, 30), (4000, 38), (8000, 38)],
+    combustivel=dict(mte=2.0, mbe=1.0, chama=True), jitter=0.5, freq=10000, limitador=0.15,
+    partida=(200, 200), embreagem=420, veiculo=caminhao(1600),
+))
+
 # Ajuste no dinamômetro sem tela (tools/engine_sim_dyno, engine-sim 85f7c3b):
 # k_fluxo escala cabeçote + admissão até a potência alvo, a placa da lenta
 # acerta a marcha lenta e "energia" é o turbo de mentira (kJ/g, normal 48.1).
@@ -404,11 +710,25 @@ AJUSTE = {
     "10": dict(k_fluxo=0.6293, placa=0.9966),  # com 0.99688 já apaga
     "11": dict(k_fluxo=0.6302, placa=0.9955),  # comando grande: com 0.99586 já apaga
     "12": dict(k_fluxo=1.5, placa=0.9992, energia=87.21),  # com 0.99937 já apaga;  # turbo de mentira ~1.8x
+    # trucks (placa com margem: fechando 0.0001 a mais ainda não apaga)
+    "t01": dict(k_fluxo=1.0, placa=0.996908),
+    "t02": dict(k_fluxo=1.1063, placa=0.997844),
+    "t03": dict(k_fluxo=1.4764, placa=0.996674),
+    "t04": dict(k_fluxo=0.807, placa=0.99527),
+    "t05": dict(k_fluxo=1.272, placa=0.9964),  # comando grande: lenta ~1180 (com 0.99667 apagava gravando)
+    "t06": dict(k_fluxo=1.3, placa=0.998663, energia=61.42),  # turbo de mentira ~1.28x; lenta ~1100
+    "t07": dict(k_fluxo=1.2495, placa=0.997844),
+    "t08": dict(k_fluxo=1.0, placa=0.9956),  # comando grande: lenta ~1300 (com 0.9962 apagava gravando; 0.9958 = 1258)
+    "t09": dict(k_fluxo=1.444, placa=0.997376),  # lenta ~1040
+    "t10": dict(k_fluxo=1.3, placa=0.99878, energia=78.97),  # compressor de mentira ~1.64x
+    "t11": dict(k_fluxo=1.0359, placa=0.997276),
+    "t12": dict(k_fluxo=1.3, placa=0.999031, energia=69.55),  # turbo de mentira ~1.45x
+    "t13": dict(k_fluxo=0.6217, placa=0.994802),
 }
 
 
 def ajustado(m):
-    a = AJUSTE.get(m["arq"][:2])
+    a = AJUSTE.get(m["arq"].split("_")[0])
     if not a:
         return m
     m = dict(m, k_fluxo=a["k_fluxo"])
@@ -751,18 +1071,19 @@ def montar(m):
     w("")
 
     # buggy e câmbio: relação final dá ~170 km/h na 5ª no corte
-    r_m = BUGGY["pneu"] * 0.0254
+    V = dict(m.get("veiculo", BUGGY))
+    r_m = V["pneu"] * 0.0254
     final = (m["corte"] / 60 * 2 * math.pi * r_m) / (170 / 3.6)
-    lw, lh = BUGGY["area_frente"]
+    lw, lh = V["area_frente"]
     w("private node %s_buggy {" % no)
     w("    alias output __out:")
     w("        vehicle(")
-    w("            mass: %d * units.kg," % BUGGY["massa"])
-    w("            drag_coefficient: %s," % g(BUGGY["cx"]))
+    w("            mass: %d * units.kg," % V["massa"])
+    w("            drag_coefficient: %s," % g(V["cx"]))
     w("            cross_sectional_area: (%d * units.inch) * (%d * units.inch)," % (lw, lh))
     w("            diff_ratio: %s," % g(final, 2))
-    w("            tire_radius: %s * units.inch," % g(BUGGY["pneu"]))
-    w("            rolling_resistance: %d * units.N" % BUGGY["atrito"])
+    w("            tire_radius: %s * units.inch," % g(V["pneu"]))
+    w("            rolling_resistance: %d * units.N" % V["atrito"])
     w("        );")
     w("}")
     w("")

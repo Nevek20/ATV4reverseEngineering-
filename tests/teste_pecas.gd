@@ -2,7 +2,8 @@ extends SceneTree
 ## Confere as peças da suspensão contra o jogo: matrizes das peças tiradas da
 ## RAM dos save states (tests/ref_ram_pecas.json: linhas do jogo, 4ª linha =
 ## translação, frame do modelo), com o mesmo curso de cada roda. Carros: os
-## que têm save state (Renegade, Sphinx, Inferno, Bulldog, Phantom, Storm).
+## que têm save state (Renegade, Sphinx, Inferno, Bulldog, Phantom, Storm e
+## o truck Goliath: frames, freios e eixo rígido, suspension_visual.pose_truck).
 ## Uso: godot --headless --path . -s res://tests/teste_pecas.gd
 
 const Car := preload("res://car.gd")
@@ -20,10 +21,10 @@ var frames := 0
 func _initialize() -> void:
 	ref = JSON.parse_string(FileAccess.get_file_as_string("res://tests/ref_ram_pecas.json"))
 	for nome in ref:
-		var v: Dictionary = Main.VEHICLES[int(ref[nome].veh)]
+		var v: Dictionary = Main.frota()[int(ref[nome].veh)]
 		var c = Car.new()
 		c.asset_dir = v.dir
-		c.data_files = ["res://data/vehicles/buggy_base.xml", v.data]
+		c.data_files = Main.dados(v)
 		c.points_file = v.points
 		c.vehicle_id = v.id
 		root.add_child(c)          # o _ready roda no 1º quadro
@@ -88,6 +89,8 @@ func _conferir(nome: String, c, r: Dictionary) -> void:
 		if p.has("Chamber_" + cn):
 			_cmp("Chamber_" + cn, ps.chamber, _xf(p["Chamber_" + cn].linhas))
 			_cmp("Piston_" + cn, ps.piston, _xf(p["Piston_" + cn].linhas))
+	if not susp.truck.is_empty():
+		_conferir_truck(c, susp, r)
 	if p.has("Spare"):
 		if susp.spares.is_empty():
 			total += 1
@@ -95,3 +98,24 @@ func _conferir(nome: String, c, r: Dictionary) -> void:
 			print("  Spare       FALTOU (sem estepe)")
 		else:
 			_cmp("Spare", susp.spares[0], _xf(p.Spare.linhas))
+
+
+## trucks: peças do eixo rígido (pose_truck) e as rodas, que nesses mapas são
+## as do rally (WHEEL + x; o car.gd põe o pivô em (px, y0 + x, pz))
+func _conferir_truck(c, susp, r: Dictionary) -> void:
+	var p: Dictionary = r.pecas
+	var x: Dictionary = r.curso
+	var ps: Dictionary = susp.pose_truck({"FL": x.FL, "FR": x.FR, "RL": x.RL, "RR": x.RR}, 0.0)
+	for nome in ["LeftFrame", "RightFrame", "FrontLeftBrake", "FrontRightBrake", "RearAxle", "RearFreeAxle"]:
+		if p.has(nome):
+			if ps.has(nome):
+				_cmp(nome, ps[nome], _xf(p[nome].linhas))
+			else:
+				total += 1
+				falhas += 1
+				print("  %-11s FALTOU (peça não montada)" % nome)
+	for w in c.wheels:
+		var cn: String = ("F" if w.front else "R") + ("L" if w.left else "R")
+		if p.has("Wheel_" + cn):
+			var hub: Vector3 = c.jogo(Vector3(w.px, w.y0 + float(x[cn]), w.pz))
+			_cmp("Wheel_" + cn, Transform3D(Basis(), hub), _xf(p["Wheel_" + cn].linhas), true)

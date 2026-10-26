@@ -19,6 +19,20 @@ extends Node3D
 ##   levada até o SHOCK_PISTON girado (com o x original).
 ## rally (Storm, 0x220528 / 0x220cf0): roda = WHEEL + x, sem balança no meio.
 ## estepe (0x221a88): fixo, matriz e posição do ponto SpareWheel01Centre.
+## trucks (TruckCompMap_A2/B1/B2), conferido com a RAM do Goliath (erro 0):
+##   LeftFrame/RightFrame (0x21e0b8 / 0x21e1f0, translação 0x21e158 /
+##   0x21e290): Rz(tan(x / W.x)) em volta do A_FRAME_LEFT/RIGHT, com W = o
+##   ponto de id 1/2 da tabela do carro, que no truck é o
+##   WHEEL_FRONT_*_VISUAL (vem antes no arquivo: o jogo acha pelo começo do
+##   nome; ver _ponto). tan mesmo (0x6894e0), não atan.
+##   FrontLeft/RightBrake (0x221308 / 0x221468): gira com a direção em volta
+##   do eixo da suspensão (W+0x20, (0, 1, 0)) no mesmo W e desce x por ele.
+##   RearAxle (0x21e998 / 0x21eba8; Axle e Rear_Arm juntos): Rx(-a) em volta
+##   de a0 = (0, ARM_PIVOT.y, ARM_PIVOT.z), a = ângulo entre AXLE_ANCHOR - a0
+##   e o meio dos centros das rodas de trás (x = 0) - a0 (0x21e838; negativo
+##   quando o AXLE_ANCHOR está abaixo do meio).
+##   RearFreeAxle (0x21ee00): sem giro, sobe a média do curso de trás.
+##   As rodas desses mapas são as do rally (WHEEL + x).
 ## O curso usado em tudo isso já tem a tremida das rodas no chão (car.gd,
 ## 0x202760), então balança, cubo, freio e amortecedor tremem juntos.
 ##
@@ -35,6 +49,7 @@ var off := Vector3.ZERO      # model_offset do carro
 var corners := []            # um por roda
 var rally := false
 var spares := []             # transform de cada estepe (frame do modelo)
+var truck := {}              # peças dos trucks: frames, freios e eixo (ver o topo)
 
 
 func build(c, pts: Dictionary, rot: Dictionary, dir: String, pecas: Dictionary,
@@ -82,6 +97,7 @@ func build(c, pts: Dictionary, rot: Dictionary, dir: String, pecas: Dictionary,
 					k.top = pts[ch]
 					k.bottom = pts[pi]
 			corners.append(k)
+	_build_truck(pts, dir, pecas)
 	# estepe (BuggyCompMap_A1/B1/C1: RearWheel em SpareWheel01)
 	for s in spare:
 		var pn: String = s + "Centre"
@@ -90,6 +106,79 @@ func build(c, pts: Dictionary, rot: Dictionary, dir: String, pecas: Dictionary,
 			var xf := Transform3D(rot.get(pn, Basis()), pts[pn])
 			_place(mi, xf)
 			spares.append(xf)
+
+
+## peças do eixo rígido dos trucks (só monta as que o pecas.json tem)
+func _build_truck(pts: Dictionary, dir: String, pecas: Dictionary) -> void:
+	var rodas := {}
+	for w in car.wheels:
+		rodas[("F" if w.front else "R") + ("L" if w.left else "R")] = w
+	for lado: String in ["LEFT", "RIGHT"]:
+		var l := lado.substr(0, 1)
+		var nome := lado.capitalize()                  # Left / Right
+		var w0 = _ponto(pts, "WHEEL_FRONT_" + lado)    # id 1/2 da tabela (o _VISUAL no truck)
+		var piv := "A_FRAME_" + lado
+		var fr := _part(dir, pecas.get(nome + "Frame", ""))
+		if fr and w0 != null and pts.has(piv) and rodas.has("F" + l):
+			truck[nome + "Frame"] = {"mi": fr, "pivot": pts[piv], "div": w0.x, "roda": rodas["F" + l]}
+		var br := _part(dir, pecas.get("Front" + nome + "Brake", ""))
+		if br and w0 != null and rodas.has("F" + l):
+			truck["Front" + nome + "Brake"] = {"mi": br, "w": w0, "roda": rodas["F" + l]}
+	var traseiras := [rodas.get("RL"), rodas.get("RR")]
+	if traseiras.has(null):
+		return
+	var axle := []
+	for k in pecas:
+		if k == "RearAxle" or k.begins_with("RearAxle/"):
+			var mi := _part(dir, pecas[k])
+			if mi:
+				axle.append(mi)
+	if not axle.is_empty() and pts.has("ARM_PIVOT") and pts.has("AXLE_ANCHOR") \
+			and pts.has("WHEEL_REAR_LEFT") and pts.has("WHEEL_REAR_RIGHT"):
+		var ap: Vector3 = pts["ARM_PIVOT"]
+		truck.RearAxle = {"mis": axle, "a0": Vector3(0.0, ap.y, ap.z), "ancora": pts["AXLE_ANCHOR"],
+			"wl": pts["WHEEL_REAR_LEFT"], "wr": pts["WHEEL_REAR_RIGHT"], "rodas": traseiras}
+	var livre := _part(dir, pecas.get("RearFreeAxle", ""))
+	if livre:
+		truck.RearFreeAxle = {"mi": livre, "rodas": traseiras}
+
+
+## ponto pelo começo do nome, na ordem do arquivo (o jogo enche a tabela de
+## ids assim: no truck o WHEEL_FRONT_LEFT_VISUAL vem antes do WHEEL_FRONT_LEFT)
+static func _ponto(pts: Dictionary, nome: String):
+	for k in pts:
+		if String(k).begins_with(nome):
+			return pts[k]
+	return null
+
+
+## matrizes das peças dos trucks pros cursos x (FL, FR, RL, RR) e o esterço do
+## jogo. Separado do update pro teste comparar com a RAM
+func pose_truck(x: Dictionary, steer: float) -> Dictionary:
+	var out := {}
+	for nome in ["LeftFrame", "RightFrame"]:
+		if truck.has(nome):
+			var t: Dictionary = truck[nome]
+			var xi: float = x["FL" if nome == "LeftFrame" else "FR"]
+			out[nome] = _about(t.pivot, Basis(Vector3.BACK, tan(xi / t.div)))
+	for nome in ["FrontLeftBrake", "FrontRightBrake"]:
+		if truck.has(nome):
+			var t: Dictionary = truck[nome]
+			var xi: float = x["FL" if nome == "FrontLeftBrake" else "FR"]
+			var b := Basis(Vector3.UP, steer)
+			out[nome] = Transform3D(b, t.w - b * t.w + Vector3(0.0, xi, 0.0))
+	if truck.has("RearAxle"):
+		var t: Dictionary = truck.RearAxle
+		var m: Vector3 = (t.wl + t.wr) * 0.5 + Vector3(0.0, (x.RL + x.RR) * 0.5, 0.0)
+		m.x = 0.0
+		var a0: Vector3 = t.a0
+		var a := acos(clampf((t.ancora - a0).normalized().dot((m - a0).normalized()), -1.0, 1.0))
+		if t.ancora.y < m.y:
+			a = -a
+		out.RearAxle = _about(a0, Basis(Vector3.RIGHT, -a))
+	if truck.has("RearFreeAxle"):
+		out.RearFreeAxle = Transform3D(Basis(), Vector3(0.0, (x.RL + x.RR) * 0.5, 0.0))
+	return out
 
 
 func _part(dir: String, file: String) -> MeshInstance3D:
@@ -108,7 +197,7 @@ func _mesh_instance(mesh: Mesh) -> MeshInstance3D:
 	for i in mesh.get_surface_count():
 		var m := mesh.surface_get_material(i)
 		var m2: StandardMaterial3D = m.duplicate() if m is StandardMaterial3D else StandardMaterial3D.new()
-		m2.cull_mode = car.MODEL_CULL
+		car.material_do_jogo(m2)
 		mi.set_surface_override_material(i, m2)
 	add_child(mi)
 	mi.position = off
@@ -177,3 +266,13 @@ func update(steer_angle: float) -> void:
 		if p.has("chamber"):
 			_place(k.get("chamber"), p.chamber)
 			_place(k.get("piston"), p.piston)
+	if truck.is_empty():
+		return
+	var x := {}
+	for w in car.wheels:
+		x[("F" if w.front else "R") + ("L" if w.left else "R")] = clampf(w.x, w.min, w.max) + w.get("jit", 0.0)
+	var p := pose_truck(x, steer_angle)
+	for nome in p:
+		var t: Dictionary = truck[nome]
+		for mi in t.get("mis", [t.get("mi")]):
+			_place(mi, p[nome])

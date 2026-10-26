@@ -26,10 +26,26 @@ extends Node
 ## Volume duas vezes x SFX, tom Landing Pitch, material da FL.
 ## Sem distância 3D (o carro do jogador). Unidades de volume do 989snd não
 ## confirmadas: GANHO é o nosso trim contra o som do motor (que é nosso).
+##
+## Nossas (Matheus testou): o pneu rolando o tempo todo cansava. Com
+## SO_DERRAPANDO o loop do pneu só aparece derrapando: o volume do jogo vai
+## multiplicado por ROLAGEM + (1 - ROLAGEM)·d, com d = maior de side x
+## DERRAPA_SIDE, ws e roda travada, suavizado (sobe em DERRAPA_SOBE, desce em
+## DERRAPA_DESCE). false = mistura do jogo. Patinada só conta com o pneu
+## escorregando mais de PATINA_MIN m/s: parado numa ladeira a patinada medida
+## (giro x raio / v - 1) divide por quase zero e o som ligava e desligava a
+## cada quadro.
 
 const SomJogo := preload("res://som_jogo.gd")
 const XML := "res://data/sound_database.xml"
-const GANHO := 1.0
+const GANHO := 1.0                # suspensão e pouso
+const GANHO_PNEU := 0.6           # loops das rodas (estavam altos)
+const SO_DERRAPANDO := true
+const ROLAGEM := 0.0              # quanto do pneu rolando reto fica (0 = nada)
+const DERRAPA_SIDE := 4.0         # side 0.25 (~15 mph de lado) = derrapagem cheia
+const DERRAPA_SOBE := 0.05        # s
+const DERRAPA_DESCE := 0.25       # s
+const PATINA_MIN := 1.0           # m/s de escorregada pra contar patinada
 
 var car = null
 var master := {}
@@ -44,6 +60,7 @@ var _uma_vez: Array = []          # sons curtos tocando (suspensão, pouso)
 var spd := 0.0
 var side := 0.0
 var ws := 0.0
+var derrapa := 0.0              # 0..1 (SO_DERRAPANDO)
 
 
 func carregar(c) -> bool:
@@ -90,7 +107,7 @@ func carregar(c) -> bool:
 	for k in 3:
 		var o := SomJogo.new()
 		o.name = ["RodaFL", "RodaRL", "RodaFL2"][k]
-		o.ganho = GANHO
+		o.ganho = GANHO_PNEU
 		add_child(o)
 		rodas.append({"som": o, "idx": 0 if k != 1 else 1, "sec": k == 2, "trava": 0.0,
 			"mat": -2, "s": 0.0, "vol": 0.0})
@@ -115,10 +132,15 @@ func passo(dt: float, v_l: float, v_f: float) -> void:
 	spd = _curva(v * 0.015981533)
 	side = _curva(absf(v_l) * 0.03729024)
 	ws = 0.0
+	var trava := false
 	for w in car.wheels:
-		if w.sr > 0.2:
+		if w.sr > 0.2 and absf(w.omega * w.r - v_f) > PATINA_MIN:
 			ws += 0.5
+		if w.hit and w.sr < -0.95 and v > 2.2347221:
+			trava = true
 	ws = minf(ws, 1.0)
+	var alvo := clampf(maxf(maxf(side * DERRAPA_SIDE, ws), 1.0 if trava else 0.0), 0.0, 1.0)
+	derrapa += (alvo - derrapa) * (1.0 - exp(-dt / (DERRAPA_SOBE if alvo > derrapa else DERRAPA_DESCE)))
 	for o in rodas:
 		_roda(o, dt, v)
 	_suspensao(dt, v_f)
@@ -186,7 +208,7 @@ func _roda(o: Dictionary, dt: float, v: float) -> void:
 			+ o.idx * _f(pp, "WheelDiff") + s * _f(pp, "Suspension")) * _f(mat, "Pitch", 1.0)
 		som.tom = tom
 	o.vol = maxf(vol, 0.0)
-	som.volume = o.vol
+	som.volume = o.vol * (ROLAGEM + (1.0 - ROLAGEM) * derrapa if SO_DERRAPANDO else 1.0)
 
 
 func _suspensao(dt: float, v_f: float) -> void:

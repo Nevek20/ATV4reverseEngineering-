@@ -1,0 +1,435 @@
+import "engine_sim.mr"
+
+// Goliath (trophy truck): Chevrolet 572 [V8 big-block]
+// 9367 cc, taxa 10.5:1, marcha lenta ~750 rpm, corte 6500 rpm, alvo ~698 cv
+// ordem de ignicao 1-8-4-3-6-5-7-2, intervalos 90/90/90/90/90/90/90/90 graus
+// gerado por tools/gerar_motores.py (mexer la e gerar de novo)
+
+units units()
+constants constants()
+impulse_response_library ir_lib()
+label cycle(2 * 360 * units.deg)
+
+private node wires {
+    output wire1: ignition_wire();
+    output wire2: ignition_wire();
+    output wire3: ignition_wire();
+    output wire4: ignition_wire();
+    output wire5: ignition_wire();
+    output wire6: ignition_wire();
+    output wire7: ignition_wire();
+    output wire8: ignition_wire();
+}
+
+private node chevy_572_head {
+    input intake_camshaft;
+    input exhaust_camshaft;
+    input chamber_volume: 123.2 * units.cc;
+    input intake_runner_volume: 149.6 * units.cc;
+    input intake_runner_cross_section_area: 2.4 * units.inch * 2.4 * units.inch;
+    input exhaust_runner_volume: 50.0 * units.cc;
+    input exhaust_runner_cross_section_area: 2 * units.inch * 2 * units.inch;
+
+    input flow_attenuation: 1.0;
+    input lift_scale: 1;
+    input flip_display: false;
+    alias output __out: head;
+
+    function intake_flow(50 * units.thou)
+    intake_flow
+        .add_flow_sample(0 * lift_scale, 0 * flow_attenuation)
+        .add_flow_sample(50 * lift_scale, 73 * flow_attenuation)
+        .add_flow_sample(100 * lift_scale, 129 * flow_attenuation)
+        .add_flow_sample(150 * lift_scale, 195 * flow_attenuation)
+        .add_flow_sample(200 * lift_scale, 268 * flow_attenuation)
+        .add_flow_sample(250 * lift_scale, 312 * flow_attenuation)
+        .add_flow_sample(300 * lift_scale, 336 * flow_attenuation)
+        .add_flow_sample(350 * lift_scale, 351 * flow_attenuation)
+        .add_flow_sample(400 * lift_scale, 351 * flow_attenuation)
+        .add_flow_sample(450 * lift_scale, 352 * flow_attenuation)
+        .add_flow_sample(500 * lift_scale, 352 * flow_attenuation)
+        .add_flow_sample(550 * lift_scale, 352 * flow_attenuation)
+        .add_flow_sample(600 * lift_scale, 352 * flow_attenuation)
+
+    function exhaust_flow(50 * units.thou)
+    exhaust_flow
+        .add_flow_sample(0 * lift_scale, 0 * flow_attenuation)
+        .add_flow_sample(50 * lift_scale, 39 * flow_attenuation)
+        .add_flow_sample(100 * lift_scale, 76 * flow_attenuation)
+        .add_flow_sample(150 * lift_scale, 119 * flow_attenuation)
+        .add_flow_sample(200 * lift_scale, 168 * flow_attenuation)
+        .add_flow_sample(250 * lift_scale, 206 * flow_attenuation)
+        .add_flow_sample(300 * lift_scale, 234 * flow_attenuation)
+        .add_flow_sample(350 * lift_scale, 247 * flow_attenuation)
+        .add_flow_sample(400 * lift_scale, 258 * flow_attenuation)
+        .add_flow_sample(450 * lift_scale, 259 * flow_attenuation)
+        .add_flow_sample(500 * lift_scale, 259 * flow_attenuation)
+        .add_flow_sample(550 * lift_scale, 259 * flow_attenuation)
+        .add_flow_sample(600 * lift_scale, 259 * flow_attenuation)
+
+    generic_cylinder_head head(
+        chamber_volume: chamber_volume,
+        intake_runner_volume: intake_runner_volume,
+        intake_runner_cross_section_area: intake_runner_cross_section_area,
+        exhaust_runner_volume: exhaust_runner_volume,
+        exhaust_runner_cross_section_area: exhaust_runner_cross_section_area,
+
+        intake_port_flow: intake_flow,
+        exhaust_port_flow: exhaust_flow,
+        valvetrain: standard_valvetrain(
+            intake_camshaft: intake_camshaft,
+            exhaust_camshaft: exhaust_camshaft
+        ),
+        flip_display: flip_display
+    )
+}
+
+private node chevy_572_camshaft {
+    input lobe_profile;
+    input intake_lobe_profile: lobe_profile;
+    input exhaust_lobe_profile: lobe_profile;
+    input lobe_separation: 114 * units.deg;
+    input intake_lobe_center: lobe_separation;
+    input exhaust_lobe_center: lobe_separation;
+    input advance: 0 * units.deg;
+    input base_radius: 1.0 * units.inch;
+
+    output intake_cam_0: _intake_cam_0;
+    output exhaust_cam_0: _exhaust_cam_0;
+    output intake_cam_1: _intake_cam_1;
+    output exhaust_cam_1: _exhaust_cam_1;
+
+    camshaft_parameters params (
+        advance: advance,
+        base_radius: base_radius
+    )
+
+    camshaft _intake_cam_0(params, lobe_profile: intake_lobe_profile)
+    camshaft _exhaust_cam_0(params, lobe_profile: exhaust_lobe_profile)
+    camshaft _intake_cam_1(params, lobe_profile: intake_lobe_profile)
+    camshaft _exhaust_cam_1(params, lobe_profile: exhaust_lobe_profile)
+
+    label rot360(360 * units.deg)
+
+    _exhaust_cam_0
+        .add_lobe(rot360 - exhaust_lobe_center + 0 * units.deg) // 1
+        .add_lobe(rot360 - exhaust_lobe_center + 270 * units.deg) // 3
+        .add_lobe(rot360 - exhaust_lobe_center + 450 * units.deg) // 5
+        .add_lobe(rot360 - exhaust_lobe_center + 540 * units.deg) // 7
+    _intake_cam_0
+        .add_lobe(rot360 + intake_lobe_center + 0 * units.deg) // 1
+        .add_lobe(rot360 + intake_lobe_center + 270 * units.deg) // 3
+        .add_lobe(rot360 + intake_lobe_center + 450 * units.deg) // 5
+        .add_lobe(rot360 + intake_lobe_center + 540 * units.deg) // 7
+
+    _exhaust_cam_1
+        .add_lobe(rot360 - exhaust_lobe_center + 630 * units.deg) // 2
+        .add_lobe(rot360 - exhaust_lobe_center + 180 * units.deg) // 4
+        .add_lobe(rot360 - exhaust_lobe_center + 360 * units.deg) // 6
+        .add_lobe(rot360 - exhaust_lobe_center + 90 * units.deg) // 8
+    _intake_cam_1
+        .add_lobe(rot360 + intake_lobe_center + 630 * units.deg) // 2
+        .add_lobe(rot360 + intake_lobe_center + 180 * units.deg) // 4
+        .add_lobe(rot360 + intake_lobe_center + 360 * units.deg) // 6
+        .add_lobe(rot360 + intake_lobe_center + 90 * units.deg) // 8
+}
+
+public node chevy_572 {
+    alias output __out: engine;
+
+    engine engine(
+        name: "Chevrolet 572 [V8 big-block]",
+        starter_torque: 300 * units.lb_ft,
+        starter_speed: 200 * units.rpm,
+        redline: 6500 * units.rpm,
+        fuel: fuel(
+            max_turbulence_effect: 3,
+            max_burning_efficiency: 0.95
+        ),
+        throttle_gamma: 2.0,
+        hf_gain: 0.01,
+        noise: 1.0,
+        jitter: 0.6,
+        simulation_frequency: 9000
+    )
+
+    wires wires()
+
+    label stroke(111.12 * units.mm)
+    label bore(115.82 * units.mm)
+    label rod_length(165.99 * units.mm)
+    label rod_mass(900 * units.g)
+    label compression_height(1.27 * units.inch)
+    label crank_mass(36 * units.kg)
+    label flywheel_mass(14 * units.kg)
+    label flywheel_radius(7.5 * units.inch)
+
+    label crank_moment(
+        disk_moment_of_inertia(mass: crank_mass, radius: stroke / 2)
+    )
+    label flywheel_moment(
+        disk_moment_of_inertia(mass: flywheel_mass, radius: flywheel_radius)
+    )
+    label other_moment( // comando, polias etc [estimado]
+        disk_moment_of_inertia(mass: 10 * units.kg, radius: 6.0 * units.cm)
+    )
+
+    crankshaft c0(
+        throw: stroke / 2,
+        flywheel_mass: flywheel_mass,
+        mass: crank_mass,
+        friction_torque: 18 * units.lb_ft,
+        moment_of_inertia:
+            crank_moment + flywheel_moment + other_moment,
+        position_x: 0.0,
+        position_y: 0.0,
+        tdc: 45 * units.deg
+    )
+
+    rod_journal rj0(angle: 0 * units.deg)
+    rod_journal rj1(angle: 270 * units.deg)
+    rod_journal rj2(angle: 90 * units.deg)
+    rod_journal rj3(angle: 180 * units.deg)
+    c0
+        .add_rod_journal(rj0)
+        .add_rod_journal(rj1)
+        .add_rod_journal(rj2)
+        .add_rod_journal(rj3)
+
+    piston_parameters piston_params(
+        mass: 700 * units.g,
+        compression_height: compression_height,
+        wrist_pin_position: 0.0,
+        displacement: 0.0
+    )
+
+    connecting_rod_parameters cr_params(
+        mass: rod_mass,
+        moment_of_inertia: rod_moment_of_inertia(
+            mass: rod_mass,
+            length: rod_length
+        ),
+        center_of_mass: 0.0,
+        length: rod_length
+    )
+
+    intake intake0(
+        plenum_volume: 2.4 * units.L,
+        plenum_cross_section_area: 20.0 * units.cm2,
+        intake_flow_rate: k_carb(1346.67),
+        runner_flow_rate: k_carb(310.77),
+        runner_length: 8 * units.inch,
+        idle_flow_rate: k_carb(0.0),
+        idle_throttle_plate_position: 0.997276, // maior = marcha lenta mais baixa
+        velocity_decay: 0.5
+    )
+
+    exhaust_system_parameters es_params0(
+        outlet_flow_rate: k_carb(1700),
+        primary_tube_length: 36 * units.inch,
+        primary_flow_rate: k_carb(700),
+        velocity_decay: 1.0
+    )
+    exhaust_system exhaust0(
+        es_params0,
+        audio_volume: 0.4,
+        length: 60 * units.inch,
+        impulse_response: ir_lib.minimal_muffling_02
+    )
+
+    exhaust_system_parameters es_params1(
+        outlet_flow_rate: k_carb(1700),
+        primary_tube_length: 36 * units.inch,
+        primary_flow_rate: k_carb(700),
+        velocity_decay: 1.0
+    )
+    exhaust_system exhaust1(
+        es_params1,
+        audio_volume: 0.4,
+        length: 62 * units.inch,
+        impulse_response: ir_lib.minimal_muffling_02
+    )
+
+    cylinder_bank_parameters bank_params(
+        bore: bore,
+        deck_height: stroke / 2 + rod_length + compression_height
+    )
+
+    cylinder_bank b0(bank_params, angle: -45 * units.deg)
+    cylinder_bank b1(bank_params, angle: 45 * units.deg)
+    b0
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj0,
+            intake: intake0,
+            exhaust_system: exhaust0,
+            ignition_wire: wires.wire1,
+            primary_length: 34 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj1,
+            intake: intake0,
+            exhaust_system: exhaust0,
+            ignition_wire: wires.wire3,
+            primary_length: 32 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj2,
+            intake: intake0,
+            exhaust_system: exhaust0,
+            ignition_wire: wires.wire5,
+            primary_length: 30 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj3,
+            intake: intake0,
+            exhaust_system: exhaust0,
+            ignition_wire: wires.wire7,
+            primary_length: 28 * units.inch
+        )
+        .set_cylinder_head(
+            chevy_572_head(
+                intake_camshaft: camshaft.intake_cam_0,
+                exhaust_camshaft: camshaft.exhaust_cam_0,
+                flip_display: false)
+        )
+    b1
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj0,
+            intake: intake0,
+            exhaust_system: exhaust1,
+            ignition_wire: wires.wire2,
+            primary_length: 34 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj1,
+            intake: intake0,
+            exhaust_system: exhaust1,
+            ignition_wire: wires.wire4,
+            primary_length: 32 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj2,
+            intake: intake0,
+            exhaust_system: exhaust1,
+            ignition_wire: wires.wire6,
+            primary_length: 30 * units.inch
+        )
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.0)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj3,
+            intake: intake0,
+            exhaust_system: exhaust1,
+            ignition_wire: wires.wire8,
+            primary_length: 28 * units.inch
+        )
+        .set_cylinder_head(
+            chevy_572_head(
+                intake_camshaft: camshaft.intake_cam_1,
+                exhaust_camshaft: camshaft.exhaust_cam_1,
+                flip_display: true)
+        )
+
+    engine
+        .add_cylinder_bank(b0)
+        .add_cylinder_bank(b1)
+
+    engine.add_crankshaft(c0)
+
+    harmonic_cam_lobe intake_lobe(
+        duration_at_50_thou: 244 * units.deg,
+        gamma: 0.9,
+        lift: 640 * units.thou,
+        steps: 100
+    )
+
+    harmonic_cam_lobe exhaust_lobe(
+        duration_at_50_thou: 252 * units.deg,
+        gamma: 0.9,
+        lift: 640 * units.thou,
+        steps: 100
+    )
+
+    chevy_572_camshaft camshaft(
+        lobe_profile: "N/A",
+
+        intake_lobe_profile: intake_lobe,
+        exhaust_lobe_profile: exhaust_lobe,
+        intake_lobe_center: 108 * units.deg,
+        exhaust_lobe_center: 112 * units.deg,
+        base_radius: 0.75 * units.inch
+    )
+
+    function timing_curve(1000 * units.rpm)
+    timing_curve
+        .add_sample(0000 * units.rpm, 14 * units.deg)
+        .add_sample(1000 * units.rpm, 14 * units.deg)
+        .add_sample(2000 * units.rpm, 24 * units.deg)
+        .add_sample(3000 * units.rpm, 32 * units.deg)
+        .add_sample(4000 * units.rpm, 34 * units.deg)
+        .add_sample(7000 * units.rpm, 34 * units.deg)
+
+    ignition_module ignition_module(
+        timing_curve: timing_curve,
+        rev_limit: 6700 * units.rpm,
+        limiter_duration: 0.18)
+    ignition_module
+            .connect_wire(wires.wire1, 0 * units.deg)
+            .connect_wire(wires.wire8, 90 * units.deg)
+            .connect_wire(wires.wire4, 180 * units.deg)
+            .connect_wire(wires.wire3, 270 * units.deg)
+            .connect_wire(wires.wire6, 360 * units.deg)
+            .connect_wire(wires.wire5, 450 * units.deg)
+            .connect_wire(wires.wire7, 540 * units.deg)
+            .connect_wire(wires.wire2, 630 * units.deg)
+
+    engine.add_ignition_module(ignition_module)
+}
+
+private node chevy_572_buggy {
+    alias output __out:
+        vehicle(
+            mass: 1900 * units.kg,
+            drag_coefficient: 0.5,
+            cross_sectional_area: (80 * units.inch) * (72 * units.inch),
+            diff_ratio: 6.22,
+            tire_radius: 17 * units.inch,
+            rolling_resistance: 400 * units.N
+        );
+}
+
+private node chevy_572_transmission {
+    alias output __out:
+        transmission(
+            max_clutch_torque: 950 * units.lb_ft
+        )
+        .add_gear(3.085)
+        .add_gear(2.017)
+        .add_gear(1.508)
+        .add_gear(1.203)
+        .add_gear(1);
+}
+
+public node main {
+    run(
+        engine: chevy_572(),
+        transmission: chevy_572_transmission(),
+        vehicle: chevy_572_buggy()
+    )
+}
+
+main()

@@ -105,8 +105,17 @@ def estado(r, veh):
         "estado_emb": r.u(ph + 0x314), "troca_t": r.f(ph + 0x2FC), "troca": r.u(ph + 0x318),
         "emb_sinal": r.f(ph + 0x320), "derrapagem": r.f(ph + 0x6C0), "ar": r.f(ph + 0x4E4),
         "esterco_vis": r.f(ph + 0x3C0), "stf": r.f(ph + 0x474),
+        # sujeira (objeto veículo+0xa80): nível 0..1 em +0xc0 (0x223e68)
+        "sujeira": r.f(r.u(veh + 0xA80) + 0xC0) if r.u(veh + 0xA80) else 0.0,
         "rodas": [],
     }
+    dj = r.u(veh + 0xA80)
+    if dj:
+        # lama das rodas (0x2242d0): cor de onde saiu, alvo, cor de agora,
+        # material da FL, t, taxa suavizada e taxa alvo (WheelDirtRate)
+        e["roda_suja"] = {"de": list(r.v(dj + 0x10, 4)), "para": list(r.v(dj + 0x20, 4)),
+                          "cor": list(r.v(dj + 0x30, 4)), "mat": r.u(dj + 0x40), "t": r.f(dj + 0x44),
+                          "taxa": r.f(dj + 0x48), "taxa_alvo": r.f(dj + 0x4c)}
     for i in range(4):
         w = r.u(ph + 0x254 + 4 * i)
         e["rodas"].append({
@@ -132,7 +141,10 @@ def main():
         print(f"[+] RAM salva em {a.dump}")
     r = Ram(m)
 
-    # câmeras de órbita: a ativa é a que está perto do alvo
+    # câmeras de órbita: só a ativa atualiza, então ela é a de suavização
+    # final mais alta (sobe 5/s até 40). As outras ficam onde a introdução da
+    # corrida deixou (zoom 0.6027 e 17.85/s nos save states parados) e às
+    # vezes mais perto do carro que a ativa. Empate: a mais perto do alvo
     cams = [x - 0x68 for x in r.achar(0x5B3F30)]
     best = None
     for c in cams:
@@ -144,9 +156,9 @@ def main():
             alvo = r.v(veh + 0xAA0)
         except struct.error:
             continue
-        d = dist(r.v(c + 0x10), alvo)
-        if best is None or d < best[0]:
-            best = (d, c, t, veh)
+        k = (round(r.f(c + 0x100), 2), -dist(r.v(c + 0x10), alvo))
+        if best is None or k > best[0]:
+            best = (k, c, t, veh)
     if not best:
         sys.exit("não achei a câmera do jogador")
     _, cam, tgt, veh = best

@@ -50,13 +50,22 @@ func _conferir() -> void:
 	var v: Dictionary = Main.VEHICLES[i]
 	var mt = car.motor_treme
 	if mt == null:
-		print("%-12s sem motor separado" % v.name)
+		print("%-12s sem motor separado (sem ponto EXHAUST)" % v.name)
 		return
 	var original: Mesh = load(car.model_path)
-	var antes := _faces(original)
-	var depois := _faces(car.body_mi.mesh) + _faces(mt.malha.mesh)
+	var antes: int = _faces(original) - (car.painel.apagadas if car.painel else 0)   # painel.gd APAGAR
+	var depois := _faces(car.body_mi.mesh)
+	for m in [car.body_mi, mt.malha, mt.malha_escape]:
+		if m == null:
+			continue
+		if m != car.body_mi:
+			depois += _faces(m.mesh)
+		for f in m.get_children():      # ventoinhas que giram (motor_anima.gd)
+			if f is MeshInstance3D and "Ventoinha" in str(f.name):
+				depois += _faces(f.mesh)
 	var ok := antes == depois
 	if not ok:
 		falhas += 1
-	print("%-12s %2d peças %4d faces tremem (de %d)  centro (%.2f, %.2f, %.2f)  %s" % [
-		v.name, mt.pecas, mt.faces, antes, mt.centro.x, mt.centro.y, mt.centro.z, "ok" if ok else "FALHA faces %d -> %d" % [antes, depois]])
+	print("%-12s %2d peças %4d faces tremem (de %d, escape %d)  centro (%.2f, %.2f, %.2f)  %s" % [
+		v.name, mt.pecas, mt.faces, antes, _faces(mt.malha_escape.mesh) if mt.malha_escape else 0,
+		mt.centro.x, mt.centro.y, mt.centro.z, "ok" if ok else "FALHA faces %d -> %d" % [antes, depois]])

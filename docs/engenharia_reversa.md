@@ -55,6 +55,23 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - Peças de motor do buggy (upgrades.xml <Buggy>): Internals até 0.35,
   Management 0.2, Header 0.1, Exhaust 0.1, Intake 0.2 e o câmbio Prototype
   soma mais 0.05: máximo 1.0.
+- **0x21d2c8** monta o vetor t[31] das peças (tipos de efeito na tabela
+  0x550538: 1 EngineDriveTorque ... 0x10 FinalDriveRatio, 0x11
+  CustomGearRatios, 0x12 CustomFinalDriveRatio, 0x14 FrontBrakeBias, 0x1b
+  Mass ... 0x1e FrictionEllipseHeightScale). Começa tudo em −999; para cada
+  slot de peça (0..0x1a) e cada efeito: 0x12 → t[0x10] = FinalDrive custom
+  (0x20aac0), 0x11 → t[0xb..0xf] = marchas custom, 0x14 → bias custom;
+  os outros SOMAM (−999 vira o valor) e ficam presos em 0..1. Sem
+  CustomGearRatios as marchas vêm da custom do perfil. GearboxLevel_Level0/1
+  dão FinalDriveRatio 0.45/0.53; Level2/3/Prototype dão
+  CustomFinalDriveRatio (upgrades.xml). Conferido na RAM: Level0 → 0.45
+  (Inferno, Bulldog, Phantom, Buccaneer), Level3/Prototype → 0.61.
+- **0x21d618** aplica t: slot i com t[i] ≠ −999 → (1 − t)·P[0x1350+8i] +
+  t·P[0x1354+8i], gravado pela tabela 0x583580 (0x10 FinalDriveRatio →
+  P+0x158; 0x11 e 0x12 não gravam nada). O menu de ajuste (0x3ec5d0) pelo
+  GearboxLevel: Level2 só mexe na final, Level3/Prototype nas marchas e na
+  final, Level0/1 em nada. Custom do perfil (0x20a738, GearRatioTuning):
+  marchas +4..+0x14, FinalDrive +0x1c, FrontBrakeBias +0x20.
 
 ## Motor e câmbio
 
@@ -283,8 +300,54 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   9..16 A_FRAME/A_FRAME_END, 21..24 SHOCKS_BOTTOM/TOP_FRONT, 25..28
   SHOCK_PISTON/CHAMBER, 29/30 SpareWheel, 31 LIGHTRIG, 32 BUMPER). Nomes
   também em 0x55070c. "Esquerda" do jogo = x < 0 no modelo.
+- BRAKE_LIGHT*, REVERSE_LIGHT*: o exe não tem as strings porque os nomes
+  vêm do Setup/VehicleHaloMap.xml (seção Halos abaixo): o jogo põe um halo
+  neles. A lente em si não muda (cor do vértice vermelha ou textura).
+  TAIL_LIGHT (Bulldog) não está no mapa. Nenhum carro tem HEAD_LIGHT.
+  Farol comprado = componente Lighting no ponto LIGHTRIG (id 31), só modelo.
 - CoM do XML em coordenadas do modelo. Corpo físico +0x70 = CoM; veículo
   +0xaa0 = origem do modelo (= CoM − R·CoM_local).
+
+## Halos (brilho das luzes do carro)
+
+- Setup/VehicleHaloMap.xml (data/vehicle_halo_map.xml, loader 0x22a400 ->
+  0x22a568, singleton DAT_007f7248, 0x40 por entrada: +0 nome do ponto, +8
+  HaloName, +0x10 Behaviour, +0x20 Normal, +0x30 Offset). Behaviour pela
+  tabela 0x55084c: Brake 0, Reverse 1, Night 2. Entradas: BRAKE_LIGHT1-6
+  "BrakeLight", REVERSE_LIGHT1-2 "ReverseLight", HEAD_LIGHT1-3
+  "ReverseLight" (Night), FRONT_HALO1-10 "HaloTestLight1-5" e REAR_HALO1-5
+  "RearHaloTestLight" (Night, Offset y -0.11).
+- 0x225cf8 monta os halos do carro: pra cada entrada do mapa que tem ponto
+  no modelo (0x62fd48), cria um registro de 0x90 em (render+0x1e0, conta em
+  +0x1d4) e põe na lista do comportamento (render+0xf60 + b*0x70: ponteiros
+  em +0x10, conta em +0x4; render = veículo+0xb00). O halo vem do
+  Setup/VehicleHalos.xml (data/vehicle_halos.xml) com 4 níveis (LOWEST, LOW,
+  MID, HIGH) de B1Halo: Texture, ZedBias e Layers (TextureBox, Width,
+  Height, Angle, SizeScale, AngleScale, Colour; parse 0x22a8a8/0x26c458).
+- 0x203930 (por quadro, render do veículo) liga o campo +0x24 de cada
+  registro: Brake = carro ativo e (0x9d0+0xf4)+0x2b8 != 0 e freio suavizado
+  (corpo+0x390) >= 0.1, e com (0x205200)+0x10 == 0 também acende de ré;
+  Reverse = 0x2040b8 (ré); Night = carro ativo (vtable+0x84 do 0x9d0). Nos
+  save states a chave +0x2b8 é 1.
+- 0x2260a0: leva os halos pro mundo e, por instância, +0x1c0 (força) sobe
+  dt*4 até 1 quando está ligado e foi desenhado no quadro (0x2295c0: +0x4c
+  == quadro atual), e zera na hora desligado. O desenho em si é no VU1/GS
+  (0x26d328 monta os registradores): AngleScale, SizeScale e ZedBias não
+  foram decifrados.
+- RAM: Renegade (a.p2s) 2 halos de freio em (±0.60, 1.92, -1.55) acesos com
+  freio 1.0; Storm 2 de freio + 1 de ré. Screenshot.png dos save states:
+  brilho laranja com raios em ±0.4 rad (nível HIGH). Tamanho medido: miolo
+  ~6 px com as lanternas do Renegade 82 px uma da outra (1.2 m) e raio
+  vertical ~0.75 m: Width/Height x 0.3 m.
+- Textura Sprites/lightglow2alpha (128x64): o desenho é o alfa (RGB branco).
+  Caixas do .bed (fração x 100000): GLOW (0, 0)-(0.509, 0.9375), RING
+  (0.600, 0.247)-(0.850, 0.747), SPIKE (0.865, 0)-(0.958, 1). O alfa não
+  chega a 0 na borda (12/255 no GLOW, 40 na ponta do SPIKE).
+- Nenhum carro do jogo tem HEAD_LIGHT/FRONT_HALO/REAR_HALO (varredura do
+  unpacked): o farol Night existe e nunca aparece. Os LIGHTRIG comprados
+  (root.xml Lighting, mIsPhysical false, 8 modelos x Small/Large pelo
+  LightRigCategory do vehicles.xml; .pfn só com chassis_comp03, dirt,
+  light_64, light2_64, mesh_grey) não têm pontos: são só modelo.
 
 ## Câmera (BuggyCamSet_NN em data/cameras.xml = 14880)
 
@@ -320,12 +383,26 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   data/ruido_camera.bin). Direção nova = dir + direita·n1 + cima·n2,
   matriz refeita (0x61e010). Órbita: 70 a 100 mph, Amp 0.03, Freq 0.3;
   capô/para-choque: 0 a 75 mph, Amp 0.04, Freq 0.25.
-  Batida (NÃO portada, falta o sistema de colisão): última colisão do corpo
-  (corpo+0x7a0 + idx·0x40, idx = corpo+0x860, −1 sem) dá c = rampa da
-  velocidade (CollisionSpeedFor*) × rampa da massa do outro (+0x60 → +0x78,
-  CollisionMassFor*) × CollisionJitterMagMax; amp = max(c, amp)·Decay por
-  passo (com trava por veículo+0xa74/0xa78), somando sorteio uniforme
-  [−amp, amp) nas duas componentes (x·31415821+1 mod 2^30, semente 0x8383a8).
+  Batida (portada, camera_jitter.gd + car.gd batida): a cada passo de física
+  o 0x215140 anda na lista de contatos do corpo (corpo+0x1f0, próximo em +4)
+  e o 0x215248 guarda até 3 registros de 0x40 em corpo+0x7a0, ordenados pela
+  velocidade (índices em corpo+0x860.., −1 = vazio, quantos em +0x86c):
+  +0 = |contato+0x64| (velocidade do ponto na normal, m/s), +0x10 normal
+  (contato+0x30), +0x20 ponto (contato+0x10), +0x34 outro corpo (contato+0xc
+  → +0x1d4; 0 em parede e chão). Contato com outro carro (+0x68 == 2) entra
+  nos dois, com a normal negada. A câmera lê o maior (idx[0]): c = rampa da
+  velocidade (abaixo de CollisionSpeedForStartJitter 0, acima do Max 1) ×
+  rampa da massa do outro (+0x60 → +0x78, t, CollisionMassFor*; só com outro
+  corpo) × CollisionJitterMagMax; amp (componente[4]) = max(c, amp)·Decay a
+  cada passo de 1/60 e, com amp > 1e-6, soma um sorteio uniforme [−amp, amp)
+  em n1 e n2 (x·31415821+1 mod 2^30 / 2^30, semente global 0x8383a8). Trava
+  (não portada): com (veículo+0xa6c)+0x8c → +0x18 ≠ 0, +0xa78 = 0, +0xa74 ≥
+  0.5 e amp ≤ 1e-6 a batida não começa. Save state crash_Storm (parede de
+  pedra, 44 km/h): 1 registro de 0.08 m/s (encostado), normal (−0.38, 0,
+  −0.93), sem outro corpo; um registro velho de 4.86 m/s; órbita perto com
+  MagMax 0.05, Decay 0.93, 4/44 m/s, amp 0.0124. No remake a velocidade é a
+  do ponto ANTES do passo que achou o contato (o solver do Godot já tirou a
+  aproximação). tests/teste_batida.gd.
 - Câmeras montadas (MountOnHood/Front): PosOffset no frame do modelo,
   Orientation.X em graus, FOV fixo. MountOnFront fica dentro da carroceria
   (não desenha o carro).
@@ -381,12 +458,35 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   0.33561218·v·[trava])·U(0.1, 0.9), + 0.25·v em 10% das chamadas, ×0.07.
   Não usa rpm. No remake vira a tremida do volante (car.gd _vibracao,
   melhoria nossa).
-- Conferido: tests/teste_pecas.gd compara 100 matrizes de 6 carros
-  (Renegade, Sphinx, Inferno, Bulldog, Phantom, Storm) com a RAM dos save
-  states parados na largada, erro < 0.01 mm. Classes das rodas de rally:
-  método +0x1c 0x1fd1c0 FL, 0x1fd248 FR, 0x1fd2d0 RL, 0x1fd358 RR; estepe
-  0x1fd730. Os caminhos carregados na RAM (Models_4K/Chassis/..., Wheel/...)
-  são os mesmos do pecas.json de cada carro.
+- Trucks (TruckCompMap_B1/B2, A2), conferido com a RAM do Goliath:
+  - Classe k da tabela 0x5502c8 -> vtable 0x580898 - k·0x28, método
+    +0x1c: 2 LeftFrame 0x1fc1d8, 3 RightFrame 0x1fc278, 6 RearAxle 0x1fc428,
+    12 FrontLeftBrake 0x1fc7d0, 13 FrontRightBrake 0x1fc858, 20
+    RearFreeAxle 0x1fcc10.
+  - Ajudantes: 0x222078 curso visual, 0x2220c8 W+0x10 (ponto de repouso,
+    relativo ao CoM), 0x2221b8 W+0x20 (direção da suspensão, (0, 1, 0)),
+    0x222310 CoM (corpo+0x364 -> +0xc10). 0x6894e0 = tanf.
+  - LeftFrame / RightFrame (0x21e0b8 / 0x21e1f0, translação 0x21e158 /
+    0x21e290): Rz(tan(x / W.x)) em volta do A_FRAME_LEFT / RIGHT (tan
+    mesmo, não atan). W = entrada 1 / 2 da tabela de ids do carro, que o
+    jogo enche pelo começo do nome na ordem do arquivo: no truck é o
+    WHEEL_FRONT_*_VISUAL, que vem antes do WHEEL_FRONT_*.
+  - FrontLeftBrake / FrontRightBrake (0x221308 / 0x221468): eixo-ângulo
+    (W+0x20, esterço P+0x44) em volta de W, + W+0x20·x.
+  - RearAxle (0x21e998 / 0x21eba8; os 2 modelos, Axle e Rear_Arm, usam a
+    mesma pose): ponto do eixo 0x21e838. a0 = (0, ARM_PIVOT.y,
+    ARM_PIVOT.z); m = meio dos centros das rodas de trás (WHEEL_REAR_* +
+    (0, x, 0)) com m.x = 0; a = acos(norm(AXLE_ANCHOR − a0)·norm(m − a0)),
+    negativo se AXLE_ANCHOR.y < m.y; R = Rx(−a) em volta de a0 (Goliath
+    parado: 12.73°).
+  - RearFreeAxle (0x21ee00): identidade, sobe (x_RL + x_RR)/2.
+  - Rodas desses mapas = as do rally (WHEEL + x).
+- Conferido: tests/teste_pecas.gd compara 110 matrizes de 7 carros
+  (Renegade, Sphinx, Inferno, Bulldog, Phantom, Storm e o truck Goliath)
+  com a RAM dos save states parados, erro < 0.01 mm. Classes das rodas de
+  rally: método +0x1c 0x1fd1c0 FL, 0x1fd248 FR, 0x1fd2d0 RL, 0x1fd358 RR;
+  estepe 0x1fd730. Os caminhos carregados na RAM (Models_4K/Chassis/...,
+  Wheel/...) são os mesmos do pecas.json de cada carro.
 
 ## Piloto e volante
 
@@ -522,7 +622,17 @@ fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
   Dono+0x178 = 0.4·anterior + 0.1·média(d susp/dt de FL e RL), limitado a ±1.
 - Roda 0x370548 (por quadro): material W+0x140 (−1 = 0) → DB+0x70+4i (pelo
   SFX do Materials.xml da pista, 0x377ce0); água se veículo+0xaec+4i > −0.05.
-  Sample novo: para, toca o outro e trava 0.07 s. Patch com Volume 0 para.
+  Sample novo: para, toca o outro e trava 0.07 s. São 2 handles por roda
+  (W+0x178/+0x17c, índice em +0x180): para o atual, troca de handle e toca
+  no outro; volume e tom só vão pro handle novo. Parar = vtable +0x1c do
+  handle (0x264f28, classe 0x587c48) -> 0x25afa8 -> 0x6773d0 = comando 0x13
+  do 989snd (StopSound): key-off, a voz desce pelo release do ADSR do tom
+  (ADSR1/ADSR2 em +0xa/+0xc do tom no banco). Dirt: ataque exponencial
+  ~0.48 s, release linear 0.17 s; loop do cascalho (GRAVELEMENT2): ataque
+  na hora, release 0.17 s. No cascalho escuro do RX01 (GRAVEL/ROCK em
+  células de 2 m misturadas com terra) a troca Gravel <-> Dirt acontece ~2
+  vezes por segundo derrapando (tests/gravar_cascalho.gd). Patch com Volume
+  0 para.
   No ar o volume vai a 0 (tom fica). susp = clamp((W+0xe8 + SuspensionOffset)
   ·SuspensionScale, 0, 1). Volume e tom: fórmulas no cabeçalho do
   sfx_carro.gd (offsets do patch: 0x2c..0x4c tom, 0x50..0x7c volume, com
@@ -534,11 +644,84 @@ fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
   passa o Threshold (subida) → toca com Probability; espera MinRetriggerTime;
   volume (1 − VolumeSpeed·(1 − spd))·Collision·SFX, tom 1.0.
 - MasterSettings: SurfaceVolume 0.5, CollisionVolume 0.8, SFXVolume 1.
-- Não confirmado: unidade das esperas dos grãos (sons.json tick_s = 1 ms),
-  como o 989snd soma volume do som, do tom e ADSR, curva de distância 3D.
-- Achado: no save state 110 (1ª curva) o PS2 tocava asfalto e o mapa de
-  material do remake diz cascalho nas rodas da frente (pendente: o atrito
-  também usa esse mapa).
+- Grãos do 989snd (som_jogo.gd), pelo BlockSoundHandler reimplementado no
+  jak-project (game/sound/989snd: player.cpp "handlers tick at 240hz",
+  blocksound_handler.cpp, sfxgrain.cpp, loader.cpp ReadGrainV2): a espera
+  (s32 depois do opcode) vale ANTES do grão; contagem = espera do próximo +
+  retorno do grão (RAND_DELAY devolve 0..dado). Opcode = tipo << 24 | 3
+  args s8: RAND_PLAY (25) opções/grãos por opção/anterior (não repete),
+  RAND_PB (27) % da faixa, SET_REGISTER_RAND (31) registrador/mín/máx. Tom:
+  vol s8 (< 0: -1..-4 registrador do som, -5 sorteado), PBLow/PBHigh em
+  +8/+9. Cascalho (Gravel = filhos GRAVELEMENT1 vol 75 + GRAVELEMENT2 127):
+  loop com espera 0..180 ticks (2.65 estalos/s), volume 90..115, ±2
+  semitons. Terra (Dirt): as 2 camadas entram juntas depois de 60 ticks.
+- Não confirmado: curva de distância 3D.
+- Save state 110 (1ª curva): o PS2 tocava asfalto e o mapa diz cascalho nas
+  rodas da frente, mas o material da FL na RAM (veículo+0xa88[0]) também é o
+  5 (GRAVEL/ROCK): o mapa está certo. As rodas saíram do asfalto 0.07 s
+  antes (andando pra trás pela velocidade, 113 km/h); o loop do asfalto
+  (Tarmac, ADSR2 0x9fcd, release linear shift 13) leva 0.34 s pra apagar
+  depois do key-off e o loop do cascalho (GRAVELEMENT2) só entra 60 ticks
+  (0.25 s) depois, então só as vozes do asfalto tocavam. tests/teste_sfx.gd
+  confere ("som atrás do chão" e "material: FL RAM x mapa"; no 170 a FL
+  está 1.2 mm depois da divisa da célula e a RAM já tem a célula seguinte).
+
+## Sujeira
+
+- Objeto da sujeira: veículo+0xa80 (0xd0 bytes, 0x223948, criado no
+  0x1fe280; também em (veículo+0xa64)+0x10). +0xc0 nível do carro, +0xc4 do
+  piloto, +0xc8 = 1 se o modo de jogo tem sujeira (0x171960).
+- **0x223e68** (do update do veículo 0x203930, um por quadro = 50 Hz no
+  PAL; sem dt): com rodas no chão (corpo+0x8a8), piloto no carro
+  (piloto+0x164 = 0) e v = |corpo+0x440| >= 0.5: d = min(v, 15)·k·5e-5,
+  k = maior min(WheelDirtRate, 1) dos materiais das rodas (veículo+0xa88,
+  registro veículo+0xd0+i·0x60, +0x54). Nível += d (0..1); o do piloto
+  também (+ piloto+0x328·0.06 se (veículo+0xa6c)+0x8c+0x18). WheelDirtRate
+  é 0.2 até no asfalto (0.3 na terra úmida): suja em qualquer chão.
+  Depois do 0x223e68 o 0x203930 põe (veículo+0xa68)+0x58 = +0xc8·nível.
+- Desenho: +0x98 é um pintor de alfa de vértice (0x3a8680, lista de malhas
+  montada no 0x223a78; 17 no Renegade = carroceria, balanças, freios e
+  amortecedores). Tipo 1 (0x3b3a78): alfa do vértice = max(alfa,
+  nível·128), 300 vértices por quadro. Na RAM: todos os vértices com o mesmo
+  alfa (d0: 10 = 0.083·128).
+- Camada: o lote de material do .pingu (0x50 bytes) tem +0x08 = quantas
+  texturas e +0x18 = slot da 2ª, desenhada por cima pelo 2º UV (o V4-32
+  traz s, t, s2, t2). Na carroceria só o lote da pintura ("white") tem, e a
+  2ª é a "dirt" (DIRT.bog do modelo = 8x8 vazio): vale a da pista,
+  TrackProperties Dirt mDirtTextureName (0x1bf220, props+0x1c) =
+  GEN_DIRT_DIRT em todas (Vehicles/Generic/Textures 128x128). Alfa = alfa
+  do vértice x alfa da textura. As peças do pintor não têm camada (menos 2
+  balanças de trás do Kraken), então só a pintura suja.
+  Nas rodas (pneu e aro) a 2ª é a UNI_TyreOverlay (128x128, 4 bits, igual
+  nos 46 pneus do jogo).
+- Zera só no 0x223db0 (nível 0 e alfa 0 em todos os vértices): veículo
+  inativo no 0x203930 e o método virtual +0xb4 do veículo (0x200b80,
+  recomeço). Nada mais escreve o nível: a água NÃO limpa a carroceria.
+- Lama das rodas (0x224418 -> 0x2242d0, com roda no chão; +0x10..+0x4c do
+  objeto: de, para, cor, material, t, taxa, taxa alvo): quando o material
+  da FL (veículo+0xa88[0]) muda, vai da cor atual pro DustColour (registro
+  +0x10) com alfa WheelDirtAlpha (+0x50; 0 no asfalto = só o alfa cai),
+  taxa WheelDirtRate suavizada (0.95/0.05), t += dt·giro da FL
+  (W+0x48)·0.002·taxa (x10·patinada da RL, corpo+0x604, se passar de 0.1).
+  Na água (veículo+0xae8) o alvo é o registro DAT_007f4bf8+0x20.
+  Desenho (0x224148, chamado no desenho do modelo 0x22bba8 nos LODs 0 e
+  1): a paleta de 16 cores da UNI_TyreOverlay vira cor·128 com alfa = alfa
+  da lama x alfa original de cada entrada (+0x54..+0x90). Achado pela cópia
+  da cor na RAM em 0x7f72b8.
+- Save state do Matheus no Hinter Valley (lama, neve e água; 100% sujo em
+  ~1 min): materiais da pista com WheelDirtRate 3.0 na lama (sujeira do
+  carro com k = 1: 0.0375/s, cheio em ~27 s) e 2.0 na neve (DustColour
+  quase branco: pneu branco). Registro da água (DAT_007f4bf8+0x20):
+  DustColour 0, WheelDirtAlpha 0, WheelDirtRate 30 = o pneu limpa quase na
+  hora e a lama (taxa 3) volta em meio segundo, como ele viu. Nível 1.0 e
+  lama (0.69, 0.63, 0.54, 0.86) no save state.
+- Brilho: o desenho da carroceria (0x22ace8) multiplica o reflexo por
+  (1 - modelo+0x58), e modelo+0x58 = nível. Não portado (o remake não tem
+  esse reflexo).
+- Conferido (tests/teste_derrapagem.gd): drr_3 -> drr_2 (1.16 s) o jogo
+  sujou 0.0089 e o remake 0.0091; lama da roda jogo (0.561, 0.486, 0.387,
+  0.431) e remake (0.561, 0.486, 0.386, 0.432). Os save states saem no
+  ler_savestate --json ("sujeira", "roda_suja").
 
 ## Mão (espelho)
 
@@ -577,6 +760,44 @@ fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
 
 - Textura "white" gerada em tempo real pelas camadas do XML 150xx
   (Buggy_NN_Base/Primary/Secondary/Detail + cores + decalques + número).
+  tools/gerar_pintura.py faz igual.
+- Camadas (vtables em 0x59e9a8 Text, 0x59e9f0 Box, 0x59ea38 Decal,
+  0x59eb10 Sprite; [parse, desenha]): Sprite 0x2fecf8/0x2fedf8, Text
+  0x2ffe30/0x2fffd8, Box 0x2ffac8/0x2ffc40, Decal 0x2ff9c0/0x2ffa40.
+  Construtores 0x3011c0 (Sprite: Aspect 1, KeepAspect 0, Rotation 0) e
+  0x301678 (Text: Scale 1, Aspect 1, Fit 0).
+- Box: lê a caixa do .bed (cantos 0 e 2) e põe o centro e o tamanho no
+  contexto (NDC, y pra cima = topo da imagem).
+- .bed (caixas, logos, glifos): u8 1, u8 1, nome.tga, u16 largura, altura,
+  quantos; cada item u16 pontos, pontos (s32 x, s32 y), nome, u16 0xffff.
+  Coordenadas inteiras = fração da textura x 100000 (máximo 100000 exato;
+  22656 = 29/128 na HUD_Digital). Lidas como 16.16 dão ~1.53 no fim da
+  textura: com 1.5 as caixas saíam 1.7% pra fora (4 px em 512). Conferido
+  nos quadros claros do número de 12 carros (escala 1.00) e nos logos.
+- Sprite: cor = Diffuse x 128 (128 = 1.0). KeepAspect: se a caixa
+  (largura/altura/Aspect) é mais larga que o retângulo do logo, encolhe a
+  largura, senão a altura (logo inteiro dentro da caixa, centrado). Depois
+  gira Rotation graus em volta do centro, anti-horário na imagem: o logo
+  encaixa na caixa deitada e fica em pé depois (os ATTACK nas faixas pretas
+  verticais do teto do Renegade). Reflection (0x5513a0: 0 None, 1
+  Horizontal, 2 Vertical, 3 Both) desenha 2 ou 4 metades espelhadas.
+- Text: largura e altura do texto pela fonte, x vezes Aspect x 4/3 (desfaz a
+  correção da tela 4:3, então o dígito sai na proporção da textura; o "01"
+  do HUD na tela mede 0.73 e o glifo 0.70). Fit (tabela 0x551480: 0 No,
+  1 Vertical, 2 Horizontal, 3 Both): Vertical = altura do texto = altura da
+  caixa, Horizontal = largura, Both = o menor; vezes Scale. Centrado, gira
+  em volta do centro. Diffuse preto = número preto (o glifo é branco).
+- Decal: DecalArea + ordem. A k-ésima camada Decal de uma área usa o logo
+  <ÁREA sem espaço><k> do DefaultDecals do vehicles.xml (HOOD1, SIDE3,
+  REARWING1 de "Rear Wing"...), pelo nome na BuggyLogos.bed (sem diferença
+  de maiúscula). Conferido no print do Renegade: lado direito, de trás pra
+  frente, ITP, ATTACK com OUTERWEARS embaixo, o número e elf (SIDE3, SIDE2,
+  SIDE4, número, SIDE1). BUGGY_03 e BUGGY_04 (Sphinx) têm no vehicles.xml as
+  chaves de moto (FRONT_01, NOSE...): nenhuma bate, ficam sem logo.
+- Número: o texto da camada PLAYER_NUMBER é o número do perfil; perfil novo
+  = nome "PLAYER", número "00" (0x56b0a0, ao lado de mRiderNumber). O print
+  do save state mostra 2 dígitos pretos no quadro branco. Os pilotos da IA
+  têm o número no Setup/AIPlayers.xml (00 a 99).
 
 ## Save state do PCSX2
 
@@ -585,6 +806,9 @@ Rodas: ponteiros em corpo+0x254 (W), curso W+0xe8, giro W+0x4c (a tag
 buggy: 21 pares (flag, ptr) em 0x11dbce0 (a.ram), matriz em linhas no
 pacote VIF apontado (rodas no mundo, peças no frame do modelo).
 `tools/ler_savestate.py` acha a câmera (vtable 0x5b3f30 em +0x68), o alvo,
-o veículo (+0x2b0 → +0xf0) e o corpo (+0x9d4). Câmbio em corpo+0x2d0 (+0x08
+o veículo (+0x2b0 → +0xf0) e o corpo (+0x9d4). Há várias câmeras de órbita
+e só a ativa atualiza: ela é a de suavização final (+0x100) ~40/s. As
+outras ficam como a introdução da corrida deixou (zoom 0.6027, 17.85/s) e
+parado podem estar mais perto do carro que a ativa. Câmbio em corpo+0x2d0 (+0x08
 marchas, +0x20 final, +0x9c embreagem máx, +0x60 rpm de subir). Motor em
 corpo+0x2ac (parâmetros; estado logo antes, com rpm e limitador).
