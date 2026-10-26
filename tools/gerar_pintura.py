@@ -104,6 +104,8 @@ def ler_bed(d):
         q = d.index(b"\0", p)
         nome = d[p:q].decode("latin-1")
         p = q + 3
+        if nv < 3:
+            continue        # o Chassis_Truck_10.bed diz 25 itens e o 25º vem vazio
         (x0, y0), (x1, y1) = pts[0], pts[2]
         out[nome] = (x0 / BED_ESCALA, y0 / BED_ESCALA, x1 / BED_ESCALA, y1 / BED_ESCALA)
     return out
@@ -250,7 +252,10 @@ def decalques(img, s, src, veh, numero, log=print):
             tex = lay.find("LAYER[@Type='Texture']")
             path = tex.get("Path") if tex is not None else "BuggyLogos"
             logos, atlas = arq.bed(path), arq.textura(path)
-            r = next((v for k, v in (logos or {}).items() if k.upper() == nome.upper()), None)
+            # sem diferenciar maiúscula nem espaço: o vehicles.xml pede "HERBST 1" e
+            # o .bed tem "Herbst  1" (2 espaços); "JB Marketing " tem espaço no fim
+            igual = lambda a: " ".join(a.split()).upper()
+            r = next((v for k, v in (logos or {}).items() if igual(k) == igual(nome)), None)
             if r is None or atlas is None:
                 log(f"[!] {chave}: logo {nome!r} não está na {path}")
                 continue

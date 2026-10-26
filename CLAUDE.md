@@ -577,6 +577,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   1.764 = fully_tuned). Buccaneer de fábrica ("tudo Standard", DIRT_BUDGET):
   massa 1.70 t, marchas 17.5/11.4/8.5/6.8/5.6, final 1.0825 (Level0),
   embreagem 0.379, torque 1.088, CoM (0, 0.679, 0.414), curso máx 0.28/0.35
+  = remake. Pintura dos trucks: o logo é achado sem diferenciar maiúscula
+  nem espaço (o vehicles.xml pede "HERBST 1", a TruckLogos tem "Herbst  1";
+  antes os dois Herbst saíam sem o logo) e o Chassis_Truck_10.bed diz 25
+  itens com o 25º vazio (o gerar_pintura quebrava no Fireball). Assets
+  gerados dos 13 (12 + bônus) também estão no atv4-dados/cars (out/2026).
   = remake. Câmera dos trucks = a dos buggies (FollowOrbitFar parada: 6.87 m
   atrás e 3.0 acima no Buccaneer, 7.65/3.39 no Goliath, zoom 0.5;
   tests/teste_camera_ram.gd).
