@@ -580,6 +580,16 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   = remake. Câmera dos trucks = a dos buggies (FollowOrbitFar parada: 6.87 m
   atrás e 3.0 acima no Buccaneer, 7.65/3.39 no Goliath, zoom 0.5;
   tests/teste_camera_ram.gd).
+- Carro bônus resgatado (out/2026): a CHASSIS_Truck_04 está completa no
+  jogo (4K, 5K, menu, COMPOSITOR 15106 com a pintura Truck_04_*) e nenhum
+  veículo usa. É uma Chevrolet Silverado cabine dupla pre-runner (texturas
+  preRunnerTruck_*, gravatinha da Chevrolet na preRunnerTruck_front): a
+  carroceria original do Jericho ("Pre Runner"), que no vehicles.xml ficou
+  com a CHASSIS_Truck_11 (sem logo nenhum; nenhum outro carro tem marca
+  real). No remake é o "Silverado", último do menu (gerar_buggies.py BONUS,
+  --so 13; main.gd "bonus"): física, peças de fábrica, mapa
+  (TruckCompMap_B1) e decalques do Jericho, câmera TruckCamSet_04 (o
+  Jericho usa a 11). Não substitui o Jericho.
 - Câmera do save state: só a câmera ativa atualiza. ler_savestate pegava a
   mais perto do carro, e parado essa é uma que a introdução da corrida
   deixou (zoom 0.6027, suavização 17.85/s em a.p2s, b.p2s, Goliath e

@@ -75,6 +75,13 @@ const TRUCKS := [
 		"data": "res://data/vehicles/truck_11.xml", "points": "res://data/vehicles/truck_11_points.bin", "base": BASE_TRUCK},
 	{"name": "Chimera", "id": "TRUCK_12", "cams": "TruckCamSet_12", "dir": "res://assets/truck_12",
 		"data": "res://data/vehicles/truck_12.xml", "points": "res://data/vehicles/truck_12_points.bin", "base": BASE_TRUCK},
+	# bônus resgatado: a CHASSIS_Truck_04 está completa no jogo e nenhum carro
+	# usa. É a Chevrolet Silverado pre-runner, carroceria original do Jericho
+	# (texturas preRunnerTruck_*); física e peças do Jericho, câmera
+	# TruckCamSet_04 (tools/gerar_buggies.py BONUS)
+	{"name": "Silverado", "id": "TRUCK_04", "cams": "TruckCamSet_04", "dir": "res://assets/truck_bonus",
+		"data": "res://data/vehicles/truck_bonus.xml", "points": "res://data/vehicles/truck_bonus_points.bin",
+		"base": BASE_TRUCK, "bonus": true},
 ]
 var veh_idx := 0
 # largada do RX_01: centro das 4 rodas e direção do carro nos 6 save states
@@ -270,13 +277,17 @@ func _make_menu(layer: CanvasLayer) -> void:
 	menu.offset_top = 12
 	menu.auto_height = true
 	menu.add_theme_font_size_override("font_size", 18)
-	# ordem da lista do jogo (BUGGY_01..12, TRUCK_01..12), as variações logo depois
+	# ordem da lista do jogo (BUGGY_01..12, TRUCK_01..12), as variações logo
+	# depois e os bônus no fim
 	var todos := frota()
 	var order := range(todos.size())
-	order.sort_custom(func(a, b): return [todos[a].id, a] < [todos[b].id, b])
+	order.sort_custom(func(a, b): return [int(todos[a].get("bonus", false)), todos[a].id, a] < [int(todos[b].get("bonus", false)), todos[b].id, b])
 	for i in order:
 		var v: Dictionary = todos[i]
-		menu.add_item("%s%d. %s" % ["Truck " if v.id.begins_with("TRUCK") else "", v.id.to_int(), v.name])
+		if v.get("bonus", false):
+			menu.add_item("Bônus. %s" % v.name)
+		else:
+			menu.add_item("%s%d. %s" % ["Truck " if v.id.begins_with("TRUCK") else "", v.id.to_int(), v.name])
 		menu_idx.append(i)
 	menu.item_activated.connect(func(row): _swap_vehicle(menu_idx[row]); _toggle_menu())
 	menu.item_clicked.connect(func(row, _p, _b): _swap_vehicle(menu_idx[row]); _toggle_menu())
