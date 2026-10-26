@@ -55,6 +55,23 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - Peças de motor do buggy (upgrades.xml <Buggy>): Internals até 0.35,
   Management 0.2, Header 0.1, Exhaust 0.1, Intake 0.2 e o câmbio Prototype
   soma mais 0.05: máximo 1.0.
+- **0x21d2c8** monta o vetor t[31] das peças (tipos de efeito na tabela
+  0x550538: 1 EngineDriveTorque ... 0x10 FinalDriveRatio, 0x11
+  CustomGearRatios, 0x12 CustomFinalDriveRatio, 0x14 FrontBrakeBias, 0x1b
+  Mass ... 0x1e FrictionEllipseHeightScale). Começa tudo em −999; para cada
+  slot de peça (0..0x1a) e cada efeito: 0x12 → t[0x10] = FinalDrive custom
+  (0x20aac0), 0x11 → t[0xb..0xf] = marchas custom, 0x14 → bias custom;
+  os outros SOMAM (−999 vira o valor) e ficam presos em 0..1. Sem
+  CustomGearRatios as marchas vêm da custom do perfil. GearboxLevel_Level0/1
+  dão FinalDriveRatio 0.45/0.53; Level2/3/Prototype dão
+  CustomFinalDriveRatio (upgrades.xml). Conferido na RAM: Level0 → 0.45
+  (Inferno, Bulldog, Phantom, Buccaneer), Level3/Prototype → 0.61.
+- **0x21d618** aplica t: slot i com t[i] ≠ −999 → (1 − t)·P[0x1350+8i] +
+  t·P[0x1354+8i], gravado pela tabela 0x583580 (0x10 FinalDriveRatio →
+  P+0x158; 0x11 e 0x12 não gravam nada). O menu de ajuste (0x3ec5d0) pelo
+  GearboxLevel: Level2 só mexe na final, Level3/Prototype nas marchas e na
+  final, Level0/1 em nada. Custom do perfil (0x20a738, GearRatioTuning):
+  marchas +4..+0x14, FinalDrive +0x1c, FrontBrakeBias +0x20.
 
 ## Motor e câmbio
 
@@ -789,6 +806,9 @@ Rodas: ponteiros em corpo+0x254 (W), curso W+0xe8, giro W+0x4c (a tag
 buggy: 21 pares (flag, ptr) em 0x11dbce0 (a.ram), matriz em linhas no
 pacote VIF apontado (rodas no mundo, peças no frame do modelo).
 `tools/ler_savestate.py` acha a câmera (vtable 0x5b3f30 em +0x68), o alvo,
-o veículo (+0x2b0 → +0xf0) e o corpo (+0x9d4). Câmbio em corpo+0x2d0 (+0x08
+o veículo (+0x2b0 → +0xf0) e o corpo (+0x9d4). Há várias câmeras de órbita
+e só a ativa atualiza: ela é a de suavização final (+0x100) ~40/s. As
+outras ficam como a introdução da corrida deixou (zoom 0.6027, 17.85/s) e
+parado podem estar mais perto do carro que a ativa. Câmbio em corpo+0x2d0 (+0x08
 marchas, +0x20 final, +0x9c embreagem máx, +0x60 rpm de subir). Motor em
 corpo+0x2ac (parâmetros; estado logo antes, com rpm e limitador).

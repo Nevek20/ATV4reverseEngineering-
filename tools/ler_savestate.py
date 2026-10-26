@@ -141,7 +141,10 @@ def main():
         print(f"[+] RAM salva em {a.dump}")
     r = Ram(m)
 
-    # câmeras de órbita: a ativa é a que está perto do alvo
+    # câmeras de órbita: só a ativa atualiza, então ela é a de suavização
+    # final mais alta (sobe 5/s até 40). As outras ficam onde a introdução da
+    # corrida deixou (zoom 0.6027 e 17.85/s nos save states parados) e às
+    # vezes mais perto do carro que a ativa. Empate: a mais perto do alvo
     cams = [x - 0x68 for x in r.achar(0x5B3F30)]
     best = None
     for c in cams:
@@ -153,9 +156,9 @@ def main():
             alvo = r.v(veh + 0xAA0)
         except struct.error:
             continue
-        d = dist(r.v(c + 0x10), alvo)
-        if best is None or d < best[0]:
-            best = (d, c, t, veh)
+        k = (round(r.f(c + 0x100), 2), -dist(r.v(c + 0x10), alvo))
+        if best is None or k > best[0]:
+            best = (k, c, t, veh)
     if not best:
         sys.exit("não achei a câmera do jogador")
     _, cam, tgt, veh = best

@@ -178,7 +178,11 @@ static func fcurve_eval(c: Dictionary, mu: float, x: float) -> float:
 ## _non_tuned até _fully_tuned (0..1). Lê a DefaultConfig do veículo
 ## (vehicles.xml, 14887) e os efeitos de cada peça (upgrades.xml, 14889).
 ## Conferido no save state do Renegade: torque 1.7626 = 0.81, massa e
-## embreagem no fully_tuned, final 1.1636 = 0.61.
+## embreagem no fully_tuned, final 1.1636 = 0.61. Relação final como o
+## 0x21d2c8: GearboxLevel_Level0/1 dão FinalDriveRatio 0.45/0.53 e
+## Level2/3/Prototype dão CustomFinalDriveRatio (= GearRatioTuning
+## FinalDrive). RAM: Inferno, Bulldog, Phantom e Buccaneer de fábrica (Level0)
+## 0.45; Renegade, Storm e Goliath 0.61.
 static func factory_tuning(veh_xml: String, upg_xml: String, veh_name: String) -> Dictionary:
 	var cfg := {}
 	var gears := {}
@@ -236,18 +240,24 @@ static func factory_tuning(veh_xml: String, upg_xml: String, veh_name: String) -
 			if fx.has(c) and fx[c].has(effect):
 				return fx[c][effect]
 		return def
+	var tem := func(effect: String) -> bool:
+		for slot in cfg:
+			var c: String = cfg[slot]
+			if fx.has(c) and fx[c].has(effect):
+				return true
+		return false
 	var g := []
 	for i in range(1, 6):
 		g.append(gears.get("Gear%d" % i, 0.5))
+	var final: float = gears.get("FinalDrive", 0.5)
+	if not tem.call("CustomFinalDriveRatio") and tem.call("FinalDriveRatio"):
+		final = clampf(sum.call("FinalDriveRatio"), 0.0, 1.0)
 	return {
 		"engine": sum.call("EngineDriveTorque"),
 		"brake": pick.call("BrakeDeceleration", 0.0),
 		"susp": pick.call("FrontSuspMaxCompression", 1.0),
 		"understeer": pick.call("UndersteerCoefficient", 0.0),
-		# relação final = a custom (GearRatioTuning FinalDrive). O FinalDriveRatio
-		# do GearboxLevel_Level0/1 (0.45/0.53) não é aplicado: no speedrun o Sphinx
-		# de fábrica troca a 38/57/75 mph, o que só bate com 0.61
-		"final": gears.get("FinalDrive", 0.5),
+		"final": final,
 		"shift": pick.call("AutoGearChangeTime", 0.0),
 		"mass": pick.call("Mass", 0.0),
 		"spring": pick.call("FrontSuspSpringRate", 0.5),

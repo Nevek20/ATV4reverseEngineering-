@@ -73,7 +73,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 :: + CAM_OFF=0.3,0.9,-4 CAM_ALVO=0,0.85,-2.6 câmera livre (frame do jogo); PICK=x,y;x,y diz
 ::   a malha, textura, UV e ponto do jogo embaixo de cada pixel do print; CULL=0 carroceria com as 2 faces
 
-:: peças da suspensão x RAM do jogo (110 matrizes, 6 buggies + Goliath), tremida e chão
+:: peças da suspensão x RAM do jogo (120 matrizes, 6 buggies + Goliath e Buccaneer), tremida e chão
 %GODOT% --headless --path . -s res://tests/teste_pecas.gd
 %GODOT% --headless --path . -s res://tests/teste_tremida.gd
 %GODOT% --headless --path . -s res://tests/teste_chao.gd
@@ -83,6 +83,7 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --headless --path . -s res://tests/teste_freio.gd   :: patinada, ABS e trava
 %GODOT% --headless --path . -s res://tests/teste_roda.gd    :: giro das rodas por torque (no ar, preso)
 %GODOT% --headless --path . -s res://tests/teste_camera_passo.gd  :: câmera de órbita sem vai e volta
+%GODOT% --headless --path . -s res://tests/teste_camera_ram.gd    :: câmera parada x RAM de 6 save states (4 buggies, 2 trucks)
 %GODOT% --headless --path . -s res://tests/teste_camera_piloto.gd :: câmera do piloto: freada, curva, FOV, borrão, mouse (números de projeto)
 %GODOT% --path . --write-movie camera.avi --fixed-fps 60 -s res://tests/gravar_camera.gd -- 0   :: prévia: acelera, freia, curva e olha pro lado (EFEITOS=0 sem efeitos)
 %GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL e save states
@@ -178,7 +179,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   parte_00_00, largada em 25 s; relógio da corrida + HUD em mph lidos quadro
   a quadro, tabela em tests/rodar_testes.py). Carro pela ficha da tela de
   opções: DIRT PREMIUM, 269.9 HP (motor 1.0), 2204 lbs (BodyMass L2),
-  embreagem L2 (troca 2->3 para 0.28 s). A 60 Hz o remake fica a 1.2 mph.
+  embreagem L2 (troca 2->3 para 0.28 s); motor 1.0 = câmbio Prototype, que
+  libera a final custom 0.61. A 60 Hz o remake fica a 1.2 mph.
 - **Renegade PAL** (gravação do Matheus no RX01, sozinho na pista, de
   fábrica = 440.6 HP; tabela em tests/teste_largada.gd) + save state
   patinando a 48.7 km/h em 1ª: 6893 rpm, roda de trás 34.09 rad/s (0x600
@@ -211,8 +213,14 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   O 15150 é o Phantom (já usamos por engano).
 - Peças de fábrica: `data/vehicles.xml` DefaultConfig + `data/upgrades.xml`
   (efeitos). Embreagem máx usa a soma das peças de MOTOR, não o Clutch_Level.
-  Relação final usa a custom (GearRatioTuning FinalDrive), não o
-  FinalDriveRatio do GearboxLevel 0/1.
+  Relação final (0x21d2c8): GearboxLevel_Level0/1 dão FinalDriveRatio
+  0.45/0.53; Level2/3/Prototype dão CustomFinalDriveRatio = a custom
+  (GearRatioTuning FinalDrive, 0.61). RAM: Inferno, Bulldog, Phantom e
+  Buccaneer de fábrica (Level0) 0.45; Renegade, Storm (Level3) e Goliath 0.61.
+  Até out/2026 o remake usava sempre a custom (achado só com carros de
+  câmbio Level3/Prototype). O Sphinx do b.p2s dá 0.61 com motor de fábrica:
+  aquele Sphinx tinha câmbio comprado. Os efeitos das peças SOMAM (cada tipo,
+  preso em 0..1); de fábrica nenhum tipo se repete fora o motor.
 - A câmera mira a ORIGEM DO MODELO (veículo +0xaa0), não o CoM.
 - Zoom -> FOV: meia-altura do frustum = 0.375/zoom (tela 4:3), KEEP_HEIGHT.
 - Blocos: nunca pela posição no unpacked. data/arquivos.tsv (índice do
@@ -229,7 +237,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   atan) com W = WHEEL_FRONT_*_VISUAL (o jogo acha o ponto pelo começo do
   nome, na ordem do arquivo); RearAxle (Axle + Rear_Arm) gira em volta do
   ARM_PIVOT até o meio das rodas de trás. Goliath (goliath_dirt_budget.p2s)
-  bate com erro 0 (docs Peças, suspension_visual.pose_truck).
+  e Buccaneer (Buccaneer_Standard.p2s) batem com erro 0 (docs Peças,
+  suspension_visual.pose_truck).
 - Modelos: o pingu2obj vira os triângulos pelas normais do jogo e o Godot
   descarta a face de trás (`MODEL_CULL`). Total de materiais do .pingu em
   0xAC (0xBC conta menos).
@@ -564,15 +573,27 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   0.55 / 0.76 = remake. O Goliath do save state tem as peças Prototype
   (motor 0.35 + 0.2 + 0.1 + 0.2, escape L3 0.1, câmbio Prototype 0.05 =
   1.0; de fábrica 0.81): com --tune engine 1.0 o remake dá embreagem
-  1.023 e torque 2.964, igual à RAM.
+  1.023 e torque 2.964, igual à RAM. O Storm do storm.p2s também (torque
+  1.764 = fully_tuned). Buccaneer de fábrica ("tudo Standard", DIRT_BUDGET):
+  massa 1.70 t, marchas 17.5/11.4/8.5/6.8/5.6, final 1.0825 (Level0),
+  embreagem 0.379, torque 1.088, CoM (0, 0.679, 0.414), curso máx 0.28/0.35
+  = remake. Câmera dos trucks = a dos buggies (FollowOrbitFar parada: 6.87 m
+  atrás e 3.0 acima no Buccaneer, 7.65/3.39 no Goliath, zoom 0.5;
+  tests/teste_camera_ram.gd).
+- Câmera do save state: só a câmera ativa atualiza. ler_savestate pegava a
+  mais perto do carro, e parado essa é uma que a introdução da corrida
+  deixou (zoom 0.6027, suavização 17.85/s em a.p2s, b.p2s, Goliath e
+  Buccaneer). A ativa é a de suavização ~40/s (corrigido out/2026).
 
 ## Pendente / ideias
 
-- Trucks: conferir física e câmera com mais save states (parado na
-  largada com a câmera assentada, Punisher acelerando e virando). No do
-  Goliath a câmera tinha trocado 1.57 s antes (suavização 17.85/s) e o
-  zoom 0.60 fica fora do FollowFar (0.36-0.46): não dá pra comparar.
+- Trucks: conferir física andando (Punisher acelerando e virando).
   Tração: car.gd REAR_DRIVE vale pra todos (conferir nos trucks).
+- Curso parado: em TODOS os carros (8 save states parados) o remake fica
+  1 a 4 cm menos comprimido que a RAM (frente ~1 cm, trás ~3 cm; Buccaneer
+  3.9 na frente, Goliath 4.2 atrás): o carro senta mais alto. Suspeita: o
+  contato pneu-chão (0x248768; o pneu afunda 0.2 a 5.8 cm parado no jogo).
+  Mexe em toda a física: investigar com rodar_testes do lado.
 
 - Pneu e aro comprados (hipótese: troca de textura, ver docs/assets.md).
 - Batida: o RX01 do remake só tem o relevo (sem paredes, cercas e pedras do
