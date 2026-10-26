@@ -561,8 +561,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   desligadas nos trucks (car.gd melhorias, main.gd) até a base ser conferida
   com save states. Goliath parado (RAM): massa 1.90 t, marchas
   21.9/14.3/10.6/8.5/7.0, final 1.1636, CoM (0, 0.85, -0.609), curso máx
-  0.55 / 0.76 = remake. Motor e embreagem da RAM = peças de motor 1.0
-  (embreagem 1.023 = fully_tuned); de fábrica o vehicles.xml dá 0.81.
+  0.55 / 0.76 = remake. O Goliath do save state tem as peças Prototype
+  (motor 0.35 + 0.2 + 0.1 + 0.2, escape L3 0.1, câmbio Prototype 0.05 =
+  1.0; de fábrica 0.81): com --tune engine 1.0 o remake dá embreagem
+  1.023 e torque 2.964, igual à RAM.
 
 ## Pendente / ideias
 
