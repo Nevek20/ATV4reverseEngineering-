@@ -596,6 +596,12 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Mexe em toda a física: investigar com rodar_testes do lado.
 
 - Pneu e aro comprados (hipótese: troca de textura, ver docs/assets.md).
+  Provável resposta: 56 rodas completas sem nome no archive dos buggies (45
+  nos trucks) = 8 pneus x 7 aros (docs/assets.md, Modelos que o jogo não usa).
+- Modelos que o jogo não usa (docs/assets.md): CHASSIS_Truck_04 (pré-runner,
+  o "Lazarus", nome escolhido pelo Matheus), CHASSIS_ATV_03..08 e os de IA
+  (quadros sem carenagem), carenagens SandStorm e WolfTrekker (só pintura),
+  CHASSIS_Bike_01/02 (motos inteiras com plásticos na malha). Buggy: nada.
 - Batida: o RX01 do remake só tem o relevo (sem paredes, cercas e pedras do
   jogo), então a tremida da batida só aparece quando o casco bate no chão.
   Trava do 0x380418 (veículo+0xa6c/0xa74/0xa78) não portada.
