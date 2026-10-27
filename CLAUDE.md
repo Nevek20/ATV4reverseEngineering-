@@ -600,8 +600,13 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   nos trucks) = 8 pneus x 7 aros (docs/assets.md, Modelos que o jogo não usa).
 - Modelos que o jogo não usa (docs/assets.md): CHASSIS_Truck_04 (pré-runner,
   o "Lazarus", nome escolhido pelo Matheus), CHASSIS_ATV_03..08 e os de IA
-  (quadros sem carenagem), carenagens SandStorm e WolfTrekker (só pintura),
+  (quadros sem carenagem), carenagens SandStorm e WolfTrekker (pinturas da
+  carenagem do ATV_04, cortadas da beta: entram como "pinturas resgatadas"),
   CHASSIS_Bike_01/02 (motos inteiras com plásticos na malha). Buggy: nada.
+  Pistas fora da lista do jogo: NAT_09 original (o NAT09 do jogo é a pasta
+  NAT_NEW), NAT_WAHOO (pista de teste), NAT_10 e RX_AI incompletas, minigames
+  MIN_02/MIN_Target/MIN_RING_OF_FIRE; o relevo delas depende do stream do
+  disco (STREAMT).
 - Batida: o RX01 do remake só tem o relevo (sem paredes, cercas e pedras do
   jogo), então a tremida da batida só aparece quando o casco bate no chão.
   Trava do 0x380418 (veículo+0xa6c/0xa74/0xa78) não portada.

@@ -118,6 +118,28 @@ carro fantasma do replay: o jogo usa.
   malha (não usam carenagem). A pintura (VehicleComposite/Bike/#...) é uma
   textura pronta só, Bike_01_Fairing / Bike_02_Fairing, que não está no
   archive: saem brancas.
+  O Matheus não reconhece nenhuma das duas (pinturas cortadas da beta):
+  entram no remake como "pinturas resgatadas", marcadas assim no menu.
+- **Pistas** (pastas Levels/ x lista de ambientes do jogo, xml 14850, e os
+  campeonatos, Track= nos xml 14840..14880):
+  - NAT_09: pista inteira (242 modelos, Env e Event como as outras) fora da
+    lista. O NAT09 do jogo é a pasta NAT_NEW (eventos NAT09_Bikes e
+    NAT09_Trucks): a NAT_09 original foi trocada.
+  - NAT_WAHOO: pista inteira (248 modelos) fora da lista. O exe só cita no
+    menu de teste (cMainMenuPlaceholderState, com "-- TEST --" e
+    "test-one-track"): pista de teste dos devs.
+  - NAT_10 (26 modelos: inacabada) e RX_AI (88 modelos; rallycross de IA?).
+  - Minigames fora da lista: MIN_02, MIN_Target (nenhum arquivo cita) e
+    MIN_RING_OF_FIRE (o jogo usa MIN_ROF_01..03).
+  - Ao contrário: SX_02 está na lista (Supercross SX02, LOCKED) mas não tem
+    pasta: pista apagada.
+  - O relevo de cada pista fica no stream do disco (STREAMT/<tipo>/<pista>.000,
+    como o RX01.000), não no archive: sem o stream dessas pistas só dá pra
+    ver os objetos.
+- Piloto: Characters/Models/Arms_POV (ARMS_POV.srd + Arms_POV.skl + 5
+  animações por classe, AtV e Bike) = braços da câmera de guidão. O exe
+  carrega ("Rider POV Skeleton/Animation/Instance", HANDLEBAR): é usado, serve
+  pra câmera de primeira pessoa do ATV.
 - Rodas: 56 pastas sem nome com roda completa (Front/RearWheel, ALLOY, TYRE)
   nos buggies e 45 nos trucks. 56 = 8 pneus x 7 aros do catálogo: devem ser
   as rodas compráveis (pendente "pneu e aro comprados"). Nome não achado.
