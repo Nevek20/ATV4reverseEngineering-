@@ -104,14 +104,20 @@ carro fantasma do replay: o jogo usa.
     arquivos cada no 4K), sem carenagem. Variações do quadro dos usados.
   - CHASSIS_AI_2STROKE / AI_4STROKE e #9731c529 (crc de "CHASSIS_Mid"): os
     mesmos quadros com nerf bar, para-choque e escape já na malha.
-  - Carenagens SandStorm e WolfTrekker: só pintura (COMPOSITOR com Base,
-    Primary, Secondary, Detail e caixa do número; xml 15074/15075) e textura
-    Generic, sem modelo próprio.
+  - Carenagens SandStorm e WolfTrekker: só pintura, sem modelo próprio. O
+    COMPOSITOR (xml 15074/15075) cita camadas Base/Primary/Secondary/Detail
+    que não existem; o que existe é a textura pronta Generic/SandStorm.bog e
+    WolfTrekker.bog (256x256, número 4 e logos já pintados: amarela/preta e
+    branca/vermelha/laranja). As 14 caixas do .bed delas batem com as do
+    FAIRING_ATV_04 (WolfTrekker até 0.03 da textura): são pinturas da
+    carenagem 04.
 - **Motos** (as 10 usam CHASSIS_Bike_2Stroke, 4Stroke ou 08 + carenagem):
   #73f00a07 = **CHASSIS_Bike_01** e #eaf95bbd = **CHASSIS_Bike_02**, nomes
   que nenhum arquivo do jogo cita. Completos em todas as resoluções (500 a
-  5K) e com pintura (VehicleComposite/Bike). Diferente das usadas: banco,
-  paralamas e plásticos vêm na própria malha (não usam carenagem).
+  5K). Diferente das usadas: banco, paralamas e plásticos vêm na própria
+  malha (não usam carenagem). A pintura (VehicleComposite/Bike/#...) é uma
+  textura pronta só, Bike_01_Fairing / Bike_02_Fairing, que não está no
+  archive: saem brancas.
 - Rodas: 56 pastas sem nome com roda completa (Front/RearWheel, ALLOY, TYRE)
   nos buggies e 45 nos trucks. 56 = 8 pneus x 7 aros do catálogo: devem ser
   as rodas compráveis (pendente "pneu e aro comprados"). Nome não achado.
