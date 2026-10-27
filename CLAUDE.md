@@ -77,6 +77,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --headless --path . -s res://tests/teste_pecas.gd
 %GODOT% --headless --path . -s res://tests/teste_tremida.gd
 %GODOT% --headless --path . -s res://tests/teste_chao.gd
+%GODOT% --headless --path . -s res://tests/teste_curso.gd    :: curso parado x RAM (8 save states, até 0.6 cm)
 %GODOT% --headless --path . -s res://tests/teste_mao.gd     :: espelho (lado das peças, esterço)
 %GODOT% --headless --path . -s res://tests/teste_tremida_camera.gd
 set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Storm na parede: velocidade da batida e tremida da câmera
@@ -306,6 +307,15 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   54%), Buggy_05_framework (treliça do Trident, 71%) e driver (7%).
   tools/alfa_texturas.py devolve o alfa delas e o car.gd vira recorte
   (_tem_alfa); as outras têm alfa cheio e não mudam.
+- Ordem da roda no passo (out/2026): o jogo faz integra (0x2484c8, com a
+  força W+0xfc do passo anterior) -> contato (0x248768) -> mola (0x248a80)
+  -> pneus, e o x que sobra no fim (RAM W+0xe8, o desenhado) é o do contato.
+  O remake integrava no FIM do passo: mesma física (o ciclo é igual), mas o
+  x guardado ficava f/m·dt² mais baixo e parecia que o carro sentava 1 a 4
+  cm mais alto (roda afundada no chão no visual, som e tremida lendo o x
+  caído). Agora car._integra_rodas roda no começo do passo. A mola já batia:
+  W+0xfc parado = peso (Buccaneer 16.68 kN, Bulldog 9.81).
+  tests/teste_curso.gd: 8 save states parados, até 0.6 cm.
 - Rodas sem escala (tamanho = modelo). Frente: centro gira com a balança em
   x/z e y = WHEEL.y + curso; trás: arco inteiro. O pneu afunda uns cm parado
   no jogo também.
@@ -589,11 +599,6 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 
 - Trucks: conferir física andando (Punisher acelerando e virando).
   Tração: car.gd REAR_DRIVE vale pra todos (conferir nos trucks).
-- Curso parado: em TODOS os carros (8 save states parados) o remake fica
-  1 a 4 cm menos comprimido que a RAM (frente ~1 cm, trás ~3 cm; Buccaneer
-  3.9 na frente, Goliath 4.2 atrás): o carro senta mais alto. Suspeita: o
-  contato pneu-chão (0x248768; o pneu afunda 0.2 a 5.8 cm parado no jogo).
-  Mexe em toda a física: investigar com rodar_testes do lado.
 
 - Pneu e aro comprados (hipótese: troca de textura, ver docs/assets.md).
   Provável resposta: 56 rodas completas sem nome no archive dos buggies (45

@@ -790,6 +790,24 @@ func _damper(w: Dictionary, v: float) -> float:
 	return w.c * VehicleData.sample(w.dc, absf(v)) * v * 1000.0
 
 
+## 0x2484c8: curso de cada roda anda com a massa dela, com a força do passo
+## anterior (no chão, a mola + amortecedor guardados em w.f). No ar a mola e
+## o amortecedor levam a roda de volta pro meio (x = 0)
+func _integra_rodas(dt: float) -> void:
+	for w in wheels:
+		var fw: float
+		if w.hit:
+			fw = -w.f
+		else:
+			var damp: float = -_damper(w, w.v)
+			var dv: float = damp / w.mw * dt
+			if absf(dv) > absf(w.v) and absf(dv) > 1e-6:
+				damp *= absf(w.v / dv)
+			fw = -_spring(w, w.x) + damp
+		w.v = clampf(w.v + fw / w.mw * dt, -w.vmax, w.vmax)
+		w.x = clampf(w.x + w.v * dt, w.min, w.max)
+
+
 ## Arquivo de pontos do modelo: "POINT 1.00", contagem em 0x10, entradas de
 ## 0x50 bytes a partir de 0x14: nome (0x00..0x20), posição x, y, z (0x20) e
 ## matriz 3x3 em linhas (0x2c, escala 0.01; o jogo usa normalizada). A linha
@@ -1465,6 +1483,12 @@ func _physics_process(dt: float) -> void:
 	# na posição atual dela ela encosta; aí o curso sobe até a superfície, a
 	# velocidade vem do carro no ponto da roda e a força sai ao longo da normal
 	# do chão, no ponto de fixação da roda.
+	# Ordem do jogo no passo: integra (0x2484c8) -> contato -> mola -> pneus.
+	# Assim o x que sobra no fim do passo (o da RAM, W+0xe8, e o desenhado) é
+	# o do contato. Integrando no fim, como o remake fazia até out/2026, o x
+	# guardado ficava f/m·dt² mais baixo (1 a 4 cm parado; tests/teste_curso.gd).
+	# A física é a mesma: o ciclo de operações não muda.
+	_integra_rodas(dt)
 	var space := get_world_3d().direct_space_state
 	var com_w := global_transform * center_of_mass
 	grounded = 0
@@ -1615,20 +1639,6 @@ func _physics_process(dt: float) -> void:
 	v_ref = v_f + a_f * dt
 	_giro_rodas(dt, v_f, rear_g)
 
-	# 0x2484c8: curso de cada roda anda com a massa dela. No ar a mola e o
-	# amortecedor levam a roda de volta pro meio (x = 0)
-	for w in wheels:
-		var fw: float
-		if w.hit:
-			fw = -w.f
-		else:
-			var damp: float = -_damper(w, w.v)
-			var dv: float = damp / w.mw * dt
-			if absf(dv) > absf(w.v) and absf(dv) > 1e-6:
-				damp *= absf(w.v / dv)
-			fw = -_spring(w, w.x) + damp
-		w.v = clampf(w.v + fw / w.mw * dt, -w.vmax, w.vmax)
-		w.x = clampf(w.x + w.v * dt, w.min, w.max)
 	if corr != Vector3.ZERO:
 		global_position += corr
 	pos_ant = global_position

@@ -130,7 +130,14 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 ## Suspensão
 
 - Classe da roda vtable 0x585cc0: +0x1c integra (0x2484c8), +0x24 contatos
-  (0x248768), +0x2c mola (0x248a80).
+  (0x248768), +0x2c mola (0x248a80). Ordem no passo: integra -> contato ->
+  mola -> pneus (0x20a0b0). O 0x2484c8 no chão usa W+0xfc (força da mola
+  do passo anterior, kN, negativa = empurra a roda pra baixo); no ar
+  (W+0x10c = 0) calcula a mola e o amortecedor ali. v += W+0xfc/massa·dt,
+  x += v·dt (presos em vmax e min/max). Por isso o x da RAM (W+0xe8) é o do
+  contato. Parado, a soma dos W+0xfc = peso (Buccaneer 16.68 kN, Bulldog
+  9.81). Campos: W+0xe8 x, +0xec min, +0xf0 max, +0xf4 v, +0xf8 vmax, +0xfc
+  força, +0x100 cos do ângulo máximo, +0x110 normal do chão.
 - F = k·curva(x/max ou x/min)·x + c·curva(|v|)·v (kN), ao longo da normal
   do chão no ponto de fixação. x < 0 com contato puxa o carro pra baixo.
 - Batente x > max = correção de posição (regra de junção 0x23f6c0,
