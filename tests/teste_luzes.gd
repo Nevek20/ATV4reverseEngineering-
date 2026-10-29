@@ -8,9 +8,6 @@ extends SceneTree
 const Car := preload("res://car.gd")
 const Main := preload("res://main.gd")
 const Luzes := preload("res://luzes.gd")
-# ponto REVERSE_LIGHT sem lâmpada no modelo: no Herbst Truggy ele fica no ar,
-# 9 cm de uma chapa escura (textura "ban", 82, 90, 98); fica sem luz de ré
-const RE_SEM_LENTE := ["TRUCK_07"]
 
 var i := -1
 var car = null
@@ -71,13 +68,11 @@ func _conferir() -> void:
 		lz.atualizar(1.0 / 60.0, 0.0, false)
 	var solto: float = lz.aceso.freio + lz.aceso.re
 	var tem_re: bool = car.points.keys().any(func(k): return String(k).begins_with("REVERSE_LIGHT"))
-	tem_re = tem_re and not (car.vehicle_id in RE_SEM_LENTE)
 	var ok_re: bool = not tem_re or (lz.faces.re >= 1 and lz.halos.re >= 1 and aceso_re > 0.99)
 	var ok: bool = ok_cor and ok_re and lz.faces.freio >= 2 and lz.halos.freio >= 2 \
 		and aceso_freando > 0.99 and solto < 0.01
 	falhas += 0 if ok else 1
 	print(linha + "  freio %3d faces %d halos  ré %s  acesa %.2f/%.2f solta %.2f  %s" % [
 		lz.faces.freio, lz.halos.freio,
-		("%2d faces %d halos" % [lz.faces.re, lz.halos.re]) if tem_re \
-			else ("(sem lente)" if car.vehicle_id in RE_SEM_LENTE else "(sem ponto)"),
+		("%2d faces %d halos" % [lz.faces.re, lz.halos.re]) if tem_re else "(sem ponto)",
 		aceso_freando, aceso_re, solto, "ok" if ok else "FALHA"])

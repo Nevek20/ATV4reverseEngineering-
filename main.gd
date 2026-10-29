@@ -76,10 +76,11 @@ const TRUCKS := [
 	{"name": "Chimera", "id": "TRUCK_12", "cams": "TruckCamSet_12", "dir": "res://assets/truck_12",
 		"data": "res://data/vehicles/truck_12.xml", "points": "res://data/vehicles/truck_12_points.bin", "base": BASE_TRUCK},
 	# bônus resgatado: a CHASSIS_Truck_04 está completa no jogo e nenhum carro
-	# usa. É a Chevrolet Silverado pre-runner, carroceria original do Jericho
+	# usa. É a Chevrolet Silverado pre-runner, carroceria original do Jericho;
+	# no remake o "Lazarus" (nome escolhido pelo Matheus)
 	# (texturas preRunnerTruck_*); física e peças do Jericho, câmera
 	# TruckCamSet_04 (tools/gerar_buggies.py BONUS)
-	{"name": "Silverado", "id": "TRUCK_04", "cams": "TruckCamSet_04", "dir": "res://assets/truck_bonus",
+	{"name": "Lazarus", "id": "TRUCK_04", "cams": "TruckCamSet_04", "dir": "res://assets/truck_bonus",
 		"data": "res://data/vehicles/truck_bonus.xml", "points": "res://data/vehicles/truck_bonus_points.bin",
 		"base": BASE_TRUCK, "bonus": true, "som": "res://som/loops/t13_silverado_chevy_53_vortec"},
 ]

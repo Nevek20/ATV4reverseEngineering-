@@ -47,7 +47,7 @@ data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peça
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, truck_NN, rodas; sfx (sons) e fx (fumaça) do jogo (fora do git)
 tests/               teste de física sem tela + rodar_testes.py
 tools/               scripts Python de extração (pingu2obj, pintura, savestate)
-som/engine_sim/      um .mr do Engine Simulator por buggy (NN_) e por truck (tNN_, t13 = Silverado), tools/gerar_motores.py
+som/engine_sim/      um .mr do Engine Simulator por buggy (NN_) e por truck (tNN_, t13 = Lazarus), tools/gerar_motores.py
 som/loops/           loops .wav de cada motor (lenta, on/off a cada 500 rpm), tools/gravar_loops.py
 re/                  engenharia reversa: scripts do Ghidra, exe_util, dumps
 docs/                engenharia_reversa.md (mapa do exe), derrapagem.md (código da derrapagem legível), assets.md, som_motor.md
@@ -98,8 +98,8 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --path . --write-movie cascalho.avi --fixed-fps 60 -s res://tests/gravar_cascalho.gd -- 0  :: derrapando no cascalho escuro: trocas Gravel/Dirt e áudio do pneu
 %GODOT% --headless --path . -s res://tests/teste_motor_treme.gd   :: peças e faces do motor que treme nos 12 carros
 %GODOT% --headless --path . -s res://tests/teste_motor_anima.gd   :: ventoinhas, polias e correia nos 12 (nada some, correia encosta)
-%GODOT% --headless --path . -s res://tests/teste_luzes.gd         :: cor do vértice nos materiais e lanterna de freio nos 12 (acende e apaga)
-%GODOT% --headless --path . -s res://tests/teste_farol.gd         :: farol: lentes achadas (Hurricane 2, Storm 6), lente e brilho, acende e apaga
+%GODOT% --headless --path . -s res://tests/teste_luzes.gd         :: cor do vértice nos materiais e lanterna de freio e ré nos 25 (acende e apaga)
+%GODOT% --headless --path . -s res://tests/teste_farol.gd         :: farol: lentes achadas (Hurricane 2, Storm 6, 4 trucks e o Lazarus), lente e brilho, acende e apaga
 :: + print_tela com FAROL=1/0 força o farol aceso/apagado
 :: + print_tela com FREIO=1/0 e RE=1/0 forçam lanterna e ré acesas/apagadas, COR_VERTICE=0 tira a cor do vértice
 %GODOT% --path . --write-movie motor.avi --fixed-fps 60 -s res://tests/gravar_motor.gd -- 7   :: prévia: lenta, 7000 e volta (CAM_OFF/CAM_ALVO)
@@ -294,6 +294,23 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   acende na largada; zera na ré pelo freio); ré = marcha -1. Ré só nos 5
   com REVERSE_LIGHT (Mosquito, Bulldog, McKenzies, Viper, Storm). Sem
   OmniLight: de dia pintava gaiola, estepe e chão de rosa.
+  Trucks (out/2026, prints do Matheus): a cópia acesa é do triângulo
+  inteiro, então o brilho agora fica no RAIO do ponto também no shader (no
+  Shockwave a seta laranja, 23 cm acima do freio, acendia junto); ponto com
+  lente de verdade (>= 20 amostras fora da pintura) não acende a PINTURA em
+  volta (o teto vermelho do Truggy acendia; Renegade e Inferno também
+  tinham um anel de pintura aceso); quem tem a lanterna PINTADA na pintura
+  (Storm, Chimera, Punisher) continua. Pontos da mesma lanterna dão um halo
+  só (HALO_JUNTA 0.25: Chimera tem 2 por lanterna). Lente acesa até
+  BRILHO_MAX 1.5 mantendo a cor (lente clara x 6 estourava pra salmão no
+  Forward+). Branco da ré até saturação 0.4-0.55 (a lente creme do
+  Shockwave não acendia). Pontos nossos (car.gd LUZES_NOSSAS, achados com o
+  print_tela PICK, que agora pula os halos): ré nas duas lanternas do
+  Shockwave e do Fireball, as lanternas grandes pintadas do Punisher
+  (vermelho, laranja, branco da ré) e a ré do Truggy nas caixinhas cinza do
+  lado das de freio (o ponto do jogo fica no ar).
+  Ferramenta de cor das lentes: o PICK do print_tela dá o ponto no frame
+  do model_root (= ponto do jogo + model_offset do car.gd).
 - Farol (melhoria nossa, car.gd FAROL, farol.gd; H no jogo liga e desliga,
   vale pra todos): mesma cara da lanterna de freio (lente acesa nos pixels
   claros com o shader do luzes.gd + brilho suave virado pra câmera). Testamos
@@ -306,7 +323,7 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   trophy_truck_light acendia dentro da cabine). Buggies: só o Hurricane (2) e
   o Storm (2 faróis + 4 milhas); no Mosquito a light_64 é a lanterna de trás.
   Trucks: Shockwave, Jericho, Goliath e Chimera (2 cada); no Shinto e no
-  Punisher a light_64 é luz de teto virada pra trás. Silverado (bônus): os 2
+  Punisher a light_64 é luz de teto virada pra trás. Lazarus (bônus): os 2
   faróis redondos da barra do para-choque (preRunnerTruck_light); os da
   grade são pintados na preRunnerTruck_front e ficam apagados.
 - Alfa: o gob_tex2png salva sem alfa (no PS2 ele muitas vezes é brilho). Nos
@@ -593,8 +610,7 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   buggy) e RallyCompMap (Chimera, igual Storm). Melhorias nossas nos trucks:
   ligadas aos poucos, cada uma conferida com print (car.gd PENDENTES_TRUCK =
   as que faltam; main.gd e print_tela põem em car.desligadas). Lote 1
-  (out/2026): luzes, farol e fumaça (o som do motor já tinha vindo). Luz de ré só onde o modelo tem lente:
-  o REVERSE_LIGHT do Herbst Truggy fica no ar, perto de uma chapa escura. Goliath parado (RAM): massa 1.90 t, marchas
+  (out/2026): luzes, farol e fumaça (o som do motor já tinha vindo). Goliath parado (RAM): massa 1.90 t, marchas
   21.9/14.3/10.6/8.5/7.0, final 1.1636, CoM (0, 0.85, -0.609), curso máx
   0.55 / 0.76 = remake. O Goliath do save state tem as peças Prototype
   (motor 0.35 + 0.2 + 0.1 + 0.2, escape L3 0.1, câmbio Prototype 0.05 =
@@ -617,7 +633,7 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   preRunnerTruck_*, gravatinha da Chevrolet na preRunnerTruck_front): a
   carroceria original do Jericho ("Pre Runner"), que no vehicles.xml ficou
   com a CHASSIS_Truck_11 (sem logo nenhum; nenhum outro carro tem marca
-  real). No remake é o "Silverado", último do menu (gerar_buggies.py BONUS,
+  real). No remake é o "Lazarus" (nome escolhido pelo Matheus), último do menu (gerar_buggies.py BONUS,
   --so 13; main.gd "bonus"): física, peças de fábrica, mapa
   (TruckCompMap_B1) e decalques do Jericho, câmera TruckCamSet_04 (o
   Jericho usa a 11). Não substitui o Jericho.
@@ -663,7 +679,7 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Trident e Viper com escape/filtro escolhidos de ouvido entre variantes.
   Zumbido ou apito num tom só = filtro mild_exhaust do engine-sim (pico em
   133 Hz), não o tamanho do tubo (som/engine_sim/LEIA-ME.md).
-  Trucks (out/2026): 13 motores (t01..t12 + t13 Silverado), carro real pelo
+  Trucks (out/2026): 13 motores (t01..t12 + t13 Lazarus, motor da Silverado), carro real pelo
   modelo 3D ou escolha nossa variando a família (docs/som_motor.md, Trucks);
   o som do motor ficou fora do car.gd PENDENTES_TRUCK (toca nos trucks); pasta pelo id (motor_som.pasta_do_carro, tNN_) ou pela
   entrada "som" do main.gd (bônus). Falta o Matheus ouvir.

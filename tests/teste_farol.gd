@@ -13,7 +13,7 @@ const Farol := preload("res://farol.gd")
 const Luzes := preload("res://luzes.gd")
 # lâmpadas por carro, pelo nome (o bônus tem o id do Jericho)
 const ESPERADO := {"Hurricane": 2, "Storm": 6,
-	"Shockwave": 2, "Jericho": 2, "Goliath": 2, "Chimera": 2, "Silverado": 2}
+	"Shockwave": 2, "Jericho": 2, "Goliath": 2, "Chimera": 2, "Lazarus": 2}
 
 var i := -1
 var car = null

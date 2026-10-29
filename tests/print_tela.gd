@@ -182,6 +182,8 @@ func _pick(px: Vector2) -> void:
 		pilha.append_array(n.get_children())
 		if not (n is MeshInstance3D) or not n.is_visible_in_tree() or n.mesh == null:
 			continue
+		if String(n.name).begins_with("Halo"):     # quadrado virado pra câmera no shader: a malha não é onde aparece
+			continue
 		var mi: MeshInstance3D = n
 		var xf := mi.global_transform
 		for s in mi.mesh.get_surface_count():

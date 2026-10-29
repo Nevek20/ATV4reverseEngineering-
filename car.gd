@@ -133,6 +133,22 @@ const ESCAPE_NOSSO := {
 	"TRUCK_12": [[Vector3(0.5535, 0.6811, -2.1867), Vector3(1.0, 0.0, 0.0)],
 		[Vector3(-0.5531, 0.6811, -2.1867), Vector3(-1.0, 0.0, 0.0)]],
 }
+# melhoria nossa: pontos de luz no lugar dos do jogo (frame do jogo; troca
+# todos os pontos que começam com o nome). Pedidos do Matheus (out/2026), lentes
+# achadas com o print_tela PICK: ré nas DUAS lanternas do Shockwave e do
+# Fireball (o jogo põe um ponto só, na direita; a esquerda é o espelho);
+# Punisher: além das 2 luzes do teto, as lanternas grandes pintadas na
+# pintura (vermelho em cima, laranja, branco da ré embaixo); Truggy: a ré do
+# jogo fica no ar (perto de uma chapa escura), as de verdade são as caixinhas
+# cinza do lado das de freio no teto (textura chassis_tri02)
+const LUZES_NOSSAS := {
+	"TRUCK_02": {"REVERSE_LIGHT": [Vector3(0.94, 1.71, -3.03), Vector3(-0.94, 1.71, -3.03)]},
+	"TRUCK_05": {"BRAKE_LIGHT": [Vector3(-0.55, 2.39, -1.00), Vector3(0.55, 2.39, -1.00),
+			Vector3(-0.98, 1.53, -3.19), Vector3(0.98, 1.53, -3.19)],
+		"REVERSE_LIGHT": [Vector3(-0.98, 1.34, -3.19), Vector3(0.98, 1.34, -3.19)]},
+	"TRUCK_07": {"REVERSE_LIGHT": [Vector3(-0.56, 2.41, -0.34), Vector3(0.52, 2.41, -0.34)]},
+	"TRUCK_10": {"REVERSE_LIGHT": [Vector3(0.99, 1.07, -3.18), Vector3(-0.99, 1.07, -3.18)]},
+}
 # motor e escape tremendo (melhoria nossa, motor_treme.gd: peças soltas da
 # carroceria no cofre do motor; vibração pela rotação e balanço pela carga)
 const MOTOR_TREME := true
@@ -712,6 +728,16 @@ func _load_physics() -> void:
 			var dx := Vector3.UP.cross(dz).normalized()
 			pts[nm] = e[k][0]
 			points_rot[nm] = Basis(dx, dz.cross(dx), dz)    # linha 2 = direção, como no _points.bin
+	for pref: String in LUZES_NOSSAS.get(vehicle_id, {}):
+		for k in pts.keys():
+			if String(k).begins_with(pref):
+				pts.erase(k)
+				points_rot.erase(k)
+		var lista: Array = LUZES_NOSSAS[vehicle_id][pref]
+		for i in lista.size():
+			var nm: String = pref if i == 0 else "%s~n%d" % [pref, i]
+			pts[nm] = lista[i]
+			points_rot[nm] = Basis()
 	points = pts
 	update_eye()
 	var wpos := {}
