@@ -24,13 +24,13 @@ func _process(_dt: float) -> bool:
 		car.free()
 		car = null
 	i += 1
-	while i < Main.frota().size() and vistos.has(Main.frota()[i].id):
+	while i < Main.frota().size() and vistos.has(Main.frota()[i].dir):
 		i += 1
 	if i >= Main.frota().size():
 		print("teste_luzes: %s" % ("ok" if falhas == 0 else "FALHA"))
 		return true
 	var v: Dictionary = Main.frota()[i]
-	vistos[v.id] = true
+	vistos[v.dir] = true   # pela pasta: a variação do Sphinx sai, o bônus (id do Jericho) entra
 	car = Car.new()
 	car.asset_dir = v.dir
 	car.data_files = Main.dados(v)

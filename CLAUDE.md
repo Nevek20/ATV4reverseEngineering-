@@ -47,7 +47,7 @@ data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peça
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, truck_NN, rodas; sfx (sons) e fx (fumaça) do jogo (fora do git)
 tests/               teste de física sem tela + rodar_testes.py
 tools/               scripts Python de extração (pingu2obj, pintura, savestate)
-som/engine_sim/      um .mr do Engine Simulator por buggy (gerados por tools/gerar_motores.py)
+som/engine_sim/      um .mr do Engine Simulator por buggy (NN_) e por truck (tNN_, t13 = Silverado), tools/gerar_motores.py
 som/loops/           loops .wav de cada motor (lenta, on/off a cada 500 rpm), tools/gravar_loops.py
 re/                  engenharia reversa: scripts do Ghidra, exe_util, dumps
 docs/                engenharia_reversa.md (mapa do exe), derrapagem.md (código da derrapagem legível), assets.md, som_motor.md
@@ -92,7 +92,7 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda, 1.16 s de derrapagem, sujeira e lama das rodas
 %GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 13 carros (0 cm) e giro do volante
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
-%GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies
+%GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies, 12 trucks e o bônus
 %GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states; material da FL x RAM
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_ladeira.gd -- 0   :: pneu parado em barranco: som não pode piscar
 %GODOT% --path . --write-movie cascalho.avi --fixed-fps 60 -s res://tests/gravar_cascalho.gd -- 0  :: derrapando no cascalho escuro: trocas Gravel/Dirt e áudio do pneu
@@ -306,7 +306,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   trophy_truck_light acendia dentro da cabine). Buggies: só o Hurricane (2) e
   o Storm (2 faróis + 4 milhas); no Mosquito a light_64 é a lanterna de trás.
   Trucks: Shockwave, Jericho, Goliath e Chimera (2 cada); no Shinto e no
-  Punisher a light_64 é luz de teto virada pra trás.
+  Punisher a light_64 é luz de teto virada pra trás. Silverado (bônus): os 2
+  faróis redondos da barra do para-choque (preRunnerTruck_light); os da
+  grade são pintados na preRunnerTruck_front e ficam apagados.
 - Alfa: o gob_tex2png salva sem alfa (no PS2 ele muitas vezes é brilho). Nos
   carros só 3 texturas têm furo de verdade: mesh_grey (redes das janelas,
   54%), Buggy_05_framework (treliça do Trident, 71%) e driver (7%).
@@ -591,7 +593,7 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   buggy) e RallyCompMap (Chimera, igual Storm). Melhorias nossas nos trucks:
   ligadas aos poucos, cada uma conferida com print (car.gd PENDENTES_TRUCK =
   as que faltam; main.gd e print_tela põem em car.desligadas). Lote 1
-  (out/2026): luzes, farol e fumaça. Luz de ré só onde o modelo tem lente:
+  (out/2026): luzes, farol e fumaça (o som do motor já tinha vindo). Luz de ré só onde o modelo tem lente:
   o REVERSE_LIGHT do Herbst Truggy fica no ar, perto de uma chapa escura. Goliath parado (RAM): massa 1.90 t, marchas
   21.9/14.3/10.6/8.5/7.0, final 1.1636, CoM (0, 0.85, -0.609), curso máx
   0.55 / 0.76 = remake. O Goliath do save state tem as peças Prototype
@@ -601,9 +603,24 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   1.764 = fully_tuned). Buccaneer de fábrica ("tudo Standard", DIRT_BUDGET):
   massa 1.70 t, marchas 17.5/11.4/8.5/6.8/5.6, final 1.0825 (Level0),
   embreagem 0.379, torque 1.088, CoM (0, 0.679, 0.414), curso máx 0.28/0.35
-  = remake. Câmera dos trucks = a dos buggies (FollowOrbitFar parada: 6.87 m
+  = remake. Pintura dos trucks: o logo é achado sem diferenciar maiúscula
+  nem espaço (o vehicles.xml pede "HERBST 1", a TruckLogos tem "Herbst  1";
+  antes os dois Herbst saíam sem o logo) e o Chassis_Truck_10.bed diz 25
+  itens com o 25º vazio (o gerar_pintura quebrava no Fireball). Assets
+  gerados dos 13 (12 + bônus) também estão no atv4-dados/cars (out/2026).
+  Câmera dos trucks = a dos buggies (FollowOrbitFar parada: 6.87 m
   atrás e 3.0 acima no Buccaneer, 7.65/3.39 no Goliath, zoom 0.5;
   tests/teste_camera_ram.gd).
+- Carro bônus resgatado (out/2026): a CHASSIS_Truck_04 está completa no
+  jogo (4K, 5K, menu, COMPOSITOR 15106 com a pintura Truck_04_*) e nenhum
+  veículo usa. É uma Chevrolet Silverado cabine dupla pre-runner (texturas
+  preRunnerTruck_*, gravatinha da Chevrolet na preRunnerTruck_front): a
+  carroceria original do Jericho ("Pre Runner"), que no vehicles.xml ficou
+  com a CHASSIS_Truck_11 (sem logo nenhum; nenhum outro carro tem marca
+  real). No remake é o "Silverado", último do menu (gerar_buggies.py BONUS,
+  --so 13; main.gd "bonus"): física, peças de fábrica, mapa
+  (TruckCompMap_B1) e decalques do Jericho, câmera TruckCamSet_04 (o
+  Jericho usa a 11). Não substitui o Jericho.
 - Câmera do save state: só a câmera ativa atualiza. ler_savestate pegava a
   mais perto do carro, e parado essa é uma que a introdução da corrida
   deixou (zoom 0.6027, suavização 17.85/s em a.p2s, b.p2s, Goliath e
@@ -646,6 +663,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Trident e Viper com escape/filtro escolhidos de ouvido entre variantes.
   Zumbido ou apito num tom só = filtro mild_exhaust do engine-sim (pico em
   133 Hz), não o tamanho do tubo (som/engine_sim/LEIA-ME.md).
+  Trucks (out/2026): 13 motores (t01..t12 + t13 Silverado), carro real pelo
+  modelo 3D ou escolha nossa variando a família (docs/som_motor.md, Trucks);
+  o som do motor ficou fora do car.gd PENDENTES_TRUCK (toca nos trucks); pasta pelo id (motor_som.pasta_do_carro, tNN_) ou pela
+  entrada "som" do main.gd (bônus). Falta o Matheus ouvir.
 - Piloto: montar a textura dele como o jogo (5 camadas por parte + cores do
   perfil; hoje usa o rider_fury pronto), LOD MID/LOW, piloto feminino.
 - Câmera do piloto: referência do Matheus = cockpit do Dirt Rally 2.0

@@ -48,6 +48,7 @@ var vehicle_name := "Renegade (Buggy)"
 # VehicleData.factory_tuning. Os valores abaixo são os do Renegade (BUGGY_10),
 # conferidos no save state: torque 0.81, final 0.61, massa e embreagem no máximo.
 var vehicle_id := "BUGGY_10"
+var som_pasta := ""            # pasta dos loops do motor, se não for a do id (o bônus)
 var tune_override := {}       # ex.: {"engine": 0.3} pra simular peças compradas
 var TUNE_ENGINE := 0.81       # Internals L3 + Management L2 + Header L2 + Intake L3 + Exhaust L3
 var TUNE_BRAKE := 0.9         # Brake_Level2
@@ -361,9 +362,10 @@ var test_input = null         # {thr, brk, steer} pra testes automáticos
 var melhorias := true
 # melhorias desligadas só neste carro (nomes de _tem). Nos trucks main.gd e
 # print_tela põem PENDENTES_TRUCK: cada uma sai daqui quando for ligada e
-# conferida neles (lote 1, out/2026: luzes, farol e fumaça)
+# conferida neles (lote 1, out/2026: luzes, farol e fumaça; o som do motor
+# veio antes, com os 13 motores dos trucks)
 var desligadas := []
-const PENDENTES_TRUCK := ["motor_treme", "motor_anima", "maos", "painel", "som_motor",
+const PENDENTES_TRUCK := ["motor_treme", "motor_anima", "maos", "painel",
 	"volante_nosso", "volante_treme", "volante_gira"]
 
 
@@ -1182,7 +1184,7 @@ func _load_sfx() -> void:
 func _load_som() -> void:
 	if not (SOM_MOTOR and _tem("som_motor")):
 		return
-	var dir: String = preload("res://motor_som.gd").pasta_do_carro(vehicle_id)
+	var dir: String = som_pasta if som_pasta != "" else preload("res://motor_som.gd").pasta_do_carro(vehicle_id)
 	if dir == "":
 		return
 	som = preload("res://motor_som.gd").new()

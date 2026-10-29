@@ -1,6 +1,6 @@
 # Motores no Engine Simulator
 
-Um `.mr` por buggy pro Engine Simulator (ATG). Cada arquivo é independente,
+Um `.mr` por buggy e por truck (t01..t13) pro Engine Simulator (ATG). Cada arquivo é independente,
 no mesmo formato do exemplo do EJ25 (termina com `run(...)` e `main()`).
 
 **Usar:** copia o conteúdo do arquivo pro `assets/main.mr` do engine-sim e
@@ -30,6 +30,43 @@ Plena carga, rpm fixa a cada 500. Engine-sim 85f7c3b (jan/2023) sem tela
 | Renegade | Cadillac Northstar 4.6 | 4565 | 1-2-7-3-4-5-6-8 | 441 | 435 @ 7000 | 700 | 865 |
 | Hurricane | GM LS7 7.0 bravo | 7011 | 1-8-7-2-6-5-4-3 | 604 | 599 @ 7000 | 800 | 970 |
 | Storm | Lancia Delta S4 1.8 (turbo de mentira) | 1759 | 1-3-4-2 | 417 | 410 @ 8000 | 1000 | 1110 |
+
+### Trucks (t01 a t13)
+
+Motor do carro real reconhecido no modelo 3D, ou escolha nossa nos trophy
+trucks sem marca (docs/som_motor.md, Trucks). Massa do buggy do .mr = a de
+fábrica do truck, pneu de 17".
+
+| truck | motor | cc | ordem | cv alvo | cv medido | lenta alvo | lenta |
+|---|---|---|---|---|---|---|---|
+| Buccaneer | AMC 4.6 stroker 6 em linha | 4517 | 1-5-3-6-2-4 | 272 | 265 @ 5000 | 700 | 699 |
+| Shockwave | Ford 4.0 SOHC V6 60° | 4009 | 1-4-2-5-3-6 | 270 | 267 @ 6000 | 750 | 734 |
+| Shinto | Chevy 350, escape único | 5733 | 1-8-4-3-6-5-7-2 | 255 | 248 @ 4500 | 650 | 667 |
+| Jericho | Ford 5.4 Triton SOHC | 5409 | 1-3-7-2-6-5-4-8 | 288 | 287 @ 4000 | 650 | 639 |
+| Punisher | Ford 351 Windsor | 5766 | 1-3-7-2-6-5-4-8 | 504 | 498 @ 6500 | 800 | 1101 |
+| Panther | Toyota 2JZ-GTE (turbo de mentira) | 2997 | 1-5-3-6-2-4 | 510 | 505 @ 7000 | 850 | 1116 |
+| Herbst Truggy | Ford 460 big-block | 7536 | 1-5-4-2-6-3-7-8 | 540 | 545 @ 6000 | 700 | 683 |
+| Herbst TT | Ford 427 Windsor | 7008 | 1-3-7-2-6-5-4-8 | 638 | 628 @ 7000 | 850 | 1067 |
+| Hammerhead | Dodge 360 Magnum | 5898 | 1-8-4-3-6-5-7-2 | 504 | 500 @ 6000 | 750 | 1036 |
+| Fireball | Ford 292 Y-block (compressor de mentira) | 4778 | 1-5-4-8-6-3-7-2 | 551 | 551 @ 5500 | 650 | 633 |
+| Goliath | Chevy 572 big-block | 9367 | 1-8-4-3-6-5-7-2 | 698 | 708 @ 6500 | 750 | 763 |
+| Chimera | Mitsubishi 6G74 3.5 V6 60° (turbo de mentira) | 3497 | 1-2-3-4-5-6 | 695 | 689 @ 7000 | 850 | 909 |
+| Silverado (bônus) | Chevy 5.3 Vortec LM7 | 5327 | 1-8-7-2-6-5-4-3 | 288 | 294 @ 4000 | 650 | 625 |
+
+- **Lenta alta de propósito** (Punisher, Panther, Herbst TT, Hammerhead):
+  comando grande, abaixo de ~1000 apagam. A placa tem margem: fechando
+  0.0001 a mais ainda não apaga (os buggies Renegade e Hurricane estavam a
+  0.00009 de apagar e o Hurricane apagou numa gravação).
+- **Motor que apaga no começo quebra a medida:** o dyno começa pela lenta;
+  se o motor apaga ali, a simulação fica torta e a potência sai 0 ou
+  aleatória (o Silverado parecia instável por isso). O ajuste mede a
+  potência com a placa aberta (0.985) e só depois acerta a lenta.
+- **Turbo/compressor de mentira:** Panther 61, Fireball 79 e Chimera 70 kJ/g
+  (normal 48). O Fireball é o Y-block com o compressor Paxton que a Ford
+  vendia de fábrica em 1957.
+- **Filtros do escape** variados pra não soarem iguais e sem o
+  mild_exhaust (zumbido): default_0, real_engine_0/1/2, sharp_0 e
+  minimal_muffling_01/02/03.
 
 ## O que vale saber
 

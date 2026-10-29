@@ -104,6 +104,8 @@ def ler_bed(d):
         q = d.index(b"\0", p)
         nome = d[p:q].decode("latin-1")
         p = q + 3
+        if nv < 3:
+            continue        # o Chassis_Truck_10.bed diz 25 itens e o 25º vem vazio
         (x0, y0), (x1, y1) = pts[0], pts[2]
         out[nome] = (x0 / BED_ESCALA, y0 / BED_ESCALA, x1 / BED_ESCALA, y1 / BED_ESCALA)
     return out
@@ -250,7 +252,10 @@ def decalques(img, s, src, veh, numero, log=print):
             tex = lay.find("LAYER[@Type='Texture']")
             path = tex.get("Path") if tex is not None else "BuggyLogos"
             logos, atlas = arq.bed(path), arq.textura(path)
-            r = next((v for k, v in (logos or {}).items() if k.upper() == nome.upper()), None)
+            # sem diferenciar maiúscula nem espaço: o vehicles.xml pede "HERBST 1" e
+            # o .bed tem "Herbst  1" (2 espaços); "JB Marketing " tem espaço no fim
+            igual = lambda a: " ".join(a.split()).upper()
+            r = next((v for k, v in (logos or {}).items() if igual(k) == igual(nome)), None)
             if r is None or atlas is None:
                 log(f"[!] {chave}: logo {nome!r} não está na {path}")
                 continue
@@ -265,14 +270,15 @@ def decalques(img, s, src, veh, numero, log=print):
             log(f"    {chave:12s} {nome:24s} {' '.join(caixas)}")
 
 
-def montar(src, veh, trocar=None, numero=NUMERO, com_decalques=True, log=print):
+def montar(src, veh, trocar=None, numero=NUMERO, com_decalques=True, log=print, chassis_=None):
     """pintura do veículo (Image RGB) ou None; trocar = {"BASE": (r, g, b)...}"""
     prefixo = re.sub(r"^BUGGY", "Buggy", veh, flags=re.I)
     if prefixo == "Buggy_12":
         prefixo = "Lancia"          # o Storm usa as texturas Lancia_*
     elif veh.upper().startswith("TRUCK"):
         # a pintura é do chassis (TRUCK_04 usa o CHASSIS_Truck_11, TRUCK_12 o Dakar)
-        prefixo = chassis(veh).replace("CHASSIS_", "") or re.sub(r"^TRUCK", "Truck", veh, flags=re.I)
+        # (o bônus do gerar_buggies passa a carroceria dele, CHASSIS_Truck_04)
+        prefixo = (chassis_ or chassis(veh)).replace("CHASSIS_", "") or re.sub(r"^TRUCK", "Truck", veh, flags=re.I)
     xml_nome, s = achar_xml(os.path.join(src, "xml"), prefixo)
     if not s:
         log(f"[!] não achei o XML da pintura de {prefixo}")
@@ -324,10 +330,11 @@ def main():
     ap.add_argument("--secondary")
     ap.add_argument("--numero", default=NUMERO)
     ap.add_argument("--sem-decalques", action="store_true")
+    ap.add_argument("--chassis", help="carroceria (trucks), se não for a do vehicles.xml")
     a = ap.parse_args()
     trocar = {k.upper(): tuple(int(x) for x in getattr(a, k).split(","))
               for k in ("base", "primary", "secondary") if getattr(a, k)}
-    img = montar(a.src, a.veh, trocar, a.numero, not a.sem_decalques)
+    img = montar(a.src, a.veh, trocar, a.numero, not a.sem_decalques, chassis_=a.chassis)
     if img is None:
         return
     os.makedirs(a.out, exist_ok=True)

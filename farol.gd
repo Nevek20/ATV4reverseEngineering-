@@ -12,14 +12,16 @@ extends Node3D
 ## dos vértices vem virada do pingu2obj): Hurricane (2) e Storm (2 faróis + 4
 ## milhas no para-choque). No Mosquito a light_64 é a lanterna de trás; os
 ## outros não têm farol no modelo. Trucks: Shockwave, Jericho, Goliath e
-## Chimera (2 cada); no Shinto e no Punisher a light_64 é luz de teto virada
+## Chimera (2 cada), Silverado nos 2 redondos do para-choque; no Shinto e no Punisher a light_64 é luz de teto virada
 ## pra trás e a cadilac_light do Fireball é lanterna.
 
 const Luzes := preload("res://luzes.gd")
 # nome da textura (minúsculo) das lentes. Trucks: a desert_jeep_style_light
 # (Shockwave) é um atlas de farol + lanterna e a trophy_truck_light (Goliath)
-# de farol + relógio; o lado vem da normal (lanterna e relógio olham pra trás)
-const LAMPADAS := ["light_64", "headlight", "desert_jeep_style_light", "trophy_truck_light"]
+# de farol + relógio, a preRunnerTruck_light (Silverado) de farol + lanterna;
+# o lado vem da normal (lanterna e relógio olham pra trás)
+const LAMPADAS := ["light_64", "headlight", "desert_jeep_style_light", "trophy_truck_light",
+	"prerunnertruck_light"]
 const FRENTE_MIN := 0.5      # lente conta como farol com a normal média nesse cone pra frente
 const JUNTA := 0.002         # m: vértices mais perto que isso ligam as faces (mesma lâmpada)
 const HALO_COR := Color(1.0, 0.95, 0.85)

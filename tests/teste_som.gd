@@ -1,5 +1,5 @@
 extends SceneTree
-## Som do motor (motor_som.gd): em cada buggy, varre o rpm do jogo com o
+## Som do motor (motor_som.gd): em cada buggy e truck (+ o bônus), varre o rpm do jogo com o
 ## acelerador solto, pela metade e todo, e confere que tocam no máximo 4 loops
 ## (2 vizinhos de cada camada), que a potência somada dá 1 (crossfade sem
 ## buraco nem estouro), que o tom fica perto de 1 nos rpm gravados e que a
@@ -21,18 +21,20 @@ func _process(_dt: float) -> bool:
 		car.free()
 		car = null
 	i += 1
-	while i < Main.VEHICLES.size() and vistos.has(Main.VEHICLES[i].id):
+	var frota: Array = Main.frota()
+	while i < frota.size() and vistos.has(frota[i].get("som", frota[i].id)):
 		i += 1
-	if i >= Main.VEHICLES.size():
+	if i >= frota.size():
 		print("teste_som: %s (%d carros, %d falhas)" % ["ok" if falhas == 0 and feitos > 0 else "FALHA", feitos, falhas])
 		return true
-	var v: Dictionary = Main.VEHICLES[i]
-	vistos[v.id] = true
+	var v: Dictionary = frota[i]
+	vistos[v.get("som", v.id)] = true
 	car = Car.new()
 	car.asset_dir = v.dir
-	car.data_files = ["res://data/vehicles/buggy_base.xml", v.data]
+	car.data_files = Main.dados(v)
 	car.points_file = v.points
 	car.vehicle_id = v.id
+	car.som_pasta = v.get("som", "")
 	car.suspension = false
 	root.add_child(car)
 	car.set_physics_process(false)
@@ -41,7 +43,7 @@ func _process(_dt: float) -> bool:
 
 
 func _conferir() -> void:
-	var v: Dictionary = Main.VEHICLES[i]
+	var v: Dictionary = Main.frota()[i]
 	var som = car.som
 	if som == null:
 		print("%-12s sem som" % v.name)

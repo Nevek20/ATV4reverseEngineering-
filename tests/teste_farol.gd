@@ -11,9 +11,9 @@ const Car := preload("res://car.gd")
 const Main := preload("res://main.gd")
 const Farol := preload("res://farol.gd")
 const Luzes := preload("res://luzes.gd")
-# lâmpadas por carro (trucks: Shockwave, Jericho, Goliath e Chimera)
-const ESPERADO := {"BUGGY_11": 2, "BUGGY_12": 6,
-	"TRUCK_02": 2, "TRUCK_04": 2, "TRUCK_11": 2, "TRUCK_12": 2}
+# lâmpadas por carro, pelo nome (o bônus tem o id do Jericho)
+const ESPERADO := {"Hurricane": 2, "Storm": 6,
+	"Shockwave": 2, "Jericho": 2, "Goliath": 2, "Chimera": 2, "Silverado": 2}
 
 var i := -1
 var car = null
@@ -28,7 +28,7 @@ func _process(_dt: float) -> bool:
 		car.free()
 		car = null
 	i += 1
-	while i < Main.frota().size() and vistos.has(Main.frota()[i].id):
+	while i < Main.frota().size() and vistos.has(Main.frota()[i].dir):
 		i += 1
 	if i >= Main.frota().size():
 		var ok := com_farol == ESPERADO.size()
@@ -37,7 +37,7 @@ func _process(_dt: float) -> bool:
 		print("teste_farol: %s" % ("ok" if falhas == 0 else "FALHA"))
 		return true
 	var v: Dictionary = Main.frota()[i]
-	vistos[v.id] = true
+	vistos[v.dir] = true   # pela pasta: a variação do Sphinx sai, o bônus (id do Jericho) entra
 	car = Car.new()
 	car.asset_dir = v.dir
 	car.data_files = Main.dados(v)
@@ -70,7 +70,7 @@ func _conferir() -> void:
 	f.atualizar(Luzes.APAGA)
 	var apagado: float = f.aceso
 	Farol.ligado = true
-	var ok: bool = f.lampadas.size() == ESPERADO.get(v.id, -1) and f.halos == f.lampadas.size() \
+	var ok: bool = f.lampadas.size() == ESPERADO.get(v.name, -1) and f.halos == f.lampadas.size() \
 		and f.faces > 0 and absf(meio - 0.5) < 1e-4 and cheio >= 1.0 and absf(meio_apaga - 0.5) < 1e-4 \
 		and apagado == 0.0 and f.lampadas.all(func(l): return l.n.z > 0.5 and l.c.z > 0.5)
 	falhas += 0 if ok else 1

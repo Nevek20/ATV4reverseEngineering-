@@ -54,6 +54,17 @@ PASTA = {4: "sphinx", 10: "renegade"}
 # trucks: nome do menu do jogo (text/15205_en.txt, TRUCK_NN)
 NOMES_TRUCK = ["Buccaneer", "Shockwave", "Shinto", "Jericho", "Punisher", "Panther",
                "Herbst Truggy", "Herbst TT", "Hammerhead", "Fireball", "Goliath", "Chimera"]
+# carro bônus (resgatado): carroceria completa no jogo (4K, 5K, menu,
+# COMPOSITOR, pintura Truck_04_*) que nenhum veículo usa. A CHASSIS_Truck_04 é
+# uma Chevrolet Silverado cabine dupla pre-runner (texturas preRunnerTruck_*,
+# gravatinha da Chevrolet na preRunnerTruck_front): a carroceria original do
+# Jericho ("Pre Runner"), que no vehicles.xml ficou com a CHASSIS_Truck_11.
+# Física, peças de fábrica, mapa e decalques = os do Jericho (TRUCK_04);
+# câmera = TruckCamSet_04, a do Jericho pelo número (ele usa a 11).
+BONUS = {
+    "truck": [{"n": 13, "base": "TRUCK_04", "chassis": "CHASSIS_Truck_04", "cams": "TruckCamSet_04",
+               "nome": "Silverado", "assets": "truck_bonus", "dados": "truck_bonus"}],
+}
 CLASSES = {
     "buggy": {"id": "BUGGY", "pasta": "Buggy", "nomes": NOMES,
               "assets": lambda n: PASTA.get(n, "buggy_%02d" % n), "dados": "buggy_%02d"},
@@ -120,10 +131,15 @@ def mapear(unpacked, classe="buggy"):
     arqs = ler_arquivos()
     k = CLASSES[classe]
     cfg = config_xml(k["id"])
+    lista = [dict(cfg["%s_%02d" % (k["id"], n)], n=n, id="%s_%02d" % (k["id"], n), nome=k["nomes"][n - 1],
+                  assets=k["assets"](n), dados=k["dados"] % n) for n in range(1, 13)]
+    for b in BONUS.get(classe, []):
+        lista.append(dict(cfg[b["base"]], n=b["n"], id=b["base"], nome=b["nome"], assets=b["assets"],
+                          dados=b["dados"], chassis=b["chassis"], cams=b["cams"], bonus=True))
     carros = []
-    for n in range(1, 13):
-        vid = "%s_%02d" % (k["id"], n)
-        c = dict(cfg[vid], n=n, id=vid, nome=k["nomes"][n - 1], pecas={}, rodas={}, faltando=[])
+    for c in lista:
+        vid = c["id"]
+        c.update(pecas={}, rodas={}, faltando=[])
         base = "Vehicles/%s/%s/Chassis/%s/" % (k["pasta"], LOD, c["chassis"])
         c["pontos"] = bloco(arqs, base + "Body.pts")
         for tipo, model, pos, _ in mapa_high(unpacked, c["mapa"]):
@@ -182,7 +198,7 @@ def main():
     ap.add_argument("unpacked")
     ap.add_argument("texturas", nargs="?")
     ap.add_argument("--assets", default=os.path.join(PROJ, "assets"))
-    ap.add_argument("--so", help="só esses carros (ex: 2,3)")
+    ap.add_argument("--so", help="só esses carros (ex: 2,3; 13 = o bônus dos trucks)")
     ap.add_argument("--tabela", action="store_true", help="só mostra os blocos")
     ap.add_argument("--classe", default="buggy", choices=sorted(CLASSES))
     a = ap.parse_args()
@@ -214,7 +230,7 @@ def main():
         if so and c["n"] not in so:
             continue
         n = c["n"]
-        out = os.path.join(a.assets, k["assets"](n))
+        out = os.path.join(a.assets, c["assets"])
         os.makedirs(out, exist_ok=True)
         vol = None
         corpo = os.path.join(a.unpacked, "other", "%d_bloco.bin" % c["pecas"]["Body"])
@@ -232,10 +248,10 @@ def main():
                 pingu(a.unpacked, a.texturas, b, rodas_dir)
                 feitas.add(b)
         subprocess.run([sys.executable, os.path.join(AQUI, "gerar_pintura.py"),
-                        a.unpacked, c["id"], out])
+                        a.unpacked, c["id"], out, "--chassis", c["chassis"]])
         pos_rodas = c.get("posicoes_roda", [])
         info = {
-            "carro": c["nome"], "id": c["id"], "chassis": c["chassis"], "mapa": c["mapa"],
+            "carro": c["nome"], "id": c["id"], "chassis": c["chassis"], "mapa": c["mapa"], "cams": c["cams"],
             "roda": c["roda"], "lod": LOD,
             "pecas": {pos: "%d_bloco.obj" % b for pos, b in c["pecas"].items()},
             "rodas": {k: "../rodas/%d_bloco.obj" % b for k, b in c["rodas"].items()},
@@ -255,9 +271,9 @@ def main():
             xml = open(os.path.join(a.unpacked, "xml", "%d_root.xml" % (15144 + n)), "rb").read()
         else:
             xml = _ler_fonte(a.unpacked, c["fisica"])
-        copiar(xml.replace(b"\r\n", b"\n"), os.path.join(dados, (k["dados"] % n) + ".xml"))
+        copiar(xml.replace(b"\r\n", b"\n"), os.path.join(dados, c["dados"] + ".xml"))
         pts = open(os.path.join(a.unpacked, "other", "%d_bloco.bin" % c["pontos"]), "rb").read()
-        copiar(pts, os.path.join(dados, (k["dados"] % n) + "_points.bin"))
+        copiar(pts, os.path.join(dados, c["dados"] + "_points.bin"))
         print("[+] %s em %s" % (c["nome"], out))
     # redes das janelas e treliça do Trident: alfa do jogo de volta (o
     # gob_tex2png salva sem alfa)
