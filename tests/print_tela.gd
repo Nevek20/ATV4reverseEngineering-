@@ -130,7 +130,8 @@ func _spawn(i: int) -> void:
 		c.FP_BACK = v.fp[1]
 		c.FP_PITCH = v.fp[2]
 	c.vehicle_name = "%s (%s)" % [v.name, v.id]
-	c.melhorias = not v.id.begins_with("TRUCK")
+	if v.id.begins_with("TRUCK"):
+		c.desligadas = Car.PENDENTES_TRUCK
 	c.terrain = main.terrain
 	main.add_child(c)
 	main.car = c

@@ -159,7 +159,8 @@ func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
 		car.FP_BACK = v.fp[1]
 		car.FP_PITCH = v.fp[2]
 	car.vehicle_name = "%s (%s)" % [v.name, v.id]
-	car.melhorias = not v.id.begins_with("TRUCK")   # trucks: só o do jogo por enquanto
+	if v.id.begins_with("TRUCK"):
+		car.desligadas = Car.PENDENTES_TRUCK   # trucks: melhorias ligadas aos poucos
 	car.terrain = terrain
 	add_child(car)
 	car.manual = manual

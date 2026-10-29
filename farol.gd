@@ -11,10 +11,15 @@ extends Node3D
 ## agrupadas pelos vértices e viradas pra frente pela normal do jogo (a ordem
 ## dos vértices vem virada do pingu2obj): Hurricane (2) e Storm (2 faróis + 4
 ## milhas no para-choque). No Mosquito a light_64 é a lanterna de trás; os
-## outros não têm farol no modelo.
+## outros não têm farol no modelo. Trucks: Shockwave, Jericho, Goliath e
+## Chimera (2 cada); no Shinto e no Punisher a light_64 é luz de teto virada
+## pra trás e a cadilac_light do Fireball é lanterna.
 
 const Luzes := preload("res://luzes.gd")
-const LAMPADAS := ["light_64", "headlight"]  # nome da textura (minúsculo) das lentes
+# nome da textura (minúsculo) das lentes. Trucks: a desert_jeep_style_light
+# (Shockwave) é um atlas de farol + lanterna e a trophy_truck_light (Goliath)
+# de farol + relógio; o lado vem da normal (lanterna e relógio olham pra trás)
+const LAMPADAS := ["light_64", "headlight", "desert_jeep_style_light", "trophy_truck_light"]
 const FRENTE_MIN := 0.5      # lente conta como farol com a normal média nesse cone pra frente
 const JUNTA := 0.002         # m: vértices mais perto que isso ligam as faces (mesma lâmpada)
 const HALO_COR := Color(1.0, 0.95, 0.85)
@@ -38,7 +43,10 @@ func montar(c) -> bool:
 	var mi: MeshInstance3D = car.body_mi
 	if mi == null or not (mi.mesh is ArrayMesh):
 		return false
-	lampadas = achar_lampadas(mi)
+	var z_min := -INF
+	if car.points.has("WHEEL_FRONT_LEFT"):
+		z_min = car.points["WHEEL_FRONT_LEFT"].z
+	lampadas = achar_lampadas(mi, z_min)
 	if lampadas.is_empty():
 		return false
 	var sh := Shader.new()
@@ -110,9 +118,10 @@ func atualizar(delta: float) -> void:
 
 
 ## faces com textura de farol, agrupadas pelas que se tocam (cada grupo é uma
-## lâmpada); fica o grupo virado pra frente. Centro e normal pela área,
-## tam = maior lado da caixa. faces = [superfície, i0, i1, i2]
-static func achar_lampadas(mi: MeshInstance3D) -> Array:
+## lâmpada); fica o grupo virado pra frente e na frente da roda dianteira
+## (z_min: no Goliath um pedaço da trophy_truck_light acende dentro da cabine).
+## Centro e normal pela área, tam = maior lado da caixa. faces = [superfície, i0, i1, i2]
+static func achar_lampadas(mi: MeshInstance3D, z_min := -INF) -> Array:
 	var tris := []                 # [v0, v1, v2, normal da face, superfície, i0, i1, i2]
 	var mesh: ArrayMesh = mi.mesh
 	for s in mesh.get_surface_count():
@@ -169,7 +178,7 @@ static func achar_lampadas(mi: MeshInstance3D) -> Array:
 		if s.a <= 0.0 or s.n.length() <= 0.0:
 			continue
 		var n: Vector3 = s.n.normalized()
-		if n.z < FRENTE_MIN:
+		if n.z < FRENTE_MIN or s.c.z / s.a < z_min:
 			continue
 		var ext: Vector3 = s.hi - s.lo
 		out.append({"c": s.c / s.a, "n": n, "tam": maxf(ext.x, maxf(ext.y, ext.z)), "faces": s.faces})

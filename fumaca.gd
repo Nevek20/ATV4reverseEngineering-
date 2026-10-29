@@ -27,13 +27,14 @@ const SAIDA := 1.0                  # m/s pra fora do cano (nosso)
 var canos: Array = []
 
 
-## monta um emissor por ponto EXHAUST/EXHAUST2 do carro (frame do corpo)
+## monta um emissor por ponto EXHAUST* do carro (frame do corpo): EXHAUST,
+## EXHAUST2 e os repetidos dos trucks (EXHAUST~1, car._load_points)
 func montar(car) -> bool:
 	if not FileAccess.file_exists(TEXTURA) and not ResourceLoader.exists(TEXTURA):
 		return false
 	var tex := _textura()
-	for nome in ["EXHAUST", "EXHAUST2"]:
-		if not car.points.has(nome):
+	for nome: String in car.points:
+		if not nome.begins_with("EXHAUST"):
 			continue
 		var p: Vector3 = car.corpo(car.points[nome])
 		var d: Vector3 = car.points_rot[nome].z * car.ESPELHO   # linha 2 da matriz, jogo -> corpo

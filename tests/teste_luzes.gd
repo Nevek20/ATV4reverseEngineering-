@@ -1,6 +1,6 @@
 extends SceneTree
 ## Lanterna de freio e luz de ré (luzes.gd, melhoria nossa) e cor do vértice
-## (car.gd COR_VERTICE) nos 12 buggies: quantas faces de lente acharam perto
+## (car.gd COR_VERTICE) nos 12 buggies e nos 12 trucks: quantas faces de lente acharam perto
 ## dos pontos BRAKE_LIGHT (vermelhas) e REVERSE_LIGHT (brancas, só nos carros
 ## que têm o ponto), se os materiais do jogo usam a cor do vértice e se as
 ## luzes acendem (freando, de ré) e apagam.
@@ -8,6 +8,9 @@ extends SceneTree
 const Car := preload("res://car.gd")
 const Main := preload("res://main.gd")
 const Luzes := preload("res://luzes.gd")
+# ponto REVERSE_LIGHT sem lâmpada no modelo: no Herbst Truggy ele fica no ar,
+# 9 cm de uma chapa escura (textura "ban", 82, 90, 98); fica sem luz de ré
+const RE_SEM_LENTE := ["TRUCK_07"]
 
 var i := -1
 var car = null
@@ -21,19 +24,21 @@ func _process(_dt: float) -> bool:
 		car.free()
 		car = null
 	i += 1
-	while i < Main.VEHICLES.size() and vistos.has(Main.VEHICLES[i].id):
+	while i < Main.frota().size() and vistos.has(Main.frota()[i].id):
 		i += 1
-	if i >= Main.VEHICLES.size():
+	if i >= Main.frota().size():
 		print("teste_luzes: %s" % ("ok" if falhas == 0 else "FALHA"))
 		return true
-	var v: Dictionary = Main.VEHICLES[i]
+	var v: Dictionary = Main.frota()[i]
 	vistos[v.id] = true
 	car = Car.new()
 	car.asset_dir = v.dir
-	car.data_files = ["res://data/vehicles/buggy_base.xml", v.data]
+	car.data_files = Main.dados(v)
 	car.points_file = v.points
 	car.vehicle_id = v.id
 	car.suspension = false
+	if v.id.begins_with("TRUCK"):
+		car.desligadas = Car.PENDENTES_TRUCK
 	root.add_child(car)
 	car.set_physics_process(false)
 	car.set_process(false)
@@ -41,7 +46,7 @@ func _process(_dt: float) -> bool:
 
 
 func _conferir() -> void:
-	var v: Dictionary = Main.VEHICLES[i]
+	var v: Dictionary = Main.frota()[i]
 	var lz = car.luzes
 	# cor do vértice ligada nos materiais da carroceria
 	var com_cor := 0
@@ -66,11 +71,13 @@ func _conferir() -> void:
 		lz.atualizar(1.0 / 60.0, 0.0, false)
 	var solto: float = lz.aceso.freio + lz.aceso.re
 	var tem_re: bool = car.points.keys().any(func(k): return String(k).begins_with("REVERSE_LIGHT"))
+	tem_re = tem_re and not (car.vehicle_id in RE_SEM_LENTE)
 	var ok_re: bool = not tem_re or (lz.faces.re >= 1 and lz.halos.re >= 1 and aceso_re > 0.99)
 	var ok: bool = ok_cor and ok_re and lz.faces.freio >= 2 and lz.halos.freio >= 2 \
 		and aceso_freando > 0.99 and solto < 0.01
 	falhas += 0 if ok else 1
 	print(linha + "  freio %3d faces %d halos  ré %s  acesa %.2f/%.2f solta %.2f  %s" % [
 		lz.faces.freio, lz.halos.freio,
-		("%2d faces %d halos" % [lz.faces.re, lz.halos.re]) if tem_re else "(sem ponto)",
+		("%2d faces %d halos" % [lz.faces.re, lz.halos.re]) if tem_re \
+			else ("(sem lente)" if car.vehicle_id in RE_SEM_LENTE else "(sem ponto)"),
 		aceso_freando, aceso_re, solto, "ok" if ok else "FALHA"])

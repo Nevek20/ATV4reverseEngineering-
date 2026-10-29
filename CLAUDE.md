@@ -298,10 +298,15 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   vale pra todos): mesma cara da lanterna de freio (lente acesa nos pixels
   claros com o shader do luzes.gd + brilho suave virado pra câmera). Testamos
   o halo do HEAD_LIGHT do jogo (brilho com raios, out/2026) e o Matheus achou
-  mais feio: não voltar. Lentes = faces com textura light_64 ou headlight,
-  agrupadas pelos vértices, viradas pra frente pela NORMAL do jogo (a ordem
-  dos vértices vem virada do pingu2obj). Só o Hurricane (2) e o Storm (2
-  faróis + 4 milhas) têm; no Mosquito a light_64 é a lanterna de trás.
+  mais feio: não voltar. Lentes = faces com textura de farol (farol.gd
+  LAMPADAS: light_64, headlight e nos trucks desert_jeep_style_light e
+  trophy_truck_light, atlas com lanterna/relógio), agrupadas pelos vértices,
+  viradas pra frente pela NORMAL do jogo (a ordem dos vértices vem virada do
+  pingu2obj) e na frente da roda dianteira (no Goliath um pedaço da
+  trophy_truck_light acendia dentro da cabine). Buggies: só o Hurricane (2) e
+  o Storm (2 faróis + 4 milhas); no Mosquito a light_64 é a lanterna de trás.
+  Trucks: Shockwave, Jericho, Goliath e Chimera (2 cada); no Shinto e no
+  Punisher a light_64 é luz de teto virada pra trás.
 - Alfa: o gob_tex2png salva sem alfa (no PS2 ele muitas vezes é brilho). Nos
   carros só 3 texturas têm furo de verdade: mesh_grey (redes das janelas,
   54%), Buggy_05_framework (treliça do Trident, 71%) e driver (7%).
@@ -480,6 +485,13 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Usamos os parâmetros do efeito; taxa de emissão e saída do cano são nossas.
   Storm não tem ponto EXHAUST no jogo: car.gd ESCAPE_NOSSO põe dois, medidos
   na boca das ponteiras cromadas do modelo (±0.57, 0.64, -2.49), 27° pra fora.
+  Trucks: os 2 canos têm o MESMO nome EXHAUST (car._load_points guarda o de
+  antes como EXHAUST~1; antes só saía fumaça de um) e 6 deles (Buccaneer,
+  Shockwave, Jericho, Truggy, TT, Goliath) têm a mesma matriz copiada; o
+  ESCAPE_NOSSO também troca os pontos do jogo quando a direção está errada
+  (Chimera: o da esquerda veio com a matriz do da direita e soltava fumaça
+  pra dentro). Nos outros a direção do jogo ficou (prints de perto: sai pra
+  fora/baixo/trás no canto do cano). Punisher e Fireball não têm ponto.
 - Motor e escape tremendo (melhoria nossa, car.gd MOTOR_TREME,
   motor_treme.gd): no jogo são parte da Body e não tremem. Separação pelas
   peças soltas da malha que cabem inteiras no cofre (atrás do banco até o
@@ -576,9 +588,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   TruckCompMap_B1/B2 (LeftFrame, RightFrame, FrontLeft/RightBrake, RearAxle
   com 2 modelos, Axle e Rear_Arm; o Rear_Arm do Shinto no 4K é vazio),
   TruckCompMap_A2 (Punisher, RearFreeAxle), BuggyCompMap_A1 (Panther, igual
-  buggy) e RallyCompMap (Chimera, igual Storm). As melhorias nossas ficam
-  desligadas nos trucks (car.gd melhorias, main.gd) até a base ser conferida
-  com save states. Goliath parado (RAM): massa 1.90 t, marchas
+  buggy) e RallyCompMap (Chimera, igual Storm). Melhorias nossas nos trucks:
+  ligadas aos poucos, cada uma conferida com print (car.gd PENDENTES_TRUCK =
+  as que faltam; main.gd e print_tela põem em car.desligadas). Lote 1
+  (out/2026): luzes, farol e fumaça. Luz de ré só onde o modelo tem lente:
+  o REVERSE_LIGHT do Herbst Truggy fica no ar, perto de uma chapa escura. Goliath parado (RAM): massa 1.90 t, marchas
   21.9/14.3/10.6/8.5/7.0, final 1.1636, CoM (0, 0.85, -0.609), curso máx
   0.55 / 0.76 = remake. O Goliath do save state tem as peças Prototype
   (motor 0.35 + 0.2 + 0.1 + 0.2, escape L3 0.1, câmbio Prototype 0.05 =

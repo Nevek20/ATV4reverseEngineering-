@@ -1,16 +1,19 @@
 extends SceneTree
 ## Farol (farol.gd, melhoria nossa no estilo da lanterna de freio) nos 12
-## buggies: quantas lâmpadas acharam pelas texturas de farol do modelo
-## (light_64, headlight), onde ficam, faces de lente e brilhos, e se acende e
-## apaga no tempo da lâmpada do freio (Luzes.ACENDE / APAGA).
-## Só o Hurricane (2 faróis) e o Storm (2 faróis + 4 milhas) têm lente de farol;
-## no Mosquito a light_64 é a lanterna de trás. Os outros ficam sem (ok).
+## buggies e nos 12 trucks: quantas lâmpadas acharam pelas texturas de farol
+## do modelo (Farol.LAMPADAS), onde ficam, faces de lente e brilhos, e se acende
+## e apaga no tempo da lâmpada do freio (Luzes.ACENDE / APAGA).
+## Buggies: só o Hurricane (2 faróis) e o Storm (2 faróis + 4 milhas) têm lente
+## de farol; no Mosquito a light_64 é a lanterna de trás. Trucks: Shockwave,
+## Jericho, Goliath e Chimera (2 cada). Os outros ficam sem (ok).
 ## Uso: godot --headless --path . -s res://tests/teste_farol.gd
 const Car := preload("res://car.gd")
 const Main := preload("res://main.gd")
 const Farol := preload("res://farol.gd")
 const Luzes := preload("res://luzes.gd")
-const ESPERADO := {"BUGGY_11": 2, "BUGGY_12": 6}   # lâmpadas por carro
+# lâmpadas por carro (trucks: Shockwave, Jericho, Goliath e Chimera)
+const ESPERADO := {"BUGGY_11": 2, "BUGGY_12": 6,
+	"TRUCK_02": 2, "TRUCK_04": 2, "TRUCK_11": 2, "TRUCK_12": 2}
 
 var i := -1
 var car = null
@@ -25,22 +28,24 @@ func _process(_dt: float) -> bool:
 		car.free()
 		car = null
 	i += 1
-	while i < Main.VEHICLES.size() and vistos.has(Main.VEHICLES[i].id):
+	while i < Main.frota().size() and vistos.has(Main.frota()[i].id):
 		i += 1
-	if i >= Main.VEHICLES.size():
+	if i >= Main.frota().size():
 		var ok := com_farol == ESPERADO.size()
 		falhas += 0 if ok else 1
 		print("carros com farol: %d (esperado %d)  %s" % [com_farol, ESPERADO.size(), "ok" if ok else "FALHA"])
 		print("teste_farol: %s" % ("ok" if falhas == 0 else "FALHA"))
 		return true
-	var v: Dictionary = Main.VEHICLES[i]
+	var v: Dictionary = Main.frota()[i]
 	vistos[v.id] = true
 	car = Car.new()
 	car.asset_dir = v.dir
-	car.data_files = ["res://data/vehicles/buggy_base.xml", v.data]
+	car.data_files = Main.dados(v)
 	car.points_file = v.points
 	car.vehicle_id = v.id
 	car.suspension = false
+	if v.id.begins_with("TRUCK"):
+		car.desligadas = Car.PENDENTES_TRUCK
 	root.add_child(car)
 	car.set_physics_process(false)
 	car.set_process(false)
@@ -48,7 +53,7 @@ func _process(_dt: float) -> bool:
 
 
 func _conferir() -> void:
-	var v: Dictionary = Main.VEHICLES[i]
+	var v: Dictionary = Main.frota()[i]
 	var f = car.farol
 	if f == null:
 		print("%-9s %-10s sem farol no modelo" % [v.id, v.name])
