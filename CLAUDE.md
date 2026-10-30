@@ -301,7 +301,7 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   volta (o teto vermelho do Truggy acendia; Renegade e Inferno também
   tinham um anel de pintura aceso); quem tem a lanterna PINTADA na pintura
   (Storm, Chimera, Punisher) continua. Pontos da mesma lanterna dão um halo
-  só (HALO_JUNTA 0.25: Chimera tem 2 por lanterna). Lente acesa até
+  só (HALO_JUNTA 0.30: Chimera tem 2 pontos por lanterna). Lente acesa até
   BRILHO_MAX 1.5 mantendo a cor (lente clara x 6 estourava pra salmão no
   Forward+). Branco da ré até saturação 0.4-0.55 (a lente creme do
   Shockwave não acendia). Pontos nossos (car.gd LUZES_NOSSAS, achados com o
@@ -313,7 +313,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Lanterna pintada com outra cor do lado (luzes.gd MASCARA_CARRO): no
   Punisher a seta laranja logo abaixo do vermelho sai pela razão
   vermelho/verde (>= 4; laranja 2.3-2.6), no Chimera só os quadrados de cima
-  pelo vermelho forte (>= 0.14 linear; os de baixo e as linhas < 0.1).
+  pelo vermelho forte (>= 0.14 linear; os de baixo e as linhas < 0.1), com
+  raio 26 cm (a cor já separa; com 18 a borda do quadrado de dentro apagava).
   Raio menor NÃO serve: acende uma bola no meio do desenho (o Matheus
   reprovou). Hammerhead: as lanternas grandes dos lados também (LUZES_NOSSAS).
   Ferramenta de cor das lentes: o PICK do print_tela dá o ponto no frame

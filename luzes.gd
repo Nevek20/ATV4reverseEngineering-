@@ -52,7 +52,7 @@ const AFASTA := 0.002         # m: cópia pra fora da face (sem brigar no z)
 const HALO_TAM := Vector2(0.10, 0.30)    # m: diâmetro = 1.6 x os pixels acesos, entre esses
 const HALO_FORCA := 0.9
 const JUNTA := 0.10           # m: pontos mais perto que isso viram um (TAIL_LIGHT x BRAKE_LIGHT)
-const HALO_JUNTA := 0.25      # m: pixels acesos de pontos mais perto que isso dão um halo só (a mesma lanterna; Chimera 0.21)
+const HALO_JUNTA := 0.30      # m: pixels acesos de pontos mais perto que isso dão um halo só (a mesma lanterna; Chimera 0.26)
 const LENTE_MIN := 20         # amostras de lente (fora da pintura) pra o ponto ignorar a pintura em volta
 # lanterna desenhada na pintura E com um pedaço de lente: a pintura acende
 # junto (Mosquito: o hexágono branco da ré é da pintura, a light_64 é o miolo)
@@ -65,11 +65,12 @@ const MAX_CENTROS := 8        # pontos por tipo no shader
 #   2.3-2.6 (o vermelho 50+): razão a partir de 4
 # - Chimera: os quadrados de cima são vermelho forte (0.4 linear), os de
 #   baixo e as linhas entre os quadrados escuros (< 0.1): vermelho a partir
-#   de 0.14; raio 18 cm pra pegar a borda de fora dos quadrados
+#   de 0.14; raio 26 cm: com 18 a borda do quadrado de dentro (perto do meio
+#   do carro, 16-18 cm do ponto) apagava em curva
 # razao / verm = as duas pontas do smoothstep (padrão 2-4 e 0.02-0.05)
 const MASCARA_CARRO := {
 	"TRUCK_05": {"freio": {"razao": Vector2(4.0, 6.0)}},
-	"TRUCK_12": {"freio": {"verm": Vector2(0.14, 0.18), "raio": 0.18}},
+	"TRUCK_12": {"freio": {"verm": Vector2(0.14, 0.18), "raio": 0.26}},
 }
 const PASSO := 0.01           # m: amostras no triângulo (grade baricêntrica), até 20 por lado
 
