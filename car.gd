@@ -100,6 +100,30 @@ const MAOS_NO_VOLANTE := true
 # gerado, redondo e centralizado (volantes.gd: um estilo por carro), no mesmo
 # centro, raio e inclinação. false = malha do jogo.
 const VOLANTE_NOSSO := true
+# melhoria nossa: volante trazido pro piloto ao longo do eixo dele (como um
+# espaçador de cubo), em m, pra mão alcançar: no Chimera o aro fica a 80 cm do
+# banco (braço 144% esticado) e no Lazarus a 71 cm (128%); nos outros 54-62 cm.
+# A câmera do piloto vem junto (o olho é medido do centro do aro). AVANCO=x
+# no ambiente testa um valor
+const AVANCO_VOLANTE := {"TRUCK_12": 0.10, "LAZARUS": 0.10}
+# melhoria nossa: piloto mais alto/pra frente que o ponto ARSE do jogo (só o
+# desenho dele; a física não usa). No Chimera o ARSE fica 15 cm mais pra trás
+# e 13 mais baixo que nos outros (em relação ao volante): só trazer o volante
+# não chegava (134%), subir mais que uns 5 cm bate o capacete no teto (75 cm
+# acima do banco). Com o banco + AVANCO_VOLANTE: Chimera 106%, Lazarus 101%
+# (teste_volante). BANCO=x,y,z no ambiente testa
+const BANCO_NOSSO := {"TRUCK_12": Vector3(0.0, 0.04, 0.20), "LAZARUS": Vector3(0.0, 0.06, 0.05)}
+# melhoria nossa: volante onde o modelo não tem (Shockwave e Punisher não têm
+# interior: o tools/volante.py não acha aro nenhum). Posto onde ele fica nos
+# outros trucks em relação ao banco (ARSE + 0.37 de altura e 0.46 pra frente,
+# média dos 9 normais; eixo e raio típicos), com uma coluna nossa até o painel
+const VOLANTE_SEM_MODELO := {
+	"TRUCK_02": {"centro": [-0.475, 1.883, 0.523], "eixo": [0.0, 0.41, -0.912], "raio": 0.185},
+	"TRUCK_05": {"centro": [-0.565, 1.706, 0.695], "eixo": [0.0, 0.41, -0.912], "raio": 0.185},
+}
+const COLUNA_RAIO := 0.025     # m (coluna nossa)
+const COLUNA_MAX := 0.6        # m: até o painel, no máximo
+var sw_coluna: MeshInstance3D
 const Volantes := preload("res://volantes.gd")
 var volante_estilo := ""      # "" = o do carro (Volantes.POR_CARRO); B no jogo troca
 var sw_malha: MeshInstance3D
@@ -212,7 +236,11 @@ const COR_K_SRGB := 255.0 / 128.0   # no albedo (sRGB) vira o COR_K do pingu2obj
 # têm (as de 2 faces já modeladas ficam, senão piscam): na pintura ("white")
 # vira FORRO (de dentro não se vê a pintura de fora espelhada), no resto a
 # mesma textura.
-const CABINE_FECHADA := ["BUGGY_12"]
+# Trucks (lote 2): olhando pro lado da câmera do piloto, Shockwave, Jericho,
+# Fireball, Goliath, Chimera e Lazarus mostravam o chão onde devia estar a
+# porta; vale pros 13 (nos abertos só aparece a chapa por dentro, que é o certo)
+const CABINE_FECHADA := ["BUGGY_12", "TRUCK_01", "TRUCK_02", "TRUCK_03", "TRUCK_04", "TRUCK_05",
+	"TRUCK_06", "TRUCK_07", "TRUCK_08", "TRUCK_09", "TRUCK_10", "TRUCK_11", "TRUCK_12", "LAZARUS"]
 const FORRO := Color(0.16, 0.16, 0.17)
 
 # O jogo é mão esquerda (x direita, y cima, z frente; esquerda do jogo = x < 0
@@ -385,10 +413,9 @@ var melhorias := true
 # melhorias desligadas só neste carro (nomes de _tem). Nos trucks main.gd e
 # print_tela põem PENDENTES_TRUCK: cada uma sai daqui quando for ligada e
 # conferida neles (lote 1, out/2026: luzes, farol e fumaça; o som do motor
-# veio antes, com os 13 motores dos trucks)
+# veio antes, com os 13 motores dos trucks; lote 2: volante e mãos)
 var desligadas := []
-const PENDENTES_TRUCK := ["motor_treme", "motor_anima", "maos", "painel",
-	"volante_nosso", "volante_treme", "volante_gira"]
+const PENDENTES_TRUCK := ["motor_treme", "motor_anima", "painel"]
 
 
 ## melhoria nossa ligada neste carro
@@ -472,6 +499,8 @@ func _load_pecas() -> void:
 	if pecas == null:
 		pecas = {}
 		return
+	if not pecas.has("volante") and VOLANTE_SEM_MODELO.has(chave()):
+		pecas["volante"] = VOLANTE_SEM_MODELO[chave()]
 	var pc: Dictionary = pecas.get("pecas", {})
 	if model_path == "" and pc.has("Body"):
 		model_path = asset_dir.path_join(pc.Body)
@@ -1013,7 +1042,7 @@ func _load_model() -> void:
 	mi.position = model_offset
 	model_root.add_child(mi)
 	body_mi = mi
-	if vehicle_id in CABINE_FECHADA:
+	if chave() in CABINE_FECHADA:
 		_face_de_dentro(mi)
 	_load_steering_wheel()
 
@@ -1094,6 +1123,11 @@ func _face_de_dentro(mi: MeshInstance3D) -> void:
 	forro.roughness = 0.9
 	forro.cull_mode = MODEL_CULL
 	for s in arrs.size():
+		# vidro (textura *window*, o Lazarus tem os vidros fechados no modelo):
+		# fica sem face de dentro, senão de dentro a janela vira parede
+		var ms := mi.get_active_material(s) as BaseMaterial3D
+		if ms and ms.albedo_texture and ms.albedo_texture.resource_path.get_file().to_lower().contains("window"):
+			continue
 		var a: Array = arrs[s].duplicate()
 		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
 		var ix := PackedInt32Array(range(vs.size()))
@@ -1152,17 +1186,39 @@ func _load_piloto() -> void:
 		piloto = null
 		return
 	piloto.name = "Piloto"
-	piloto.position = model_offset + points["ARSE"] - piloto.root_pos
+	piloto.position = model_offset + banco() - piloto.root_pos
 	model_root.add_child(piloto)
 	if MAOS_NO_VOLANTE and VOLANTE_GIRA and _tem("maos") and _tem("volante_gira") and sw_pivot:
 		var vol: Dictionary = pecas.get("volante", {})
 		# aro no frame do esqueleto (o piloto não gira em relação ao modelo)
-		piloto.prender_no_volante(sw_centro() - (points["ARSE"] - piloto.root_pos), SW_AXIS, vol.get("raio", 0.19))
+		piloto.prender_no_volante(sw_centro() - (banco() - piloto.root_pos), SW_AXIS, vol.get("raio", 0.19))
 
 
 ## centro do aro do volante que aparece (o do jogo, ou o gerado avançado)
 func sw_centro() -> Vector3:
-	return SW_CENTER + SW_AXIS.normalized() * sw_avanco
+	return SW_CENTER + SW_AXIS.normalized() * (avanco_volante() + sw_avanco)
+
+
+## chave do carro nas tabelas por carro: o vehicle_id, menos no bônus (o
+## Lazarus usa o id do Jericho, TRUCK_04, pra física e peças)
+func chave() -> String:
+	return "LAZARUS" if asset_dir.ends_with("truck_bonus") else vehicle_id
+
+
+## onde o piloto senta (frame do jogo): o ponto ARSE + BANCO_NOSSO
+func banco() -> Vector3:
+	var b: Vector3 = BANCO_NOSSO.get(chave(), Vector3.ZERO)
+	if OS.has_environment("BANCO"):
+		var p := OS.get_environment("BANCO").split(",")
+		b = Vector3(float(p[0]), float(p[1]), float(p[2]))
+	return points.get("ARSE", Vector3.ZERO) + b
+
+
+## quanto o volante vem pro piloto (AVANCO_VOLANTE), além do da coluna
+func avanco_volante() -> float:
+	if OS.has_environment("AVANCO"):
+		return float(OS.get_environment("AVANCO"))
+	return AVANCO_VOLANTE.get(chave(), 0.0)
 
 
 func _load_fumaca() -> void:
@@ -1249,7 +1305,8 @@ func _process(delta: float) -> void:
 
 func _load_steering_wheel() -> void:
 	var path := model_path.get_basename() + "_volante.obj"
-	if not ResourceLoader.exists(path):
+	var nosso := VOLANTE_NOSSO and _tem("volante_nosso")
+	if not ResourceLoader.exists(path) and not (nosso and VOLANTE_SEM_MODELO.has(chave())):
 		return
 	var vol: Dictionary = pecas.get("volante", {})
 	if vol.has("centro"):
@@ -1259,11 +1316,11 @@ func _load_steering_wheel() -> void:
 	sw_pivot.position = model_offset + SW_CENTER
 	model_root.add_child(sw_pivot)
 	var mi := MeshInstance3D.new()
-	if VOLANTE_NOSSO and _tem("volante_nosso"):
+	if nosso:
 		sw_pivot.add_child(mi)
 		sw_malha = mi
 		sw_ponta_coluna = _ponta_coluna()
-		_montar_volante(volante_estilo if volante_estilo != "" else Volantes.do_carro(vehicle_id))
+		_montar_volante(volante_estilo if volante_estilo != "" else Volantes.do_carro(chave()))
 		return
 	var mesh := load(path) as Mesh
 	if mesh == null:
@@ -1285,11 +1342,75 @@ func _load_steering_wheel() -> void:
 func _montar_volante(nome: String) -> void:
 	volante_estilo = nome
 	sw_malha.mesh = Volantes.montar(pecas.get("volante", {}).get("raio", 0.19), SW_AXIS, nome)
-	sw_avanco = maxf(0.0, sw_ponta_coluna + 0.004 + Volantes.fundo(nome))
+	sw_avanco = maxf(0.0, sw_ponta_coluna - avanco_volante() + 0.004 + Volantes.fundo(nome))
 	sw_pivot.position = model_offset + sw_centro()
+	_montar_coluna(nome)
 	if piloto and piloto.no_volante():
-		piloto.prender_no_volante(sw_centro() - (points["ARSE"] - piloto.root_pos), SW_AXIS,
+		piloto.prender_no_volante(sw_centro() - (banco() - piloto.root_pos), SW_AXIS,
 			pecas.get("volante", {}).get("raio", 0.19))
+
+
+## coluna de direção nossa, quando a do modelo não encosta no volante: o volante
+## trazido pro piloto (AVANCO_VOLANTE) ou sem volante no modelo
+## (VOLANTE_SEM_MODELO). Vai do miolo pra trás no eixo até a ponta da coluna
+## do modelo ou, sem ela, até a carroceria (raio no eixo; até COLUNA_MAX)
+func _montar_coluna(nome: String) -> void:
+	if sw_coluna:
+		sw_coluna.queue_free()
+		sw_coluna = null
+	var ate := -INF                # onde a coluna acaba, no eixo a partir do SW_CENTER (- = pro painel)
+	if VOLANTE_SEM_MODELO.has(chave()):
+		ate = -_painel_no_eixo()
+	elif avanco_volante() > 0.0 and sw_ponta_coluna > -INF:
+		ate = sw_ponta_coluna - 0.02
+	if ate == -INF:
+		return
+	var n := SW_AXIS.normalized()
+	var ini := avanco_volante() + sw_avanco - Volantes.fundo(nome)    # atrás do miolo
+	var comp := ini - ate
+	if comp <= 0.01:
+		return
+	var cil := CylinderMesh.new()
+	cil.top_radius = COLUNA_RAIO
+	cil.bottom_radius = COLUNA_RAIO
+	cil.height = comp
+	cil.radial_segments = 16
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(0.07, 0.07, 0.075)
+	m.metallic = 0.6
+	m.roughness = 0.45
+	cil.material = m
+	sw_coluna = MeshInstance3D.new()
+	sw_coluna.name = "ColunaNossa"
+	sw_coluna.mesh = cil
+	var y := n
+	var x := y.cross(Vector3.FORWARD if absf(y.z) < 0.9 else Vector3.RIGHT).normalized()
+	sw_coluna.transform = Transform3D(Basis(x, y, x.cross(y)), model_offset + SW_CENTER + n * (ate + comp * 0.5))
+	model_root.add_child(sw_coluna)
+
+
+## distância do centro do aro até a carroceria, andando pra trás no eixo
+## (o painel); COLUNA_MAX se não bater em nada
+func _painel_no_eixo() -> float:
+	var m := load(model_path) as Mesh
+	if m == null:
+		return COLUNA_MAX
+	var o := SW_CENTER
+	var d := -SW_AXIS.normalized()
+	var melhor := COLUNA_MAX
+	for si in m.get_surface_count():
+		var a := m.surface_get_arrays(si)
+		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
+		var ix := PackedInt32Array(range(vs.size()))
+		if a[Mesh.ARRAY_INDEX] != null:
+			ix = a[Mesh.ARRAY_INDEX]
+		for t in range(0, ix.size(), 3):
+			var hit = Geometry3D.ray_intersects_triangle(o, d, vs[ix[t]], vs[ix[t + 1]], vs[ix[t + 2]])
+			if hit == null:
+				hit = Geometry3D.ray_intersects_triangle(o, d, vs[ix[t]], vs[ix[t + 2]], vs[ix[t + 1]])
+			if hit != null:
+				melhor = minf(melhor, o.distance_to(hit))
+	return melhor
 
 
 ## ponta da coluna de direção na carroceria: o vértice mais pro lado do piloto
@@ -1356,7 +1477,8 @@ func update_eye() -> void:
 	var vol: Dictionary = pecas.get("volante", {})
 	if FP_VOLANTE and vol.has("centro"):
 		var c := Vector3(vol.centro[0], vol.centro[1], vol.centro[2])
-		DRIVER_EYE = c + Vector3(0.0, FP_UP, -FP_BACK)
+		var e := Vector3(vol.eixo[0], vol.eixo[1], vol.eixo[2]).normalized() if vol.has("eixo") else Vector3.ZERO
+		DRIVER_EYE = c + e * avanco_volante() + Vector3(0.0, FP_UP, -FP_BACK)
 	elif points.has("ARSE"):
 		DRIVER_EYE = points["ARSE"] + EYE_FROM_ARSE
 

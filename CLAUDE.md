@@ -90,7 +90,7 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL e save states
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
 %GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda, 1.16 s de derrapagem, sujeira e lama das rodas
-%GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 13 carros (0 cm) e giro do volante
+%GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 25 carros (0 cm) e giro do volante
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
 %GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies, 12 trucks e o bônus
 %GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states; material da FL x RAM
@@ -441,6 +441,18 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   o ajuste fica indefinido e o pulso ia 7 cm pra dentro (braço em
   zigue-zague). No volante todo a mão de fora vai perto do topo e o
   antebraço passa na frente da câmera (pendente).
+  Trucks (lote 2, out/2026): 9 dos 13 alcançam igual aos buggies (aro a
+  54-60 cm do banco, braço até 102%). Chimera (80 cm, 144%) e Lazarus (71 cm,
+  128%): o ARSE do jogo fica baixo e pra trás do volante; trazer o volante no
+  eixo dele sobe o aro e ajuda pouco (134%), subir o banco mais que ~5 cm bate
+  o capacete no teto (75 cm acima do banco no Chimera). Ficou car.gd
+  BANCO_NOSSO (só o desenho do piloto: Chimera +4 cm e 20 pra frente, Lazarus
+  +6 e 5) + AVANCO_VOLANTE (10 cm nos dois, com coluna nossa até a coluna do
+  modelo): 106% e 101%, erro 0. Shockwave e Punisher não têm interior (o
+  tools/volante.py não acha aro): VOLANTE_SEM_MODELO põe o nosso onde ele
+  fica nos outros trucks (ARSE + 0.37 de altura e 0.46 pra frente, eixo e
+  raio típicos) com coluna nossa até o painel (raio no eixo), 103%. O
+  Lazarus tem o id do Jericho: tabelas por carro usam car.chave() ("LAZARUS").
 - Câmera do piloto (melhoria nossa, camera_piloto.gd, main.gd modo 4): o
   olho fica no lugar calibrado (car.gd FP_*) e por cima vêm os efeitos de
   velocidade (referência do Matheus: The Crew Motorfest, com o olhar livre do
@@ -464,7 +476,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   FORRO cinza (de dentro não aparece a pintura de fora espelhada), no resto
   a mesma textura (a rede da janela aparece por dentro). Por fora só muda o
   que se vê pela janela. print_tela CULL=0 desliga o descarte da face de
-  trás na carroceria (diagnóstico).
+  trás na carroceria (diagnóstico). Trucks (lote 2): ligada nos 13 (olhando
+  pra porta, Shockwave, Jericho, Fireball, Goliath, Chimera e Lazarus
+  mostravam o chão; agora a chapa e a rede da janela aparecem por dentro).
+  Vidro (textura *window*: só o Lazarus tem, os vidros fechados no modelo)
+  fica sem face de dentro, senão de dentro a janela virava parede cinza.
 - Volantes gerados (melhoria nossa, car.gd VOLANTE_NOSSO, volantes.gd): o
   do jogo tem aro de 6 a 12 lados e raios tortos; 8 carros usam o mesmo X
   furado girado ~20°. No lugar vai um volante redondo e centralizado, no
@@ -475,7 +491,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Kraken, Sparco azul no Viper, Mountney no McKenzies, kart no Hurricane,
   espuma no Trident, Fusca Itamar no Mosquito; couro sobra). B no jogo troca;
   print_tela VOLANTE=nome PILOTO=0. Alisar o aro do jogo (VOLANTE_LISO)
-  quebrou no Renegade e no Bulldog: não voltar.
+  quebrou no Renegade e no Bulldog: não voltar. Trucks: estilos já
+  existentes escolhidos por nós (Volantes.POR_CARRO, TRUCK_NN e LAZARUS),
+  esperando o Matheus trocar com B.
   A coluna de direção da carroceria termina 1.1 cm atrás do aro (Renegade
   1.7, Storm 0.7 cm NA FRENTE) e atravessava o miolo recuado (dish): o
   volante avança pro piloto até a coluna acabar atrás dele (car.gd
@@ -618,7 +636,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   buggy) e RallyCompMap (Chimera, igual Storm). Melhorias nossas nos trucks:
   ligadas aos poucos, cada uma conferida com print (car.gd PENDENTES_TRUCK =
   as que faltam; main.gd e print_tela põem em car.desligadas). Lote 1
-  (out/2026): luzes, farol e fumaça (o som do motor já tinha vindo). Goliath parado (RAM): massa 1.90 t, marchas
+  (out/2026): luzes, farol e fumaça (o som do motor já tinha vindo). Lote 2:
+  volante nosso, mãos no aro, volante girando e tremendo; câmera do piloto
+  com o olho padrão dos buggies [0.36, 0.47, 0.00] em todos (main.gd "fp",
+  o Matheus ajusta com as teclas). Goliath parado (RAM): massa 1.90 t, marchas
   21.9/14.3/10.6/8.5/7.0, final 1.1636, CoM (0, 0.85, -0.609), curso máx
   0.55 / 0.76 = remake. O Goliath do save state tem as peças Prototype
   (motor 0.35 + 0.2 + 0.1 + 0.2, escape L3 0.1, câmbio Prototype 0.05 =

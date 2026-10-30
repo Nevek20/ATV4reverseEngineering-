@@ -6,7 +6,7 @@ extends SceneTree
 ## tremer; derrapando tem que tremer mais que reto.
 ## Uso: godot --headless --path . -s res://tests/teste_treme.gd -- [veiculo]
 
-const FASES := [["assenta", 1.0, 0.0, 0.0], ["parado", 1.5, 0.0, 0.0], ["reto", 6.0, 1.0, 0.0],
+const FASES := [["assenta", 2.0, 0.0, 0.0], ["parado", 1.5, 0.0, 0.0], ["reto", 6.0, 1.0, 0.0],
 	["virando", 3.0, 1.0, 1.0], ["solto", 3.0, 0.0, 0.0]]
 
 var main

@@ -197,6 +197,21 @@ const POR_CARRO := {
 	"BUGGY_10": "renegade",
 	"BUGGY_11": "kart",          # Hurricane
 	"BUGGY_12": "storm",
+	# trucks (out/2026): escolha nossa entre os estilos que já existem, um por
+	# carro (o Matheus troca com B e diz qual fica)
+	"TRUCK_01": "couro",         # Buccaneer (jipe)
+	"TRUCK_02": "bulldog",       # Shockwave
+	"TRUCK_03": "mountney",      # Shinto
+	"TRUCK_04": "sparco_azul",   # Jericho
+	"TRUCK_05": "sparco_preto",  # Punisher
+	"TRUCK_06": "buggy",         # Panther
+	"TRUCK_07": "kart",          # Herbst Truggy
+	"TRUCK_08": "espuma",        # Herbst TT
+	"TRUCK_09": "furado",        # Hammerhead
+	"TRUCK_10": "fusca",         # Fireball (picape antiga)
+	"TRUCK_11": "inferno",       # Goliath
+	"TRUCK_12": "storm",         # Chimera (rali)
+	"LAZARUS": "renegade",
 }
 
 
