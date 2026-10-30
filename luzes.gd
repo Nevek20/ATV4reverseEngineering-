@@ -59,10 +59,18 @@ const LENTE_MIN := 20         # amostras de lente (fora da pintura) pra o ponto 
 const PINTURA_E_LENTE := ["BUGGY_01"]
 const BRILHO_MAX := 1.5       # teto da lente acesa (cor x GANHO), mantendo a cor
 const MAX_CENTROS := 8        # pontos por tipo no shader
-# raio menor por carro (m), pedido do Matheus: a lanterna pintada tem a seta
-# laranja (Punisher, 11 cm abaixo do vermelho) ou os quadrados escuros de
-# baixo (Chimera, 9 cm) dentro dos 15 cm; só os quadrados vermelhos acendem
-const RAIO_CARRO := {"TRUCK_05": {"freio": 0.07}, "TRUCK_12": {"freio": 0.08}}
+# máscara do freio por carro (pedido do Matheus: acender o desenho certinho;
+# com o raio menor virava uma bola). Lanterna pintada na pintura:
+# - Punisher: a seta laranja logo abaixo do vermelho tem razão vermelho/verde
+#   2.3-2.6 (o vermelho 50+): razão a partir de 4
+# - Chimera: os quadrados de cima são vermelho forte (0.4 linear), os de
+#   baixo e as linhas entre os quadrados escuros (< 0.1): vermelho a partir
+#   de 0.14; raio 18 cm pra pegar a borda de fora dos quadrados
+# razao / verm = as duas pontas do smoothstep (padrão 2-4 e 0.02-0.05)
+const MASCARA_CARRO := {
+	"TRUCK_05": {"freio": {"razao": Vector2(4.0, 6.0)}},
+	"TRUCK_12": {"freio": {"verm": Vector2(0.14, 0.18), "raio": 0.18}},
+}
 const PASSO := 0.01           # m: amostras no triângulo (grade baricêntrica), até 20 por lado
 
 # máscara da cor da luz (a mesma conta no shader e em _mascara). Branco da ré
@@ -72,7 +80,7 @@ float mascara(vec3 c, int qual) {
 	float mx = max(c.r, max(c.g, c.b));
 	float mn = min(c.r, min(c.g, c.b));
 	if (qual == 0) {
-		return smoothstep(2.0, 4.0, c.r / max(max(c.g, c.b), 1e-4)) * smoothstep(0.02, 0.05, c.r);
+		return smoothstep(razao.x, razao.y, c.r / max(max(c.g, c.b), 1e-4)) * smoothstep(verm.x, verm.y, c.r);
 	}
 	float sat = (mx - mn) / max(mx, 1e-4);
 	return smoothstep(0.15, 0.30, mx) * (1.0 - smoothstep(0.40, 0.55, sat));
@@ -90,6 +98,8 @@ uniform float afasta = 0.002;
 uniform float cor_k = 0.0;
 uniform vec3 miolo = vec3(0.45, 0.10, 0.06);
 uniform int modo = 0;            // 0 vermelho (freio), 1 branco (ré)
+uniform vec2 razao = vec2(2.0, 4.0);   // vermelho / (verde ou azul), MASCARA_CARRO
+uniform vec2 verm = vec2(0.02, 0.05);  // vermelho mínimo (linear)
 uniform float brilho_max = 100.0;
 uniform vec3 centros[8];         // pontos da luz (frame do modelo); n_centros 0 = sem raio (farol)
 uniform int n_centros = 0;
@@ -178,7 +188,10 @@ func montar(c) -> bool:
 
 func _montar_tipo(mi: MeshInstance3D, tipo: String, sh: Shader, sh_halo: Shader) -> void:
 	var def: Dictionary = TIPOS[tipo].duplicate()
-	def.raio = RAIO_CARRO.get(car.vehicle_id, {}).get(tipo, def.raio)
+	var aj: Dictionary = MASCARA_CARRO.get(car.vehicle_id, {}).get(tipo, {})
+	def.raio = aj.get("raio", def.raio)
+	var razao: Vector2 = aj.get("razao", Vector2(2.0, 4.0))
+	var verm: Vector2 = aj.get("verm", Vector2(0.02, 0.05))
 	var pts: Array[Vector3] = []
 	for k in car.points:
 		for p in def.pontos:
@@ -242,7 +255,7 @@ func _montar_tipo(mi: MeshInstance3D, tipo: String, sh: Shader, sh_halo: Shader)
 					if cols != null and k_cor > 0.0:
 						var cv: Color = (cols[i[0]] * b.x + cols[i[1]] * b.y + cols[i[2]] * b.z).srgb_to_linear()
 						cor = Color(cor.r * cv.r * k_cor, cor.g * cv.g * k_cor, cor.b * cv.b * k_cor)
-					if _mascara(cor, modo) > 0.5:
+					if _mascara(cor, modo, razao, verm) > 0.5:
 						acesas.append([p, perto])
 						if not pintura:
 							lente[perto] += 1
@@ -292,6 +305,8 @@ func _montar_tipo(mi: MeshInstance3D, tipo: String, sh: Shader, sh_halo: Shader)
 		mat.set_shader_parameter("centros", centros)
 		mat.set_shader_parameter("n_centros", centros.size())
 		mat.set_shader_parameter("raio", def.raio)
+		mat.set_shader_parameter("razao", razao)
+		mat.set_shader_parameter("verm", verm)
 		var mio: Color = def.miolo
 		mat.set_shader_parameter("miolo", Vector3(mio.r, mio.g, mio.b))
 		malha.surface_set_material(malha.get_surface_count() - 1, mat)
@@ -385,10 +400,10 @@ static func _amostra(img: Image, uv: Vector2) -> Color:
 
 
 ## a máscara do shader (GLSL_MASCARA) na CPU
-static func _mascara(c: Color, qual: int) -> float:
+static func _mascara(c: Color, qual: int, razao := Vector2(2.0, 4.0), verm := Vector2(0.02, 0.05)) -> float:
 	var mx := maxf(c.r, maxf(c.g, c.b))
 	var mn := minf(c.r, minf(c.g, c.b))
 	if qual == 0:
-		return smoothstep(2.0, 4.0, c.r / maxf(maxf(c.g, c.b), 1e-4)) * smoothstep(0.02, 0.05, c.r)
+		return smoothstep(razao.x, razao.y, c.r / maxf(maxf(c.g, c.b), 1e-4)) * smoothstep(verm.x, verm.y, c.r)
 	var sat := (mx - mn) / maxf(mx, 1e-4)
 	return smoothstep(0.15, 0.30, mx) * (1.0 - smoothstep(0.40, 0.55, sat))

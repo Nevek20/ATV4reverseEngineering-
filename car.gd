@@ -140,7 +140,8 @@ const ESCAPE_NOSSO := {
 # Punisher: além das 2 luzes do teto, as lanternas grandes pintadas na
 # pintura (vermelho em cima, laranja, branco da ré embaixo); Truggy: a ré do
 # jogo fica no ar (perto de uma chapa escura), as de verdade são as caixinhas
-# cinza do lado das de freio no teto (textura chassis_tri02)
+# cinza do lado das de freio no teto (textura chassis_tri02); Hammerhead:
+# as lanternas grandes dos lados (pedido dele)
 const LUZES_NOSSAS := {
 	"TRUCK_02": {"REVERSE_LIGHT": [Vector3(0.94, 1.71, -3.03), Vector3(-0.94, 1.71, -3.03)]},
 	"TRUCK_05": {"BRAKE_LIGHT": [Vector3(-0.55, 2.39, -1.00), Vector3(0.55, 2.39, -1.00),
@@ -148,6 +149,11 @@ const LUZES_NOSSAS := {
 		"REVERSE_LIGHT": [Vector3(-0.98, 1.34, -3.19), Vector3(0.98, 1.34, -3.19)]},
 	"TRUCK_07": {"REVERSE_LIGHT": [Vector3(-0.56, 2.41, -0.34), Vector3(0.52, 2.41, -0.34)]},
 	"TRUCK_10": {"REVERSE_LIGHT": [Vector3(0.99, 1.07, -3.18), Vector3(-0.99, 1.07, -3.18)]},
+	# Hammerhead: além das 2 do teto, as lanternas grandes dos lados (2 bolhas
+	# vermelhas cada, chassis_tri02), achadas com o PICK
+	"TRUCK_09": {"BRAKE_LIGHT": [Vector3(-0.56, 2.13, -0.88), Vector3(0.62, 2.13, -0.88),
+			Vector3(-0.95, 1.39, -3.19), Vector3(0.95, 1.39, -3.19),
+			Vector3(-0.95, 1.19, -3.23), Vector3(0.95, 1.19, -3.23)]},
 }
 # motor e escape tremendo (melhoria nossa, motor_treme.gd: peças soltas da
 # carroceria no cofre do motor; vibração pela rotação e balanço pela carga)

@@ -306,12 +306,16 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Forward+). Branco da ré até saturação 0.4-0.55 (a lente creme do
   Shockwave não acendia). Pontos nossos (car.gd LUZES_NOSSAS, achados com o
   print_tela PICK, que agora pula os halos): ré nas duas lanternas do
-  Shockwave e do Fireball, as lanternas grandes pintadas do Punisher
+  Shockwave e do Fireball, as lanternas grandes pintadas do Punisher e as
+  bolhas dos lados do Hammerhead
   (vermelho, laranja, branco da ré) e a ré do Truggy nas caixinhas cinza do
   lado das de freio (o ponto do jogo fica no ar).
-  Raio do freio menor no Punisher (7 cm) e no Chimera (8 cm), luzes.gd
-  RAIO_CARRO: a lanterna pintada tem a seta laranja / os quadrados escuros
-  de baixo dentro dos 15 cm.
+  Lanterna pintada com outra cor do lado (luzes.gd MASCARA_CARRO): no
+  Punisher a seta laranja logo abaixo do vermelho sai pela razão
+  vermelho/verde (>= 4; laranja 2.3-2.6), no Chimera só os quadrados de cima
+  pelo vermelho forte (>= 0.14 linear; os de baixo e as linhas < 0.1).
+  Raio menor NÃO serve: acende uma bola no meio do desenho (o Matheus
+  reprovou). Hammerhead: as lanternas grandes dos lados também (LUZES_NOSSAS).
   Ferramenta de cor das lentes: o PICK do print_tela dá o ponto no frame
   do model_root (= ponto do jogo + model_offset do car.gd).
 - Farol (melhoria nossa, car.gd FAROL, farol.gd; H no jogo liga e desliga,
