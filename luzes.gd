@@ -59,6 +59,10 @@ const LENTE_MIN := 20         # amostras de lente (fora da pintura) pra o ponto 
 const PINTURA_E_LENTE := ["BUGGY_01"]
 const BRILHO_MAX := 1.5       # teto da lente acesa (cor x GANHO), mantendo a cor
 const MAX_CENTROS := 8        # pontos por tipo no shader
+# raio menor por carro (m), pedido do Matheus: a lanterna pintada tem a seta
+# laranja (Punisher, 11 cm abaixo do vermelho) ou os quadrados escuros de
+# baixo (Chimera, 9 cm) dentro dos 15 cm; só os quadrados vermelhos acendem
+const RAIO_CARRO := {"TRUCK_05": {"freio": 0.07}, "TRUCK_12": {"freio": 0.08}}
 const PASSO := 0.01           # m: amostras no triângulo (grade baricêntrica), até 20 por lado
 
 # máscara da cor da luz (a mesma conta no shader e em _mascara). Branco da ré
@@ -173,7 +177,8 @@ func montar(c) -> bool:
 
 
 func _montar_tipo(mi: MeshInstance3D, tipo: String, sh: Shader, sh_halo: Shader) -> void:
-	var def: Dictionary = TIPOS[tipo]
+	var def: Dictionary = TIPOS[tipo].duplicate()
+	def.raio = RAIO_CARRO.get(car.vehicle_id, {}).get(tipo, def.raio)
 	var pts: Array[Vector3] = []
 	for k in car.points:
 		for p in def.pontos:

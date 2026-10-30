@@ -309,6 +309,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Shockwave e do Fireball, as lanternas grandes pintadas do Punisher
   (vermelho, laranja, branco da ré) e a ré do Truggy nas caixinhas cinza do
   lado das de freio (o ponto do jogo fica no ar).
+  Raio do freio menor no Punisher (7 cm) e no Chimera (8 cm), luzes.gd
+  RAIO_CARRO: a lanterna pintada tem a seta laranja / os quadrados escuros
+  de baixo dentro dos 15 cm.
   Ferramenta de cor das lentes: o PICK do print_tela dá o ponto no frame
   do model_root (= ponto do jogo + model_offset do car.gd).
 - Farol (melhoria nossa, car.gd FAROL, farol.gd; H no jogo liga e desliga,
