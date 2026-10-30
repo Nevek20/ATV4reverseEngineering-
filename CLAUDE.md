@@ -306,10 +306,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Forward+). Branco da ré até saturação 0.4-0.55 (a lente creme do
   Shockwave não acendia). Pontos nossos (car.gd LUZES_NOSSAS, achados com o
   print_tela PICK, que agora pula os halos): ré nas duas lanternas do
-  Shockwave e do Fireball, as lanternas grandes pintadas do Punisher e as
-  bolhas dos lados do Hammerhead
-  (vermelho, laranja, branco da ré) e a ré do Truggy nas caixinhas cinza do
-  lado das de freio (o ponto do jogo fica no ar).
+  Shockwave e do Fireball, as lanternas grandes pintadas do Punisher
+  (vermelho, laranja, branco da ré), as bolhas dos lados do Hammerhead e a
+  ré do Truggy nas caixinhas cinza do lado das de freio (o ponto do jogo
+  fica no ar).
   Lanterna pintada com outra cor do lado (luzes.gd MASCARA_CARRO): no
   Punisher a seta laranja logo abaixo do vermelho sai pela razão
   vermelho/verde (>= 4; laranja 2.3-2.6), no Chimera só os quadrados de cima
