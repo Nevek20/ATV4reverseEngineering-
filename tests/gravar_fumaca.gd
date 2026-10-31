@@ -23,15 +23,25 @@ func _initialize() -> void:
 	var a := OS.get_cmdline_user_args()
 	if a.size() > 0:
 		veh = int(a[0])
-	dur = float(OS.get_environment("DUR")) if OS.has_environment("DUR") else 6.0
-	if OS.has_environment("CAM") and OS.get_environment("CAM") != "jogo":
-		var p := OS.get_environment("CAM").split(",")
+	dur = float(_env("DUR")) if _env("DUR") != "" else 6.0
+	var p := _env("CAM").split(",")
+	if p.size() == 3:
 		off = Vector3(float(p[0]), float(p[1]), float(p[2]))
+	elif _env("CAM") not in ["", "jogo"]:
+		push_error("CAM: x,y,z ou jogo (veio '%s')" % _env("CAM"))
 	main = load("res://main.tscn").instantiate()
 	root.add_child(main)
 
 
+## variável de ambiente sem espaço nas pontas: no cmd do Windows
+## "set CAM=jogo & ..." guarda "jogo " (com o espaço antes do &)
+static func _env(nome: String) -> String:
+	return OS.get_environment(nome).strip_edges()
+
+
 func _process(dt: float) -> bool:
+	if main == null:
+		return true
 	if not pronto:
 		if main.car == null:
 			return false
@@ -44,11 +54,11 @@ func _process(dt: float) -> bool:
 			if String(k).begins_with("EXHAUST"):
 				cano = car.corpo(car.points[k])
 				break
-		if OS.has_environment("VEL0"):      # VEL0=80: já começa andando (km/h)
-			car.linear_velocity = car.forward() * float(OS.get_environment("VEL0")) / 3.6
+		if _env("VEL0") != "":              # VEL0=80: já começa andando (km/h)
+			car.linear_velocity = car.forward() * float(_env("VEL0")) / 3.6
 			car.test_input = {"thr": 1.0, "brk": 0.0, "steer": 0.0}
 		pronto = true
-		if OS.get_environment("CAM") == "jogo":     # CAM=jogo: câmera de corrida do main
+		if _env("CAM") == "jogo":           # CAM=jogo: câmera de corrida do main
 			return false
 		cam = Camera3D.new()
 		cam.fov = 50.0
@@ -61,8 +71,8 @@ func _process(dt: float) -> bool:
 	if car.luzes:
 		car.luzes.visible = false       # a lanterna de freio acesa parado parecia fumaça vermelha
 	t += dt
-	var acel := OS.get_environment("ACEL") != "0"
-	var ja := OS.has_environment("VEL0")
+	var acel := _env("ACEL") != "0"
+	var ja := _env("VEL0") != ""
 	car.test_input = {"thr": 1.0 if acel and (ja or t > 1.0) else 0.0, "brk": 0.0, "steer": 0.0}
 	if cam == null:
 		return t > dur

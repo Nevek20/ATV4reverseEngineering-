@@ -136,7 +136,7 @@ func _processo() -> ParticleProcessMaterial:
 	m.gravity = Vector3.ZERO
 	m.angle_min = 0.0
 	m.angle_max = 180.0
-	m.color = COR if OS.get_environment("FUMACA_COR") != "1" else Color(1, 0, 0, 1)   # conferência: vermelha
+	m.color = COR if OS.get_environment("FUMACA_COR").strip_edges() != "1" else Color(1, 0, 0, 1)   # conferência: vermelha
 	var g := Gradient.new()
 	g.set_color(0, Color(1, 1, 1, 1))
 	g.set_color(1, Color(1, 1, 1, 0))
