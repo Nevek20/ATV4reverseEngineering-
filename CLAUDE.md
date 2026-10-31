@@ -709,6 +709,15 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   desce) e cada roda sobe sozinha (WHEEL + x); LeftFrame/RightFrame giram
   tan(x/W.x) com a roda subindo reto. No curso máximo a roda de trás do
   Fireball fica 50 cm abaixo do fundo do casco (o batente 0x23f6c0 segura).
+  Melhoria nossa (pedido do Matheus, out/2026; car.gd "eixo_rigido",
+  suspension_visual.pose_truck(inclina)): o eixo de trás (RearAxle e
+  RearFreeAxle) também inclina pra ligar os 2 cubos, girando em volta da
+  linha ARM_PIVOT -> meio do eixo (phi = atan(s / u.z), s = dy/dx entre as
+  rodas), e as rodas de trás inclinam junto (só giram no lugar: o centro é o
+  da física). A frente ficou como o jogo: o tan do braço fica a ~2° da conta
+  exata. O teste_pecas usa a fórmula do jogo (inclina = false).
+  print_tela CURSO=TEmax/TDmin força curso por roda; DESLIGAR=eixo_rigido
+  mostra o do jogo.
 - Câmera do save state: só a câmera ativa atualiza. ler_savestate pegava a
   mais perto do carro, e parado essa é uma que a introdução da corrida
   deixou (zoom 0.6027, suavização 17.85/s em a.p2s, b.p2s, Goliath e
@@ -725,8 +734,6 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   abaixo do chão e o raio começa enterrado (Fireball de lado no
   teste_de_lado: roda 1.2 m no chão). Falta ver no jogo (save state de lado e
   capotado) se lá acontece igual antes de mexer.
-- Suspensão dos trucks com curso grande (eixo de trás sem inclinar, braços
-  da frente) segue o exe; endireitar seria melhoria nossa (perguntar).
 - Trucks: conferir física andando (Punisher acelerando e virando).
   Tração: car.gd REAR_DRIVE vale pra todos (conferir nos trucks).
 

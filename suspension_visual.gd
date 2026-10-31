@@ -33,6 +33,10 @@ extends Node3D
 ##   quando o AXLE_ANCHOR está abaixo do meio).
 ##   RearFreeAxle (0x21ee00): sem giro, sobe a média do curso de trás.
 ##   As rodas desses mapas são as do rally (WHEEL + x).
+##   Melhoria nossa (car.gd "eixo_rigido"): com uma roda de trás subindo e a
+##   outra descendo o eixo do jogo fica reto e as rodas soltam das pontas;
+##   aqui ele inclina pra ligar os 2 cubos e as rodas de trás inclinam junto.
+##   Só o desenho: o centro das rodas continua o da física.
 ## O curso usado em tudo isso já tem a tremida das rodas no chão (car.gd,
 ## 0x202760), então balança, cubo, freio e amortecedor tremem juntos.
 ##
@@ -139,8 +143,9 @@ func _build_truck(pts: Dictionary, dir: String, pecas: Dictionary) -> void:
 		truck.RearAxle = {"mis": axle, "a0": Vector3(0.0, ap.y, ap.z), "ancora": pts["AXLE_ANCHOR"],
 			"wl": pts["WHEEL_REAR_LEFT"], "wr": pts["WHEEL_REAR_RIGHT"], "rodas": traseiras}
 	var livre := _part(dir, pecas.get("RearFreeAxle", ""))
-	if livre:
-		truck.RearFreeAxle = {"mi": livre, "rodas": traseiras}
+	if livre and pts.has("WHEEL_REAR_LEFT") and pts.has("WHEEL_REAR_RIGHT"):
+		truck.RearFreeAxle = {"mi": livre, "rodas": traseiras,
+			"wl": pts["WHEEL_REAR_LEFT"], "wr": pts["WHEEL_REAR_RIGHT"]}
 
 
 ## ponto pelo começo do nome, na ordem do arquivo (o jogo enche a tabela de
@@ -153,8 +158,10 @@ static func _ponto(pts: Dictionary, nome: String):
 
 
 ## matrizes das peças dos trucks pros cursos x (FL, FR, RL, RR) e o esterço do
-## jogo. Separado do update pro teste comparar com a RAM
-func pose_truck(x: Dictionary, steer: float) -> Dictionary:
+## jogo. Separado do update pro teste comparar com a RAM. inclina = melhoria
+## nossa (car.gd "eixo_rigido"): o eixo de trás também inclina pra ligar as
+## 2 rodas (o jogo só sobe ele pela média e a roda soltava da ponta)
+func pose_truck(x: Dictionary, steer: float, inclina := false) -> Dictionary:
 	var out := {}
 	for nome in ["LeftFrame", "RightFrame"]:
 		if truck.has(nome):
@@ -176,9 +183,32 @@ func pose_truck(x: Dictionary, steer: float) -> Dictionary:
 		if t.ancora.y < m.y:
 			a = -a
 		out.RearAxle = _about(a0, Basis(Vector3.RIGHT, -a))
+		if inclina:
+			# gira em volta da linha braço -> meio do eixo (como um eixo rígido
+			# de verdade, preso no ARM_PIVOT): o eixo (x do modelo) girado de
+			# phi em volta de u = (0, uy, uz) fica com inclinação tan(phi)·uz,
+			# então phi = atan(s / uz), s = inclinação entre os 2 cubos
+			var u := (m - a0).normalized()
+			if absf(u.z) > 0.1:
+				var phi := atan(_inclinacao(t, x) / u.z)
+				out.RearAxle = _about(a0, Basis(u, phi)) * out.RearAxle
 	if truck.has("RearFreeAxle"):
+		var t: Dictionary = truck.RearFreeAxle
 		out.RearFreeAxle = Transform3D(Basis(), Vector3(0.0, (x.RL + x.RR) * 0.5, 0.0))
+		if inclina:
+			var c: Vector3 = (t.wl + t.wr) * 0.5 + Vector3(0.0, (x.RL + x.RR) * 0.5, 0.0)
+			c.x = 0.0
+			out.RearFreeAxle = _about(c, Basis(Vector3.BACK, atan(_inclinacao(t, x)))) * out.RearFreeAxle
 	return out
+
+
+## inclinação (dy/dx) da linha entre os centros das 2 rodas de trás
+static func _inclinacao(t: Dictionary, x: Dictionary) -> float:
+	var hl: Vector3 = t.wl + Vector3(0.0, x.RL, 0.0)
+	var hr: Vector3 = t.wr + Vector3(0.0, x.RR, 0.0)
+	if absf(hl.x - hr.x) < 0.01:
+		return 0.0
+	return (hl.y - hr.y) / (hl.x - hr.x)
 
 
 func _part(dir: String, file: String) -> MeshInstance3D:
@@ -271,8 +301,17 @@ func update(steer_angle: float) -> void:
 	var x := {}
 	for w in car.wheels:
 		x[("F" if w.front else "R") + ("L" if w.left else "R")] = clampf(w.x, w.min, w.max) + w.get("jit", 0.0)
-	var p := pose_truck(x, steer_angle)
+	var inclina: bool = car._tem("eixo_rigido")
+	var p := pose_truck(x, steer_angle, inclina)
 	for nome in p:
 		var t: Dictionary = truck[nome]
 		for mi in t.get("mis", [t.get("mi")]):
 			_place(mi, p[nome])
+	# as rodas de trás inclinam junto com o eixo (só giram no lugar: o centro
+	# continua o da física)
+	for nome in ["RearAxle", "RearFreeAxle"]:
+		if truck.has(nome):
+			var t: Dictionary = truck[nome]
+			var cam := atan(_inclinacao(t, x)) if inclina else 0.0
+			for w in t.rodas:
+				w.pivot.rotation.z = cam
