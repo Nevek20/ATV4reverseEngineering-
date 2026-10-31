@@ -1363,6 +1363,8 @@ func _process(delta: float) -> void:
 		fumaca.atualizar(som_carga, rpm)
 	if motor_treme:
 		motor_treme.atualizar(rpm, som_carga, delta)
+	if fumaca:
+		fumaca.seguir()             # depois do motor_treme: o cano já tremeu neste quadro
 	if motor_anima:
 		motor_anima.atualizar(delta, rpm)
 	if luzes:

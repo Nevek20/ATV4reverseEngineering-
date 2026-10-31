@@ -66,6 +66,9 @@ func _conferir() -> void:
 	var ok := antes == depois
 	if not ok:
 		falhas += 1
-	print("%-12s %2d peças %4d faces tremem (de %d, escape %d)  centro (%.2f, %.2f, %.2f)  %s" % [
+	var bocas := []                     # malha da boca de cada cano (a fumaça segue)
+	for k in mt.bocas:
+		bocas.append(["fica", "motor", "escape"][mt.bocas[k]])
+	print("%-12s %2d peças %4d faces tremem (de %d, escape %d)  centro (%.2f, %.2f, %.2f)  bocas %s  %s" % [
 		v.name, mt.pecas, mt.faces, antes, _faces(mt.malha_escape.mesh) if mt.malha_escape else 0,
-		mt.centro.x, mt.centro.y, mt.centro.z, "ok" if ok else "FALHA faces %d -> %d" % [antes, depois]])
+		mt.centro.x, mt.centro.y, mt.centro.z, ",".join(bocas), "ok" if ok else "FALHA faces %d -> %d" % [antes, depois]])

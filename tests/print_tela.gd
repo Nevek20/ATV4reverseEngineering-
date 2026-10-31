@@ -26,6 +26,7 @@ extends SceneTree
 ##   PILOTO=0                   esconde o piloto (pra ver o volante)
 ##   VOL_DIST=0.5               vista "volante" mais perto (fração da distância)
 ##   CAM_OFF=0,1.6,-4 CAM_ALVO=0,1,-2  câmera livre (frame do jogo)
+##   CAM_MODELO=1               CAM_OFF/CAM_ALVO no frame do modelo (pontos do jogo, PICK), CAM_FOV=30
 ##   PICK=x,y;x,y               imprime o triângulo do carro em cada pixel
 ##   CULL=0                     carroceria com as 2 faces (sem descartar a de trás)
 ##   COR_VERTICE=0              sem a cor do vértice do jogo (só a textura, como antes)
@@ -328,12 +329,15 @@ func _camera(v: String) -> void:
 	if OS.has_environment("CAM_ALVO"):
 		var p := OS.get_environment("CAM_ALVO").split(",")
 		alvo = Vector3(float(p[0]), float(p[1]), float(p[2])) * car.ESPELHO
+	if OS.get_environment("CAM_MODELO") == "1":     # CAM_OFF/CAM_ALVO no frame do modelo (pontos do jogo)
+		off += car.model_offset
+		alvo += car.model_offset * car.ESPELHO
 	var cam: Camera3D = root.get_node_or_null("CamPrint")
 	if cam == null:
 		cam = Camera3D.new()
 		cam.name = "CamPrint"
 		root.add_child(cam)
-	cam.fov = 45.0
+	cam.fov = float(OS.get_environment("CAM_FOV")) if OS.has_environment("CAM_FOV") else 45.0
 	cam.global_position = t * (off * car.ESPELHO)
 	cam.look_at(t * alvo, Vector3.UP)
 	cam.current = true

@@ -21,19 +21,26 @@ extends Node3D
 ## corrigem o que a regra erra (achado nos prints com MOTOR_COR=2).
 ## Carro sem ponto EXHAUST não treme (o Storm ganhou um, car.gd ESCAPE_NOSSO:
 ## motor escondido, só as ponteiras tremem).
-## Movimento (escolha nossa): vibração sorteada e filtrada, mais forte na
-## lenta (coxim de borracha) e menor no giro alto, e o balanço do torque: o
-## motor gira em volta do virabrequim (eixo z) puxado pela carga, numa mola
-## pouco amortecida (acelerou ou soltou = tranco e volta).
+## Movimento (escolha nossa): vibração sorteada, curta e rápida, mais forte
+## na lenta (coxim de borracha) e menor no giro alto, quase só na vertical, e
+## o balanço do torque: o motor gira em volta do virabrequim (eixo z) puxado
+## pela carga, num coxim firme (acelerou ou soltou = um tranco curto que
+## assenta sem quicar). O escape só vibra junto: não gira com o motor (preso
+## no chassi pelos suportes).
 
 # na câmera de corrida (6 m) 1 pixel é ~8 mm. 6 mm sorteados a cada quadro
-# ficou "tremelento" demais (Matheus): metade, e o sorteio passa por um filtro
-const VIB_LENTA := 0.004          # m na marcha lenta
-const VIB_ALTO := 0.001           # m no corte
-const VIB_SUAVE := 0.03           # s: o motor segue o sorteio com essa constante
-const BALANCO_GRAUS := 3.0        # inclinação com carga cheia
-const BALANCO_HZ := 3.0           # frequência da mola do coxim
-const BALANCO_AMORT := 0.25       # amortecimento (fração do crítico)
+# ficou "tremelento" demais (Matheus). Depois, 4 mm filtrados em 30 ms e
+# balanço de 3° numa mola mole (3 Hz, 25% do crítico) pareciam peças soltas,
+# "desparafusadas" (Matheus, out/2026): o sorteio lento vira um passeio e o
+# balanço (4.3° no pico) jogava a ponta do escape (1 m do centro) até 7 cm. Agora
+# é um zumbido fino e um tranco seco
+const VIB_LENTA := 0.0015         # m na marcha lenta
+const VIB_ALTO := 0.0005          # m no corte
+const VIB_SUAVE := 0.008          # s: o motor segue o sorteio com essa constante
+const VIB_EIXOS := Vector3(0.4, 1.0, 0.15)   # mais na vertical (o pistão sobe e desce)
+const BALANCO_GRAUS := 0.8        # inclinação com carga cheia
+const BALANCO_HZ := 7.0           # frequência da mola do coxim
+const BALANCO_AMORT := 0.6        # amortecimento (fração do crítico)
 
 # ajustes por carro (conferidos nos prints com MOTOR_COR=2): peça pelo centro
 # da caixa dela (frame do modelo, 3 cm de folga). "motor" entra, "fica" sai
@@ -48,6 +55,7 @@ const AJUSTES := {
 
 var malha: MeshInstance3D         # peças do motor
 var malha_escape: MeshInstance3D  # canos do escape (tremem junto)
+var bocas := {}                   # ponto EXHAUST* -> malha da boca (0 fica, 1 motor, 2 escape): fumaca.gd segue
 var centro := Vector3.ZERO        # centro do motor (frame do modelo)
 var faces := 0
 var pecas := 0
@@ -165,6 +173,21 @@ func separar(mi: MeshInstance3D, pontos: Dictionary, id := "") -> bool:
 		c_lo = e_lo
 		c_hi = e_hi
 	centro = (c_lo + c_hi) * 0.5
+	# malha de cada boca de escapamento: a face mais perto do ponto (no
+	# Renegade o cano é do "escape"; nos outros buggies ele é peça do motor)
+	for nome in pontos:
+		if not String(nome).begins_with("EXHAUST"):
+			continue
+		var pe: Vector3 = pontos[nome]
+		var perto := INF
+		var k := 0
+		for t in tri:
+			var v: PackedVector3Array = arrs[t[0]][Mesh.ARRAY_VERTEX]
+			var d := ((v[t[1]] + v[t[2]] + v[t[3]]) / 3.0).distance_to(pe)
+			if d < perto:
+				perto = d
+				k = sai.get(_raiz(pai, t[4]), 0)
+		bocas[String(nome)] = k if perto < 0.15 else 0
 	# duas malhas com as mesmas superfícies e materiais
 	var malhas := [ArrayMesh.new(), ArrayMesh.new(), ArrayMesh.new()]   # fica, motor, escape
 	var mats := [[], [], []]
@@ -354,7 +377,7 @@ func atualizar(rpm: float, carga: float, dt: float) -> void:
 		return
 	var r := clampf((rpm - 1000.0) / 7000.0, 0.0, 1.0)
 	var amp := lerpf(VIB_LENTA, VIB_ALTO, r)
-	var sorteio := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), randf_range(-0.3, 0.3)) * amp
+	var sorteio := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * VIB_EIXOS * amp
 	_vib += (sorteio - _vib) * (1.0 - exp(-dt / VIB_SUAVE))
 	var vib := _vib
 	# mola do coxim: alvo pela carga, tranco quando a carga muda
@@ -364,7 +387,7 @@ func atualizar(rpm: float, carga: float, dt: float) -> void:
 	_vel += acc * dt
 	_ang += _vel * dt
 	var giro := Basis(Vector3(0, 0, 1), _ang)
-	var t := Transform3D(giro, centro - giro * centro + vib)
-	for m in [malha, malha_escape]:
-		if m:
-			m.transform = t
+	if malha:
+		malha.transform = Transform3D(giro, centro - giro * centro + vib)
+	if malha_escape:
+		malha_escape.transform = Transform3D(Basis(), vib)

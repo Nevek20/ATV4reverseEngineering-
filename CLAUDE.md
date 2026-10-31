@@ -72,6 +72,7 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 %GODOT% --path . -s res://tests/print_tela.gd -- print.png lado
 :: + CAM_OFF=0.3,0.9,-4 CAM_ALVO=0,0.85,-2.6 câmera livre (frame do jogo); PICK=x,y;x,y diz
 ::   a malha, textura, UV e ponto do jogo embaixo de cada pixel do print; CULL=0 carroceria com as 2 faces
+::   CAM_MODELO=1 põe CAM_OFF/CAM_ALVO no frame do modelo (os pontos do jogo e do PICK), CAM_FOV=40
 
 :: peças da suspensão x RAM do jogo (130 matrizes, 6 buggies + Goliath, Buccaneer e Fireball), tremida e chão
 %GODOT% --headless --path . -s res://tests/teste_pecas.gd
@@ -105,6 +106,7 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 :: + print_tela com FAROL=1/0 força o farol aceso/apagado
 :: + print_tela com FREIO=1/0 e RE=1/0 forçam lanterna e ré acesas/apagadas, COR_VERTICE=0 tira a cor do vértice
 %GODOT% --path . --write-movie motor.avi --fixed-fps 60 -s res://tests/gravar_motor.gd -- 7   :: prévia: lenta, 7000 e volta (CAM_OFF/CAM_ALVO)
+%GODOT% --path . --write-movie fumaca.avi --fixed-fps 60 -s res://tests/gravar_fumaca.gd -- 0  :: câmera presa no cano acelerando (FUMACA_COR=1 vermelha)
 :: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
@@ -556,6 +558,20 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   (Chimera: o da esquerda veio com a matriz do da direita e soltava fumaça
   pra dentro). Nos outros a direção do jogo ficou (prints de perto: sai pra
   fora/baixo/trás no canto do cano). Punisher e Fireball não têm ponto.
+  Fumaça x boca do cano (out/2026, "não sincroniza", buggy e truck): o
+  GPUParticles3D solta as partículas de cada passo dele TODAS no ponto do
+  emissor naquele quadro, e o passo padrão é 30/s: andando saíam bolos (a
+  108 km/h um a cada 1 m) e em metade dos quadros a boca ficava sem fumaça
+  encostada. Medido numa cena mínima (caixa a 30 m/s, quadros do Movie
+  Maker): o emissor filho do corpo interpolado NÃO tem atraso, o problema é
+  só o passo (fixed_fps 0 ainda dá um bolo por quadro). Agora fixed_fps 0 e
+  as partículas do quadro saem numa caixa fina ao longo do trecho que a boca
+  andou desde o quadro anterior (fumaca.seguir): rastro contínuo até a boca.
+  Cada emissor é top_level, segue o carro desenhado e a malha tremendo da
+  boca (motor_treme.bocas: Renegade no "escape"; Inferno, Trident, Phantom,
+  Kraken, McKenzies, Viper, Hurricane e Storm no "motor"; Sphinx, Mosquito e
+  Bulldog a boca não treme). tests/gravar_fumaca.gd (só no Forward+: no
+  Compatibility do xvfb as partículas não aparecem).
 - Motor e escape tremendo (melhoria nossa, car.gd MOTOR_TREME,
   motor_treme.gd): no jogo são parte da Body e não tremem. Separação pelas
   peças soltas da malha que cabem inteiras no cofre (atrás do banco até o
@@ -571,7 +587,14 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   com print_tela MOTOR_COR=2 (uma cor por peça, legenda no console,
   MOTOR_PAGINA=1,2 pras seguintes). Storm (motor escondido): só as 2
   ponteiras tremem (pelos pontos do ESCAPE_NOSSO).
-  Vibração 3 mm na lenta, filtrada (6 mm por quadro ficou "tremelento").
+  Vibração: 6 mm por quadro ficou "tremelento"; depois 4 mm filtrados em
+  30 ms + balanço do torque de 3° numa mola mole (3 Hz, 25% do crítico)
+  pareciam peças "desparafusadas" (Matheus, out/2026: o sorteio lento vira
+  passeio e o balanço, 4.3° no pico, jogava a ponta do escape a 1 m do
+  centro até 7 cm). Agora:
+  zumbido de 1.5 mm na lenta (0.5 no corte) quase por quadro (8 ms), mais na
+  vertical, e tranco de 0.8° num coxim firme (7 Hz, 60% do crítico, assenta
+  sem quicar). O escape separado (Renegade) só vibra, não gira com o motor.
 - Motor animado (melhoria nossa, car.gd MOTOR_ANIMA, motor_anima.gd): no
   jogo nada gira (ventoinha e polia são desenho parado na textura).
   Ventoinhas dos radiadores (textura "black" centro (89, 26) r 23 px; Trident
@@ -667,6 +690,14 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   do Matheus: Shinto e Panther -0.03, Punisher e Fireball -0.04 de altura,
   Truggy -0.04 de lado, Chimera +0.01 lado e +0.02 altura; LADO: Truggy, TT,
   Hammerhead e Chimera (o volante tampava).
+  Shockwave ("todo torto", out/2026): os 3 potes do modelo apontam cada um
+  pra um lado (normais até 25° diferentes; a chapa do painel é virada 21° pra
+  esquerda) e os da ponta ficam 2.6 cm desnivelados. NO_LUGAR "alinhar"
+  (painel._alinhar): um plano só, virado pro olho do piloto, passando pelo
+  conta-giros (fica onde está); os outros mantêm o x, ficam na altura média
+  e a caixa preta vai até a chapa (o pote do jogo saía 12-13 cm dela).
+  Auxiliares: o rótulo (TEMP °C, ÓLEO psi, VOLTS) caía em cima do C e do H
+  embaixo; agora fica na metade de cima.
 
 - Trucks (out/2026, base): 12 (TRUCK_01..12, nomes do menu do jogo em
   text/15205_en.txt: Buccaneer, Shockwave, Shinto, Jericho, Punisher, Panther,

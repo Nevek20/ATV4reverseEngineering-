@@ -49,8 +49,10 @@ const DO_MODELO := {
 # trophy_truck_light (o atlas também é farol: só perto do volante). Maior =
 # conta-giros, o da direita = velocímetro, o outro = temperatura (amador) ou a
 # marcha (PRO, luz de troca em cima do conta-giros)
+# "alinhar" (6º item): os potes do modelo saem tortos, cada um num plano; os
+# nossos vão pra um plano só (_alinhar)
 const NO_LUGAR := {
-	"TRUCK_02": ["stock_truck_clock", Vector2(0.5, 0.5), 0.38, ["stock_truck_clock", "cadilac_shock"], 1.9],
+	"TRUCK_02": ["stock_truck_clock", Vector2(0.5, 0.5), 0.38, ["stock_truck_clock", "cadilac_shock"], 1.9, "alinhar"],
 	"TRUCK_04": ["stock_truck_clock", Vector2(0.5, 0.5), 0.38, ["stock_truck_clock", "cadilac_chrom2"], 1.9],
 	"LAZARUS": ["stock_truck_clock", Vector2(0.5, 0.5), 0.38, ["stock_truck_clock", "cadilac_chrom2"], 1.9],
 	"TRUCK_11": ["trophy_truck_light", Vector2(0.22, 0.79), 0.19, ["trophy_truck_light"], 2.4],   # Goliath
@@ -112,6 +114,7 @@ const AJUSTE := {
 const LADO := ["BUGGY_06", "BUGGY_08", "BUGGY_11", "BUGGY_12",
 	"TRUCK_07", "TRUCK_08", "TRUCK_09", "TRUCK_12"]     # Truggy, TT, Hammerhead, Chimera
 const NA_FRENTE := 0.004      # nosso mostrador acima do buraco do modelo (m)
+const CAIXA := 0.045          # fundo da caixa preta atrás do mostrador (m)
 const DIST := 0.13            # conjunto: além do aro, na linha do olho (m)
 const ALTURA_ARO := 0.5       # ponto do aro que o olho mira (x raio, pra cima)
 const MARGEM := 4.0           # graus acima da borda de baixo da câmera do piloto
@@ -163,6 +166,8 @@ func montar(c) -> bool:
 			tem = {}
 			aux = []
 			r.sort_custom(func(a, b): return a[2] > b[2])
+			if regra.size() > 5 and regra[5] == "alinhar":
+				_alinhar(r)
 			tem.rpm = r.pop_front()
 			r.sort_custom(func(a, b): return a[0].x > b[0].x)     # direita = x maior
 			tem.vel = r.pop_front()
@@ -179,9 +184,11 @@ func montar(c) -> bool:
 	for k in tem:
 		if k in tipos:
 			var m: Array = tem[k]
-			_instrumento(k, m[0] + m[1].normalized() * NA_FRENTE, m[1], m[2], na_caixa and k != "luz", self)
+			_instrumento(k, m[0] + m[1].normalized() * NA_FRENTE, m[1], m[2], na_caixa and k != "luz", self,
+				m[3] if m.size() > 3 else CAIXA)
 	for a in aux:
-		_instrumento(a[0], a[1] + a[2].normalized() * NA_FRENTE, a[2], a[3], na_caixa, self)
+		_instrumento(a[0], a[1] + a[2].normalized() * NA_FRENTE, a[2], a[3], na_caixa, self,
+			a[4] if a.size() > 4 else CAIXA)
 	if not falta.is_empty() and not _conjunto(falta) and tem.is_empty():
 		return false
 	mover(AJUSTE.get(car.chave(), Vector2.ZERO))
@@ -322,6 +329,65 @@ func _mostradores_do_modelo(tex: String, uvc: Vector2, ruv: float) -> Array:
 			n = -n                   # pro piloto = -z
 		out.append([c, n, 2.0 * ruv * (du.length() + dv.length()) * 0.5])
 	return out
+
+
+## Shockwave (pedido do Matheus, out/2026: "todo torto"): os 3 potes do
+## modelo apontam cada um pra um lado (normais até 25° diferentes, a chapa do
+## painel virada 21° pra esquerda) e os da ponta ficam 2.6 cm desnivelados.
+## Os nossos vão pra um plano só, virado pro olho do piloto e passando pelo
+## grande (r[0], que fica onde está); os outros mantêm o x, ficam na mesma
+## altura (a média deles) e caem no plano. A caixa preta de cada um vai até a
+## chapa do painel (o pote do jogo saía 12 a 13 cm dela), 4º item.
+func _alinhar(r: Array) -> void:
+	var g: Vector3 = r[0][0]
+	var n0: Vector3 = (car.DRIVER_EYE - g).normalized()
+	var y := 0.0
+	for i in range(1, r.size()):
+		y += r[i][0].y
+	y /= maxf(r.size() - 1, 1)
+	for i in r.size():
+		var c: Vector3 = r[i][0]
+		if i > 0:
+			c.y = y
+		c.z = g.z - (n0.x * (c.x - g.x) + n0.y * (c.y - g.y)) / n0.z
+		r[i][0] = c
+		r[i][1] = n0
+		r[i].append(clampf(_ate_a_carroceria(c, -n0) + 0.01, CAIXA, 0.3))
+
+
+## distância de p até a carroceria na direção dir (Möller-Trumbore nos
+## triângulos do body_mi); CAIXA se não bater em nada até 30 cm
+func _ate_a_carroceria(p: Vector3, dir: Vector3) -> float:
+	var mi: MeshInstance3D = car.body_mi
+	var melhor := INF
+	for s in mi.mesh.get_surface_count():
+		var arr := mi.mesh.surface_get_arrays(s)
+		var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+		var ix: PackedInt32Array = arr[Mesh.ARRAY_INDEX]
+		if ix.is_empty():
+			ix = PackedInt32Array(range(vs.size()))
+		for t in range(0, ix.size(), 3):
+			var a := vs[ix[t]]
+			if a.distance_to(p) > 0.6:
+				continue
+			var e1 := vs[ix[t + 1]] - a
+			var e2 := vs[ix[t + 2]] - a
+			var h := dir.cross(e2)
+			var det := e1.dot(h)
+			if absf(det) < 1e-9:
+				continue
+			var sv := p - a
+			var u := sv.dot(h) / det
+			if u < 0.0 or u > 1.0:
+				continue
+			var q := sv.cross(e1)
+			var v := dir.dot(q) / det
+			if v < 0.0 or u + v > 1.0:
+				continue
+			var d := e2.dot(q) / det
+			if d > 0.005 and d < melhor:
+				melhor = d
+	return melhor if melhor < 0.3 else CAIXA
 
 
 ## triângulo do mostrador: UV perto do centro do mostrador e perto do volante
@@ -562,7 +628,8 @@ static func _base(n: Vector3) -> Basis:
 	return Basis(x, y, z)
 
 
-func _instrumento(tipo: String, p: Vector3, n: Vector3, d: float, caixa: bool, pai: Node3D) -> void:
+func _instrumento(tipo: String, p: Vector3, n: Vector3, d: float, caixa: bool, pai: Node3D,
+		fundo := CAIXA) -> void:
 	var no := Node3D.new()
 	no.name = "Painel_" + tipo
 	no.transform = Transform3D(_base(n), p)
@@ -642,10 +709,10 @@ func _instrumento(tipo: String, p: Vector3, n: Vector3, d: float, caixa: bool, p
 			var cy := CylinderMesh.new()
 			cy.top_radius = d * 0.5 + 0.004
 			cy.bottom_radius = d * 0.5 + 0.002
-			cy.height = 0.045
+			cy.height = fundo
 			cx.mesh = cy
 			cx.rotation.x = PI * 0.5
-		cx.position = Vector3(0, 0, -0.024)
+		cx.position = Vector3(0, 0, -0.0015 - (fundo if tipo != "marcha" else 0.045) * 0.5)
 		cx.material_override = _preto()
 		no.add_child(cx)
 
@@ -759,7 +826,8 @@ class Mostrador extends Node2D:
 			for mk in marcas:
 				var dirv := Vector2(cos(_ang(mk[0])), sin(_ang(mk[0])))
 				draw_string(fonte, c + dirv * (r - 50) + Vector2(-30, 12), mk[1], HORIZONTAL_ALIGNMENT_CENTER, 60, 32, tinta)
-			draw_string(fonte, c + Vector2(-70, 66), rotulo, HORIZONTAL_ALIGNMENT_CENTER, 140, 24, tinta)
+			# rótulo na metade de cima: embaixo ele caía em cima do C e do H
+			draw_string(fonte, c + Vector2(-70, -34), rotulo, HORIZONTAL_ALIGNMENT_CENTER, 140, 24, tinta)
 			_ponteiro(c, r)
 			return
 		var passo := 1.0 if tipo == "rpm" else (20.0 if maximo <= 200.0 else 40.0)
