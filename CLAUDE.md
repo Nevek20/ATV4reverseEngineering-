@@ -73,11 +73,13 @@ python tools/ler_savestate.py arquivo.p2s --json estado.json   :: estado do carr
 :: + CAM_OFF=0.3,0.9,-4 CAM_ALVO=0,0.85,-2.6 câmera livre (frame do jogo); PICK=x,y;x,y diz
 ::   a malha, textura, UV e ponto do jogo embaixo de cada pixel do print; CULL=0 carroceria com as 2 faces
 
-:: peças da suspensão x RAM do jogo (120 matrizes, 6 buggies + Goliath e Buccaneer), tremida e chão
+:: peças da suspensão x RAM do jogo (130 matrizes, 6 buggies + Goliath, Buccaneer e Fireball), tremida e chão
 %GODOT% --headless --path . -s res://tests/teste_pecas.gd
 %GODOT% --headless --path . -s res://tests/teste_tremida.gd
 %GODOT% --headless --path . -s res://tests/teste_chao.gd
-%GODOT% --headless --path . -s res://tests/teste_curso.gd    :: curso parado x RAM (8 save states, até 0.6 cm)
+%GODOT% --headless --path . -s res://tests/teste_curso.gd    :: curso parado x RAM (9 save states, até 0.6 cm)
+%GODOT% --headless --path . -s res://tests/teste_capota.gd   :: vira tudo a VEL em chão plano: inclinação e capotagem, regra do jogo x antes
+%GODOT% --headless --path . -s res://tests/teste_de_lado.gd  :: carro caído de lado e capotado: casco do jogo, carroceria e rodas no chão
 %GODOT% --headless --path . -s res://tests/teste_mao.gd     :: espelho (lado das peças, esterço)
 %GODOT% --headless --path . -s res://tests/teste_tremida_camera.gd
 set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Storm na parede: velocidade da batida e tremida da câmera
@@ -108,6 +110,9 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
 :: + SOLTA=1.3 solta o volante (DEPOIS=-1 contra-esterça, ACEL=0 solta o acelerador), DUR=8 segundos depois de virar
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
+
+:: casco de colisão de cada carro (VehicleWorld.hsc pelo id) -> data/vehicles/<id>_casco.json
+python tools/casco.py <unpacked>          :: --tabela mostra a caixa de todos os cascos do archive
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
 python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materiais <dados>/unpacked/xml/12280
@@ -680,6 +685,30 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   --so 13; main.gd "bonus"): física, peças de fábrica, mapa
   (TruckCompMap_B1) e decalques do Jericho, câmera TruckCamSet_04 (o
   Jericho usa a 11). Não substitui o Jericho.
+- Casco de colisão (out/2026, docs Casco de colisão): até então era uma caixa
+  de 2.1 x 0.8 x 4.8 m igual pra todos, sem fonte. O jogo carrega
+  Vehicles/<Classe>/Collision/<Name>/VehicleWorld.hsc (0x1fed48) pelo ID do
+  veículo, não pelo chassi (Storm = Buggy_12 na RAM; Fireball = Truck_10):
+  o Jericho usa o casco da Silverado (Truck_04) e o Chimera o Truck_12.
+  Planos + esferas; a caixa do corpo na RAM é a das esferas. No remake:
+  esferas recortadas pelos planos (como o contato junta os dois não foi
+  achado), ~150 pontos (com ~700 o Godot deixava o carro atravessar o chão).
+  De lado a roda dos buggies ainda entra uns 5 cm no chão: o casco é mais
+  estreito que as rodas (Renegade ±1.05-1.10, roda até ±1.3) e a roda só
+  encosta pela suspensão (Cosine_maximum_collision_angle 0.643 = 50°).
+- Força lateral pela inclinação (0x211b58, out/2026): a altura onde a força
+  lateral do pneu age (Lateral_scale) cai de 0.09 a 0 entre 3° e 8° de
+  inclinação em relação ao chão (sine_threshold/maximum_roll do XML, buggy e
+  truck). O remake usava sempre 0.09 e os trucks tombavam mais (Fireball
+  virando a 80 km/h: 8.8° -> 6.0°, tests/teste_capota.gd). Aceleração,
+  derrapagem e entrada a 110 não mudaram (o Renegade fica abaixo de ~4.5°).
+- Fireball parado (Fireball.p2s do Matheus, out/2026): curso FL/FR 0.248/0.240,
+  RL/RR 0.350/0.354 (máx 0.50/0.70) e as 10 peças = remake (erro 0). O
+  desalinhamento com curso grande é a fórmula do exe: RearAxle gira pelo
+  curso MÉDIO das 2 rodas de trás (sem inclinar quando uma sobe e a outra
+  desce) e cada roda sobe sozinha (WHEEL + x); LeftFrame/RightFrame giram
+  tan(x/W.x) com a roda subindo reto. No curso máximo a roda de trás do
+  Fireball fica 50 cm abaixo do fundo do casco (o batente 0x23f6c0 segura).
 - Câmera do save state: só a câmera ativa atualiza. ler_savestate pegava a
   mais perto do carro, e parado essa é uma que a introdução da corrida
   deixou (zoom 0.6027, suavização 17.85/s em a.p2s, b.p2s, Goliath e
@@ -691,6 +720,13 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   ser igual ao Jericho; hoje usa física, peças, mapa e decalques dele. Não
   suja: a CHASSIS_Truck_04 do jogo não tem a 2ª textura (sem _camada.obj
   mesmo gerando de novo; o aviso do HUD não se aplica).
+- Roda presa embaixo do chão: o raio da roda sai do topo do curso
+  (car.gd, attach + max); caindo de lado o carro pode rolar com a roda já
+  abaixo do chão e o raio começa enterrado (Fireball de lado no
+  teste_de_lado: roda 1.2 m no chão). Falta ver no jogo (save state de lado e
+  capotado) se lá acontece igual antes de mexer.
+- Suspensão dos trucks com curso grande (eixo de trás sem inclinar, braços
+  da frente) segue o exe; endireitar seria melhoria nossa (perguntar).
 - Trucks: conferir física andando (Punisher acelerando e virando).
   Tração: car.gd REAR_DRIVE vale pra todos (conferir nos trucks).
 

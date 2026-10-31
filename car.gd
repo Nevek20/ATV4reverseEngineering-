@@ -444,12 +444,7 @@ func _ready() -> void:
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
-	var shape := CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = Vector3(2.1, 0.8, 4.8)
-	shape.shape = box
-	shape.position = Vector3(0, 0.95, 0)
-	add_child(shape)
+	add_child(_casco())
 	contact_monitor = true            # batida: contatos do casco (_batida_passo)
 	max_contacts_reported = 8
 	for w in wheels:
@@ -463,6 +458,33 @@ func _ready() -> void:
 		susp_vis.build(self, points, points_rot, asset_dir, pecas.get("pecas", {}),
 			pecas.get("rally", false), pecas.get("estepe", []), spare_mesh)
 	_load_sujeira()               # por último: precisa das rodas e das peças
+
+
+## casco de colisão contra o mundo = o VehicleWorld.hsc do jogo pelo id do
+## veículo (tools/casco.py -> data/vehicles/<id>_casco.json): esferas
+## recortadas pelos planos, envoltório convexo no frame do corpo. Até out/2026
+## era uma caixa de 2.1 x 0.8 x 4.8 m igual pra todos (sem fonte): nos trucks o
+## teto ficava 1 m acima dela e capotado/de lado a cabine e as rodas entravam
+## no chão. Sem o .json volta a caixa
+func _casco() -> CollisionShape3D:
+	var shape := CollisionShape3D.new()
+	shape.name = "Casco"
+	var path := "res://data/vehicles/%s_casco.json" % vehicle_id.to_lower()
+	var info = JSON.parse_string(FileAccess.get_file_as_string(path)) if FileAccess.file_exists(path) else null
+	if info is Dictionary and info.has("pontos"):
+		var pts := PackedVector3Array()
+		for p in info.pontos:
+			pts.append(corpo(Vector3(p[0], p[1], p[2])))
+		var cvx := ConvexPolygonShape3D.new()
+		cvx.points = pts
+		shape.shape = cvx
+		return shape
+	push_warning("sem %s: casco de colisão genérico (rode tools/casco.py)" % path)
+	var box := BoxShape3D.new()
+	box.size = Vector3(2.1, 0.8, 4.8)
+	shape.shape = box
+	shape.position = Vector3(0, 0.95, 0)
+	return shape
 
 
 ## material de uma malha do jogo (carroceria, rodas, peças, volante do
@@ -729,6 +751,9 @@ func _load_physics() -> void:
 	P.h_long = d.f("Stability/WheelForceHeightScales", "Longitudinal_scale_std", 0.5)
 	P.h_long_stf = d.f("Stability/WheelForceHeightScales", "Longitudinal_scale_side_decel_to_fwd_accel", 0.5)
 	P.h_lat = d.f("Stability/WheelForceHeightScales", "Lateral_scale_std", 0.1)
+	P.h_lat_roll = d.f("Stability/WheelForceHeightScales", "Lateral_scale_at_maximum_roll", P.h_lat)
+	P.h_lat_s0 = d.f("Stability/WheelForceHeightScales", "Lateral_scale_sine_threshold_roll", 1.0)
+	P.h_lat_s1 = d.f("Stability/WheelForceHeightScales", "Lateral_scale_sine_maximum_roll", 1.0)
 	P.grav_up = d.f("Stability/InAir", "Gravity_scale_moving_up", 1.0)
 	P.grav_down = d.f("Stability/InAir", "Gravity_scale_moving_down", 1.0)
 	P.air_yaw_time = d.f("Stability/InAir/Yaw_control", "Minimum_time", 0.3)
@@ -2052,6 +2077,21 @@ func _vibracao(dt: float, v_l: float, v_f: float) -> void:
 const MPH_G := 0.44694445
 const DEG := 0.017453294
 
+## 0x211b58: altura da força lateral pela inclinação. s = seno da inclinação
+## de lado em relação ao chão (|cima do carro (corpo+0xc0) · lateral do chão
+## (corpo+0x3e0)|): Lateral_scale_std até o limiar, cai em linha reta até o
+## Lateral_scale_at_maximum_roll no máximo. Nos XMLs (buggy e truck) vai de
+## 0.09 a 0 entre 3° e 8°: inclinado, a força lateral para de tombar o carro.
+## Até out/2026 o remake usava sempre o std (capotava mais que o jogo)
+func _h_lat(left: Vector3) -> float:
+	var s := absf(global_transform.basis.y.dot(left))
+	if s > P.h_lat_s1:
+		return P.h_lat_roll
+	if s > P.h_lat_s0:
+		return P.h_lat + (s - P.h_lat_s0) / (P.h_lat_s1 - P.h_lat_s0) * (P.h_lat_roll - P.h_lat)
+	return P.h_lat
+
+
 func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_w: Vector3,
 		h: float, drive: float) -> float:
 	var v_f := v.dot(fwd)                   # 0x418
@@ -2412,6 +2452,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 		else:
 			sum_r += hy
 	var hl: float = stf_blend * P.h_long_stf + (1.0 - stf_blend) * P.h_long
+	var h_lat := _h_lat(left)
 	var base := com_w - global_position
 	var lat_sum := 0.0
 	for w in wheels:
@@ -2419,7 +2460,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 		var sy: float = sum_f if w.front else sum_r
 		if w.fx != 0.0:
 			if lateral_game:
-				apply_force(left * w.fx, base + n * (sy * P.h_lat) + fwd * az)
+				apply_force(left * w.fx, base + n * (sy * h_lat) + fwd * az)
 			else:
 				lat_sum += w.fx
 		if w.fz != 0.0:
@@ -2428,7 +2469,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 		# modo antigo (remendo da parte 1): lateral toda no CoM e a guinada que o
 		# jogo pediu aplicada direto, cortada na proporção que a elipse cortou
 		var keep := 1.0 if lat_dem < 1.0 else lat_got / lat_dem
-		apply_force(left * lat_sum, base + n * (sum_r * P.h_lat))
+		apply_force(left * lat_sum, base + n * (sum_r * h_lat))
 		apply_torque(n * torque * keep)
 
 	# atrito interno (só sem acelerar): o carro perde velocidade sozinho
@@ -2495,7 +2536,7 @@ func _tires_legacy(dt: float, v: Vector3, fwd: Vector3, left: Vector3, ground_n:
 		dec *= clampf(spd_mph / P.ifd_lo_speed, 0.3, 1.0)
 		f_long -= signf(v_f) * minf(dec * mass, mass * absf(v_f) / dt)
 	apply_force(fwd * f_long, com_w - ground_n * h * P.h_long - global_position)
-	apply_force(left * f_lat, com_w - ground_n * h * P.h_lat - global_position)
+	apply_force(left * f_lat, com_w - ground_n * h * _h_lat(left) - global_position)
 
 	var ang: float = deg_to_rad(VehicleData.sample(steer_curve, spd_mph)) * steer
 	var yaw_target: float = v_f * ang / (P.wheelbase + P.understeer * v_f * v_f)

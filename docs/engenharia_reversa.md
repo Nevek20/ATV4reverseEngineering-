@@ -215,7 +215,17 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - **0x211b58 aplicação das forças**: por roda, em CoM + n·(soma do y do
   contato do eixo relativo ao CoM × escala) + frente·z_do_eixo.
   Lateral_scale_std 0.09; longitudinal = mistura de 0.5 e 0.2 por 0x474
-  (= acel·frac·Side_decel_to_fwd).
+  (= acel·frac·Side_decel_to_fwd). A escala lateral muda com a inclinação:
+  s = |corpo+0xc0 (cima do carro) · corpo+0x3e0 (lateral do chão)| = seno da
+  inclinação de lado em relação ao chão; s <= Params+0xf90
+  (Lateral_scale_sine_threshold_roll, 0.052 = 3°) dá o std (+0xf88), s >=
+  +0xf94 (sine_maximum_roll, 0.14 = 8°) dá o +0xf8c (at_maximum_roll, 0.0),
+  linha reta no meio. Ou seja: inclinado mais de 8° a força lateral age na
+  altura do CoM e não tomba mais o carro. Na RAM do Fireball.p2s: 0xc0 =
+  (-0.0139, 0.9998, 0.014) = "cima" do corpo; 0x3e0/0x3f0/0x400 = lateral,
+  normal e frente do chão. Portado em out/2026 (car.gd _h_lat); antes o
+  remake usava sempre 0.09 e inclinava mais (Fireball virando a 80 km/h:
+  8.8° -> 6.0°, tests/teste_capota.gd).
 - **0x20bf58 eixos 0x3ac/0x3b0**: média do z das rodas em coordenadas do
   MODELO (não relativo ao CoM). Entra na curvatura, divisão lateral e ponto
   de aplicação.
@@ -297,6 +307,34 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   aproximação antiga dava os mesmos números); muda em derrapagem (v_ref não
   conta o giro do carro), no ar (tração gira com o motor, frente perde
   giro), parado contra um muro e na roda da tela. tests/teste_roda.gd.
+
+## Casco de colisão (VehicleWorld.hsc)
+
+- 0x1fed48 monta "/Vehicles/%s/Collision/%s/VehicleWorld.hsc" com a classe
+  (descritor veículo+0xa6c, +0x1c: "Buggy", "Truck") e o Name do
+  vehicles.xml (+4: "TRUCK_10", "BUGGY_12"); sem o arquivo usa "Generic".
+  O mesmo descritor tem +0xc nome longo, +0x14 chassi, +0x2c mapa de peças,
+  +0x34 rodas genéricas, +0x3c câmeras. Também carrega o VehicleVehicle.hsc
+  (carro contra carro, outro casco).
+- Pelo id, não pelo chassi: o Storm (chassi Lancia, não existe
+  Collision/Lancia) carrega o Buggy_12 (raios e normais na RAM do
+  storm.p2s). Então o Jericho (TRUCK_04, chassi Truck_11) usa o casco do
+  Truck_04, que encaixa na Silverado (a carroceria original dele, o nosso
+  Lazarus: caixa 0.76 de diferença x 1.47 na carroceria do Jericho), e o
+  Chimera usa o Truck_12 (as pastas Collision/Dakar sobram).
+- Formato "CSH\0": versão 1, 1; n planos (normal, d; dentro = n·p + d <= 0);
+  n esferas (contador em 16 bytes; centro, raio). Frame do modelo. O loader
+  0x13e318 tira o CoM (d -= n·CoM, centro -= CoM): no Fireball.p2s os 13
+  planos estão em RAM 0x117dae0 e as 11 esferas em 0x117dd40 (+1 esfera
+  (0, 0.7, 0.188) r 0.25 no fim), e a caixa do corpo (0x117dcc0) é a das
+  esferas no mundo. Os 14 planos em 0x117d320 são do VehicleVehicle.
+- Como o contato junta planos e esferas não foi achado. No remake (car.gd
+  _casco, tools/casco.py -> data/vehicles/<id>_casco.json): esferas
+  recortadas pelos planos, envoltório convexo de ~150 pontos
+  (ConvexPolygonShape3D; com ~700 o Godot deixava o carro atravessar o
+  chão). Antes era uma caixa de 2.1 x 0.8 x 4.8 m igual pra todos (o teto
+  do Fireball fica em 2.5 m: capotado, a cabine entrava 1 m no chão).
+  tests/teste_de_lado.gd.
 
 ## Pontos do modelo
 
