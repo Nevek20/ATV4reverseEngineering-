@@ -61,7 +61,7 @@ const TRUCKS := [
 	{"name": "Shinto", "id": "TRUCK_03", "cams": "TruckCamSet_03", "dir": "res://assets/truck_03",
 		"data": "res://data/vehicles/truck_03.xml", "points": "res://data/vehicles/truck_03_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
 	{"name": "Jericho", "id": "TRUCK_04", "cams": "TruckCamSet_11", "dir": "res://assets/truck_04",
-		"data": "res://data/vehicles/truck_04.xml", "points": "res://data/vehicles/truck_04_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, -0.04]},
+		"data": "res://data/vehicles/truck_04.xml", "points": "res://data/vehicles/truck_04_points.bin", "base": BASE_TRUCK, "fp": [0.30, 0.47, -0.04]},
 	{"name": "Punisher", "id": "TRUCK_05", "cams": "TruckCamSet_05", "dir": "res://assets/truck_05",
 		"data": "res://data/vehicles/truck_05.xml", "points": "res://data/vehicles/truck_05_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
 	{"name": "Panther", "id": "TRUCK_06", "cams": "TruckCamSet_06", "dir": "res://assets/truck_06",
