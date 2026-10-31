@@ -31,7 +31,19 @@ const DO_MODELO := {
 	# mão); 13 cm no grande pra não varar o capô (o buraco tem 15.6)
 	"BUGGY_02": {"rpm": [Vector3(0.01, 1.377, 0.606), Vector3(0.0, 0.34, -0.94), 0.13],
 		"vel": [Vector3(0.154, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.075]},
+	# Buccaneer (jipe): os 5 mostradores pintados na willys_jeep_style_panel
+	# (posição pelo UV do texel na chapa do painel): os 2 atrás do volante (o
+	# vermelho e o azul) viram conta-giros e velocímetro; o grande do meio e os
+	# 2 pequenos ficam abaixo da câmera do piloto (AUX)
+	"TRUCK_01": {"rpm": [Vector3(-0.546, 1.416, 0.492), Vector3(0.0, -0.21, -0.98), 0.10],
+		"vel": [Vector3(-0.32, 1.411, 0.493), Vector3(0.0, -0.21, -0.98), 0.10]},
 }
+# relógios do modelo que viram os nossos (textura de um relógio inteiro num
+# hexágono, centro do mostrador no meio): o maior = conta-giros, o da direita
+# = velocímetro, o resto = auxiliares (temperatura, óleo). Acha sozinho
+# (_relogios_do_modelo); a moldura do jogo fica em volta do nosso
+const RELOGIO_MODELO := {"TRUCK_02": "stock_truck_clock", "TRUCK_04": "stock_truck_clock",
+	"LAZARUS": "stock_truck_clock"}
 const ESCONDER := {"BUGGY_10": "cadilac_clock"}     # textura da placa do relógio
 const REPINTAR := {"BUGGY_04": "_b_2"}              # textura com relógios pintados
 # peças do modelo que saem da malha: [parte do nome da textura, [[centro, raio], ...]]
@@ -54,6 +66,10 @@ const AUX := {
 	"BUGGY_02": [["temp", Vector3(-0.233, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.075],
 		["oleo", Vector3(-0.138, 1.333, 0.59), Vector3(0.0, 0.34, -0.94), 0.075],
 		["volt", Vector3(0.254, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.075]],
+	# Buccaneer: o grande do meio e os 2 pequenos à direita dele
+	"TRUCK_01": [["oleo", Vector3(-0.076, 1.239, 0.515), Vector3(0.0, -0.04, -1.0), 0.15],
+		["temp", Vector3(0.084, 1.239, 0.515), Vector3(0.0, -0.04, -1.0), 0.07],
+		["volt", Vector3(0.18, 1.239, 0.515), Vector3(0.0, -0.04, -1.0), 0.07]],
 }
 # auxiliares presos no conjunto (andam com ele): [tipo, posição no plano do
 # conjunto em relação ao centro do conta-giros (m, x direita, y cima), diâmetro].
@@ -117,18 +133,31 @@ func montar(c) -> bool:
 		top = lim * car.P.wheel_r * car.RPM2RAD / (car.gears[car.gears.size() - 1] * car.P.final) * 3.6 * 1.06
 	vel_max = maxf(ceilf(top / 20.0) * 20.0, 100.0)
 	_tirar_do_modelo()
-	var tem: Dictionary = DO_MODELO.get(car.vehicle_id, {})
+	var tem: Dictionary = DO_MODELO.get(car.chave(), {})
+	var aux: Array = AUX.get(car.chave(), [])
+	if RELOGIO_MODELO.has(car.chave()):
+		var r := _relogios_do_modelo(RELOGIO_MODELO[car.chave()])
+		if r.size() >= 2:
+			tem = {}
+			aux = []
+			r.sort_custom(func(a, b): return a[2] > b[2])
+			tem.rpm = r.pop_front()
+			r.sort_custom(func(a, b): return a[0].x > b[0].x)     # direita = x maior
+			tem.vel = r.pop_front()
+			var tipos_aux := ["temp", "oleo", "volt"]
+			for i in r.size():
+				aux.append([tipos_aux[i % 3]] + r[i])
 	var tipos := ["rpm", "vel"] + (["marcha", "luz"] if pro else [])
 	var falta := tipos.filter(func(k): return not tem.has(k))
 	for k in tem:
 		if k in tipos:
 			var m: Array = tem[k]
 			_instrumento(k, m[0] + m[1].normalized() * NA_FRENTE, m[1], m[2], false, self)
-	for a in AUX.get(car.vehicle_id, []):
+	for a in aux:
 		_instrumento(a[0], a[1] + a[2].normalized() * NA_FRENTE, a[2], a[3], false, self)
 	if not falta.is_empty() and not _conjunto(falta) and tem.is_empty():
 		return false
-	mover(AJUSTE.get(car.vehicle_id, Vector2.ZERO))
+	mover(AJUSTE.get(car.chave(), Vector2.ZERO))
 	visible = OS.get_environment("SEM_PAINEL") != "1"     # prints: só o que sobrou do modelo
 	return true
 
@@ -167,7 +196,7 @@ func _conjunto(falta: Array) -> bool:
 	var ancora := Vector3.ZERO
 	var n := Vector3.BACK
 	var mira := ce + cima * raio * ALTURA_ARO
-	if car.vehicle_id in LADO:
+	if car.chave() in LADO:
 		# do lado direito do aro (o conjunto fica menor de longe: 0.8)
 		mira = ce + direita * (raio + 0.02 + largura * 0.25) + cima * raio * 0.2
 	var sobe := 0.0
@@ -195,10 +224,66 @@ func _conjunto(falta: Array) -> bool:
 	for k in falta:
 		var d: float = {"rpm": d_rpm, "vel": d_vel, "marcha": 0.05, "luz": 0.0}[k]
 		_instrumento(k, lugar[k], n, d, true, conjunto)
-	for a in AUX_CONJUNTO.get(car.vehicle_id, []):
+	for a in AUX_CONJUNTO.get(car.chave(), []):
 		_instrumento(a[0], ancora + b.x * a[1].x + b.y * a[1].y, n, a[2], true, conjunto)
 	_suporte(ancora, b, ce - eixo * 0.06)
 	return true
+
+
+## relógios do modelo pela textura: [centro, normal (pro piloto), diâmetro] de
+## cada grupo de triângulos ligados (frame do modelo). O mostrador cobre 0.40
+## do raio de 0.45 do UV do hexágono: diâmetro = 2 x raio x 0.88
+func _relogios_do_modelo(tex: String) -> Array:
+	var mi: MeshInstance3D = car.body_mi
+	if mi == null:
+		return []
+	var tris: Array = []
+	for s in mi.mesh.get_surface_count():
+		var m: Material = mi.get_active_material(s)
+		if not (m is BaseMaterial3D) or m.albedo_texture == null \
+				or not (tex in m.albedo_texture.resource_path.to_lower()):
+			continue
+		var arr := mi.mesh.surface_get_arrays(s)
+		var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+		var ix: PackedInt32Array = arr[Mesh.ARRAY_INDEX]
+		if ix.is_empty():
+			ix = PackedInt32Array(range(vs.size()))
+		for t in range(0, ix.size(), 3):
+			tris.append([vs[ix[t]], vs[ix[t + 1]], vs[ix[t + 2]]])
+	# grupos por vértice em comum (a cópia de dentro da cabine cai no mesmo)
+	var grupos: Array = []         # [chaves, triângulos]
+	for tri in tris:
+		var ks := {}
+		for p in tri:
+			ks[(p * 1000.0).round()] = true
+		var junta := []
+		for g in grupos:
+			for k in ks:
+				if g[0].has(k):
+					junta.append(g)
+					break
+		var novo := [ks, [tri]]
+		for g in junta:
+			novo[0].merge(g[0])
+			novo[1].append_array(g[1])
+			grupos.erase(g)
+		grupos.append(novo)
+	var out := []
+	for g in grupos:
+		var c := Vector3.ZERO
+		for k in g[0]:
+			c += k / 1000.0
+		c /= g[0].size()
+		var n := Vector3.ZERO
+		var r := 0.0
+		for tri in g[1]:
+			var ni: Vector3 = (tri[1] - tri[0]).cross(tri[2] - tri[0])
+			n += -ni if ni.z > 0.0 else ni     # pro piloto = -z
+			for p in tri:
+				r = maxf(r, p.distance_to(c))
+		if n.length() > 1e-6 and r > 0.02:
+			out.append([c, n.normalized(), 2.0 * r * 0.88])
+	return out
 
 
 ## tira os relógios do modelo (placa do Renegade, pintura da chapa do Sphinx)
@@ -211,16 +296,16 @@ func _tirar_do_modelo() -> void:
 		if not (m is BaseMaterial3D) or m.albedo_texture == null:
 			continue
 		var tp: String = m.albedo_texture.resource_path
-		if ESCONDER.has(car.vehicle_id) and ESCONDER[car.vehicle_id] in tp:
+		if ESCONDER.has(car.chave()) and ESCONDER[car.chave()] in tp:
 			var some := StandardMaterial3D.new()
 			some.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 			some.albedo_color = Color(0, 0, 0, 0)
 			mi.set_surface_override_material(s, some)
-		elif REPINTAR.has(car.vehicle_id) and REPINTAR[car.vehicle_id] in tp:
+		elif REPINTAR.has(car.chave()) and REPINTAR[car.chave()] in tp:
 			var m2: BaseMaterial3D = m.duplicate()
 			m2.albedo_texture = _sem_relogios(m.albedo_texture)
 			mi.set_surface_override_material(s, m2)
-	for ap in APAGAR.get(car.vehicle_id, []):
+	for ap in APAGAR.get(car.chave(), []):
 		apagadas += _apagar_faces(mi, ap[0], ap[1])
 
 

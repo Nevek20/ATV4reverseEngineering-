@@ -640,6 +640,19 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   círculos que o Matheus marcou no print). Velocímetro = 1.06 x velocidade
   pra frente (como o do jogo); conta-giros até o limitador + 1000. Telas 2D em
   SubViewport (texto sai certo: base com determinante -1 dentro do espelho).
+  Trucks (lote 3, out/2026): Buccaneer, Shockwave, Shinto, Jericho e Lazarus
+  amadores, do Punisher em diante PRO (vehicles.xml). Tabelas pelo
+  car.chave() (o Lazarus tem o id do Jericho). Onde o modelo tem relógio, o
+  nosso vai NO LUGAR dele (como o Inferno), com a moldura do jogo em volta:
+  Shockwave, Jericho e Lazarus têm 3 hexágonos com a textura
+  Stock_truck_clock (um relógio inteiro, centro do mostrador no meio do UV,
+  raio 0.40 de 0.45): painel.gd RELOGIO_MODELO acha os grupos de triângulos
+  sozinho (_relogios_do_modelo), o maior vira conta-giros, o da direita
+  velocímetro, o outro temperatura. Buccaneer: os 5 mostradores pintados na
+  willys_jeep_style_panel (posição pelo UV do texel): os 2 atrás do volante
+  viram conta-giros e velocímetro, o grande do meio e os 2 pequenos (abaixo
+  da câmera do piloto) óleo, temperatura e voltagem. O resto usa o conjunto
+  (a TTruck_panels do Shinto e do Punisher só tem furos de alívio).
 
 - Trucks (out/2026, base): 12 (TRUCK_01..12, nomes do menu do jogo em
   text/15205_en.txt: Buccaneer, Shockwave, Shinto, Jericho, Punisher, Panther,
@@ -655,7 +668,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   buggy) e RallyCompMap (Chimera, igual Storm). Melhorias nossas nos trucks:
   ligadas aos poucos, cada uma conferida com print (car.gd PENDENTES_TRUCK =
   as que faltam; main.gd e print_tela põem em car.desligadas). Lote 1
-  (out/2026): luzes, farol e fumaça (o som do motor já tinha vindo). Lote 2:
+  (out/2026): luzes, farol e fumaça (o som do motor já tinha vindo). Lote 3:
+  painel (ver Painel funcional). Lote 2:
   volante nosso, mãos no aro, volante girando e tremendo; câmera do piloto
   com o olho pelos números do Matheus (main.gd "fp"; padrão dos buggies
   [0.36, 0.47, 0.00] onde ele não mudou). Goliath parado (RAM): massa 1.90 t, marchas

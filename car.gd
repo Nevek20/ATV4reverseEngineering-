@@ -417,7 +417,7 @@ var melhorias := true
 # conferida neles (lote 1, out/2026: luzes, farol e fumaça; o som do motor
 # veio antes, com os 13 motores dos trucks; lote 2: volante e mãos)
 var desligadas := []
-const PENDENTES_TRUCK := ["motor_treme", "motor_anima", "painel"]
+const PENDENTES_TRUCK := ["motor_treme", "motor_anima"]
 
 
 ## melhoria nossa ligada neste carro
