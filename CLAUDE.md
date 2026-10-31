@@ -642,17 +642,20 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   SubViewport (texto sai certo: base com determinante -1 dentro do espelho).
   Trucks (lote 3, out/2026): Buccaneer, Shockwave, Shinto, Jericho e Lazarus
   amadores, do Punisher em diante PRO (vehicles.xml). Tabelas pelo
-  car.chave() (o Lazarus tem o id do Jericho). Onde o modelo tem relógio, o
-  nosso vai NO LUGAR dele (como o Inferno), com a moldura do jogo em volta:
-  Shockwave, Jericho e Lazarus têm 3 hexágonos com a textura
-  Stock_truck_clock (um relógio inteiro, centro do mostrador no meio do UV,
-  raio 0.40 de 0.45): painel.gd RELOGIO_MODELO acha os grupos de triângulos
-  sozinho (_relogios_do_modelo), o maior vira conta-giros, o da direita
-  velocímetro, o outro temperatura. Buccaneer: os 5 mostradores pintados na
-  willys_jeep_style_panel (posição pelo UV do texel): os 2 atrás do volante
-  viram conta-giros e velocímetro, o grande do meio e os 2 pequenos (abaixo
-  da câmera do piloto) óleo, temperatura e voltagem. O resto usa o conjunto
-  (a TTruck_panels do Shinto e do Punisher só tem furos de alívio).
+  car.chave() (o Lazarus tem o id do Jericho). Testamos pôr o nosso NO LUGAR
+  dos relógios do modelo (hexágonos Stock_truck_clock do Shockwave, Jericho e
+  Lazarus) e o Matheus achou torto em relação ao volante: agora os relógios
+  do modelo SAEM (painel.gd TIRAR_RELOGIOS: grupos da textura a até 50 cm do
+  volante e, em 1.6 x o raio, o "pote" em volta: cadilac_shock no Shockwave,
+  cadilac_chrom2 no Jericho e no Lazarus; no Goliath tudo é a
+  trophy_truck_light, atlas que também é farol) e vai o conjunto alinhado com
+  o volante. Apagar também na FaceDeDentro (cópia de dentro da cabine
+  fechada), senão de dentro sobravam as viseiras. Buccaneer: os mostradores
+  pintados na willys_jeep_style_panel viram os nossos (posição pelo UV do
+  texel; os 2 atrás do volante = conta-giros e velocímetro, o grande do meio
+  e os 2 pequenos, abaixo da câmera, óleo, temperatura e voltagem). AJUSTE
+  do Matheus: Shinto e Panther -0.03, Punisher e Fireball -0.04 de altura;
+  LADO: Truggy, TT, Hammerhead e Chimera (o volante tampava).
 
 - Trucks (out/2026, base): 12 (TRUCK_01..12, nomes do menu do jogo em
   text/15205_en.txt: Buccaneer, Shockwave, Shinto, Jericho, Punisher, Panther,

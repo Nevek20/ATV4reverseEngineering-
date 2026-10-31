@@ -38,12 +38,17 @@ const DO_MODELO := {
 	"TRUCK_01": {"rpm": [Vector3(-0.546, 1.416, 0.492), Vector3(0.0, -0.21, -0.98), 0.10],
 		"vel": [Vector3(-0.32, 1.411, 0.493), Vector3(0.0, -0.21, -0.98), 0.10]},
 }
-# relógios do modelo que viram os nossos (textura de um relógio inteiro num
-# hexágono, centro do mostrador no meio): o maior = conta-giros, o da direita
-# = velocímetro, o resto = auxiliares (temperatura, óleo). Acha sozinho
-# (_relogios_do_modelo); a moldura do jogo fica em volta do nosso
-const RELOGIO_MODELO := {"TRUCK_02": "stock_truck_clock", "TRUCK_04": "stock_truck_clock",
-	"LAZARUS": "stock_truck_clock"}
+# relógios do modelo que SAEM (pedido do Matheus, out/2026: no lugar deles o
+# nosso ficava torto em relação ao volante): grupos de triângulos com a
+# textura do relógio a até 50 cm do centro do volante (_relogios_do_modelo) e,
+# em volta de cada um (1.6 x o raio), as faces dessas texturas (o relógio e o
+# "pote" em volta). Aí vai o conjunto alinhado com o volante
+const TIRAR_RELOGIOS := {
+	"TRUCK_02": ["stock_truck_clock", ["stock_truck_clock", "cadilac_shock"]],      # Shockwave
+	"TRUCK_04": ["stock_truck_clock", ["stock_truck_clock", "cadilac_chrom2"]],     # Jericho
+	"LAZARUS": ["stock_truck_clock", ["stock_truck_clock", "cadilac_chrom2"]],
+	"TRUCK_11": ["trophy_truck_light", ["trophy_truck_light"]],                     # Goliath (atlas)
+}
 const ESCONDER := {"BUGGY_10": "cadilac_clock"}     # textura da placa do relógio
 const REPINTAR := {"BUGGY_04": "_b_2"}              # textura com relógios pintados
 # peças do modelo que saem da malha: [parte do nome da textura, [[centro, raio], ...]]
@@ -89,10 +94,15 @@ const AJUSTE := {
 	"BUGGY_08": Vector2(-0.04, 0.0),
 	"BUGGY_11": Vector2(-0.02, 0.04),
 	"BUGGY_12": Vector2(0.08, 0.01),
+	"TRUCK_03": Vector2(0.0, -0.03),      # Shinto
+	"TRUCK_05": Vector2(0.0, -0.04),      # Punisher
+	"TRUCK_06": Vector2(0.0, -0.03),      # Panther
+	"TRUCK_10": Vector2(0.0, -0.04),      # Fireball
 }
 # o volante tampa o conjunto: do lado direito dele (Phantom; McKenzies,
 # Hurricane e Storm pedidos pelo Matheus)
-const LADO := ["BUGGY_06", "BUGGY_08", "BUGGY_11", "BUGGY_12"]
+const LADO := ["BUGGY_06", "BUGGY_08", "BUGGY_11", "BUGGY_12",
+	"TRUCK_07", "TRUCK_08", "TRUCK_09", "TRUCK_12"]     # Truggy, TT, Hammerhead, Chimera
 const NA_FRENTE := 0.004      # nosso mostrador acima do buraco do modelo (m)
 const DIST := 0.13            # conjunto: além do aro, na linha do olho (m)
 const ALTURA_ARO := 0.5       # ponto do aro que o olho mira (x raio, pra cima)
@@ -135,18 +145,6 @@ func montar(c) -> bool:
 	_tirar_do_modelo()
 	var tem: Dictionary = DO_MODELO.get(car.chave(), {})
 	var aux: Array = AUX.get(car.chave(), [])
-	if RELOGIO_MODELO.has(car.chave()):
-		var r := _relogios_do_modelo(RELOGIO_MODELO[car.chave()])
-		if r.size() >= 2:
-			tem = {}
-			aux = []
-			r.sort_custom(func(a, b): return a[2] > b[2])
-			tem.rpm = r.pop_front()
-			r.sort_custom(func(a, b): return a[0].x > b[0].x)     # direita = x maior
-			tem.vel = r.pop_front()
-			var tipos_aux := ["temp", "oleo", "volt"]
-			for i in r.size():
-				aux.append([tipos_aux[i % 3]] + r[i])
 	var tipos := ["rpm", "vel"] + (["marcha", "luz"] if pro else [])
 	var falta := tipos.filter(func(k): return not tem.has(k))
 	for k in tem:
@@ -231,8 +229,8 @@ func _conjunto(falta: Array) -> bool:
 
 
 ## relógios do modelo pela textura: [centro, normal (pro piloto), diâmetro] de
-## cada grupo de triângulos ligados (frame do modelo). O mostrador cobre 0.40
-## do raio de 0.45 do UV do hexágono: diâmetro = 2 x raio x 0.88
+## cada grupo de triângulos ligados (frame do modelo), só os perto do volante
+## (o atlas trophy_truck_light também é farol). Diâmetro = 2 x raio x 0.88
 func _relogios_do_modelo(tex: String) -> Array:
 	var mi: MeshInstance3D = car.body_mi
 	if mi == null:
@@ -281,7 +279,7 @@ func _relogios_do_modelo(tex: String) -> Array:
 			n += -ni if ni.z > 0.0 else ni     # pro piloto = -z
 			for p in tri:
 				r = maxf(r, p.distance_to(c))
-		if n.length() > 1e-6 and r > 0.02:
+		if n.length() > 1e-6 and r > 0.02 and c.distance_to(car.SW_CENTER) < 0.5:
 			out.append([c, n.normalized(), 2.0 * r * 0.88])
 	return out
 
@@ -305,8 +303,28 @@ func _tirar_do_modelo() -> void:
 			var m2: BaseMaterial3D = m.duplicate()
 			m2.albedo_texture = _sem_relogios(m.albedo_texture)
 			mi.set_surface_override_material(s, m2)
+	# a carroceria e a cópia de dentro da cabine fechada (car.gd, FaceDeDentro,
+	# filha dela no mesmo frame): senão de dentro sobrava o relógio virado
+	var malhas := [mi]
+	var dentro := mi.get_node_or_null("FaceDeDentro")
+	if dentro:
+		malhas.append(dentro)
 	for ap in APAGAR.get(car.chave(), []):
-		apagadas += _apagar_faces(mi, ap[0], ap[1])
+		for m in malhas:
+			var n := _apagar_faces(m, ap[0], ap[1])
+			if m == mi:
+				apagadas += n
+	if TIRAR_RELOGIOS.has(car.chave()):
+		var regra: Array = TIRAR_RELOGIOS[car.chave()]
+		var pontos := []
+		for g in _relogios_do_modelo(regra[0]):
+			pontos.append([g[0], g[2] / 0.88 * 0.5 * 1.6])     # 1.6 x o raio do grupo
+		if not pontos.is_empty():
+			for tex in regra[1]:
+				for m in malhas:
+					var n := _apagar_faces(m, tex, pontos)
+					if m == mi:
+						apagadas += n
 
 
 ## tira da malha os triângulos de uma textura perto dos pontos (frame do modelo)
@@ -321,7 +339,7 @@ static func _apagar_faces(mi: MeshInstance3D, tex: String, pontos: Array) -> int
 		var tp := ""
 		if m is BaseMaterial3D and m.albedo_texture:
 			tp = m.albedo_texture.resource_path
-		if (tp == "") if tex == "" else (tex in tp):
+		if (tp == "") if tex == "" else (tex.to_lower() in tp.to_lower()):
 			var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
 			var ix: PackedInt32Array = arr[Mesh.ARRAY_INDEX]
 			if ix.is_empty():
