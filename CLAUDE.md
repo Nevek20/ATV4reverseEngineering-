@@ -111,7 +111,7 @@ set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: re
 :: + SOLTA=1.3 solta o volante (DEPOIS=-1 contra-esterça, ACEL=0 solta o acelerador), DUR=8 segundos depois de virar
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
 
-:: casco de colisão de cada carro (VehicleWorld.hsc pelo id) -> data/vehicles/<id>_casco.json
+:: casco de colisão de cada carro (esferas do VehicleWorld.hsc pelo id) -> data/vehicles/<id>_casco.json
 python tools/casco.py <unpacked>          :: --tabela mostra a caixa de todos os cascos do archive
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
@@ -690,12 +690,15 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Vehicles/<Classe>/Collision/<Name>/VehicleWorld.hsc (0x1fed48) pelo ID do
   veículo, não pelo chassi (Storm = Buggy_12 na RAM; Fireball = Truck_10):
   o Jericho usa o casco da Silverado (Truck_04) e o Chimera o Truck_12.
-  Planos + esferas; a caixa do corpo na RAM é a das esferas. No remake:
-  esferas recortadas pelos planos (como o contato junta os dois não foi
-  achado), ~150 pontos (com ~700 o Godot deixava o carro atravessar o chão).
-  De lado a roda dos buggies ainda entra uns 5 cm no chão: o casco é mais
-  estreito que as rodas (Renegade ±1.05-1.10, roda até ±1.3) e a roda só
-  encosta pela suspensão (Cosine_maximum_collision_angle 0.643 = 50°).
+  Contato com o mundo = só as ESFERAS do arquivo (os planos não recortam:
+  Fireball de lado/capotado, save states do Matheus, contato exatamente na
+  esfera e 3.4 cm fora dos planos) + a RODA como esfera do raio dela quando
+  o chão está fora do cone da suspensão (Cosine_maximum_collision_angle
+  0.643 = 50°): de lado o 2º contato fica a 0.567 m do centro da roda
+  dianteira = o raio. car.gd _casco (SphereShape3D por esfera) e
+  _esferas_das_rodas (ligada a cada passo por uma consulta de esfera 3 cm
+  maior). Testamos antes esferas recortadas pelos planos num envoltório
+  convexo: com ~700 pontos o Godot deixava o carro atravessar o chão.
 - Força lateral pela inclinação (0x211b58, out/2026): a altura onde a força
   lateral do pneu age (Lateral_scale) cai de 0.09 a 0 entre 3° e 8° de
   inclinação em relação ao chão (sine_threshold/maximum_roll do XML, buggy e
@@ -729,11 +732,6 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   ser igual ao Jericho; hoje usa física, peças, mapa e decalques dele. Não
   suja: a CHASSIS_Truck_04 do jogo não tem a 2ª textura (sem _camada.obj
   mesmo gerando de novo; o aviso do HUD não se aplica).
-- Roda presa embaixo do chão: o raio da roda sai do topo do curso
-  (car.gd, attach + max); caindo de lado o carro pode rolar com a roda já
-  abaixo do chão e o raio começa enterrado (Fireball de lado no
-  teste_de_lado: roda 1.2 m no chão). Falta ver no jogo (save state de lado e
-  capotado) se lá acontece igual antes de mexer.
 - Trucks: conferir física andando (Punisher acelerando e virando).
   Tração: car.gd REAR_DRIVE vale pra todos (conferir nos trucks).
 

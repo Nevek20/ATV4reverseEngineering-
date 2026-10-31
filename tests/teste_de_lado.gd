@@ -1,12 +1,12 @@
 extends SceneTree
-## Carro caído de lado e de cabeça pra baixo em chão plano (casco de colisão,
-## car._casco): solta cada carro a 3 m girado 90° e 180° em volta da frente,
-## espera assentar e mede quanto a carroceria e as rodas (caixa das malhas)
-## entram no chão. VEHS = índices da frota (padrão Renegade, Buccaneer,
-## Jericho, Fireball, Goliath, Chimera). Com o casco do jogo a carroceria não
-## pode entrar mais que uns cm (o casco é mais justo que a malha em alguns
-## cantos); rodas de lado entram quando ficam pra fora do casco (no jogo a
-## roda só encosta pela suspensão, até ~50° do eixo dela).
+## Carro caído de lado e de cabeça pra baixo em chão plano (casco de colisão =
+## esferas do jogo, car._casco, e a roda como esfera fora do cone da
+## suspensão, car._esferas_das_rodas): solta cada carro a 3 m girado 90° e
+## 180° em volta da frente, espera assentar e mede quanto a carroceria e as
+## rodas (vértices das malhas) entram no chão. VEHS = índices da frota (padrão
+## Renegade, Buccaneer, Jericho, Fireball, Goliath, Chimera). A roda não pode
+## entrar (no jogo ela bate como esfera do raio dela: save state do Fireball
+## de lado); a carroceria pode passar uns cm onde a malha sai das esferas.
 ## Uso: godot --headless --path . -s res://tests/teste_de_lado.gd
 
 const Car := preload("res://car.gd")
@@ -42,13 +42,13 @@ func _initialize() -> void:
 			k += 1
 
 
-## menor y (mundo) da caixa de uma malha
+## menor y (mundo) dos vértices de uma malha (a caixa dela inclinada desce
+## bem abaixo da malha)
 func _fundo(mi: MeshInstance3D) -> float:
-	var a := mi.get_aabb()
 	var xf := mi.global_transform
 	var m := INF
-	for i in 8:
-		m = minf(m, (xf * a.get_endpoint(i)).y)
+	for p in mi.mesh.get_faces():
+		m = minf(m, (xf * p).y)
 	return m
 
 

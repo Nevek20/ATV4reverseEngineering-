@@ -444,11 +444,12 @@ func _ready() -> void:
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
-	add_child(_casco())
+	_casco()
 	contact_monitor = true            # batida: contatos do casco (_batida_passo)
 	max_contacts_reported = 8
 	for w in wheels:
 		_make_wheel_mesh(w)
+	_esferas_das_rodas()
 	if suspension and not pecas.is_empty() and not points.is_empty():
 		susp_vis = preload("res://suspension_visual.gd").new()
 		espelho.add_child(susp_vis)
@@ -460,31 +461,75 @@ func _ready() -> void:
 	_load_sujeira()               # por último: precisa das rodas e das peças
 
 
-## casco de colisão contra o mundo = o VehicleWorld.hsc do jogo pelo id do
-## veículo (tools/casco.py -> data/vehicles/<id>_casco.json): esferas
-## recortadas pelos planos, envoltório convexo no frame do corpo. Até out/2026
-## era uma caixa de 2.1 x 0.8 x 4.8 m igual pra todos (sem fonte): nos trucks o
-## teto ficava 1 m acima dela e capotado/de lado a cabine e as rodas entravam
-## no chão. Sem o .json volta a caixa
-func _casco() -> CollisionShape3D:
-	var shape := CollisionShape3D.new()
-	shape.name = "Casco"
+## casco de colisão contra o mundo = as ESFERAS do VehicleWorld.hsc do jogo
+## pelo id do veículo (tools/casco.py -> data/vehicles/<id>_casco.json). Os
+## planos do arquivo não entram: nos save states do Fireball de lado e
+## capotado (out/2026) o contato do corpo cai exatamente na superfície de uma
+## esfera, num caso 3.4 cm FORA dos planos. Até out/2026 era uma caixa de 2.1
+## x 0.8 x 4.8 m igual pra todos (o teto dos trucks ficava 1 m acima dela).
+## Sem o .json volta a caixa
+func _casco() -> void:
 	var path := "res://data/vehicles/%s_casco.json" % vehicle_id.to_lower()
 	var info = JSON.parse_string(FileAccess.get_file_as_string(path)) if FileAccess.file_exists(path) else null
-	if info is Dictionary and info.has("pontos"):
-		var pts := PackedVector3Array()
-		for p in info.pontos:
-			pts.append(corpo(Vector3(p[0], p[1], p[2])))
-		var cvx := ConvexPolygonShape3D.new()
-		cvx.points = pts
-		shape.shape = cvx
-		return shape
+	if info is Dictionary and info.has("esferas"):
+		var i := 0
+		for e in info.esferas:
+			var cs := CollisionShape3D.new()
+			cs.name = "Casco%d" % i
+			var sph := SphereShape3D.new()
+			sph.radius = e[3]
+			cs.shape = sph
+			cs.position = corpo(Vector3(e[0], e[1], e[2]))
+			add_child(cs)
+			i += 1
+		return
 	push_warning("sem %s: casco de colisão genérico (rode tools/casco.py)" % path)
+	var shape := CollisionShape3D.new()
+	shape.name = "Casco"
 	var box := BoxShape3D.new()
 	box.size = Vector3(2.1, 0.8, 4.8)
 	shape.shape = box
 	shape.position = Vector3(0, 0.95, 0)
-	return shape
+	add_child(shape)
+
+
+## roda como esfera (0x248768, Cosine_maximum_collision_angle): contato com o
+## chão até ~50° do eixo da suspensão é da mola; fora disso (carro de lado,
+## capotado, roda batendo de lado) a roda vira uma esfera do raio dela e bate
+## como o corpo. Fireball de lado (save state do Matheus, out/2026): um dos 2
+## contatos do corpo fica a 0.567 m do centro da roda dianteira = o raio dela.
+## Até out/2026 a roda de lado entrava no chão
+func _esferas_das_rodas() -> void:
+	for w in wheels:
+		var cs := CollisionShape3D.new()
+		cs.name = "Roda" + ("F" if w.front else "T") + ("E" if w.left else "D")
+		var sph := SphereShape3D.new()
+		sph.radius = w.r
+		cs.shape = sph
+		cs.disabled = true
+		cs.position = Vector3(w.px, w.y0, w.pz)
+		add_child(cs)
+		w.esfera = cs
+		var q := SphereShape3D.new()
+		q.radius = w.r + 0.03                # acha o chão um pouco antes de encostar
+		w.esfera_teste = q
+
+
+## liga a esfera de cada roda quando o chão perto dela está fora do cone da
+## suspensão (chamado a cada passo, depois do contato das molas)
+func _passo_esferas_rodas(space: PhysicsDirectSpaceState3D, up: Vector3) -> void:
+	for w in wheels:
+		var cs: CollisionShape3D = w.get("esfera")
+		if cs == null:
+			continue
+		var c := Vector3(w.px, w.y0 + clampf(w.x, w.min, w.max), w.pz)
+		cs.position = c
+		var q := PhysicsShapeQueryParameters3D.new()
+		q.shape = w.esfera_teste
+		q.transform = Transform3D(Basis(), global_transform * c)
+		q.exclude = [get_rid()]
+		var info := space.get_rest_info(q)
+		cs.set_deferred("disabled", info.is_empty() or (info.normal as Vector3).dot(up) >= w.cos_max)
 
 
 ## material de uma malha do jogo (carroceria, rodas, peças, volante do
@@ -1749,6 +1794,7 @@ func _physics_process(dt: float) -> void:
 		w.f = f_s
 		apply_force(hn * f_s, attach - global_position)
 
+	_passo_esferas_rodas(space, up)
 	_material_medio()
 	var ground_n := up if grounded == 0 else n_sum.normalized()
 	var fwd := (fwd_body - ground_n * fwd_body.dot(ground_n)).normalized()

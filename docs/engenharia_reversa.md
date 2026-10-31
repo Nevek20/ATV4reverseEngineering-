@@ -328,13 +328,24 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   planos estão em RAM 0x117dae0 e as 11 esferas em 0x117dd40 (+1 esfera
   (0, 0.7, 0.188) r 0.25 no fim), e a caixa do corpo (0x117dcc0) é a das
   esferas no mundo. Os 14 planos em 0x117d320 são do VehicleVehicle.
-- Como o contato junta planos e esferas não foi achado. No remake (car.gd
-  _casco, tools/casco.py -> data/vehicles/<id>_casco.json): esferas
-  recortadas pelos planos, envoltório convexo de ~150 pontos
-  (ConvexPolygonShape3D; com ~700 o Godot deixava o carro atravessar o
-  chão). Antes era uma caixa de 2.1 x 0.8 x 4.8 m igual pra todos (o teto
-  do Fireball fica em 2.5 m: capotado, a cabine entrava 1 m no chão).
-  tests/teste_de_lado.gd.
+- O corpo bate no mundo pelas ESFERAS, sem recorte dos planos. Save states
+  do Matheus (out/2026), lista de contatos do corpo (corpo+0x1f0; +0x10 =
+  ponto relativo ao CoM em eixos do mundo, +0x30 normal; no modelo: CoM +
+  R·ponto com R = linhas corpo+0xb0/0xc0/0xd0): Fireball de lado, contato
+  em (-1.186, 1.528, -1.703) = exatamente na esfera 9 (distância 0.000) e
+  3.4 cm FORA do plano 8; capotado, (-0.319, 2.488, -0.008) na esfera 5.
+- A roda vira esfera fora do cone da suspensão: o 2º contato do Fireball de
+  lado, (-1.545, 0.198, 1.567), fica a 0.567 m do WHEEL_FRONT_LEFT (curso 0)
+  = o raio da roda; o chão ali está a ~104° do eixo da suspensão (fora do
+  Cosine_maximum_collision_angle 0.643 = 50°). Dentro do cone é a mola.
+- No remake (car.gd _casco, _esferas_das_rodas): uma SphereShape3D por
+  esfera do .hsc (tools/casco.py -> data/vehicles/<id>_casco.json) e uma
+  por roda (raio da roda, no centro dela com o curso), ligada a cada passo
+  só quando o chão perto dela (consulta de esfera 3 cm maior) tem normal
+  fora do cone. Antes era uma caixa de 2.1 x 0.8 x 4.8 m igual pra todos
+  (teto do Fireball em 2.5 m: capotado a cabine entrava 1 m no chão) e a
+  roda de lado ficava presa embaixo do chão (Fireball 1.2 m, Chimera 95 cm;
+  agora 0). tests/teste_de_lado.gd.
 
 ## Pontos do modelo
 

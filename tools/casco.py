@@ -16,14 +16,13 @@ BUGGY_12 (chassi Lancia). Então o Jericho (TRUCK_04, chassi Truck_11) usa o
 casco do Truck_04, feito pra Silverado (a carroceria original dele, o nosso
 Lazarus), e o Chimera o do Truck_12; as pastas Dakar sobram.
 
-Forma: o jogo carrega os planos E as esferas, e a caixa do corpo na RAM é a
-das esferas. Aqui o casco = esferas recortadas pelos planos: pontos nas
-esferas que ficam dentro de todos os planos, os círculos onde cada plano
-corta cada esfera e os vértices dos planos que caem dentro de alguma esfera.
-O Godot faz o envoltório convexo desses pontos (ConvexPolygonShape3D).
+Forma: o corpo bate no mundo pelas ESFERAS (sem recorte dos planos): nos save
+states do Fireball de lado e capotado (out/2026) o contato do corpo cai
+exatamente na superfície de uma esfera, num caso 3.4 cm fora dos planos. Os
+planos ficam no .json só de referência.
 
-Saída: data/vehicles/<id>_casco.json com planos, esferas, vértices do
-poliedro dos planos e os pontos do casco (frame do modelo do jogo).
+Saída: data/vehicles/<id>_casco.json com planos, esferas e vértices do
+poliedro dos planos (frame do modelo do jogo).
 
 Uso: python tools/casco.py <unpacked> [--tabela]
 """
@@ -90,61 +89,6 @@ def vertices(planos, tol=1e-4):
     return out
 
 
-N_DIR = 160          # direções do envoltório (~100 vértices)
-
-
-def _dentro(P, x, tol=1e-4):
-    return np.all(P[:, :3] @ x + P[:, 3] <= tol)
-
-
-def pontos_casco(planos, esferas, n_esfera=400, n_circ=72):
-    """esferas recortadas pelos planos: pontos da superfície (pra o envoltório)"""
-    P = np.array(planos, dtype=float)
-    out = []
-    # Fibonacci na esfera
-    k = np.arange(n_esfera) + 0.5
-    phi = np.arccos(1 - 2 * k / n_esfera)
-    th = np.pi * (1 + 5 ** 0.5) * k
-    U = np.stack([np.cos(th) * np.sin(phi), np.cos(phi), np.sin(th) * np.sin(phi)], 1)
-    for cx, cy, cz, r in esferas:
-        c = np.array([cx, cy, cz])
-        for u in U:
-            x = c + u * r
-            if _dentro(P, x):
-                out.append(x)
-        # círculo de cada plano nessa esfera
-        for p in P:
-            n, d = p[:3], p[3]
-            h = n @ c + d
-            if abs(h) >= r:
-                continue
-            cc = c - n * h
-            rho = (r * r - h * h) ** 0.5
-            a = np.cross(n, [1.0, 0.0, 0.0] if abs(n[0]) < 0.9 else [0.0, 1.0, 0.0])
-            a /= np.linalg.norm(a)
-            b = np.cross(n, a)
-            for t in np.linspace(0, 2 * np.pi, n_circ, endpoint=False):
-                x = cc + (a * np.cos(t) + b * np.sin(t)) * rho
-                if _dentro(P, x, 1e-3):
-                    out.append(x)
-    for v in vertices(planos):
-        if any(np.linalg.norm(v - np.array(e[:3])) <= e[3] for e in esferas):
-            out.append(v)
-    # só o que fica no envoltório: o ponto mais longe em cada uma de N_DIR
-    # direções (sem scipy); o Godot refaz o envoltório desses (com uns 700
-    # pontos o Godot deixava o carro capotado atravessar o chão)
-    X = np.array(out)
-    k = np.arange(N_DIR) + 0.5
-    phi = np.arccos(1 - 2 * k / N_DIR)
-    th = np.pi * (1 + 5 ** 0.5) * k
-    D = np.stack([np.cos(th) * np.sin(phi), np.cos(phi), np.sin(th) * np.sin(phi)], 1)
-    idx = sorted(set(np.argmax(X @ D.T, axis=0).tolist()))
-    vistos = {}
-    for x in X[idx]:
-        vistos.setdefault(tuple(np.round(x, 3)), x)
-    return list(vistos.values())
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("unpacked")
@@ -167,17 +111,15 @@ def main():
         d = bytes_do_arquivo(a.unpacked, indice, "Vehicles/%s/Collision/%s/VehicleWorld.hsc" % (classe, nome))
         pl, es = hsc(d)
         v = vertices(pl)
-        pts = pontos_casco(pl, es)
         info = {"fonte": "Vehicles/%s/Collision/%s/VehicleWorld.hsc" % (classe, nome),
                 "planos": [[round(x, 5) for x in p] for p in pl],
                 "esferas": [[round(x, 5) for x in e] for e in es],
-                "vertices": [[round(float(x), 5) for x in p] for p in v],
-                "pontos": [[round(float(x), 4) for x in p] for p in pts]}
+                "vertices": [[round(float(x), 5) for x in p] for p in v]}
         saida = os.path.join(PROJ, "data", "vehicles", carro + "_casco.json")
         json.dump(info, open(saida, "w", newline="\n"), separators=(",", ":"))
-        P = np.array(pts)
-        print("%-10s %-16s %2d planos %2d esferas %3d vértices %4d pontos  x %5.2f..%4.2f y %4.2f..%4.2f z %5.2f..%4.2f" % (
-            carro, pasta, len(pl), len(es), len(v), len(pts), *[f for ax in range(3) for f in (P[:, ax].min(), P[:, ax].max())]))
+        E = np.array(es)
+        print("%-10s %-16s %2d planos %2d esferas  esferas x %5.2f..%4.2f y %4.2f..%4.2f z %5.2f..%4.2f" % (
+            carro, pasta, len(pl), len(es), *[f for ax in range(3) for f in ((E[:, ax] - E[:, 3]).min(), (E[:, ax] + E[:, 3]).max())]))
 
 
 if __name__ == "__main__":
