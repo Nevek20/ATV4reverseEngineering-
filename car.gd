@@ -110,9 +110,11 @@ const AVANCO_VOLANTE := {"TRUCK_12": 0.10, "LAZARUS": 0.10}
 # desenho dele; a física não usa). No Chimera o ARSE fica 15 cm mais pra trás
 # e 13 mais baixo que nos outros (em relação ao volante): só trazer o volante
 # não chegava (134%), subir mais que uns 5 cm bate o capacete no teto (75 cm
-# acima do banco). Com o banco + AVANCO_VOLANTE: Chimera 106%, Lazarus 101%
-# (teste_volante). BANCO=x,y,z no ambiente testa
-const BANCO_NOSSO := {"TRUCK_12": Vector3(0.0, 0.04, 0.20), "LAZARUS": Vector3(0.0, 0.06, 0.05)}
+# acima do banco). Com o banco + AVANCO_VOLANTE: Chimera 105%, Lazarus 101%
+# (teste_volante; com o volante inteiro do tools/volante.py o aro do Lazarus
+# ficou 2.4 cm mais alto e o banco foi mais 4 cm pra frente). BANCO=x,y,z no
+# ambiente testa
+const BANCO_NOSSO := {"TRUCK_12": Vector3(0.0, 0.04, 0.20), "LAZARUS": Vector3(0.0, 0.06, 0.09)}
 # melhoria nossa: volante onde o modelo não tem (Shockwave e Punisher não têm
 # interior: o tools/volante.py não acha aro nenhum). Posto onde ele fica nos
 # outros trucks em relação ao banco (ARSE + 0.37 de altura e 0.46 pra frente,

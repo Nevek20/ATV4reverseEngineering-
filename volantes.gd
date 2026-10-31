@@ -2,8 +2,8 @@ extends RefCounted
 ## Volantes gerados (melhoria nossa, car.gd VOLANTE_NOSSO). O do jogo é parte
 ## da carroceria: aro de 6 a 12 lados e, em 8 carros, o mesmo X furado girado
 ## uns 20°. Aqui cada carro ganha um volante redondo e centralizado:
-##   - os que eram únicos no jogo (Renegade, Bulldog, Inferno, Storm) e o X
-##     furado ganham uma versão melhorada do próprio desenho;
+##   - os que eram únicos no jogo (Renegade, Bulldog, Inferno, Storm e 7 dos
+##     trucks) e o X furado ganham uma versão melhorada do próprio desenho;
 ##   - os outros seguem as fotos de volantes que o Matheus mandou (buggy,
 ##     Sparco de camurça preto e azul, Mountney, kart, aro de espuma, couro e
 ##     o do Fusca Itamar no Mosquito).
@@ -27,11 +27,13 @@ const PADRAO := {
 	"luva": 0.30,                # o aro engrossa 30% onde os raios encostam
 	"luva_ang": 0.20,            # largura da luva (rad)
 	"luva_cor": null,            # capa de outra cor onde o raio encosta
+	"frisos": null,              # 2 frisos (dentro e fora) na frente do aro, cor
 	"marca_cor": null,           # marca do topo
 	"marca_ang": 0.06,
 	"raios": [90, 270, 180],     # 9h, 3h e 6h
 	"raio_larg": [0.046, 0.034], # perto do cubo e perto do aro
 	"raio_esp": 0.005,
+	"raio_forma": "chapa",       # chapa ou tubo (raio_larg = diâmetro)
 	"raio_cor": Color(0.85, 0.86, 0.88), "raio_metal": 0.7, "raio_rugo": 0.35,
 	"escovado": true,
 	"rasgos": [],                # [v, u0, u1, meia largura em m] (u ao longo do raio)
@@ -40,7 +42,7 @@ const PADRAO := {
 	"rebites": false,
 	"dish": 0.035,               # centro recuado pro painel
 	"placa": 0.05,               # disco do centro, do material dos raios (0 = sem)
-	"cubo": "tampa",             # tampa, parafusos, buzina, losango, fusca ou ""
+	"cubo": "tampa",             # tampa, parafusos, buzina, losango, fusca, t ou ""
 	"cubo_r": 0.045,
 	"cubo_cor": Color(0.05, 0.05, 0.055), "cubo_metal": 0.5, "cubo_rugo": 0.35,
 	"n_parafusos": 6,
@@ -48,6 +50,7 @@ const PADRAO := {
 	"centro": "emblema",         # emblema ou porca (no cubo de parafusos)
 	"emblema_cor": null, "emblema_borda": null,
 	"botoes": false,             # placa de botões em asa em cima do cubo
+	"t_cor": Color(0.82, 0.83, 0.85),   # placa em T do cubo "t"
 }
 
 const ESTILOS := {
@@ -181,6 +184,88 @@ const ESTILOS := {
 		"cubo_cor": Color(0.2, 0.21, 0.22), "cubo_metal": 0.6,
 		"parafuso_cor": Color(0.55, 0.56, 0.58), "emblema_cor": Color(0.12, 0.12, 0.13),
 	},
+	# --- trucks: versões melhoradas dos únicos (o desenho do jogo de frente:
+	# tools/volante.py + prints_tmp/vol_plano.py, out/2026). Shinto e Panther
+	# usam o X furado e TT e Hammerhead o X liso do Storm, iguais aos buggies
+	# Buccaneer: aro preto e 3 varões escuros (12h, 4h e 8h), cubo pequeno
+	"buccaneer": {
+		"aro_a": 0.015, "aro_b": 0.016, "luva": 0.2, "luva_ang": 0.12,
+		"raios": [0, 120, 240], "raio_forma": "tubo", "raio_larg": [0.017, 0.012],
+		"raio_cor": Color(0.13, 0.13, 0.14), "raio_metal": 0.6, "raio_rugo": 0.4,
+		"dish": 0.03, "placa": 0.0,
+		"cubo": "parafusos", "cubo_r": 0.03, "n_parafusos": 3,
+		"cubo_cor": Color(0.08, 0.08, 0.085), "cubo_metal": 0.4,
+		"parafuso_cor": Color(0.5, 0.5, 0.52), "emblema_cor": Color(0.1, 0.1, 0.11),
+	},
+	# Jericho: aro escuro de 2 frisos, X de lâminas afinando pro aro e chapa
+	# quadrada com 4 parafusos
+	"jericho": {
+		"aro_cor": Color(0.06, 0.06, 0.065), "aro_rugo": 0.7, "aro_a": 0.017, "aro_b": 0.015,
+		"luva": 0.0, "frisos": Color(0.5, 0.48, 0.45),
+		"raios": [45, 135, 225, 315], "raio_larg": [0.05, 0.013], "raio_esp": 0.005,
+		"raio_cor": Color(0.46, 0.44, 0.41), "raio_metal": 0.6, "raio_rugo": 0.4,
+		"dish": 0.02, "placa": 0.0,
+		"cubo": "losango", "cubo_r": 0.034, "cubo_cor": Color(0.72, 0.73, 0.75), "cubo_metal": 0.6,
+		"parafuso_cor": Color(0.15, 0.15, 0.16), "emblema_cor": Color(0.6, 0.61, 0.63),
+	},
+	# Lazarus (a carroceria original do Jericho): o mesmo desenho com o aro
+	# cromado e as lâminas pretas
+	"lazarus": {
+		"aro_cor": Color(0.78, 0.79, 0.8), "aro_metal": 0.9, "aro_rugo": 0.25,
+		"aro_a": 0.016, "aro_b": 0.014, "luva": 0.0, "frisos": Color(0.25, 0.25, 0.27),
+		"raios": [45, 135, 225, 315], "raio_larg": [0.042, 0.012], "raio_esp": 0.005,
+		"raio_cor": Color(0.09, 0.09, 0.1), "raio_metal": 0.5, "raio_rugo": 0.4,
+		"dish": 0.02, "placa": 0.0,
+		"cubo": "losango", "cubo_r": 0.03, "cubo_cor": Color(0.1, 0.1, 0.11), "cubo_metal": 0.5,
+		"parafuso_cor": Color(0.7, 0.71, 0.73), "emblema_cor": Color(0.75, 0.76, 0.78),
+	},
+	# Herbst Truggy: o X liso de aço com o aro prateado e a placa em T por cima
+	"truggy": {
+		"aro_cor": Color(0.78, 0.79, 0.8), "aro_metal": 0.9, "aro_rugo": 0.25,
+		"aro_a": 0.014, "aro_b": 0.014, "luva": 0.0,
+		"raios": [45, 135, 225, 315], "raio_larg": [0.04, 0.04], "raio_esp": 0.006,
+		"raio_cor": Color(0.2, 0.21, 0.22), "raio_metal": 0.6, "raio_rugo": 0.45,
+		"rebites": true, "dish": 0.012, "placa": 0.0,
+		"cubo": "t", "cubo_r": 0.045, "t_cor": Color(0.82, 0.83, 0.85),
+		"parafuso_cor": Color(0.06, 0.06, 0.065),
+		"emblema_cor": Color(0.12, 0.12, 0.13), "emblema_borda": Color(0.6, 0.61, 0.63),
+	},
+	# Fireball (picape antiga): aro grosso preto e 4 tubos cromados, os de
+	# cima abertos (no jogo a ~65°; aqui 75° pra não cair na mão, 65°)
+	"fireball": {
+		"aro_cor": Color(0.04, 0.035, 0.03), "aro_rugo": 0.55, "aro_a": 0.019, "aro_b": 0.019,
+		"luva": 0.0,
+		"raios": [75, 285, 155, 205], "raio_forma": "tubo", "raio_larg": [0.016, 0.014],
+		"raio_cor": Color(0.86, 0.86, 0.88), "raio_metal": 1.0, "raio_rugo": 0.12,
+		"dish": 0.045, "placa": 0.0,
+		"cubo": "tampa",
+	},
+	# Goliath: aro preto de 2 frisos e X largo de alumínio com 2 furos
+	"goliath": {
+		"aro_cor": Color(0.035, 0.035, 0.04), "aro_a": 0.017, "aro_b": 0.015,
+		"luva": 0.0, "frisos": Color(0.42, 0.42, 0.44),
+		"raios": [45, 135, 225, 315], "raio_larg": [0.056, 0.042], "raio_esp": 0.005,
+		"raio_cor": Color(0.78, 0.79, 0.8),
+		"furos": [[0.45, 0.5, 0.0085], [0.72, 0.5, 0.0075]],
+		"dish": 0.015, "placa": 0.0,
+		"cubo": "parafusos", "cubo_r": 0.032, "n_parafusos": 4,
+		"cubo_cor": Color(0.78, 0.79, 0.8), "cubo_metal": 0.7,
+		"parafuso_cor": Color(0.1, 0.1, 0.11), "emblema_cor": Color(0.08, 0.08, 0.09),
+	},
+	# Chimera (rali): aro grosso de camurça, X de alumínio com 3 furos e cubo
+	# redondo com anel de parafusos
+	"chimera": {
+		"aro_cor": Color(0.07, 0.07, 0.075), "aro_rugo": 1.0, "aro_a": 0.02, "aro_b": 0.021,
+		"luva": 0.0,
+		"raios": [45, 135, 225, 315], "raio_larg": [0.042, 0.036], "raio_esp": 0.005,
+		"raio_cor": Color(0.8, 0.81, 0.83),
+		"furos": [[0.38, 0.5, 0.0062], [0.56, 0.5, 0.0062], [0.74, 0.5, 0.0062]],
+		"dish": 0.03, "placa": 0.0,
+		"cubo": "parafusos", "cubo_r": 0.04, "n_parafusos": 6,
+		"cubo_cor": Color(0.75, 0.76, 0.78), "cubo_metal": 0.8,
+		"parafuso_cor": Color(0.12, 0.12, 0.13),
+		"emblema_cor": Color(0.06, 0.06, 0.065), "emblema_borda": Color(0.8, 0.81, 0.83),
+	},
 }
 
 # carro (id do vehicles.xml) -> estilo
@@ -197,21 +282,21 @@ const POR_CARRO := {
 	"BUGGY_10": "renegade",
 	"BUGGY_11": "kart",          # Hurricane
 	"BUGGY_12": "storm",
-	# trucks (out/2026): escolha nossa entre os estilos que já existem, um por
-	# carro (o Matheus troca com B e diz qual fica)
-	"TRUCK_01": "couro",         # Buccaneer (jipe)
-	"TRUCK_02": "bulldog",       # Shockwave
-	"TRUCK_03": "mountney",      # Shinto
-	"TRUCK_04": "sparco_azul",   # Jericho
-	"TRUCK_05": "sparco_preto",  # Punisher
-	"TRUCK_06": "buggy",         # Panther
-	"TRUCK_07": "kart",          # Herbst Truggy
-	"TRUCK_08": "espuma",        # Herbst TT
-	"TRUCK_09": "furado",        # Hammerhead
-	"TRUCK_10": "fusca",         # Fireball (picape antiga)
-	"TRUCK_11": "inferno",       # Goliath
-	"TRUCK_12": "storm",         # Chimera (rali)
-	"LAZARUS": "renegade",
+	# trucks (out/2026): o próprio desenho melhorado; Shockwave e Punisher não
+	# têm volante no modelo (escolha nossa, o Matheus troca com B)
+	"TRUCK_01": "buccaneer",
+	"TRUCK_02": "bulldog",       # Shockwave (sem volante no jogo)
+	"TRUCK_03": "furado",        # Shinto (o X furado dos buggies)
+	"TRUCK_04": "jericho",
+	"TRUCK_05": "sparco_preto",  # Punisher (sem volante no jogo)
+	"TRUCK_06": "furado",        # Panther
+	"TRUCK_07": "truggy",        # Herbst Truggy
+	"TRUCK_08": "storm",         # Herbst TT (o X liso de aro prateado do Storm)
+	"TRUCK_09": "storm",         # Hammerhead
+	"TRUCK_10": "fireball",
+	"TRUCK_11": "goliath",
+	"TRUCK_12": "chimera",
+	"LAZARUS": "lazarus",
 }
 
 
@@ -293,6 +378,13 @@ static func _aro(mesh: ArrayMesh, e: Dictionary, raio: float, n: Vector3, cima: 
 			_quad(st, pts[i][j], pts[i + 1][j], pts[i + 1][j2], pts[i][j2],
 				nrs[i][j], nrs[i + 1][j], nrs[i + 1][j2], nrs[i][j2])
 	_fechar(mesh, st_aro, _material(e.aro_cor, e.aro_metal, e.aro_rugo))
+	if e.frisos != null:
+		# aro de 2 frisos do jogo (Jericho, Goliath, Lazarus): filete fino na
+		# borda de dentro e na de fora, do lado do piloto
+		var st_f := _st()
+		for s: float in [-0.8, 0.8]:
+			_anel(st_f, raio + float(e.aro_a) * s, n * float(e.aro_b) * 0.55, 0.0024, n, cima, lado)
+		_fechar(mesh, st_f, _material(e.frisos, 0.8, 0.3))
 	if e.marca_cor != null:
 		_fechar(mesh, st_marca, _material(e.marca_cor, 0.0, 0.8))
 	if e.luva_cor != null:
@@ -310,6 +402,12 @@ static func _raios(mesh: ArrayMesh, e: Dictionary, raio: float, n: Vector3, cent
 	var w1: float = e.raio_larg[1]
 	var esp: float = e.raio_esp
 	var st := _st()
+	if e.raio_forma == "tubo":
+		# varão/tubo redondo do centro recuado até o meio do aro (Buccaneer, Fireball)
+		for r in dirs:
+			_tubo(st, centro + r * r0, r * raio, w0 * 0.5, w1 * 0.5, n)
+		_fechar(mesh, st, _material(e.raio_cor, e.raio_metal, e.raio_rugo))
+		return
 	for r in dirs:
 		var perp: Vector3 = n.cross(r)
 		var ini: Vector3 = centro + r * r0
@@ -388,6 +486,16 @@ static func _cubo(mesh: ArrayMesh, e: Dictionary, n: Vector3, cima: Vector3, lad
 			for d in [cima, lado, -cima, -lado]:
 				_prisma(st_p, _circulo(0.004, 6), topo + d * cubo_r * 0.68, n, n * 0.004)
 			_prisma(st_em, _circulo(0.019, 24), topo, n, n * 0.008, 0.9)
+		"t":
+			# Truggy: placa em T por cima do X (braços pros lados e pra baixo),
+			# com furos de alívio e o emblema no meio
+			var st_t := _st()
+			_prisma(st_t, _placa_t(cubo_r), base, n, n * 0.008, 1.0, cima, lado)
+			topo = base + n * 0.008
+			for f: Vector2 in [Vector2(-0.62, 0), Vector2(-0.95, 0), Vector2(0.62, 0), Vector2(0.95, 0), Vector2(0, -0.75)]:
+				_prisma(st_p, _circulo(0.0065, 16), topo + (lado * f.x + cima * f.y) * cubo_r * 2.2, n, n * 0.0012)
+			_fechar(mesh, st_t, _material(e.t_cor, 0.7, 0.35))
+			_emblema(st_em, st_eb, topo, n, 0.022)
 		"fusca":
 			# buzina retangular arredondada com duas teclas e o emblema redondo
 			var o := base - cima * 0.006
@@ -520,6 +628,64 @@ static func _circulo(r: float, lados: int) -> PackedVector2Array:
 		var a := TAU * i / lados
 		p.append(Vector2(cos(a), sin(a)) * r)
 	return p
+
+
+## contorno da placa em T (x = lado, y = cima), estrela em volta da origem pro
+## leque do _prisma: barra de lado a lado, braço pra baixo afinando e um
+## bojo redondo em cima do meio. c = raio do bojo; braços até c x 2.6
+static func _placa_t(c: float) -> PackedVector2Array:
+	var L := c * 2.6
+	var h := c * 0.5
+	var p := PackedVector2Array()
+	p.append(Vector2(-L, h * 0.8))
+	for i in 9:
+		var a := PI - PI * i / 8.0           # bojo de 180° a 0°
+		p.append(Vector2(cos(a) * c, maxf(sin(a) * c, h)))
+	p.append(Vector2(L, h * 0.8))
+	p.append(Vector2(L + h * 0.3, 0.0))
+	p.append(Vector2(L, -h * 0.8))
+	p.append(Vector2(h * 1.1, -h))
+	p.append(Vector2(h * 0.75, -c * 1.9))
+	p.append(Vector2(0.0, -c * 1.9 - h * 0.25))
+	p.append(Vector2(-h * 0.75, -c * 1.9))
+	p.append(Vector2(-h * 1.1, -h))
+	p.append(Vector2(-L, -h * 0.8))
+	p.append(Vector2(-L - h * 0.3, 0.0))
+	return p
+
+
+## tubo de a até b, raio ra em a e rb em b (sem tampas: as pontas somem no
+## cubo e no aro)
+static func _tubo(st: SurfaceTool, a: Vector3, b: Vector3, ra: float, rb: float, n: Vector3) -> void:
+	var d := (b - a).normalized()
+	var p1 := n.cross(d).normalized()
+	var p2 := d.cross(p1)
+	var lados := 12
+	for j in lados:
+		var a0 := TAU * j / lados
+		var a1 := TAU * (j + 1) / lados
+		var r0 := p1 * cos(a0) + p2 * sin(a0)
+		var r1 := p1 * cos(a1) + p2 * sin(a1)
+		_quad(st, a + r0 * ra, b + r0 * rb, b + r1 * rb, a + r1 * ra, r0, r0, r1, r1)
+
+
+## anel fino (toro) de raio R em volta do eixo, deslocado por o
+static func _anel(st: SurfaceTool, R: float, o: Vector3, r: float, n: Vector3, cima: Vector3, lado: Vector3) -> void:
+	var lados := 8
+	for i in SEG:
+		var t0 := TAU * i / SEG
+		var t1 := TAU * (i + 1) / SEG
+		var q0 := cima * cos(t0) + lado * sin(t0)
+		var q1 := cima * cos(t1) + lado * sin(t1)
+		for j in lados:
+			var f0 := TAU * j / lados
+			var f1 := TAU * (j + 1) / lados
+			var na := q0 * cos(f0) + n * sin(f0)
+			var nb := q1 * cos(f0) + n * sin(f0)
+			var nc := q1 * cos(f1) + n * sin(f1)
+			var nd := q0 * cos(f1) + n * sin(f1)
+			_quad(st, o + q0 * R + na * r, o + q1 * R + nb * r, o + q1 * R + nc * r, o + q0 * R + nd * r,
+				na, nb, nc, nd)
 
 
 ## retângulo de cantos arredondados (largura x altura), centrado

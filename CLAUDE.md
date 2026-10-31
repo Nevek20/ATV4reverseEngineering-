@@ -491,9 +491,23 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Kraken, Sparco azul no Viper, Mountney no McKenzies, kart no Hurricane,
   espuma no Trident, Fusca Itamar no Mosquito; couro sobra). B no jogo troca;
   print_tela VOLANTE=nome PILOTO=0. Alisar o aro do jogo (VOLANTE_LISO)
-  quebrou no Renegade e no Bulldog: não voltar. Trucks: estilos já
-  existentes escolhidos por nós (Volantes.POR_CARRO, TRUCK_NN e LAZARUS),
-  esperando o Matheus trocar com B.
+  quebrou no Renegade e no Bulldog: não voltar. Trucks (out/2026, pedido do
+  Matheus): cada um com o PRÓPRIO desenho melhorado. Repetidos dos buggies
+  reaproveitam o estilo pronto: Shinto e Panther = X furado ("furado"), TT e
+  Hammerhead = X liso de aro prateado do Storm ("storm"). Únicos, estilo
+  novo: Buccaneer (3 varões, 12h/4h/8h), Jericho (2 frisos, X de lâminas
+  afinando, chapa quadrada), Lazarus (o mesmo com aro cromado e lâminas
+  pretas), Truggy (X liso + placa em T, cubo "t"), Fireball (aro grosso e 4
+  tubos cromados, os de cima a 75° pra não cair na mão), Goliath (2 frisos,
+  X largo de alumínio com 2 furos), Chimera (aro grosso de camurça, X com 3
+  furos, anel de parafusos). Shockwave e Punisher não têm volante no modelo
+  (bulldog e sparco_preto, escolha nossa). Desenho do jogo de frente: o
+  print_tela com DESLIGAR=volante_nosso PILOTO=0 (VOL_DIST=0.5 chega perto).
+  tools/volante.py achava o aro numa bola de 40 cm em volta de ARSE +
+  DO_BANCO: no Chimera e no Lazarus o banco fica longe (31 e 23 cm do
+  chute) e só metade do volante saía (o resto ficava na carroceria, por
+  baixo do nosso). Agora busca de novo em volta do aro achado (os outros 23
+  saem iguais); precisa rodar o gerar_buggies --classe truck --so 12,13.
   A coluna de direção da carroceria termina 1.1 cm atrás do aro (Renegade
   1.7, Storm 0.7 cm NA FRENTE) e atravessava o miolo recuado (dish): o
   volante avança pro piloto até a coluna acabar atrás dele (car.gd
@@ -638,8 +652,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   as que faltam; main.gd e print_tela põem em car.desligadas). Lote 1
   (out/2026): luzes, farol e fumaça (o som do motor já tinha vindo). Lote 2:
   volante nosso, mãos no aro, volante girando e tremendo; câmera do piloto
-  com o olho padrão dos buggies [0.36, 0.47, 0.00] em todos (main.gd "fp",
-  o Matheus ajusta com as teclas). Goliath parado (RAM): massa 1.90 t, marchas
+  com o olho pelos números do Matheus (main.gd "fp"; padrão dos buggies
+  [0.36, 0.47, 0.00] onde ele não mudou). Goliath parado (RAM): massa 1.90 t, marchas
   21.9/14.3/10.6/8.5/7.0, final 1.1636, CoM (0, 0.85, -0.609), curso máx
   0.55 / 0.76 = remake. O Goliath do save state tem as peças Prototype
   (motor 0.35 + 0.2 + 0.1 + 0.2, escape L3 0.1, câmbio Prototype 0.05 =
@@ -673,6 +687,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 
 ## Pendente / ideias
 
+- Lazarus: vai ganhar valores próprios (o Matheus passa depois) pra não
+  ser igual ao Jericho; hoje usa física, peças, mapa e decalques dele. Não
+  suja: a CHASSIS_Truck_04 do jogo não tem a 2ª textura (sem _camada.obj
+  mesmo gerando de novo; o aviso do HUD não se aplica).
 - Trucks: conferir física andando (Punisher acelerando e virando).
   Tração: car.gd REAR_DRIVE vale pra todos (conferir nos trucks).
 

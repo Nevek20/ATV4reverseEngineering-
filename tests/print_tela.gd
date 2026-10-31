@@ -20,7 +20,9 @@ extends SceneTree
 ##                              prints (só no print simples, sem VISTAS)
 ##   VOLANTE_COR=1              pinta o volante solto de vermelho (vista "volante")
 ##   VOLANTE=kart               troca o estilo do volante gerado (volantes.gd)
+##   DESLIGAR=volante_nosso     desliga melhorias (nomes do car._tem) só neste print
 ##   PILOTO=0                   esconde o piloto (pra ver o volante)
+##   VOL_DIST=0.5               vista "volante" mais perto (fração da distância)
 ##   CAM_OFF=0,1.6,-4 CAM_ALVO=0,1,-2  câmera livre (frame do jogo)
 ##   PICK=x,y;x,y               imprime o triângulo do carro em cada pixel
 ##   CULL=0                     carroceria com as 2 faces (sem descartar a de trás)
@@ -103,7 +105,7 @@ func _initialize() -> void:
 
 
 func _overrides() -> bool:
-	for k in ["PASTA", "PONTOS", "RODA_F", "RODA_T"]:
+	for k in ["PASTA", "PONTOS", "RODA_F", "RODA_T", "DESLIGAR"]:
 		if OS.has_environment(k):
 			return true
 	return false
@@ -132,6 +134,8 @@ func _spawn(i: int) -> void:
 	c.vehicle_name = "%s (%s)" % [v.name, v.id]
 	if v.id.begins_with("TRUCK"):
 		c.desligadas = Car.PENDENTES_TRUCK
+	if OS.has_environment("DESLIGAR"):          # DESLIGAR=volante_nosso,luzes: melhorias fora só neste print
+		c.desligadas = c.desligadas + Array(OS.get_environment("DESLIGAR").split(","))
 	c.terrain = main.terrain
 	main.add_child(c)
 	main.car = c
@@ -301,7 +305,8 @@ func _camera(v: String) -> void:
 			root.add_child(camv)
 		camv.fov = 55.0
 		camv.near = 0.02
-		camv.global_position = t * (c + Vector3(0.25, 0.45, -0.75) * car.ESPELHO)
+		var dist := float(OS.get_environment("VOL_DIST")) if OS.has_environment("VOL_DIST") else 1.0
+		camv.global_position = t * (c + Vector3(0.25, 0.45, -0.75) * car.ESPELHO * dist)
 		camv.look_at(t * c, Vector3.UP)
 		camv.current = true
 		return

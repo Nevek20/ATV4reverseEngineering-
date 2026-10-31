@@ -8,6 +8,9 @@ extends Node3D
 # Os 3 primeiros ficam fixos (os testes usam --veh 0/1/2).
 # "fp" = câmera do piloto [altura, distância, inclinação] em relação ao volante
 # (car.gd FP_UP/FP_BACK/FP_PITCH), ajustada pelo Matheus carro a carro no jogo.
+# Trucks: números dele (out/2026); o do Chimera foi medido com o volante pela
+# metade (tools/volante.py antigo, centro 1.4 cm mais baixo e 1.2 cm mais pra
+# frente) e foi refeito pro mesmo olho com o centro novo (0.32, 0.47 -> 0.31, 0.46).
 const VEHICLES := [
 	{"name": "Renegade", "id": "BUGGY_10", "cams": "BuggyCamSet_10", "dir": "res://assets/renegade",
 		"data": "res://data/vehicles/buggy_10.xml", "points": "res://data/vehicles/buggy_10_points.bin", "fp": [0.39, 0.52, 0.00]},
@@ -54,27 +57,27 @@ const TRUCKS := [
 	{"name": "Buccaneer", "id": "TRUCK_01", "cams": "TruckCamSet_01", "dir": "res://assets/truck_01",
 		"data": "res://data/vehicles/truck_01.xml", "points": "res://data/vehicles/truck_01_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
 	{"name": "Shockwave", "id": "TRUCK_02", "cams": "TruckCamSet_02", "dir": "res://assets/truck_02",
-		"data": "res://data/vehicles/truck_02.xml", "points": "res://data/vehicles/truck_02_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
+		"data": "res://data/vehicles/truck_02.xml", "points": "res://data/vehicles/truck_02_points.bin", "base": BASE_TRUCK, "fp": [0.42, 0.49, 0.00]},
 	{"name": "Shinto", "id": "TRUCK_03", "cams": "TruckCamSet_03", "dir": "res://assets/truck_03",
 		"data": "res://data/vehicles/truck_03.xml", "points": "res://data/vehicles/truck_03_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
 	{"name": "Jericho", "id": "TRUCK_04", "cams": "TruckCamSet_11", "dir": "res://assets/truck_04",
-		"data": "res://data/vehicles/truck_04.xml", "points": "res://data/vehicles/truck_04_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
+		"data": "res://data/vehicles/truck_04.xml", "points": "res://data/vehicles/truck_04_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, -0.04]},
 	{"name": "Punisher", "id": "TRUCK_05", "cams": "TruckCamSet_05", "dir": "res://assets/truck_05",
 		"data": "res://data/vehicles/truck_05.xml", "points": "res://data/vehicles/truck_05_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
 	{"name": "Panther", "id": "TRUCK_06", "cams": "TruckCamSet_06", "dir": "res://assets/truck_06",
 		"data": "res://data/vehicles/truck_06.xml", "points": "res://data/vehicles/truck_06_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
 	{"name": "Herbst Truggy", "id": "TRUCK_07", "cams": "TruckCamSet_07", "dir": "res://assets/truck_07",
-		"data": "res://data/vehicles/truck_07.xml", "points": "res://data/vehicles/truck_07_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
+		"data": "res://data/vehicles/truck_07.xml", "points": "res://data/vehicles/truck_07_points.bin", "base": BASE_TRUCK, "fp": [0.40, 0.47, 0.00]},
 	{"name": "Herbst TT", "id": "TRUCK_08", "cams": "TruckCamSet_08", "dir": "res://assets/truck_08",
-		"data": "res://data/vehicles/truck_08.xml", "points": "res://data/vehicles/truck_08_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
+		"data": "res://data/vehicles/truck_08.xml", "points": "res://data/vehicles/truck_08_points.bin", "base": BASE_TRUCK, "fp": [0.48, 0.57, -0.04]},
 	{"name": "Hammerhead", "id": "TRUCK_09", "cams": "TruckCamSet_09", "dir": "res://assets/truck_09",
-		"data": "res://data/vehicles/truck_09.xml", "points": "res://data/vehicles/truck_09_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
+		"data": "res://data/vehicles/truck_09.xml", "points": "res://data/vehicles/truck_09_points.bin", "base": BASE_TRUCK, "fp": [0.44, 0.55, 0.00]},
 	{"name": "Fireball", "id": "TRUCK_10", "cams": "TruckCamSet_10", "dir": "res://assets/truck_10",
-		"data": "res://data/vehicles/truck_10.xml", "points": "res://data/vehicles/truck_10_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
+		"data": "res://data/vehicles/truck_10.xml", "points": "res://data/vehicles/truck_10_points.bin", "base": BASE_TRUCK, "fp": [0.32, 0.47, 0.00]},
 	{"name": "Goliath", "id": "TRUCK_11", "cams": "TruckCamSet_11", "dir": "res://assets/truck_11",
-		"data": "res://data/vehicles/truck_11.xml", "points": "res://data/vehicles/truck_11_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
+		"data": "res://data/vehicles/truck_11.xml", "points": "res://data/vehicles/truck_11_points.bin", "base": BASE_TRUCK, "fp": [0.30, 0.47, -0.04]},
 	{"name": "Chimera", "id": "TRUCK_12", "cams": "TruckCamSet_12", "dir": "res://assets/truck_12",
-		"data": "res://data/vehicles/truck_12.xml", "points": "res://data/vehicles/truck_12_points.bin", "base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00]},
+		"data": "res://data/vehicles/truck_12.xml", "points": "res://data/vehicles/truck_12_points.bin", "base": BASE_TRUCK, "fp": [0.31, 0.46, -0.02]},
 	# bônus resgatado: a CHASSIS_Truck_04 está completa no jogo e nenhum carro
 	# usa. É a Chevrolet Silverado pre-runner, carroceria original do Jericho;
 	# no remake o "Lazarus" (nome escolhido pelo Matheus)
