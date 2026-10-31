@@ -130,7 +130,14 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 ## Suspensão
 
 - Classe da roda vtable 0x585cc0: +0x1c integra (0x2484c8), +0x24 contatos
-  (0x248768), +0x2c mola (0x248a80).
+  (0x248768), +0x2c mola (0x248a80). Ordem no passo: integra -> contato ->
+  mola -> pneus (0x20a0b0). O 0x2484c8 no chão usa W+0xfc (força da mola
+  do passo anterior, kN, negativa = empurra a roda pra baixo); no ar
+  (W+0x10c = 0) calcula a mola e o amortecedor ali. v += W+0xfc/massa·dt,
+  x += v·dt (presos em vmax e min/max). Por isso o x da RAM (W+0xe8) é o do
+  contato. Parado, a soma dos W+0xfc = peso (Buccaneer 16.68 kN, Bulldog
+  9.81). Campos: W+0xe8 x, +0xec min, +0xf0 max, +0xf4 v, +0xf8 vmax, +0xfc
+  força, +0x100 cos do ângulo máximo, +0x110 normal do chão.
 - F = k·curva(x/max ou x/min)·x + c·curva(|v|)·v (kN), ao longo da normal
   do chão no ponto de fixação. x < 0 com contato puxa o carro pra baixo.
 - Batente x > max = correção de posição (regra de junção 0x23f6c0,
@@ -208,7 +215,17 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
 - **0x211b58 aplicação das forças**: por roda, em CoM + n·(soma do y do
   contato do eixo relativo ao CoM × escala) + frente·z_do_eixo.
   Lateral_scale_std 0.09; longitudinal = mistura de 0.5 e 0.2 por 0x474
-  (= acel·frac·Side_decel_to_fwd).
+  (= acel·frac·Side_decel_to_fwd). A escala lateral muda com a inclinação:
+  s = |corpo+0xc0 (cima do carro) · corpo+0x3e0 (lateral do chão)| = seno da
+  inclinação de lado em relação ao chão; s <= Params+0xf90
+  (Lateral_scale_sine_threshold_roll, 0.052 = 3°) dá o std (+0xf88), s >=
+  +0xf94 (sine_maximum_roll, 0.14 = 8°) dá o +0xf8c (at_maximum_roll, 0.0),
+  linha reta no meio. Ou seja: inclinado mais de 8° a força lateral age na
+  altura do CoM e não tomba mais o carro. Na RAM do Fireball.p2s: 0xc0 =
+  (-0.0139, 0.9998, 0.014) = "cima" do corpo; 0x3e0/0x3f0/0x400 = lateral,
+  normal e frente do chão. Portado em out/2026 (car.gd _h_lat); antes o
+  remake usava sempre 0.09 e inclinava mais (Fireball virando a 80 km/h:
+  8.8° -> 6.0°, tests/teste_capota.gd).
 - **0x20bf58 eixos 0x3ac/0x3b0**: média do z das rodas em coordenadas do
   MODELO (não relativo ao CoM). Entra na curvatura, divisão lateral e ponto
   de aplicação.
@@ -290,6 +307,45 @@ velocidades em mph (×0.44704 → m/s) ou m/s conforme o campo; mph = m/s ×
   aproximação antiga dava os mesmos números); muda em derrapagem (v_ref não
   conta o giro do carro), no ar (tração gira com o motor, frente perde
   giro), parado contra um muro e na roda da tela. tests/teste_roda.gd.
+
+## Casco de colisão (VehicleWorld.hsc)
+
+- 0x1fed48 monta "/Vehicles/%s/Collision/%s/VehicleWorld.hsc" com a classe
+  (descritor veículo+0xa6c, +0x1c: "Buggy", "Truck") e o Name do
+  vehicles.xml (+4: "TRUCK_10", "BUGGY_12"); sem o arquivo usa "Generic".
+  O mesmo descritor tem +0xc nome longo, +0x14 chassi, +0x2c mapa de peças,
+  +0x34 rodas genéricas, +0x3c câmeras. Também carrega o VehicleVehicle.hsc
+  (carro contra carro, outro casco).
+- Pelo id, não pelo chassi: o Storm (chassi Lancia, não existe
+  Collision/Lancia) carrega o Buggy_12 (raios e normais na RAM do
+  storm.p2s). Então o Jericho (TRUCK_04, chassi Truck_11) usa o casco do
+  Truck_04, que encaixa na Silverado (a carroceria original dele, o nosso
+  Lazarus: caixa 0.76 de diferença x 1.47 na carroceria do Jericho), e o
+  Chimera usa o Truck_12 (as pastas Collision/Dakar sobram).
+- Formato "CSH\0": versão 1, 1; n planos (normal, d; dentro = n·p + d <= 0);
+  n esferas (contador em 16 bytes; centro, raio). Frame do modelo. O loader
+  0x13e318 tira o CoM (d -= n·CoM, centro -= CoM): no Fireball.p2s os 13
+  planos estão em RAM 0x117dae0 e as 11 esferas em 0x117dd40 (+1 esfera
+  (0, 0.7, 0.188) r 0.25 no fim), e a caixa do corpo (0x117dcc0) é a das
+  esferas no mundo. Os 14 planos em 0x117d320 são do VehicleVehicle.
+- O corpo bate no mundo pelas ESFERAS, sem recorte dos planos. Save states
+  do Matheus (out/2026), lista de contatos do corpo (corpo+0x1f0; +0x10 =
+  ponto relativo ao CoM em eixos do mundo, +0x30 normal; no modelo: CoM +
+  R·ponto com R = linhas corpo+0xb0/0xc0/0xd0): Fireball de lado, contato
+  em (-1.186, 1.528, -1.703) = exatamente na esfera 9 (distância 0.000) e
+  3.4 cm FORA do plano 8; capotado, (-0.319, 2.488, -0.008) na esfera 5.
+- A roda vira esfera fora do cone da suspensão: o 2º contato do Fireball de
+  lado, (-1.545, 0.198, 1.567), fica a 0.567 m do WHEEL_FRONT_LEFT (curso 0)
+  = o raio da roda; o chão ali está a ~104° do eixo da suspensão (fora do
+  Cosine_maximum_collision_angle 0.643 = 50°). Dentro do cone é a mola.
+- No remake (car.gd _casco, _esferas_das_rodas): uma SphereShape3D por
+  esfera do .hsc (tools/casco.py -> data/vehicles/<id>_casco.json) e uma
+  por roda (raio da roda, no centro dela com o curso), ligada a cada passo
+  só quando o chão perto dela (consulta de esfera 3 cm maior) tem normal
+  fora do cone. Antes era uma caixa de 2.1 x 0.8 x 4.8 m igual pra todos
+  (teto do Fireball em 2.5 m: capotado a cabine entrava 1 m no chão) e a
+  roda de lado ficava presa embaixo do chão (Fireball 1.2 m, Chimera 95 cm;
+  agora 0). tests/teste_de_lado.gd.
 
 ## Pontos do modelo
 

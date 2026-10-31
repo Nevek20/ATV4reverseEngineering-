@@ -25,15 +25,34 @@ const TAXA_LENTA := 0.15            # fração do máximo (120/s) parado
 const SAIDA := 1.0                  # m/s pra fora do cano (nosso)
 
 var canos: Array = []
+var bases: Array = []               # boca de cada cano no frame do corpo (+Z = saída)
+var nomes: Array = []               # ponto EXHAUST* de cada emissor
+var antes: Array = []               # boca no quadro anterior (mundo)
+var car
 
 
-## monta um emissor por ponto EXHAUST/EXHAUST2 do carro (frame do corpo)
-func montar(car) -> bool:
+## Boca x fumaça (out/2026, "não sincroniza", buggy e truck): o GPUParticles3D
+## solta as partículas de cada passo dele TODAS no ponto do emissor naquele
+## quadro, e o passo padrão é 30/s. Andando, a fumaça saía em bolos (a 108 km/h
+## um a cada 1 m) e em metade dos quadros a boca ficava sem fumaça encostada
+## (o bolo mais novo meio metro atrás). Medido numa cena mínima com caixa a
+## 30 m/s (o emissor filho do corpo interpolado não tem atraso: o problema é
+## só o passo). Agora: passo a cada quadro (fixed_fps 0) e as partículas do
+## quadro saem espalhadas no trecho que a boca andou desde o quadro anterior
+## (caixa de emissão fina ao longo dele): rastro contínuo até a boca. Cada
+## emissor é top_level e segue o carro desenhado (interpolado) e a malha
+## tremendo onde fica a boca (motor_treme.bocas), a cada quadro (seguir).
+
+
+## monta um emissor por ponto EXHAUST* do carro (frame do corpo): EXHAUST,
+## EXHAUST2 e os repetidos dos trucks (EXHAUST~1, car._load_points)
+func montar(c) -> bool:
+	car = c
 	if not FileAccess.file_exists(TEXTURA) and not ResourceLoader.exists(TEXTURA):
 		return false
 	var tex := _textura()
-	for nome in ["EXHAUST", "EXHAUST2"]:
-		if not car.points.has(nome):
+	for nome: String in car.points:
+		if not nome.begins_with("EXHAUST"):
 			continue
 		var p: Vector3 = car.corpo(car.points[nome])
 		var d: Vector3 = car.points_rot[nome].z * car.ESPELHO   # linha 2 da matriz, jogo -> corpo
@@ -42,16 +61,60 @@ func montar(car) -> bool:
 		e.amount = MAX
 		e.lifetime = VIDA
 		e.local_coords = false
-		e.interpolate = true
+		e.fixed_fps = 0                 # passo a cada quadro (padrão 30: bolos)
+		e.interpolate = false
 		e.visibility_aabb = AABB(Vector3(-20, -20, -20), Vector3(40, 40, 40))
 		e.process_material = _processo()
 		e.draw_pass_1 = _malha(tex)
 		e.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(e)
+		e.top_level = true
+		e.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 		var up := Vector3.UP if absf(d.normalized().dot(Vector3.UP)) < 0.95 else Vector3.RIGHT
-		e.transform = Transform3D(Basis.looking_at(-d, up), p)   # +Z local = saída do cano
 		canos.append(e)
+		bases.append(Transform3D(Basis.looking_at(-d, up), p))   # +Z local = saída do cano
+		nomes.append(nome)
+		antes.append(Vector3.INF)
+	seguir()
 	return not canos.is_empty()
+
+
+## a cada quadro: boca no carro desenhado (interpolado) com a malha tremendo
+## onde ela fica (motor ou escape, no frame do modelo dentro do espelho, vira
+## um deslocamento no frame do corpo); o emissor vai pro meio do trecho que a
+## boca andou desde o quadro anterior, com a caixa de emissão ao longo dele
+func seguir() -> void:
+	if car == null or not car.is_inside_tree():
+		return
+	var xf: Transform3D = car.get_global_transform_interpolated()
+	var mt = car.motor_treme
+	var pai := Transform3D()
+	if mt and mt.is_inside_tree():
+		pai = car.global_transform.affine_inverse() * mt.global_transform
+	for i in canos.size():
+		var d := Transform3D()
+		if mt and mt.is_inside_tree():
+			var m: Node3D = [null, mt.malha, mt.malha_escape][mt.bocas.get(nomes[i], 0)]
+			if m:
+				d = pai * m.transform * pai.affine_inverse()
+		var boca: Transform3D = xf * d * bases[i]
+		var seg: Vector3 = boca.origin - antes[i] if antes[i].is_finite() else Vector3.ZERO
+		if seg.length() > 3.0:          # teleporte (T, troca de carro)
+			seg = Vector3.ZERO
+		antes[i] = boca.origin
+		var e: GPUParticles3D = canos[i]
+		var pm: ParticleProcessMaterial = e.process_material
+		if seg.length() < 0.002:
+			e.global_transform = boca
+			pm.emission_box_extents = Vector3.ZERO
+			pm.direction = Vector3(0, 0, 1)
+			continue
+		var z := seg.normalized()
+		var up := Vector3.UP if absf(z.y) < 0.95 else Vector3.RIGHT
+		var b := Basis.looking_at(-z, up)          # +Z local = o trecho andado
+		e.global_transform = Transform3D(b, boca.origin - seg * 0.5)
+		pm.emission_box_extents = Vector3(0, 0, seg.length() * 0.5)
+		pm.direction = b.inverse() * boca.basis.z  # saída do cano no frame do emissor
 
 
 ## taxa pela carga do motor (car.som_carga) e pelo rpm
@@ -65,13 +128,15 @@ func atualizar(carga: float, rpm: float) -> void:
 func _processo() -> ParticleProcessMaterial:
 	var m := ParticleProcessMaterial.new()
 	m.direction = Vector3(0, 0, 1)
+	m.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX   # trecho andado no quadro (seguir)
+	m.emission_box_extents = Vector3.ZERO
 	m.spread = 8.0
 	m.initial_velocity_min = SAIDA * 0.8
 	m.initial_velocity_max = SAIDA * 1.2
 	m.gravity = Vector3.ZERO
 	m.angle_min = 0.0
 	m.angle_max = 180.0
-	m.color = COR
+	m.color = COR if OS.get_environment("FUMACA_COR").strip_edges() != "1" else Color(1, 0, 0, 1)   # conferência: vermelha
 	var g := Gradient.new()
 	g.set_color(0, Color(1, 1, 1, 1))
 	g.set_color(1, Color(1, 1, 1, 0))

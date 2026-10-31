@@ -63,7 +63,7 @@ NOMES_TRUCK = ["Buccaneer", "Shockwave", "Shinto", "Jericho", "Punisher", "Panth
 # câmera = TruckCamSet_04, a do Jericho pelo número (ele usa a 11).
 BONUS = {
     "truck": [{"n": 13, "base": "TRUCK_04", "chassis": "CHASSIS_Truck_04", "cams": "TruckCamSet_04",
-               "nome": "Silverado", "assets": "truck_bonus", "dados": "truck_bonus"}],
+               "nome": "Lazarus", "assets": "truck_bonus", "dados": "truck_bonus"}],
 }
 CLASSES = {
     "buggy": {"id": "BUGGY", "pasta": "Buggy", "nomes": NOMES,

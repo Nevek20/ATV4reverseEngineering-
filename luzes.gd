@@ -26,6 +26,17 @@ extends Node3D
 ## segura parado (0x202df0), então acende parado na largada, e zera na ré
 ## pelo freio. Ré = marcha -1 engatada. Acende e apaga em ACENDE / APAGA
 ## segundos (lâmpada). Só os carros com REVERSE_LIGHT no modelo têm ré.
+##
+## Trucks (out/2026, pedidos do Matheus): o brilho fica no RAIO do ponto
+## também no shader (a cópia é do triângulo inteiro: no Shockwave a seta
+## laranja, 23 cm acima do freio, está no mesmo triângulo e acendia junto);
+## ponto com lente de verdade perto não acende a PINTURA em volta (o teto
+## vermelho do Truggy acendia com o freio; Punisher, Chimera e Storm têm a
+## lanterna pintada na pintura e continuam); pontos da mesma lanterna dão
+## UM halo (Chimera: 2 pontos por lanterna); a lente acesa vai no máximo a
+## BRILHO_MAX (lente clara x GANHO estourava pra salmão no Forward+). Pontos
+## nossos por carro (ré nas duas lanternas, lanternas pintadas do Punisher):
+## car.gd LUZES_NOSSAS.
 
 const TIPOS := {
 	"freio": {"pontos": ["BRAKE_LIGHT", "TAIL_LIGHT"], "raio": 0.15, "modo": 0,
@@ -41,18 +52,39 @@ const AFASTA := 0.002         # m: cópia pra fora da face (sem brigar no z)
 const HALO_TAM := Vector2(0.10, 0.30)    # m: diâmetro = 1.6 x os pixels acesos, entre esses
 const HALO_FORCA := 0.9
 const JUNTA := 0.10           # m: pontos mais perto que isso viram um (TAIL_LIGHT x BRAKE_LIGHT)
+const HALO_JUNTA := 0.30      # m: pixels acesos de pontos mais perto que isso dão um halo só (a mesma lanterna; Chimera 0.26)
+const LENTE_MIN := 20         # amostras de lente (fora da pintura) pra o ponto ignorar a pintura em volta
+# lanterna desenhada na pintura E com um pedaço de lente: a pintura acende
+# junto (Mosquito: o hexágono branco da ré é da pintura, a light_64 é o miolo)
+const PINTURA_E_LENTE := ["BUGGY_01"]
+const BRILHO_MAX := 1.5       # teto da lente acesa (cor x GANHO), mantendo a cor
+const MAX_CENTROS := 8        # pontos por tipo no shader
+# máscara do freio por carro (pedido do Matheus: acender o desenho certinho;
+# com o raio menor virava uma bola). Lanterna pintada na pintura:
+# - Punisher: a seta laranja logo abaixo do vermelho tem razão vermelho/verde
+#   2.3-2.6 (o vermelho 50+): razão a partir de 4
+# - Chimera: os quadrados de cima são vermelho forte (0.4 linear), os de
+#   baixo e as linhas entre os quadrados escuros (< 0.1): vermelho a partir
+#   de 0.14; raio 26 cm: com 18 a borda do quadrado de dentro (perto do meio
+#   do carro, 16-18 cm do ponto) apagava em curva
+# razao / verm = as duas pontas do smoothstep (padrão 2-4 e 0.02-0.05)
+const MASCARA_CARRO := {
+	"TRUCK_05": {"freio": {"razao": Vector2(4.0, 6.0)}},
+	"TRUCK_12": {"freio": {"verm": Vector2(0.14, 0.18), "raio": 0.26}},
+}
 const PASSO := 0.01           # m: amostras no triângulo (grade baricêntrica), até 20 por lado
 
-# máscara da cor da luz (a mesma conta no shader e em _mascara)
+# máscara da cor da luz (a mesma conta no shader e em _mascara). Branco da ré
+# até saturação 0.4-0.55: a lente creme do Shockwave (0.25 a 0.5) não acendia
 const GLSL_MASCARA := """
 float mascara(vec3 c, int qual) {
 	float mx = max(c.r, max(c.g, c.b));
 	float mn = min(c.r, min(c.g, c.b));
 	if (qual == 0) {
-		return smoothstep(2.0, 4.0, c.r / max(max(c.g, c.b), 1e-4)) * smoothstep(0.02, 0.05, c.r);
+		return smoothstep(razao.x, razao.y, c.r / max(max(c.g, c.b), 1e-4)) * smoothstep(verm.x, verm.y, c.r);
 	}
 	float sat = (mx - mn) / max(mx, 1e-4);
-	return smoothstep(0.15, 0.35, mx) * (1.0 - smoothstep(0.25, 0.45, sat));
+	return smoothstep(0.15, 0.30, mx) * (1.0 - smoothstep(0.40, 0.55, sat));
 }
 """
 
@@ -67,6 +99,13 @@ uniform float afasta = 0.002;
 uniform float cor_k = 0.0;
 uniform vec3 miolo = vec3(0.45, 0.10, 0.06);
 uniform int modo = 0;            // 0 vermelho (freio), 1 branco (ré)
+uniform vec2 razao = vec2(2.0, 4.0);   // vermelho / (verde ou azul), MASCARA_CARRO
+uniform vec2 verm = vec2(0.02, 0.05);  // vermelho mínimo (linear)
+uniform float brilho_max = 100.0;
+uniform vec3 centros[8];         // pontos da luz (frame do modelo); n_centros 0 = sem raio (farol)
+uniform int n_centros = 0;
+uniform float raio = 1.0;
+varying vec3 pos;
 
 vec3 cor_v(vec3 c) {
 	if (cor_k <= 0.0) {
@@ -76,13 +115,23 @@ vec3 cor_v(vec3 c) {
 }
 %s
 void vertex() {
+	pos = VERTEX;
 	VERTEX += NORMAL * afasta;
 }
 
 void fragment() {
 	vec3 t = tem_tex ? texture(tex, UV).rgb : vec3(1.0);
 	vec3 c = t * cor_v(COLOR.rgb);
-	ALBEDO = (c * ganho + miolo) * mascara(c, modo) * aceso;
+	float m = mascara(c, modo);
+	if (n_centros > 0) {
+		float d = 1e9;
+		for (int i = 0; i < n_centros; i++) {
+			d = min(d, distance(pos, centros[i]));
+		}
+		m *= 1.0 - smoothstep(raio * 0.85, raio, d);
+	}
+	float g = min(ganho, brilho_max / max(max(c.r, max(c.g, c.b)), 1e-4));
+	ALBEDO = (c * g + miolo) * m * aceso;
 }
 """
 
@@ -139,7 +188,11 @@ func montar(c) -> bool:
 
 
 func _montar_tipo(mi: MeshInstance3D, tipo: String, sh: Shader, sh_halo: Shader) -> void:
-	var def: Dictionary = TIPOS[tipo]
+	var def: Dictionary = TIPOS[tipo].duplicate()
+	var aj: Dictionary = MASCARA_CARRO.get(car.vehicle_id, {}).get(tipo, {})
+	def.raio = aj.get("raio", def.raio)
+	var razao: Vector2 = aj.get("razao", Vector2(2.0, 4.0))
+	var verm: Vector2 = aj.get("verm", Vector2(0.02, 0.05))
 	var pts: Array[Vector3] = []
 	for k in car.points:
 		for p in def.pontos:
@@ -148,29 +201,32 @@ func _montar_tipo(mi: MeshInstance3D, tipo: String, sh: Shader, sh_halo: Shader)
 				pts.append(q)
 	if pts.is_empty():
 		return
+	if pts.size() > MAX_CENTROS:
+		push_warning("Luzes: %d pontos de %s, o shader usa %d" % [pts.size(), tipo, MAX_CENTROS])
 	var mesh: ArrayMesh = mi.mesh
 	var k_cor: float = car.cor_k()
 	var modo: int = def.modo
-	# por ponto: soma e caixa dos pixels acesos (amostras) e soma das normais
-	var grupos: Array = []
-	for p in pts:
-		grupos.append({"c": Vector3.ZERO, "n": Vector3.ZERO, "k": 0, "lo": Vector3.INF, "hi": -Vector3.INF})
-	var malha := ArrayMesh.new()
+	# 1ª passada: amostras acesas de cada triângulo perto (a cada PASSO, dentro
+	# do raio), com o ponto mais perto e se é da pintura
+	var tris: Array = []          # [superfície, [i0, i1, i2], [[p, ponto], ...], pintura]
+	var lente := PackedInt32Array()
+	lente.resize(pts.size())
+	var sups := {}                # superfície -> [arrays, material, textura]
 	for s in mesh.get_surface_count():
+		var m := mi.get_active_material(s) as StandardMaterial3D
+		if m == null or m.albedo_color.a <= 0.0:
+			continue
 		var a := mesh.surface_get_arrays(s)
 		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
 		var ix := PackedInt32Array(range(vs.size()))
 		if a[Mesh.ARRAY_INDEX] != null:
 			ix = a[Mesh.ARRAY_INDEX]
-		var m := mi.get_active_material(s) as StandardMaterial3D
-		if m == null or m.albedo_color.a <= 0.0:
-			continue
 		var tex: Texture2D = m.albedo_texture
+		var pintura := m.resource_name.ends_with("_white")
+		sups[s] = [a, tex]
 		var img := _imagem(tex)
 		var cols = a[Mesh.ARRAY_COLOR]
 		var uvs = a[Mesh.ARRAY_TEX_UV]
-		var nrs = a[Mesh.ARRAY_NORMAL]
-		var novo := PackedInt32Array()
 		for t in range(0, ix.size(), 3):
 			var i := [ix[t], ix[t + 1], ix[t + 2]]
 			var v0: Vector3 = vs[i[0]]
@@ -182,8 +238,7 @@ func _montar_tipo(mi: MeshInstance3D, tipo: String, sh: Shader, sh_halo: Shader)
 				continue
 			var lado := maxf(v0.distance_to(v1), maxf(v1.distance_to(v2), v2.distance_to(v0)))
 			var n_div := clampi(ceili(lado / PASSO), 2, 20)
-			var acesos := 0
-			var normal_em := -1
+			var acesas := []
 			for u in n_div + 1:
 				for w in n_div + 1 - u:
 					var b := Vector3(u, w, n_div - u - w) / float(n_div)
@@ -201,23 +256,42 @@ func _montar_tipo(mi: MeshInstance3D, tipo: String, sh: Shader, sh_halo: Shader)
 					if cols != null and k_cor > 0.0:
 						var cv: Color = (cols[i[0]] * b.x + cols[i[1]] * b.y + cols[i[2]] * b.z).srgb_to_linear()
 						cor = Color(cor.r * cv.r * k_cor, cor.g * cv.g * k_cor, cor.b * cv.b * k_cor)
-					if _mascara(cor, modo) > 0.5:
-						var g: Dictionary = grupos[perto]
-						acesos += 1
-						normal_em = perto
-						g.c += p
-						g.k += 1
-						g.lo = g.lo.min(p)
-						g.hi = g.hi.max(p)
-			if acesos == 0:
-				continue
-			novo.append_array(PackedInt32Array(i))
-			if nrs != null:
-				grupos[normal_em].n += nrs[i[0]] + nrs[i[1]] + nrs[i[2]]
-		if novo.is_empty():
+					if _mascara(cor, modo, razao, verm) > 0.5:
+						acesas.append([p, perto])
+						if not pintura:
+							lente[perto] += 1
+			if not acesas.is_empty():
+				tris.append([s, i, acesas, pintura])
+	# 2ª passada: ponto com lente de verdade perto não acende a pintura em volta
+	var por_sup := {}
+	var grupos: Array = []
+	for p in pts:
+		grupos.append({"c": Vector3.ZERO, "n": Vector3.ZERO, "k": 0, "lo": Vector3.INF, "hi": -Vector3.INF})
+	for tr in tris:
+		var vale := []
+		for am in tr[2]:
+			if not (tr[3] and lente[am[1]] >= LENTE_MIN and not (car.vehicle_id in PINTURA_E_LENTE)):
+				vale.append(am)
+		if vale.is_empty():
 			continue
-		var arr: Array = a.duplicate()
-		arr[Mesh.ARRAY_INDEX] = novo
+		if not por_sup.has(tr[0]):
+			por_sup[tr[0]] = PackedInt32Array()
+		por_sup[tr[0]].append_array(PackedInt32Array(tr[1]))
+		var nrs = sups[tr[0]][0][Mesh.ARRAY_NORMAL]
+		for am in vale:
+			var g: Dictionary = grupos[am[1]]
+			g.c += am[0]
+			g.k += 1
+			g.lo = g.lo.min(am[0])
+			g.hi = g.hi.max(am[0])
+		if nrs != null:
+			grupos[vale[-1][1]].n += nrs[tr[1][0]] + nrs[tr[1][1]] + nrs[tr[1][2]]
+	var centros := PackedVector3Array(pts.slice(0, MAX_CENTROS))
+	var malha := ArrayMesh.new()
+	for s in por_sup:
+		var arr: Array = sups[s][0].duplicate()
+		var tex: Texture2D = sups[s][1]
+		arr[Mesh.ARRAY_INDEX] = por_sup[s]
 		arr[Mesh.ARRAY_TANGENT] = null
 		malha.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
 		var mat := ShaderMaterial.new()
@@ -225,24 +299,28 @@ func _montar_tipo(mi: MeshInstance3D, tipo: String, sh: Shader, sh_halo: Shader)
 		mat.set_shader_parameter("tex", tex)
 		mat.set_shader_parameter("tem_tex", tex != null)
 		mat.set_shader_parameter("ganho", GANHO)
+		mat.set_shader_parameter("brilho_max", BRILHO_MAX)
 		mat.set_shader_parameter("afasta", AFASTA)
 		mat.set_shader_parameter("cor_k", k_cor)
 		mat.set_shader_parameter("modo", modo)
+		mat.set_shader_parameter("centros", centros)
+		mat.set_shader_parameter("n_centros", centros.size())
+		mat.set_shader_parameter("raio", def.raio)
+		mat.set_shader_parameter("razao", razao)
+		mat.set_shader_parameter("verm", verm)
 		var mio: Color = def.miolo
 		mat.set_shader_parameter("miolo", Vector3(mio.r, mio.g, mio.b))
 		malha.surface_set_material(malha.get_surface_count() - 1, mat)
 		_mats[tipo].append(mat)
-		faces[tipo] += novo.size() / 3
+		faces[tipo] += por_sup[s].size() / 3
 	if faces[tipo] == 0:
 		return
-	var lente := MeshInstance3D.new()
-	lente.name = "Lente_" + tipo
-	lente.mesh = malha
-	lente.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	mi.add_child(lente)
-	for g in grupos:
-		if g.k == 0:
-			continue
+	var no := MeshInstance3D.new()
+	no.name = "Lente_" + tipo
+	no.mesh = malha
+	no.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.add_child(no)
+	for g in _juntar(grupos):
 		var n: Vector3 = g.n.normalized() if g.n.length() > 0.0 else Vector3(0, 0, -1)
 		var ext: Vector3 = g.hi - g.lo
 		var q := QuadMesh.new()
@@ -263,6 +341,27 @@ func _montar_tipo(mi: MeshInstance3D, tipo: String, sh: Shader, sh_halo: Shader)
 		mi.add_child(h, true)
 		_mats[tipo].append(mat)
 		halos[tipo] += 1
+
+
+## grupos de pixels acesos com centro a menos de HALO_JUNTA viram um (a mesma lanterna)
+static func _juntar(grupos: Array) -> Array:
+	var out := []
+	for g in grupos:
+		if g.k == 0:
+			continue
+		var junto := false
+		for o in out:
+			if (o.c / float(o.k)).distance_to(g.c / float(g.k)) < HALO_JUNTA:
+				o.c += g.c
+				o.k += g.k
+				o.n += g.n
+				o.lo = o.lo.min(g.lo)
+				o.hi = o.hi.max(g.hi)
+				junto = true
+				break
+		if not junto:
+			out.append(g.duplicate())
+	return out
 
 
 ## freio 0..1 (brake_in) e ré engatada; a lâmpada sobe em ACENDE e desce em APAGA
@@ -302,10 +401,10 @@ static func _amostra(img: Image, uv: Vector2) -> Color:
 
 
 ## a máscara do shader (GLSL_MASCARA) na CPU
-static func _mascara(c: Color, qual: int) -> float:
+static func _mascara(c: Color, qual: int, razao := Vector2(2.0, 4.0), verm := Vector2(0.02, 0.05)) -> float:
 	var mx := maxf(c.r, maxf(c.g, c.b))
 	var mn := minf(c.r, minf(c.g, c.b))
 	if qual == 0:
-		return smoothstep(2.0, 4.0, c.r / maxf(maxf(c.g, c.b), 1e-4)) * smoothstep(0.02, 0.05, c.r)
+		return smoothstep(razao.x, razao.y, c.r / maxf(maxf(c.g, c.b), 1e-4)) * smoothstep(verm.x, verm.y, c.r)
 	var sat := (mx - mn) / maxf(mx, 1e-4)
-	return smoothstep(0.15, 0.35, mx) * (1.0 - smoothstep(0.25, 0.45, sat))
+	return smoothstep(0.15, 0.30, mx) * (1.0 - smoothstep(0.40, 0.55, sat))

@@ -1,6 +1,6 @@
 extends SceneTree
 ## Lanterna de freio e luz de ré (luzes.gd, melhoria nossa) e cor do vértice
-## (car.gd COR_VERTICE) nos 12 buggies: quantas faces de lente acharam perto
+## (car.gd COR_VERTICE) nos 12 buggies e nos 12 trucks: quantas faces de lente acharam perto
 ## dos pontos BRAKE_LIGHT (vermelhas) e REVERSE_LIGHT (brancas, só nos carros
 ## que têm o ponto), se os materiais do jogo usam a cor do vértice e se as
 ## luzes acendem (freando, de ré) e apagam.
@@ -21,19 +21,21 @@ func _process(_dt: float) -> bool:
 		car.free()
 		car = null
 	i += 1
-	while i < Main.VEHICLES.size() and vistos.has(Main.VEHICLES[i].id):
+	while i < Main.frota().size() and vistos.has(Main.frota()[i].dir):
 		i += 1
-	if i >= Main.VEHICLES.size():
+	if i >= Main.frota().size():
 		print("teste_luzes: %s" % ("ok" if falhas == 0 else "FALHA"))
 		return true
-	var v: Dictionary = Main.VEHICLES[i]
-	vistos[v.id] = true
+	var v: Dictionary = Main.frota()[i]
+	vistos[v.dir] = true   # pela pasta: a variação do Sphinx sai, o bônus (id do Jericho) entra
 	car = Car.new()
 	car.asset_dir = v.dir
-	car.data_files = ["res://data/vehicles/buggy_base.xml", v.data]
+	car.data_files = Main.dados(v)
 	car.points_file = v.points
 	car.vehicle_id = v.id
 	car.suspension = false
+	if v.id.begins_with("TRUCK"):
+		car.desligadas = Car.PENDENTES_TRUCK
 	root.add_child(car)
 	car.set_physics_process(false)
 	car.set_process(false)
@@ -41,7 +43,7 @@ func _process(_dt: float) -> bool:
 
 
 func _conferir() -> void:
-	var v: Dictionary = Main.VEHICLES[i]
+	var v: Dictionary = Main.frota()[i]
 	var lz = car.luzes
 	# cor do vértice ligada nos materiais da carroceria
 	var com_cor := 0

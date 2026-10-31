@@ -31,6 +31,31 @@ const DO_MODELO := {
 	# mão); 13 cm no grande pra não varar o capô (o buraco tem 15.6)
 	"BUGGY_02": {"rpm": [Vector3(0.01, 1.377, 0.606), Vector3(0.0, 0.34, -0.94), 0.13],
 		"vel": [Vector3(0.154, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.075]},
+	# Buccaneer (jipe): os 5 mostradores pintados na willys_jeep_style_panel
+	# (posição pelo UV do texel na chapa do painel): os 2 atrás do volante (o
+	# vermelho e o azul) viram conta-giros e velocímetro; o grande do meio e os
+	# 2 pequenos ficam abaixo da câmera do piloto (AUX)
+	"TRUCK_01": {"rpm": [Vector3(-0.546, 1.416, 0.492), Vector3(0.0, -0.21, -0.98), 0.10],
+		"vel": [Vector3(-0.32, 1.411, 0.493), Vector3(0.0, -0.21, -0.98), 0.10]},
+}
+# relógios do modelo trocados pelos nossos NO MESMO LUGAR (pedido do Matheus,
+# out/2026): o relógio do jogo sai inteiro (o mostrador e o "pote" em volta,
+# também na cópia de dentro da cabine fechada) e o nosso fica no centro, no
+# plano e do tamanho do mostrador, com a caixinha preta atrás. Achados pelo UV
+# (_mostradores_do_modelo): [textura, centro do mostrador no UV (do Godot, y
+# pra baixo), raio no UV, texturas que saem, raio que sai (x o do mostrador)].
+# A Stock_truck_clock é um relógio inteiro num hexágono (0.38 = até o meio das
+# arestas); no Goliath o relógio é o canto de baixo à esquerda do atlas
+# trophy_truck_light (o atlas também é farol: só perto do volante). Maior =
+# conta-giros, o da direita = velocímetro, o outro = temperatura (amador) ou a
+# marcha (PRO, luz de troca em cima do conta-giros)
+# "alinhar" (6º item): os potes do modelo saem tortos, cada um num plano; os
+# nossos vão pra um plano só (_alinhar)
+const NO_LUGAR := {
+	"TRUCK_02": ["stock_truck_clock", Vector2(0.5, 0.5), 0.38, ["stock_truck_clock", "cadilac_shock"], 1.9, "alinhar"],
+	"TRUCK_04": ["stock_truck_clock", Vector2(0.5, 0.5), 0.38, ["stock_truck_clock", "cadilac_chrom2"], 1.9],
+	"LAZARUS": ["stock_truck_clock", Vector2(0.5, 0.5), 0.38, ["stock_truck_clock", "cadilac_chrom2"], 1.9],
+	"TRUCK_11": ["trophy_truck_light", Vector2(0.22, 0.79), 0.19, ["trophy_truck_light"], 2.4],   # Goliath
 }
 const ESCONDER := {"BUGGY_10": "cadilac_clock"}     # textura da placa do relógio
 const REPINTAR := {"BUGGY_04": "_b_2"}              # textura com relógios pintados
@@ -54,6 +79,10 @@ const AUX := {
 	"BUGGY_02": [["temp", Vector3(-0.233, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.075],
 		["oleo", Vector3(-0.138, 1.333, 0.59), Vector3(0.0, 0.34, -0.94), 0.075],
 		["volt", Vector3(0.254, 1.331, 0.589), Vector3(0.0, 0.34, -0.94), 0.075]],
+	# Buccaneer: o grande do meio e os 2 pequenos à direita dele
+	"TRUCK_01": [["oleo", Vector3(-0.076, 1.239, 0.515), Vector3(0.0, -0.04, -1.0), 0.15],
+		["temp", Vector3(0.084, 1.239, 0.515), Vector3(0.0, -0.04, -1.0), 0.07],
+		["volt", Vector3(0.18, 1.239, 0.515), Vector3(0.0, -0.04, -1.0), 0.07]],
 }
 # auxiliares presos no conjunto (andam com ele): [tipo, posição no plano do
 # conjunto em relação ao centro do conta-giros (m, x direita, y cima), diâmetro].
@@ -73,11 +102,19 @@ const AJUSTE := {
 	"BUGGY_08": Vector2(-0.04, 0.0),
 	"BUGGY_11": Vector2(-0.02, 0.04),
 	"BUGGY_12": Vector2(0.08, 0.01),
+	"TRUCK_03": Vector2(0.0, -0.03),      # Shinto
+	"TRUCK_05": Vector2(0.0, -0.04),      # Punisher
+	"TRUCK_06": Vector2(0.0, -0.03),      # Panther
+	"TRUCK_10": Vector2(0.0, -0.04),      # Fireball
+	"TRUCK_07": Vector2(-0.04, 0.0),      # Herbst Truggy
+	"TRUCK_12": Vector2(0.01, 0.02),      # Chimera
 }
 # o volante tampa o conjunto: do lado direito dele (Phantom; McKenzies,
 # Hurricane e Storm pedidos pelo Matheus)
-const LADO := ["BUGGY_06", "BUGGY_08", "BUGGY_11", "BUGGY_12"]
+const LADO := ["BUGGY_06", "BUGGY_08", "BUGGY_11", "BUGGY_12",
+	"TRUCK_07", "TRUCK_08", "TRUCK_09", "TRUCK_12"]     # Truggy, TT, Hammerhead, Chimera
 const NA_FRENTE := 0.004      # nosso mostrador acima do buraco do modelo (m)
+const CAIXA := 0.045          # fundo da caixa preta atrás do mostrador (m)
 const DIST := 0.13            # conjunto: além do aro, na linha do olho (m)
 const ALTURA_ARO := 0.5       # ponto do aro que o olho mira (x raio, pra cima)
 const MARGEM := 4.0           # graus acima da borda de baixo da câmera do piloto
@@ -117,18 +154,44 @@ func montar(c) -> bool:
 		top = lim * car.P.wheel_r * car.RPM2RAD / (car.gears[car.gears.size() - 1] * car.P.final) * 3.6 * 1.06
 	vel_max = maxf(ceilf(top / 20.0) * 20.0, 100.0)
 	_tirar_do_modelo()
-	var tem: Dictionary = DO_MODELO.get(car.vehicle_id, {})
+	var tem: Dictionary = DO_MODELO.get(car.chave(), {})
+	var aux: Array = AUX.get(car.chave(), [])
+	var na_caixa := false                     # relógio no lugar do do modelo (que saiu)
+	if NO_LUGAR.has(car.chave()):
+		var regra: Array = NO_LUGAR[car.chave()]
+		var r := _mostradores_do_modelo(regra[0], regra[1], regra[2])
+		if r.size() >= 2:
+			_tirar_relogios(r, regra[3], regra[4])
+			na_caixa = true
+			tem = {}
+			aux = []
+			r.sort_custom(func(a, b): return a[2] > b[2])
+			if regra.size() > 5 and regra[5] == "alinhar":
+				_alinhar(r)
+			tem.rpm = r.pop_front()
+			r.sort_custom(func(a, b): return a[0].x > b[0].x)     # direita = x maior
+			tem.vel = r.pop_front()
+			if pro and not r.is_empty():
+				tem.marcha = r.pop_front()
+			if pro:
+				var cr: Array = tem.rpm
+				tem.luz = [cr[0] + _base(cr[1]).y * (cr[2] * 0.5 + 0.016), cr[1], 0.0]
+			var tipos_aux := ["temp", "oleo", "volt"]
+			for i in r.size():
+				aux.append([tipos_aux[i % 3]] + r[i])
 	var tipos := ["rpm", "vel"] + (["marcha", "luz"] if pro else [])
 	var falta := tipos.filter(func(k): return not tem.has(k))
 	for k in tem:
 		if k in tipos:
 			var m: Array = tem[k]
-			_instrumento(k, m[0] + m[1].normalized() * NA_FRENTE, m[1], m[2], false, self)
-	for a in AUX.get(car.vehicle_id, []):
-		_instrumento(a[0], a[1] + a[2].normalized() * NA_FRENTE, a[2], a[3], false, self)
+			_instrumento(k, m[0] + m[1].normalized() * NA_FRENTE, m[1], m[2], na_caixa and k != "luz", self,
+				m[3] if m.size() > 3 else CAIXA)
+	for a in aux:
+		_instrumento(a[0], a[1] + a[2].normalized() * NA_FRENTE, a[2], a[3], na_caixa, self,
+			a[4] if a.size() > 4 else CAIXA)
 	if not falta.is_empty() and not _conjunto(falta) and tem.is_empty():
 		return false
-	mover(AJUSTE.get(car.vehicle_id, Vector2.ZERO))
+	mover(AJUSTE.get(car.chave(), Vector2.ZERO))
 	visible = OS.get_environment("SEM_PAINEL") != "1"     # prints: só o que sobrou do modelo
 	return true
 
@@ -167,7 +230,7 @@ func _conjunto(falta: Array) -> bool:
 	var ancora := Vector3.ZERO
 	var n := Vector3.BACK
 	var mira := ce + cima * raio * ALTURA_ARO
-	if car.vehicle_id in LADO:
+	if car.chave() in LADO:
 		# do lado direito do aro (o conjunto fica menor de longe: 0.8)
 		mira = ce + direita * (raio + 0.02 + largura * 0.25) + cima * raio * 0.2
 	var sobe := 0.0
@@ -195,10 +258,161 @@ func _conjunto(falta: Array) -> bool:
 	for k in falta:
 		var d: float = {"rpm": d_rpm, "vel": d_vel, "marcha": 0.05, "luz": 0.0}[k]
 		_instrumento(k, lugar[k], n, d, true, conjunto)
-	for a in AUX_CONJUNTO.get(car.vehicle_id, []):
+	for a in AUX_CONJUNTO.get(car.chave(), []):
 		_instrumento(a[0], ancora + b.x * a[1].x + b.y * a[1].y, n, a[2], true, conjunto)
 	_suporte(ancora, b, ce - eixo * 0.06)
 	return true
+
+
+## mostradores do modelo pela textura e pelo UV: [centro, normal (pro piloto),
+## diâmetro] de cada grupo de triângulos ligados com o UV perto do mostrador e
+## a até 50 cm do volante (frame do modelo). Centro e tamanho pela conta
+## UV -> 3D do maior triângulo do grupo
+func _mostradores_do_modelo(tex: String, uvc: Vector2, ruv: float) -> Array:
+	var mi: MeshInstance3D = car.body_mi
+	if mi == null:
+		return []
+	var tris: Array = []         # [p0, p1, p2, uv0, uv1, uv2]
+	for s in mi.mesh.get_surface_count():
+		var m: Material = mi.get_active_material(s)
+		if not (m is BaseMaterial3D) or m.albedo_texture == null \
+				or not (tex in m.albedo_texture.resource_path.to_lower()):
+			continue
+		var arr := mi.mesh.surface_get_arrays(s)
+		var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+		var us: PackedVector2Array = arr[Mesh.ARRAY_TEX_UV]
+		var ix: PackedInt32Array = arr[Mesh.ARRAY_INDEX]
+		if ix.is_empty():
+			ix = PackedInt32Array(range(vs.size()))
+		for t in range(0, ix.size(), 3):
+			var tri := [vs[ix[t]], vs[ix[t + 1]], vs[ix[t + 2]], us[ix[t]], us[ix[t + 1]], us[ix[t + 2]]]
+			if _no_mostrador(tri, uvc, ruv):
+				tris.append(tri)
+	var grupos: Array = []         # [chaves, triângulos]
+	for tri in tris:
+		var ks := {}
+		for i in 3:
+			ks[(tri[i] * 1000.0).round()] = true
+		var junta := []
+		for g in grupos:
+			for k in ks:
+				if g[0].has(k):
+					junta.append(g)
+					break
+		var novo := [ks, [tri]]
+		for g in junta:
+			novo[0].merge(g[0])
+			novo[1].append_array(g[1])
+			grupos.erase(g)
+		grupos.append(novo)
+	var out := []
+	for g in grupos:
+		var melhor: Array = []
+		var area := 0.0
+		for tri in g[1]:
+			var a2: float = absf((tri[4] - tri[3]).cross(tri[5] - tri[3]))
+			if a2 > area:
+				area = a2
+				melhor = tri
+		if area < 1e-6:
+			continue
+		var e1: Vector3 = melhor[1] - melhor[0]
+		var e2: Vector3 = melhor[2] - melhor[0]
+		var f1: Vector2 = melhor[4] - melhor[3]
+		var f2: Vector2 = melhor[5] - melhor[3]
+		var det := f1.x * f2.y - f1.y * f2.x
+		var du := (e1 * f2.y - e2 * f1.y) / det
+		var dv := (e2 * f1.x - e1 * f2.x) / det
+		var c: Vector3 = melhor[0] + du * (uvc.x - melhor[3].x) + dv * (uvc.y - melhor[3].y)
+		var n := du.cross(dv).normalized()
+		if n.z > 0.0:
+			n = -n                   # pro piloto = -z
+		out.append([c, n, 2.0 * ruv * (du.length() + dv.length()) * 0.5])
+	return out
+
+
+## Shockwave (pedido do Matheus, out/2026: "todo torto"): os 3 potes do
+## modelo apontam cada um pra um lado (normais até 25° diferentes, a chapa do
+## painel virada 21° pra esquerda) e os da ponta ficam 2.6 cm desnivelados.
+## Os nossos vão pra um plano só, virado pro olho do piloto e passando pelo
+## grande (r[0], que fica onde está); os outros mantêm o x, ficam na mesma
+## altura (a média deles) e caem no plano. A caixa preta de cada um vai até a
+## chapa do painel (o pote do jogo saía 12 a 13 cm dela), 4º item.
+func _alinhar(r: Array) -> void:
+	var g: Vector3 = r[0][0]
+	var n0: Vector3 = (car.DRIVER_EYE - g).normalized()
+	var y := 0.0
+	for i in range(1, r.size()):
+		y += r[i][0].y
+	y /= maxf(r.size() - 1, 1)
+	for i in r.size():
+		var c: Vector3 = r[i][0]
+		if i > 0:
+			c.y = y
+		c.z = g.z - (n0.x * (c.x - g.x) + n0.y * (c.y - g.y)) / n0.z
+		r[i][0] = c
+		r[i][1] = n0
+		r[i].append(clampf(_ate_a_carroceria(c, -n0) + 0.01, CAIXA, 0.3))
+
+
+## distância de p até a carroceria na direção dir (Möller-Trumbore nos
+## triângulos do body_mi); CAIXA se não bater em nada até 30 cm
+func _ate_a_carroceria(p: Vector3, dir: Vector3) -> float:
+	var mi: MeshInstance3D = car.body_mi
+	var melhor := INF
+	for s in mi.mesh.get_surface_count():
+		var arr := mi.mesh.surface_get_arrays(s)
+		var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+		var ix: PackedInt32Array = arr[Mesh.ARRAY_INDEX]
+		if ix.is_empty():
+			ix = PackedInt32Array(range(vs.size()))
+		for t in range(0, ix.size(), 3):
+			var a := vs[ix[t]]
+			if a.distance_to(p) > 0.6:
+				continue
+			var e1 := vs[ix[t + 1]] - a
+			var e2 := vs[ix[t + 2]] - a
+			var h := dir.cross(e2)
+			var det := e1.dot(h)
+			if absf(det) < 1e-9:
+				continue
+			var sv := p - a
+			var u := sv.dot(h) / det
+			if u < 0.0 or u > 1.0:
+				continue
+			var q := sv.cross(e1)
+			var v := dir.dot(q) / det
+			if v < 0.0 or u + v > 1.0:
+				continue
+			var d := e2.dot(q) / det
+			if d > 0.005 and d < melhor:
+				melhor = d
+	return melhor if melhor < 0.3 else CAIXA
+
+
+## triângulo do mostrador: UV perto do centro do mostrador e perto do volante
+func _no_mostrador(tri: Array, uvc: Vector2, ruv: float) -> bool:
+	var u: Vector2 = (tri[3] + tri[4] + tri[5]) / 3.0
+	var p: Vector3 = (tri[0] + tri[1] + tri[2]) / 3.0
+	return u.distance_to(uvc) < ruv * 1.6 and p.distance_to(car.SW_CENTER) < 0.5
+
+
+## tira da carroceria (e da cópia de dentro da cabine fechada) as faces das
+## texturas do relógio do jogo em volta de cada mostrador achado
+func _tirar_relogios(mostradores: Array, texturas: Array, k: float) -> void:
+	var mi: MeshInstance3D = car.body_mi
+	var pontos := []
+	for m in mostradores:
+		pontos.append([m[0], m[2] * 0.5 * k])
+	var malhas := [mi]
+	var dentro := mi.get_node_or_null("FaceDeDentro")
+	if dentro:
+		malhas.append(dentro)
+	for tex in texturas:
+		for m in malhas:
+			var n := _apagar_faces(m, tex, pontos)
+			if m == mi:
+				apagadas += n
 
 
 ## tira os relógios do modelo (placa do Renegade, pintura da chapa do Sphinx)
@@ -211,17 +425,27 @@ func _tirar_do_modelo() -> void:
 		if not (m is BaseMaterial3D) or m.albedo_texture == null:
 			continue
 		var tp: String = m.albedo_texture.resource_path
-		if ESCONDER.has(car.vehicle_id) and ESCONDER[car.vehicle_id] in tp:
+		if ESCONDER.has(car.chave()) and ESCONDER[car.chave()] in tp:
 			var some := StandardMaterial3D.new()
 			some.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 			some.albedo_color = Color(0, 0, 0, 0)
 			mi.set_surface_override_material(s, some)
-		elif REPINTAR.has(car.vehicle_id) and REPINTAR[car.vehicle_id] in tp:
+		elif REPINTAR.has(car.chave()) and REPINTAR[car.chave()] in tp:
 			var m2: BaseMaterial3D = m.duplicate()
 			m2.albedo_texture = _sem_relogios(m.albedo_texture)
 			mi.set_surface_override_material(s, m2)
-	for ap in APAGAR.get(car.vehicle_id, []):
-		apagadas += _apagar_faces(mi, ap[0], ap[1])
+	# a carroceria e a cópia de dentro da cabine fechada (car.gd, FaceDeDentro,
+	# filha dela no mesmo frame): senão de dentro sobrava o relógio virado
+	var malhas := [mi]
+	var dentro := mi.get_node_or_null("FaceDeDentro")
+	if dentro:
+		malhas.append(dentro)
+	for ap in APAGAR.get(car.chave(), []):
+		for m in malhas:
+			var n := _apagar_faces(m, ap[0], ap[1])
+			if m == mi:
+				apagadas += n
+
 
 
 ## tira da malha os triângulos de uma textura perto dos pontos (frame do modelo)
@@ -236,7 +460,7 @@ static func _apagar_faces(mi: MeshInstance3D, tex: String, pontos: Array) -> int
 		var tp := ""
 		if m is BaseMaterial3D and m.albedo_texture:
 			tp = m.albedo_texture.resource_path
-		if (tp == "") if tex == "" else (tex in tp):
+		if (tp == "") if tex == "" else (tex.to_lower() in tp.to_lower()):
 			var vs: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
 			var ix: PackedInt32Array = arr[Mesh.ARRAY_INDEX]
 			if ix.is_empty():
@@ -404,7 +628,8 @@ static func _base(n: Vector3) -> Basis:
 	return Basis(x, y, z)
 
 
-func _instrumento(tipo: String, p: Vector3, n: Vector3, d: float, caixa: bool, pai: Node3D) -> void:
+func _instrumento(tipo: String, p: Vector3, n: Vector3, d: float, caixa: bool, pai: Node3D,
+		fundo := CAIXA) -> void:
 	var no := Node3D.new()
 	no.name = "Painel_" + tipo
 	no.transform = Transform3D(_base(n), p)
@@ -484,10 +709,10 @@ func _instrumento(tipo: String, p: Vector3, n: Vector3, d: float, caixa: bool, p
 			var cy := CylinderMesh.new()
 			cy.top_radius = d * 0.5 + 0.004
 			cy.bottom_radius = d * 0.5 + 0.002
-			cy.height = 0.045
+			cy.height = fundo
 			cx.mesh = cy
 			cx.rotation.x = PI * 0.5
-		cx.position = Vector3(0, 0, -0.024)
+		cx.position = Vector3(0, 0, -0.0015 - (fundo if tipo != "marcha" else 0.045) * 0.5)
 		cx.material_override = _preto()
 		no.add_child(cx)
 
@@ -601,7 +826,8 @@ class Mostrador extends Node2D:
 			for mk in marcas:
 				var dirv := Vector2(cos(_ang(mk[0])), sin(_ang(mk[0])))
 				draw_string(fonte, c + dirv * (r - 50) + Vector2(-30, 12), mk[1], HORIZONTAL_ALIGNMENT_CENTER, 60, 32, tinta)
-			draw_string(fonte, c + Vector2(-70, 66), rotulo, HORIZONTAL_ALIGNMENT_CENTER, 140, 24, tinta)
+			# rótulo na metade de cima: embaixo ele caía em cima do C e do H
+			draw_string(fonte, c + Vector2(-70, -34), rotulo, HORIZONTAL_ALIGNMENT_CENTER, 140, 24, tinta)
 			_ponteiro(c, r)
 			return
 		var passo := 1.0 if tipo == "rpm" else (20.0 if maximo <= 200.0 else 40.0)

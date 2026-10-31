@@ -13,6 +13,8 @@ extends SceneTree
 ##                              número, max/min (Maximum/Minimum_position que a
 ##                              física usa) ou nat (onde a física deixou parado)
 ##   CURSO=0.2                  atalho pra um curso só
+##   CURSO=TEmax/TD0/FE0.3      curso por roda (FE, FD, TE, TD; a que faltar fica nat; no
+##                              nome do arquivo "/" vira "-")
 ##   MEDIR=1                    imprime as medidas de cada canto em cada curso e
 ##                              salva <saida>_medidas.json (ver _medir/_estatico)
 ##   CORPO=0                    esconde a carroceria em todas as vistas
@@ -20,8 +22,11 @@ extends SceneTree
 ##                              prints (só no print simples, sem VISTAS)
 ##   VOLANTE_COR=1              pinta o volante solto de vermelho (vista "volante")
 ##   VOLANTE=kart               troca o estilo do volante gerado (volantes.gd)
+##   DESLIGAR=volante_nosso     desliga melhorias (nomes do car._tem) só neste print
 ##   PILOTO=0                   esconde o piloto (pra ver o volante)
+##   VOL_DIST=0.5               vista "volante" mais perto (fração da distância)
 ##   CAM_OFF=0,1.6,-4 CAM_ALVO=0,1,-2  câmera livre (frame do jogo)
+##   CAM_MODELO=1               CAM_OFF/CAM_ALVO no frame do modelo (pontos do jogo, PICK), CAM_FOV=30
 ##   PICK=x,y;x,y               imprime o triângulo do carro em cada pixel
 ##   CULL=0                     carroceria com as 2 faces (sem descartar a de trás)
 ##   COR_VERTICE=0              sem a cor do vértice do jogo (só a textura, como antes)
@@ -103,7 +108,7 @@ func _initialize() -> void:
 
 
 func _overrides() -> bool:
-	for k in ["PASTA", "PONTOS", "RODA_F", "RODA_T"]:
+	for k in ["PASTA", "PONTOS", "RODA_F", "RODA_T", "DESLIGAR"]:
 		if OS.has_environment(k):
 			return true
 	return false
@@ -130,7 +135,10 @@ func _spawn(i: int) -> void:
 		c.FP_BACK = v.fp[1]
 		c.FP_PITCH = v.fp[2]
 	c.vehicle_name = "%s (%s)" % [v.name, v.id]
-	c.melhorias = not v.id.begins_with("TRUCK")
+	if v.id.begins_with("TRUCK"):
+		c.desligadas = Car.PENDENTES_TRUCK
+	if OS.has_environment("DESLIGAR"):          # DESLIGAR=volante_nosso,luzes: melhorias fora só neste print
+		c.desligadas = c.desligadas + Array(OS.get_environment("DESLIGAR").split(","))
 	c.terrain = main.terrain
 	main.add_child(c)
 	main.car = c
@@ -180,6 +188,8 @@ func _pick(px: Vector2) -> void:
 		var n: Node = pilha.pop_back()
 		pilha.append_array(n.get_children())
 		if not (n is MeshInstance3D) or not n.is_visible_in_tree() or n.mesh == null:
+			continue
+		if String(n.name).begins_with("Halo"):     # quadrado virado pra câmera no shader: a malha não é onde aparece
 			continue
 		var mi: MeshInstance3D = n
 		var xf := mi.global_transform
@@ -298,7 +308,8 @@ func _camera(v: String) -> void:
 			root.add_child(camv)
 		camv.fov = 55.0
 		camv.near = 0.02
-		camv.global_position = t * (c + Vector3(0.25, 0.45, -0.75) * car.ESPELHO)
+		var dist := float(OS.get_environment("VOL_DIST")) if OS.has_environment("VOL_DIST") else 1.0
+		camv.global_position = t * (c + Vector3(0.25, 0.45, -0.75) * car.ESPELHO * dist)
 		camv.look_at(t * c, Vector3.UP)
 		camv.current = true
 		return
@@ -318,12 +329,15 @@ func _camera(v: String) -> void:
 	if OS.has_environment("CAM_ALVO"):
 		var p := OS.get_environment("CAM_ALVO").split(",")
 		alvo = Vector3(float(p[0]), float(p[1]), float(p[2])) * car.ESPELHO
+	if OS.get_environment("CAM_MODELO") == "1":     # CAM_OFF/CAM_ALVO no frame do modelo (pontos do jogo)
+		off += car.model_offset
+		alvo += car.model_offset * car.ESPELHO
 	var cam: Camera3D = root.get_node_or_null("CamPrint")
 	if cam == null:
 		cam = Camera3D.new()
 		cam.name = "CamPrint"
 		root.add_child(cam)
-	cam.fov = 45.0
+	cam.fov = float(OS.get_environment("CAM_FOV")) if OS.has_environment("CAM_FOV") else 45.0
 	cam.global_position = t * (off * car.ESPELHO)
 	cam.look_at(t * alvo, Vector3.UP)
 	cam.current = true
@@ -405,7 +419,7 @@ func _process_multi() -> bool:
 		return false
 	wait -= 1
 	if wait == 0:
-		var path := "%s_%s_%s.png" % [out.get_basename(), s[0], s[1].replace(":", "_")]
+		var path := "%s_%s_%s.png" % [out.get_basename(), s[0].replace("/", "-"), s[1].replace(":", "_")]
 		root.get_viewport().get_texture().get_image().save_png(path)
 		print("print salvo em ", path)
 		shot_i += 1
@@ -415,9 +429,14 @@ func _process_multi() -> bool:
 
 func _apply_curso(c: String) -> void:
 	var car = main.car
+	var por_canto := {}            # "TEmax/TD0/FE0.3": curso por roda
+	for p in c.split("/", false):
+		if p.length() > 2 and p.substr(0, 2) in ["FE", "FD", "TE", "TD"]:
+			por_canto[p.substr(0, 2)] = p.substr(2)
 	for i in car.wheels.size():
 		var w: Dictionary = car.wheels[i]
-		match c:
+		var ci: String = por_canto.get(_canto(w), "nat") if not por_canto.is_empty() else c
+		match ci:
 			"nat":
 				w.x = nat_x[i]
 			"max":
@@ -425,7 +444,7 @@ func _apply_curso(c: String) -> void:
 			"min":
 				w.x = w.min
 			_:
-				w.x = float(c)
+				w.x = float(ci)
 	car._update_visuals(0.0, 0.0)
 	var txt := []
 	for w in car.wheels:

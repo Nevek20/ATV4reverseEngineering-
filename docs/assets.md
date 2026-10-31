@@ -80,6 +80,73 @@ Wheel_Rally), Tire=DIRT_BUDGET, Alloy=WHEEL_01. Models_4K/Wheel:
   roda gira com a balança em x/z e o y vira WHEEL.y + curso; atrás vale o
   arco inteiro. O pneu afunda 0,2 a 5,8 cm no chão parado (no jogo também).
 
+## Modelos que o jogo não usa (inventário de out/2026)
+
+Varredura do data/arquivos.tsv contra o vehicles.xml (DefaultConfig de cada
+veículo) e o catálogo de peças (xml 14882). Nome com # = só o crc32 do nome
+está no archive; o nome real saiu por força bruta (o crc() do
+re/indice_archive.py contra palavras dos XMLs, textos e exe).
+Os `*_GHOST` (BUGGY/TRUCK/ATV/BIKE_GHOST, NotForPlayer e NotForAI) são o
+carro fantasma do replay: o jogo usa.
+
+- **Buggies: nada sobrando.** CHASSIS_Buggy_01..11 + Lancia, todos usados.
+- **Trucks: CHASSIS_Truck_04** (o "Lazarus"). O TRUCK_04 (Jericho) usa o
+  CHASSIS_Truck_11, o TRUCK_11 o 12 e o TRUCK_12 o Dakar, então sobra o 04.
+  Completo no 4K: BODY + pontos, Axle, Rear_Arm, Frames_Left/Right,
+  Brake_Front_Left/Right, sombra (Shadow_Truck_04) e pintura
+  (VehicleComposite). Texturas `preRunnerTruck_*`: é uma pré-runner. Não tem
+  arquivo de física extra de truck (os sem nome são TRUCK_AI.xml = comandos
+  da IA, TRUCK_ball.xml = física do modo com bola e ~15 com só
+  Air_drag_coefficient).
+- **ATVs** (cada ATV = chassis + carenagem; os 10 usam só o CHASSIS_ATV_01
+  ou 02 e as carenagens FAIRING_ATV_01..10, todas usadas):
+  - CHASSIS_ATV_03 a 08: quadro, motor, guidão e suspensão completos (20
+    arquivos cada no 4K), sem carenagem. Variações do quadro dos usados.
+  - CHASSIS_AI_2STROKE / AI_4STROKE e #9731c529 (crc de "CHASSIS_Mid"): os
+    mesmos quadros com nerf bar, para-choque e escape já na malha.
+  - Carenagens SandStorm e WolfTrekker: só pintura, sem modelo próprio. O
+    COMPOSITOR (xml 15074/15075) cita camadas Base/Primary/Secondary/Detail
+    que não existem; o que existe é a textura pronta Generic/SandStorm.bog e
+    WolfTrekker.bog (256x256, número 4 e logos já pintados: amarela/preta e
+    branca/vermelha/laranja). As 14 caixas do .bed delas batem com as do
+    FAIRING_ATV_04 (WolfTrekker até 0.03 da textura): são pinturas da
+    carenagem 04.
+- **Motos** (as 10 usam CHASSIS_Bike_2Stroke, 4Stroke ou 08 + carenagem):
+  #73f00a07 = **CHASSIS_Bike_01** e #eaf95bbd = **CHASSIS_Bike_02**, nomes
+  que nenhum arquivo do jogo cita. Completos em todas as resoluções (500 a
+  5K). Diferente das usadas: banco, paralamas e plásticos vêm na própria
+  malha (não usam carenagem). A pintura (VehicleComposite/Bike/#...) é uma
+  textura pronta só, Bike_01_Fairing / Bike_02_Fairing, que não está no
+  archive: saem brancas.
+  O Matheus não reconhece nenhuma das duas (pinturas cortadas da beta):
+  entram no remake como "pinturas resgatadas", marcadas assim no menu.
+- **Pistas** (pastas Levels/ x lista de ambientes do jogo, xml 14850, e os
+  campeonatos, Track= nos xml 14840..14880):
+  - NAT_09: pista inteira (242 modelos, Env e Event como as outras) fora da
+    lista. O NAT09 do jogo é a pasta NAT_NEW (eventos NAT09_Bikes e
+    NAT09_Trucks): a NAT_09 original foi trocada.
+  - NAT_WAHOO: pista inteira (248 modelos) fora da lista. O exe só cita no
+    menu de teste (cMainMenuPlaceholderState, com "-- TEST --" e
+    "test-one-track"): pista de teste dos devs.
+  - NAT_10 (26 modelos: inacabada) e RX_AI (88 modelos; rallycross de IA?).
+  - Minigames fora da lista: MIN_02, MIN_Target (nenhum arquivo cita) e
+    MIN_RING_OF_FIRE (o jogo usa MIN_ROF_01..03).
+  - Ao contrário: SX_02 está na lista (Supercross SX02, LOCKED) mas não tem
+    pasta: pista apagada.
+  - O relevo de cada pista fica no stream do disco (STREAMT/<tipo>/<pista>.000,
+    como o RX01.000), não no archive: sem o stream dessas pistas só dá pra
+    ver os objetos.
+- Piloto: Characters/Models/Arms_POV (ARMS_POV.srd + Arms_POV.skl + 5
+  animações por classe, AtV e Bike) = braços da câmera de guidão. O exe
+  carrega ("Rider POV Skeleton/Animation/Instance", HANDLEBAR): é usado, serve
+  pra câmera de primeira pessoa do ATV.
+- Rodas: 56 pastas sem nome com roda completa (Front/RearWheel, ALLOY, TYRE)
+  nos buggies e 45 nos trucks. 56 = 8 pneus x 7 aros do catálogo: devem ser
+  as rodas compráveis (pendente "pneu e aro comprados"). Nome não achado.
+- Prints: modelos convertidos com o pingu2obj num projeto Godot à parte;
+  as peças da suspensão saem fora do lugar porque no jogo quem posiciona
+  é o cCompPlace.
+
 ## Referência em vídeo
 
 Speedrun do Sphinx (Amateur National Buggy, 26m39s) no repo `atv4-dados`,

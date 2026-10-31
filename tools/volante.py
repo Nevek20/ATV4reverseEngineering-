@@ -101,6 +101,16 @@ def circulo(p1, p2, p3):
 def achar(strips, arse, seed=1):
     chute = tuple(arse[i] + DO_BANCO[i] for i in range(3))
     peds = pedacos(strips)
+    r = _achar(strips, peds, chute, seed)
+    # banco longe do volante (Chimera 31 cm, Lazarus 23 cm do chute): o lado de
+    # lá do aro ficava fora da busca e o volante saía pela metade. Busca de
+    # novo em volta do aro achado
+    if r and math.dist(chute, r["centro"]) + r["raio"] + TOL_ARO > BUSCA:
+        r = _achar(strips, peds, r["centro"], seed) or r
+    return r
+
+
+def _achar(strips, peds, chute, seed):
     perto = []
     for (i, a, b) in peds:
         vs = strips[i][0][a:b]

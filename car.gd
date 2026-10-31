@@ -100,6 +100,32 @@ const MAOS_NO_VOLANTE := true
 # gerado, redondo e centralizado (volantes.gd: um estilo por carro), no mesmo
 # centro, raio e inclinação. false = malha do jogo.
 const VOLANTE_NOSSO := true
+# melhoria nossa: volante trazido pro piloto ao longo do eixo dele (como um
+# espaçador de cubo), em m, pra mão alcançar: no Chimera o aro fica a 80 cm do
+# banco (braço 144% esticado) e no Lazarus a 71 cm (128%); nos outros 54-62 cm.
+# A câmera do piloto vem junto (o olho é medido do centro do aro). AVANCO=x
+# no ambiente testa um valor
+const AVANCO_VOLANTE := {"TRUCK_12": 0.10, "LAZARUS": 0.10}
+# melhoria nossa: piloto mais alto/pra frente que o ponto ARSE do jogo (só o
+# desenho dele; a física não usa). No Chimera o ARSE fica 15 cm mais pra trás
+# e 13 mais baixo que nos outros (em relação ao volante): só trazer o volante
+# não chegava (134%), subir mais que uns 5 cm bate o capacete no teto (75 cm
+# acima do banco). Com o banco + AVANCO_VOLANTE: Chimera 105%, Lazarus 101%
+# (teste_volante; com o volante inteiro do tools/volante.py o aro do Lazarus
+# ficou 2.4 cm mais alto e o banco foi mais 4 cm pra frente). BANCO=x,y,z no
+# ambiente testa
+const BANCO_NOSSO := {"TRUCK_12": Vector3(0.0, 0.04, 0.20), "LAZARUS": Vector3(0.0, 0.06, 0.09)}
+# melhoria nossa: volante onde o modelo não tem (Shockwave e Punisher não têm
+# interior: o tools/volante.py não acha aro nenhum). Posto onde ele fica nos
+# outros trucks em relação ao banco (ARSE + 0.37 de altura e 0.46 pra frente,
+# média dos 9 normais; eixo e raio típicos), com uma coluna nossa até o painel
+const VOLANTE_SEM_MODELO := {
+	"TRUCK_02": {"centro": [-0.475, 1.883, 0.523], "eixo": [0.0, 0.41, -0.912], "raio": 0.185},
+	"TRUCK_05": {"centro": [-0.565, 1.706, 0.695], "eixo": [0.0, 0.41, -0.912], "raio": 0.185},
+}
+const COLUNA_RAIO := 0.025     # m (coluna nossa)
+const COLUNA_MAX := 0.6        # m: até o painel, no máximo
+var sw_coluna: MeshInstance3D
 const Volantes := preload("res://volantes.gd")
 var volante_estilo := ""      # "" = o do carro (Volantes.POR_CARRO); B no jogo troca
 var sw_malha: MeshInstance3D
@@ -121,13 +147,39 @@ var sfx: Node = null
 # que o jogo tem no XML e não usa, nos pontos EXHAUST). false = sem fumaça
 const FUMACA := true
 var fumaca: Node3D = null
-# melhoria nossa: o Storm (BUGGY_12) é o único sem ponto EXHAUST no
-# _points.bin (o jogo não usa esses pontos). Medido no modelo dele: boca das
+# melhoria nossa: escapes no lugar dos pontos EXHAUST do jogo (que ele não
+# usa). Storm (BUGGY_12), o único buggy sem ponto: medido no modelo, boca das
 # duas ponteiras cromadas (peças de 46 faces na traseira, embaixo), viradas
-# 27° pra fora. Só a fumaça e o escape tremendo usam (frame do jogo: [ponto, direção])
+# 27° pra fora. Chimera (TRUCK_12): pontos do jogo, mas o EXHAUST2 (esquerda)
+# tem a matriz copiada do da direita e soltava fumaça pra dentro do carro:
+# espelhado. Só a fumaça e o escape tremendo usam (frame do jogo: [ponto, direção])
 const ESCAPE_NOSSO := {
 	"BUGGY_12": [[Vector3(0.569, 0.644, -2.489), Vector3(0.45, 0.0, -0.89)],
 		[Vector3(-0.580, 0.644, -2.489), Vector3(-0.45, 0.0, -0.89)]],
+	"TRUCK_12": [[Vector3(0.5535, 0.6811, -2.1867), Vector3(1.0, 0.0, 0.0)],
+		[Vector3(-0.5531, 0.6811, -2.1867), Vector3(-1.0, 0.0, 0.0)]],
+}
+# melhoria nossa: pontos de luz no lugar dos do jogo (frame do jogo; troca
+# todos os pontos que começam com o nome). Pedidos do Matheus (out/2026), lentes
+# achadas com o print_tela PICK: ré nas DUAS lanternas do Shockwave e do
+# Fireball (o jogo põe um ponto só, na direita; a esquerda é o espelho);
+# Punisher: além das 2 luzes do teto, as lanternas grandes pintadas na
+# pintura (vermelho em cima, laranja, branco da ré embaixo); Truggy: a ré do
+# jogo fica no ar (perto de uma chapa escura), as de verdade são as caixinhas
+# cinza do lado das de freio no teto (textura chassis_tri02); Hammerhead:
+# as lanternas grandes dos lados (pedido dele)
+const LUZES_NOSSAS := {
+	"TRUCK_02": {"REVERSE_LIGHT": [Vector3(0.94, 1.71, -3.03), Vector3(-0.94, 1.71, -3.03)]},
+	"TRUCK_05": {"BRAKE_LIGHT": [Vector3(-0.55, 2.39, -1.00), Vector3(0.55, 2.39, -1.00),
+			Vector3(-0.98, 1.53, -3.19), Vector3(0.98, 1.53, -3.19)],
+		"REVERSE_LIGHT": [Vector3(-0.98, 1.34, -3.19), Vector3(0.98, 1.34, -3.19)]},
+	"TRUCK_07": {"REVERSE_LIGHT": [Vector3(-0.56, 2.41, -0.34), Vector3(0.52, 2.41, -0.34)]},
+	"TRUCK_10": {"REVERSE_LIGHT": [Vector3(0.99, 1.07, -3.18), Vector3(-0.99, 1.07, -3.18)]},
+	# Hammerhead: além das 2 do teto, as lanternas grandes dos lados (2 bolhas
+	# vermelhas cada, chassis_tri02), achadas com o PICK
+	"TRUCK_09": {"BRAKE_LIGHT": [Vector3(-0.56, 2.13, -0.88), Vector3(0.62, 2.13, -0.88),
+			Vector3(-0.95, 1.39, -3.19), Vector3(0.95, 1.39, -3.19),
+			Vector3(-0.95, 1.19, -3.23), Vector3(0.95, 1.19, -3.23)]},
 }
 # motor e escape tremendo (melhoria nossa, motor_treme.gd: peças soltas da
 # carroceria no cofre do motor; vibração pela rotação e balanço pela carga)
@@ -186,7 +238,11 @@ const COR_K_SRGB := 255.0 / 128.0   # no albedo (sRGB) vira o COR_K do pingu2obj
 # têm (as de 2 faces já modeladas ficam, senão piscam): na pintura ("white")
 # vira FORRO (de dentro não se vê a pintura de fora espelhada), no resto a
 # mesma textura.
-const CABINE_FECHADA := ["BUGGY_12"]
+# Trucks (lote 2): olhando pro lado da câmera do piloto, Shockwave, Jericho,
+# Fireball, Goliath, Chimera e Lazarus mostravam o chão onde devia estar a
+# porta; vale pros 13 (nos abertos só aparece a chapa por dentro, que é o certo)
+const CABINE_FECHADA := ["BUGGY_12", "TRUCK_01", "TRUCK_02", "TRUCK_03", "TRUCK_04", "TRUCK_05",
+	"TRUCK_06", "TRUCK_07", "TRUCK_08", "TRUCK_09", "TRUCK_10", "TRUCK_11", "TRUCK_12", "LAZARUS"]
 const FORRO := Color(0.16, 0.16, 0.17)
 
 # O jogo é mão esquerda (x direita, y cima, z frente; esquerda do jogo = x < 0
@@ -354,9 +410,19 @@ const TRAVA_FIM := -1.0
 var test_input = null         # {thr, brk, steer} pra testes automáticos
 # false desliga as melhorias nossas (volante girando e gerado, mãos na IK,
 # som do Engine Simulator, fumaça, painel, motor tremendo e animado, luzes,
-# farol, volante tremendo): fica só o que o jogo faz. main.gd desliga nos
-# trucks até a base deles ser conferida com os save states
+# farol, volante tremendo): fica só o que o jogo faz
 var melhorias := true
+# melhorias desligadas só neste carro (nomes de _tem). Nos trucks main.gd e
+# print_tela põem PENDENTES_TRUCK: cada uma sai daqui quando for ligada e
+# conferida neles (lote 1, out/2026: luzes, farol e fumaça; o som do motor
+# veio antes, com os 13 motores dos trucks; lote 2: volante e mãos)
+var desligadas := []
+const PENDENTES_TRUCK := ["motor_treme", "motor_anima"]
+
+
+## melhoria nossa ligada neste carro
+func _tem(nome: String) -> bool:
+	return melhorias and not (nome in desligadas)
 
 
 func _ready() -> void:
@@ -378,16 +444,12 @@ func _ready() -> void:
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
-	var shape := CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = Vector3(2.1, 0.8, 4.8)
-	shape.shape = box
-	shape.position = Vector3(0, 0.95, 0)
-	add_child(shape)
+	_casco()
 	contact_monitor = true            # batida: contatos do casco (_batida_passo)
 	max_contacts_reported = 8
 	for w in wheels:
 		_make_wheel_mesh(w)
+	_esferas_das_rodas()
 	if suspension and not pecas.is_empty() and not points.is_empty():
 		susp_vis = preload("res://suspension_visual.gd").new()
 		espelho.add_child(susp_vis)
@@ -397,6 +459,77 @@ func _ready() -> void:
 		susp_vis.build(self, points, points_rot, asset_dir, pecas.get("pecas", {}),
 			pecas.get("rally", false), pecas.get("estepe", []), spare_mesh)
 	_load_sujeira()               # por último: precisa das rodas e das peças
+
+
+## casco de colisão contra o mundo = as ESFERAS do VehicleWorld.hsc do jogo
+## pelo id do veículo (tools/casco.py -> data/vehicles/<id>_casco.json). Os
+## planos do arquivo não entram: nos save states do Fireball de lado e
+## capotado (out/2026) o contato do corpo cai exatamente na superfície de uma
+## esfera, num caso 3.4 cm FORA dos planos. Até out/2026 era uma caixa de 2.1
+## x 0.8 x 4.8 m igual pra todos (o teto dos trucks ficava 1 m acima dela).
+## Sem o .json volta a caixa
+func _casco() -> void:
+	var path := "res://data/vehicles/%s_casco.json" % vehicle_id.to_lower()
+	var info = JSON.parse_string(FileAccess.get_file_as_string(path)) if FileAccess.file_exists(path) else null
+	if info is Dictionary and info.has("esferas"):
+		var i := 0
+		for e in info.esferas:
+			var cs := CollisionShape3D.new()
+			cs.name = "Casco%d" % i
+			var sph := SphereShape3D.new()
+			sph.radius = e[3]
+			cs.shape = sph
+			cs.position = corpo(Vector3(e[0], e[1], e[2]))
+			add_child(cs)
+			i += 1
+		return
+	push_warning("sem %s: casco de colisão genérico (rode tools/casco.py)" % path)
+	var shape := CollisionShape3D.new()
+	shape.name = "Casco"
+	var box := BoxShape3D.new()
+	box.size = Vector3(2.1, 0.8, 4.8)
+	shape.shape = box
+	shape.position = Vector3(0, 0.95, 0)
+	add_child(shape)
+
+
+## roda como esfera (0x248768, Cosine_maximum_collision_angle): contato com o
+## chão até ~50° do eixo da suspensão é da mola; fora disso (carro de lado,
+## capotado, roda batendo de lado) a roda vira uma esfera do raio dela e bate
+## como o corpo. Fireball de lado (save state do Matheus, out/2026): um dos 2
+## contatos do corpo fica a 0.567 m do centro da roda dianteira = o raio dela.
+## Até out/2026 a roda de lado entrava no chão
+func _esferas_das_rodas() -> void:
+	for w in wheels:
+		var cs := CollisionShape3D.new()
+		cs.name = "Roda" + ("F" if w.front else "T") + ("E" if w.left else "D")
+		var sph := SphereShape3D.new()
+		sph.radius = w.r
+		cs.shape = sph
+		cs.disabled = true
+		cs.position = Vector3(w.px, w.y0, w.pz)
+		add_child(cs)
+		w.esfera = cs
+		var q := SphereShape3D.new()
+		q.radius = w.r + 0.03                # acha o chão um pouco antes de encostar
+		w.esfera_teste = q
+
+
+## liga a esfera de cada roda quando o chão perto dela está fora do cone da
+## suspensão (chamado a cada passo, depois do contato das molas)
+func _passo_esferas_rodas(space: PhysicsDirectSpaceState3D, up: Vector3) -> void:
+	for w in wheels:
+		var cs: CollisionShape3D = w.get("esfera")
+		if cs == null:
+			continue
+		var c := Vector3(w.px, w.y0 + clampf(w.x, w.min, w.max), w.pz)
+		cs.position = c
+		var q := PhysicsShapeQueryParameters3D.new()
+		q.shape = w.esfera_teste
+		q.transform = Transform3D(Basis(), global_transform * c)
+		q.exclude = [get_rid()]
+		var info := space.get_rest_info(q)
+		cs.set_deferred("disabled", info.is_empty() or (info.normal as Vector3).dot(up) >= w.cos_max)
 
 
 ## material de uma malha do jogo (carroceria, rodas, peças, volante do
@@ -435,6 +568,8 @@ func _load_pecas() -> void:
 	if pecas == null:
 		pecas = {}
 		return
+	if not pecas.has("volante") and VOLANTE_SEM_MODELO.has(chave()):
+		pecas["volante"] = VOLANTE_SEM_MODELO[chave()]
 	var pc: Dictionary = pecas.get("pecas", {})
 	if model_path == "" and pc.has("Body"):
 		model_path = asset_dir.path_join(pc.Body)
@@ -661,6 +796,9 @@ func _load_physics() -> void:
 	P.h_long = d.f("Stability/WheelForceHeightScales", "Longitudinal_scale_std", 0.5)
 	P.h_long_stf = d.f("Stability/WheelForceHeightScales", "Longitudinal_scale_side_decel_to_fwd_accel", 0.5)
 	P.h_lat = d.f("Stability/WheelForceHeightScales", "Lateral_scale_std", 0.1)
+	P.h_lat_roll = d.f("Stability/WheelForceHeightScales", "Lateral_scale_at_maximum_roll", P.h_lat)
+	P.h_lat_s0 = d.f("Stability/WheelForceHeightScales", "Lateral_scale_sine_threshold_roll", 1.0)
+	P.h_lat_s1 = d.f("Stability/WheelForceHeightScales", "Lateral_scale_sine_maximum_roll", 1.0)
 	P.grav_up = d.f("Stability/InAir", "Gravity_scale_moving_up", 1.0)
 	P.grav_down = d.f("Stability/InAir", "Gravity_scale_moving_down", 1.0)
 	P.air_yaw_time = d.f("Stability/InAir/Yaw_control", "Minimum_time", 0.3)
@@ -685,7 +823,11 @@ func _load_physics() -> void:
 	# do Godot por corpo(): a esquerda do jogo (x < 0) vira +X. Sem ele, no chute.
 	wheels.clear()
 	var pts := _load_points(points_file)
-	if not pts.has("EXHAUST") and ESCAPE_NOSSO.has(vehicle_id):
+	if ESCAPE_NOSSO.has(vehicle_id):
+		for k in pts.keys():
+			if String(k).begins_with("EXHAUST"):
+				pts.erase(k)
+				points_rot.erase(k)
 		var e: Array = ESCAPE_NOSSO[vehicle_id]
 		for k in e.size():
 			var nm: String = "EXHAUST" if k == 0 else "EXHAUST%d" % (k + 1)
@@ -693,6 +835,16 @@ func _load_physics() -> void:
 			var dx := Vector3.UP.cross(dz).normalized()
 			pts[nm] = e[k][0]
 			points_rot[nm] = Basis(dx, dz.cross(dx), dz)    # linha 2 = direção, como no _points.bin
+	for pref: String in LUZES_NOSSAS.get(vehicle_id, {}):
+		for k in pts.keys():
+			if String(k).begins_with(pref):
+				pts.erase(k)
+				points_rot.erase(k)
+		var lista: Array = LUZES_NOSSAS[vehicle_id][pref]
+		for i in lista.size():
+			var nm: String = pref if i == 0 else "%s~n%d" % [pref, i]
+			pts[nm] = lista[i]
+			points_rot[nm] = Basis()
 	points = pts
 	update_eye()
 	var wpos := {}
@@ -791,10 +943,29 @@ func _damper(w: Dictionary, v: float) -> float:
 	return w.c * VehicleData.sample(w.dc, absf(v)) * v * 1000.0
 
 
+## 0x2484c8: curso de cada roda anda com a massa dela, com a força do passo
+## anterior (no chão, a mola + amortecedor guardados em w.f). No ar a mola e
+## o amortecedor levam a roda de volta pro meio (x = 0)
+func _integra_rodas(dt: float) -> void:
+	for w in wheels:
+		var fw: float
+		if w.hit:
+			fw = -w.f
+		else:
+			var damp: float = -_damper(w, w.v)
+			var dv: float = damp / w.mw * dt
+			if absf(dv) > absf(w.v) and absf(dv) > 1e-6:
+				damp *= absf(w.v / dv)
+			fw = -_spring(w, w.x) + damp
+		w.v = clampf(w.v + fw / w.mw * dt, -w.vmax, w.vmax)
+		w.x = clampf(w.x + w.v * dt, w.min, w.max)
+
+
 ## Arquivo de pontos do modelo: "POINT 1.00", contagem em 0x10, entradas de
 ## 0x50 bytes a partir de 0x14: nome (0x00..0x20), posição x, y, z (0x20) e
 ## matriz 3x3 em linhas (0x2c, escala 0.01; o jogo usa normalizada). A linha
 ## 2 da matriz do A_FRAME_* é o eixo da balança (suspension_visual.gd).
+## Nome repetido: o último fica com o nome (como sempre foi), os outros NOME~k.
 func _load_points(path: String) -> Dictionary:
 	var out := {}
 	points_rot = {}
@@ -807,6 +978,14 @@ func _load_points(path: String) -> Dictionary:
 	var off := 0x14
 	while off + 0x50 <= buf.size():
 		var nm := buf.slice(off, off + 0x20).get_string_from_ascii()
+		# nome repetido (os 2 EXHAUST dos trucks, TAIL_LIGHT do Trident, estepe
+		# do Chimera): o último fica com o nome, os de antes viram NOME~1, NOME~2
+		if out.has(nm):
+			var k := 1
+			while out.has("%s~%d" % [nm, k]):
+				k += 1
+			out["%s~%d" % [nm, k]] = out[nm]
+			points_rot["%s~%d" % [nm, k]] = points_rot[nm]
 		out[nm] = Vector3(buf.decode_float(off + 0x20), buf.decode_float(off + 0x24), buf.decode_float(off + 0x28))
 		var rows := []
 		for r in 3:
@@ -935,14 +1114,14 @@ func _load_model() -> void:
 	mi.position = model_offset
 	model_root.add_child(mi)
 	body_mi = mi
-	if vehicle_id in CABINE_FECHADA:
+	if chave() in CABINE_FECHADA:
 		_face_de_dentro(mi)
 	_load_steering_wheel()
 
 
 ## depois da física (precisa dos pontos ARSE, rodas e EXHAUST)
 func _load_motor_treme() -> void:
-	if not (MOTOR_TREME and melhorias) or body_mi == null:
+	if not (MOTOR_TREME and _tem("motor_treme")) or body_mi == null:
 		return
 	motor_treme = preload("res://motor_treme.gd").new()
 	motor_treme.name = "MotorTreme"
@@ -954,7 +1133,7 @@ func _load_motor_treme() -> void:
 
 
 func _load_luzes() -> void:
-	if not (LUZ_FREIO and melhorias) or body_mi == null:
+	if not (LUZ_FREIO and _tem("luzes")) or body_mi == null:
 		return
 	luzes = preload("res://luzes.gd").new()
 	luzes.name = "Luzes"
@@ -966,7 +1145,7 @@ func _load_luzes() -> void:
 
 
 func _load_farol() -> void:
-	if not (FAROL and melhorias) or body_mi == null:
+	if not (FAROL and _tem("farol")) or body_mi == null:
 		return
 	farol = preload("res://farol.gd").new()
 	farol.name = "Farol"
@@ -978,7 +1157,7 @@ func _load_farol() -> void:
 
 
 func _load_motor_anima() -> void:
-	if not (MOTOR_ANIMA and melhorias) or body_mi == null:
+	if not (MOTOR_ANIMA and _tem("motor_anima")) or body_mi == null:
 		return
 	motor_anima = preload("res://motor_anima.gd").new()
 	motor_anima.name = "MotorAnima"
@@ -1016,6 +1195,11 @@ func _face_de_dentro(mi: MeshInstance3D) -> void:
 	forro.roughness = 0.9
 	forro.cull_mode = MODEL_CULL
 	for s in arrs.size():
+		# vidro (textura *window*, o Lazarus tem os vidros fechados no modelo):
+		# fica sem face de dentro, senão de dentro a janela vira parede
+		var ms := mi.get_active_material(s) as BaseMaterial3D
+		if ms and ms.albedo_texture and ms.albedo_texture.resource_path.get_file().to_lower().contains("window"):
+			continue
 		var a: Array = arrs[s].duplicate()
 		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
 		var ix := PackedInt32Array(range(vs.size()))
@@ -1074,21 +1258,43 @@ func _load_piloto() -> void:
 		piloto = null
 		return
 	piloto.name = "Piloto"
-	piloto.position = model_offset + points["ARSE"] - piloto.root_pos
+	piloto.position = model_offset + banco() - piloto.root_pos
 	model_root.add_child(piloto)
-	if MAOS_NO_VOLANTE and VOLANTE_GIRA and melhorias and sw_pivot:
+	if MAOS_NO_VOLANTE and VOLANTE_GIRA and _tem("maos") and _tem("volante_gira") and sw_pivot:
 		var vol: Dictionary = pecas.get("volante", {})
 		# aro no frame do esqueleto (o piloto não gira em relação ao modelo)
-		piloto.prender_no_volante(sw_centro() - (points["ARSE"] - piloto.root_pos), SW_AXIS, vol.get("raio", 0.19))
+		piloto.prender_no_volante(sw_centro() - (banco() - piloto.root_pos), SW_AXIS, vol.get("raio", 0.19))
 
 
 ## centro do aro do volante que aparece (o do jogo, ou o gerado avançado)
 func sw_centro() -> Vector3:
-	return SW_CENTER + SW_AXIS.normalized() * sw_avanco
+	return SW_CENTER + SW_AXIS.normalized() * (avanco_volante() + sw_avanco)
+
+
+## chave do carro nas tabelas por carro: o vehicle_id, menos no bônus (o
+## Lazarus usa o id do Jericho, TRUCK_04, pra física e peças)
+func chave() -> String:
+	return "LAZARUS" if asset_dir.ends_with("truck_bonus") else vehicle_id
+
+
+## onde o piloto senta (frame do jogo): o ponto ARSE + BANCO_NOSSO
+func banco() -> Vector3:
+	var b: Vector3 = BANCO_NOSSO.get(chave(), Vector3.ZERO)
+	if OS.has_environment("BANCO"):
+		var p := OS.get_environment("BANCO").split(",")
+		b = Vector3(float(p[0]), float(p[1]), float(p[2]))
+	return points.get("ARSE", Vector3.ZERO) + b
+
+
+## quanto o volante vem pro piloto (AVANCO_VOLANTE), além do da coluna
+func avanco_volante() -> float:
+	if OS.has_environment("AVANCO"):
+		return float(OS.get_environment("AVANCO"))
+	return AVANCO_VOLANTE.get(chave(), 0.0)
 
 
 func _load_fumaca() -> void:
-	if not (FUMACA and melhorias):
+	if not (FUMACA and _tem("fumaca")):
 		return
 	fumaca = preload("res://fumaca.gd").new()
 	fumaca.name = "Fumaca"
@@ -1099,7 +1305,7 @@ func _load_fumaca() -> void:
 
 
 func _load_painel() -> void:
-	if not (PAINEL and melhorias):
+	if not (PAINEL and _tem("painel")):
 		return
 	painel = preload("res://painel.gd").new()
 	painel.name = "Painel"
@@ -1136,9 +1342,7 @@ func _load_sfx() -> void:
 
 
 func _load_som() -> void:
-	# o som do motor vale também nos trucks (as outras melhorias ficam
-	# desligadas neles até a base ser conferida): não mexe na física
-	if not SOM_MOTOR:
+	if not (SOM_MOTOR and _tem("som_motor")):
 		return
 	var dir: String = som_pasta if som_pasta != "" else preload("res://motor_som.gd").pasta_do_carro(vehicle_id)
 	if dir == "":
@@ -1159,6 +1363,8 @@ func _process(delta: float) -> void:
 		fumaca.atualizar(som_carga, rpm)
 	if motor_treme:
 		motor_treme.atualizar(rpm, som_carga, delta)
+	if fumaca:
+		fumaca.seguir()             # depois do motor_treme: o cano já tremeu neste quadro
 	if motor_anima:
 		motor_anima.atualizar(delta, rpm)
 	if luzes:
@@ -1173,7 +1379,8 @@ func _process(delta: float) -> void:
 
 func _load_steering_wheel() -> void:
 	var path := model_path.get_basename() + "_volante.obj"
-	if not ResourceLoader.exists(path):
+	var nosso := VOLANTE_NOSSO and _tem("volante_nosso")
+	if not ResourceLoader.exists(path) and not (nosso and VOLANTE_SEM_MODELO.has(chave())):
 		return
 	var vol: Dictionary = pecas.get("volante", {})
 	if vol.has("centro"):
@@ -1183,11 +1390,11 @@ func _load_steering_wheel() -> void:
 	sw_pivot.position = model_offset + SW_CENTER
 	model_root.add_child(sw_pivot)
 	var mi := MeshInstance3D.new()
-	if VOLANTE_NOSSO and melhorias:
+	if nosso:
 		sw_pivot.add_child(mi)
 		sw_malha = mi
 		sw_ponta_coluna = _ponta_coluna()
-		_montar_volante(volante_estilo if volante_estilo != "" else Volantes.do_carro(vehicle_id))
+		_montar_volante(volante_estilo if volante_estilo != "" else Volantes.do_carro(chave()))
 		return
 	var mesh := load(path) as Mesh
 	if mesh == null:
@@ -1209,11 +1416,75 @@ func _load_steering_wheel() -> void:
 func _montar_volante(nome: String) -> void:
 	volante_estilo = nome
 	sw_malha.mesh = Volantes.montar(pecas.get("volante", {}).get("raio", 0.19), SW_AXIS, nome)
-	sw_avanco = maxf(0.0, sw_ponta_coluna + 0.004 + Volantes.fundo(nome))
+	sw_avanco = maxf(0.0, sw_ponta_coluna - avanco_volante() + 0.004 + Volantes.fundo(nome))
 	sw_pivot.position = model_offset + sw_centro()
+	_montar_coluna(nome)
 	if piloto and piloto.no_volante():
-		piloto.prender_no_volante(sw_centro() - (points["ARSE"] - piloto.root_pos), SW_AXIS,
+		piloto.prender_no_volante(sw_centro() - (banco() - piloto.root_pos), SW_AXIS,
 			pecas.get("volante", {}).get("raio", 0.19))
+
+
+## coluna de direção nossa, quando a do modelo não encosta no volante: o volante
+## trazido pro piloto (AVANCO_VOLANTE) ou sem volante no modelo
+## (VOLANTE_SEM_MODELO). Vai do miolo pra trás no eixo até a ponta da coluna
+## do modelo ou, sem ela, até a carroceria (raio no eixo; até COLUNA_MAX)
+func _montar_coluna(nome: String) -> void:
+	if sw_coluna:
+		sw_coluna.queue_free()
+		sw_coluna = null
+	var ate := -INF                # onde a coluna acaba, no eixo a partir do SW_CENTER (- = pro painel)
+	if VOLANTE_SEM_MODELO.has(chave()):
+		ate = -_painel_no_eixo()
+	elif avanco_volante() > 0.0 and sw_ponta_coluna > -INF:
+		ate = sw_ponta_coluna - 0.02
+	if ate == -INF:
+		return
+	var n := SW_AXIS.normalized()
+	var ini := avanco_volante() + sw_avanco - Volantes.fundo(nome)    # atrás do miolo
+	var comp := ini - ate
+	if comp <= 0.01:
+		return
+	var cil := CylinderMesh.new()
+	cil.top_radius = COLUNA_RAIO
+	cil.bottom_radius = COLUNA_RAIO
+	cil.height = comp
+	cil.radial_segments = 16
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(0.07, 0.07, 0.075)
+	m.metallic = 0.6
+	m.roughness = 0.45
+	cil.material = m
+	sw_coluna = MeshInstance3D.new()
+	sw_coluna.name = "ColunaNossa"
+	sw_coluna.mesh = cil
+	var y := n
+	var x := y.cross(Vector3.FORWARD if absf(y.z) < 0.9 else Vector3.RIGHT).normalized()
+	sw_coluna.transform = Transform3D(Basis(x, y, x.cross(y)), model_offset + SW_CENTER + n * (ate + comp * 0.5))
+	model_root.add_child(sw_coluna)
+
+
+## distância do centro do aro até a carroceria, andando pra trás no eixo
+## (o painel); COLUNA_MAX se não bater em nada
+func _painel_no_eixo() -> float:
+	var m := load(model_path) as Mesh
+	if m == null:
+		return COLUNA_MAX
+	var o := SW_CENTER
+	var d := -SW_AXIS.normalized()
+	var melhor := COLUNA_MAX
+	for si in m.get_surface_count():
+		var a := m.surface_get_arrays(si)
+		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
+		var ix := PackedInt32Array(range(vs.size()))
+		if a[Mesh.ARRAY_INDEX] != null:
+			ix = a[Mesh.ARRAY_INDEX]
+		for t in range(0, ix.size(), 3):
+			var hit = Geometry3D.ray_intersects_triangle(o, d, vs[ix[t]], vs[ix[t + 1]], vs[ix[t + 2]])
+			if hit == null:
+				hit = Geometry3D.ray_intersects_triangle(o, d, vs[ix[t]], vs[ix[t + 2]], vs[ix[t + 1]])
+			if hit != null:
+				melhor = minf(melhor, o.distance_to(hit))
+	return melhor
 
 
 ## ponta da coluna de direção na carroceria: o vértice mais pro lado do piloto
@@ -1280,7 +1551,8 @@ func update_eye() -> void:
 	var vol: Dictionary = pecas.get("volante", {})
 	if FP_VOLANTE and vol.has("centro"):
 		var c := Vector3(vol.centro[0], vol.centro[1], vol.centro[2])
-		DRIVER_EYE = c + Vector3(0.0, FP_UP, -FP_BACK)
+		var e := Vector3(vol.eixo[0], vol.eixo[1], vol.eixo[2]).normalized() if vol.has("eixo") else Vector3.ZERO
+		DRIVER_EYE = c + e * avanco_volante() + Vector3(0.0, FP_UP, -FP_BACK)
 	elif points.has("ARSE"):
 		DRIVER_EYE = points["ARSE"] + EYE_FROM_ARSE
 
@@ -1468,6 +1740,12 @@ func _physics_process(dt: float) -> void:
 	# na posição atual dela ela encosta; aí o curso sobe até a superfície, a
 	# velocidade vem do carro no ponto da roda e a força sai ao longo da normal
 	# do chão, no ponto de fixação da roda.
+	# Ordem do jogo no passo: integra (0x2484c8) -> contato -> mola -> pneus.
+	# Assim o x que sobra no fim do passo (o da RAM, W+0xe8, e o desenhado) é
+	# o do contato. Integrando no fim, como o remake fazia até out/2026, o x
+	# guardado ficava f/m·dt² mais baixo (1 a 4 cm parado; tests/teste_curso.gd).
+	# A física é a mesma: o ciclo de operações não muda.
+	_integra_rodas(dt)
 	var space := get_world_3d().direct_space_state
 	var com_w := global_transform * center_of_mass
 	grounded = 0
@@ -1518,6 +1796,7 @@ func _physics_process(dt: float) -> void:
 		w.f = f_s
 		apply_force(hn * f_s, attach - global_position)
 
+	_passo_esferas_rodas(space, up)
 	_material_medio()
 	var ground_n := up if grounded == 0 else n_sum.normalized()
 	var fwd := (fwd_body - ground_n * fwd_body.dot(ground_n)).normalized()
@@ -1618,20 +1897,6 @@ func _physics_process(dt: float) -> void:
 	v_ref = v_f + a_f * dt
 	_giro_rodas(dt, v_f, rear_g)
 
-	# 0x2484c8: curso de cada roda anda com a massa dela. No ar a mola e o
-	# amortecedor levam a roda de volta pro meio (x = 0)
-	for w in wheels:
-		var fw: float
-		if w.hit:
-			fw = -w.f
-		else:
-			var damp: float = -_damper(w, w.v)
-			var dv: float = damp / w.mw * dt
-			if absf(dv) > absf(w.v) and absf(dv) > 1e-6:
-				damp *= absf(w.v / dv)
-			fw = -_spring(w, w.x) + damp
-		w.v = clampf(w.v + fw / w.mw * dt, -w.vmax, w.vmax)
-		w.x = clampf(w.x + w.v * dt, w.min, w.max)
 	if corr != Vector3.ZERO:
 		global_position += corr
 	pos_ant = global_position
@@ -1835,7 +2100,7 @@ func _vibracao(dt: float, v_l: float, v_f: float) -> void:
 			_susp_acima[k] = acima
 	else:
 		_susp_acima = [false, false]
-	if not (VOLANTE_TREME and melhorias):
+	if not (VOLANTE_TREME and _tem("volante_treme")):
 		return
 	pancada = maxf(pancada * exp(-dt / PANCADA_SOLTA), tranco)
 	# alvo do giro: sorteio pela vibração, tranco com sinal sorteado, e a
@@ -1859,6 +2124,21 @@ func _vibracao(dt: float, v_l: float, v_f: float) -> void:
 ## Unidades do jogo: mph (x 0.44694445 = 1609/3600) e graus.
 const MPH_G := 0.44694445
 const DEG := 0.017453294
+
+## 0x211b58: altura da força lateral pela inclinação. s = seno da inclinação
+## de lado em relação ao chão (|cima do carro (corpo+0xc0) · lateral do chão
+## (corpo+0x3e0)|): Lateral_scale_std até o limiar, cai em linha reta até o
+## Lateral_scale_at_maximum_roll no máximo. Nos XMLs (buggy e truck) vai de
+## 0.09 a 0 entre 3° e 8°: inclinado, a força lateral para de tombar o carro.
+## Até out/2026 o remake usava sempre o std (capotava mais que o jogo)
+func _h_lat(left: Vector3) -> float:
+	var s := absf(global_transform.basis.y.dot(left))
+	if s > P.h_lat_s1:
+		return P.h_lat_roll
+	if s > P.h_lat_s0:
+		return P.h_lat + (s - P.h_lat_s0) / (P.h_lat_s1 - P.h_lat_s0) * (P.h_lat_roll - P.h_lat)
+	return P.h_lat
+
 
 func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_w: Vector3,
 		h: float, drive: float) -> float:
@@ -2220,6 +2500,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 		else:
 			sum_r += hy
 	var hl: float = stf_blend * P.h_long_stf + (1.0 - stf_blend) * P.h_long
+	var h_lat := _h_lat(left)
 	var base := com_w - global_position
 	var lat_sum := 0.0
 	for w in wheels:
@@ -2227,7 +2508,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 		var sy: float = sum_f if w.front else sum_r
 		if w.fx != 0.0:
 			if lateral_game:
-				apply_force(left * w.fx, base + n * (sy * P.h_lat) + fwd * az)
+				apply_force(left * w.fx, base + n * (sy * h_lat) + fwd * az)
 			else:
 				lat_sum += w.fx
 		if w.fz != 0.0:
@@ -2236,7 +2517,7 @@ func _tires(dt: float, v: Vector3, fwd: Vector3, left: Vector3, n: Vector3, com_
 		# modo antigo (remendo da parte 1): lateral toda no CoM e a guinada que o
 		# jogo pediu aplicada direto, cortada na proporção que a elipse cortou
 		var keep := 1.0 if lat_dem < 1.0 else lat_got / lat_dem
-		apply_force(left * lat_sum, base + n * (sum_r * P.h_lat))
+		apply_force(left * lat_sum, base + n * (sum_r * h_lat))
 		apply_torque(n * torque * keep)
 
 	# atrito interno (só sem acelerar): o carro perde velocidade sozinho
@@ -2303,7 +2584,7 @@ func _tires_legacy(dt: float, v: Vector3, fwd: Vector3, left: Vector3, ground_n:
 		dec *= clampf(spd_mph / P.ifd_lo_speed, 0.3, 1.0)
 		f_long -= signf(v_f) * minf(dec * mass, mass * absf(v_f) / dt)
 	apply_force(fwd * f_long, com_w - ground_n * h * P.h_long - global_position)
-	apply_force(left * f_lat, com_w - ground_n * h * P.h_lat - global_position)
+	apply_force(left * f_lat, com_w - ground_n * h * _h_lat(left) - global_position)
 
 	var ang: float = deg_to_rad(VehicleData.sample(steer_curve, spd_mph)) * steer
 	var yaw_target: float = v_f * ang / (P.wheelbase + P.understeer * v_f * v_f)
@@ -2841,7 +3122,7 @@ func _update_visuals(dt: float, _v_f: float) -> void:
 		rider_s = clampf(rider_s + minf(1.0 / dt, 30.0) * (steer - rider_s) * dt, -1.0, 1.0)
 	if dt > 0.0:
 		treme += (_treme_alvo - treme) * (1.0 - exp(-dt / TREME_SUAVE))
-	if sw_pivot and VOLANTE_GIRA and melhorias:
+	if sw_pivot and VOLANTE_GIRA and _tem("volante_gira"):
 		var giro := -rider_s * SW_TURNS
 		if piloto and piloto.no_volante():
 			giro = piloto.giro_volante(rider_s)
