@@ -13,6 +13,8 @@ extends SceneTree
 ##                              número, max/min (Maximum/Minimum_position que a
 ##                              física usa) ou nat (onde a física deixou parado)
 ##   CURSO=0.2                  atalho pra um curso só
+##   CURSO=TEmax/TD0/FE0.3      curso por roda (FE, FD, TE, TD; a que faltar fica nat; no
+##                              nome do arquivo "/" vira "-")
 ##   MEDIR=1                    imprime as medidas de cada canto em cada curso e
 ##                              salva <saida>_medidas.json (ver _medir/_estatico)
 ##   CORPO=0                    esconde a carroceria em todas as vistas
@@ -413,7 +415,7 @@ func _process_multi() -> bool:
 		return false
 	wait -= 1
 	if wait == 0:
-		var path := "%s_%s_%s.png" % [out.get_basename(), s[0], s[1].replace(":", "_")]
+		var path := "%s_%s_%s.png" % [out.get_basename(), s[0].replace("/", "-"), s[1].replace(":", "_")]
 		root.get_viewport().get_texture().get_image().save_png(path)
 		print("print salvo em ", path)
 		shot_i += 1
@@ -423,9 +425,14 @@ func _process_multi() -> bool:
 
 func _apply_curso(c: String) -> void:
 	var car = main.car
+	var por_canto := {}            # "TEmax/TD0/FE0.3": curso por roda
+	for p in c.split("/", false):
+		if p.length() > 2 and p.substr(0, 2) in ["FE", "FD", "TE", "TD"]:
+			por_canto[p.substr(0, 2)] = p.substr(2)
 	for i in car.wheels.size():
 		var w: Dictionary = car.wheels[i]
-		match c:
+		var ci: String = por_canto.get(_canto(w), "nat") if not por_canto.is_empty() else c
+		match ci:
 			"nat":
 				w.x = nat_x[i]
 			"max":
@@ -433,7 +440,7 @@ func _apply_curso(c: String) -> void:
 			"min":
 				w.x = w.min
 			_:
-				w.x = float(c)
+				w.x = float(ci)
 	car._update_visuals(0.0, 0.0)
 	var txt := []
 	for w in car.wheels:
