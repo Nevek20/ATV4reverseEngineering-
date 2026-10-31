@@ -643,18 +643,22 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Trucks (lote 3, out/2026): Buccaneer, Shockwave, Shinto, Jericho e Lazarus
   amadores, do Punisher em diante PRO (vehicles.xml). Tabelas pelo
   car.chave() (o Lazarus tem o id do Jericho). Shockwave, Jericho, Lazarus e
-  Goliath: o nosso vai NO LUGAR do relógio do modelo (pedido do Matheus;
-  tirar os do modelo e pôr o conjunto atrás do volante foi tentado e não era
-  o que ele queria). painel.gd NO_LUGAR [textura, centro e raio do mostrador
-  no UV]: Stock_truck_clock (relógio inteiro num hexágono, raio 0.38 = até o
-  meio das arestas pra não varar o pote) e, no Goliath, o canto de baixo à
-  esquerda do atlas trophy_truck_light (UV (0.22, 0.79), raio 0.19; o atlas
-  também é farol). _mostradores_do_modelo acha centro, plano e tamanho pela
-  conta UV -> 3D do maior triângulo de cada grupo (a até 50 cm do volante) e
-  _escurecer tira as faces do mostrador do jogo pra uma superfície de fundo
-  escuro com a cor do vértice (o pote em volta fica). Maior = conta-giros,
-  direita = velocímetro, o outro = temperatura; no Goliath (PRO) o outro é a
-  marcha e a luz de troca vai em cima do conta-giros. APAGAR também apaga na
+  Goliath: o relógio do jogo SAI INTEIRO (mostrador e o "pote" em volta) e o
+  nosso fica NO LUGAR dele, com a caixinha preta atrás (pedido do Matheus,
+  depois de 3 tentativas: só o conjunto atrás do volante não era; o nosso
+  por cima do mostrador com o pote do jogo em volta também não). painel.gd
+  NO_LUGAR [textura, centro e raio do mostrador no UV, texturas que saem,
+  raio que sai]: Stock_truck_clock (relógio inteiro num hexágono, raio 0.38
+  = até o meio das arestas; sai com cadilac_shock no Shockwave e
+  cadilac_chrom2 no Jericho e no Lazarus, 1.9 x o raio) e, no Goliath, o
+  canto de baixo à esquerda do atlas trophy_truck_light (UV (0.22, 0.79),
+  raio 0.19, pote da mesma textura, 2.4 x; o atlas também é farol: só perto
+  do volante). _mostradores_do_modelo acha centro, plano e tamanho pela conta
+  UV -> 3D do maior triângulo de cada grupo (a até 50 cm do volante) e
+  _tirar_relogios apaga da carroceria e da FaceDeDentro (cópia de dentro da
+  cabine fechada; senão sobravam as viseiras). Maior = conta-giros, direita =
+  velocímetro, o outro = temperatura; no Goliath (PRO) o outro é a marcha e a
+  luz de troca vai em cima do conta-giros. APAGAR também apaga na
   FaceDeDentro (cópia de dentro da cabine
   fechada). Buccaneer: os mostradores
   pintados na willys_jeep_style_panel viram os nossos (posição pelo UV do
