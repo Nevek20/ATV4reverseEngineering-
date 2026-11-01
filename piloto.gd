@@ -70,10 +70,6 @@ const COTOVELO_FORA := 55.0
 const PAREDE_FOLGA := 0.07
 const COTOVELO_DENTRO := 30.0
 var paredes := {}                 # car.gd _paredes_do_piloto (frame do esqueleto)
-# mão de fora no volante todo: para a MAO_TOPO graus do topo do aro e o volante
-# gira por baixo dela (escorrega no aro). Antes ela ia até perto do topo e o
-# antebraço passava na frente da câmera do piloto (Fireball, Chimera)
-const MAO_TOPO := 40.0
 # a solução (giro da mão e cotovelo) é tabelada em TAB_N direções do volante
 const TAB_N := 41
 const SUAVIZA := 6          # passadas de [1 2 1]/4 na tabela (~1.7 casa)
@@ -375,10 +371,12 @@ func _segura_volante(giro: float, s: float, busca: Array = []) -> Array:
 	for b in _pais.size():
 		var t := Transform3D(Basis(_lr[b]), _lp[b])
 		g[b] = t if _pais[b] < 0 else g[_pais[b]] * t
+	var rot := Basis(_ve, giro)
+	var gira := Transform3D(rot, _vc - rot * _vc)
 	var escolhas: Array = []
 	for hi in _maos.size():
 		var m: Dictionary = _maos[hi]
-		var alvo: Transform3D = _gira_mao(m, giro) * m.pega
+		var alvo: Transform3D = gira * m.pega
 		var sup: int = m.sup
 		var inf: int = m.inf
 		var mao: int = m.mao
@@ -453,21 +451,6 @@ func _segura_volante(giro: float, s: float, busca: Array = []) -> Array:
 		_lr[inf] = (b_sup.inverse() * b_inf).get_rotation_quaternion()
 		_lr[mao] = (b_inf.inverse() * alvo.basis).get_rotation_quaternion()
 	return escolhas
-
-
-## giro de uma mão com o volante (em volta do eixo do aro): igual ao do
-## volante, menos quando ela sobe pro topo: para a MAO_TOPO graus dele e o
-## volante gira por baixo (escorrega)
-func _gira_mao(m: Dictionary, giro: float) -> Transform3D:
-	var a0: float = m.ang0
-	var lim := deg_to_rad(MAO_TOPO)
-	var a1 := a0 + giro
-	if a0 > 0.0:
-		a1 = maxf(a1, minf(lim, a0))
-	else:
-		a1 = minf(a1, maxf(-lim, a0))
-	var rot := Basis(_ve, a1 - a0)
-	return Transform3D(rot, _vc - rot * _vc)
 
 
 ## folga do cotovelo e até a carroceria pro lado de fora dele (paredes do
@@ -632,15 +615,21 @@ func _cotovelo_ang(a: Vector3, w: Vector3, l1: float, l2: float, th: float, fora
 
 ## conferência (tests/teste_volante.gd): distância de cada punho até o seu
 ## ponto no aro e do cotovelo até o da animação, na pose de agora (m)
-func erro_maos(s: float) -> Array:
+func erro_maos(s: float, extra := 0.0) -> Array:
 	var g: Array = []
 	g.resize(_pais.size())
 	for b in _pais.size():
 		var t := Transform3D(Basis(_lr[b]), _lp[b])
 		g[b] = t if _pais[b] < 0 else g[_pais[b]] * t
+	# o ponto de cada mão no aro girado com o volante (giro + tremida): a mão
+	# não pode escorregar (nov/2026 testamos a mão de fora parando a 40° do
+	# topo com o volante girando por baixo: no teclado, volante todo quase
+	# sempre, uma mão ficava parada e não tremia junto; o Matheus achou bugado)
+	var rot := Basis(_ve, giro_volante(s) + extra)
+	var gira := Transform3D(rot, _vc - rot * _vc)
 	var out: Array = []
 	for m in _maos:
-		var alvo: Vector3 = (_gira_mao(m, giro_volante(s)) * m.pega) * m.cent
+		var alvo: Vector3 = (gira * m.pega) * m.cent
 		out.append((g[m.mao] * m.cent).distance_to(alvo))
 	return out
 

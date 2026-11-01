@@ -53,9 +53,12 @@ func _conferir() -> void:
 	var pior_carro := 0.0
 	car.piloto.alcance = 0.0
 	var ruins := ""
-	for s in [-1.0, -0.5, -0.2, 0.0, 0.2, 0.5, 1.0]:
-		car.piloto.pose(s)
-		var es: Array = car.piloto.erro_maos(s)
+	# volante parado e tremendo (extra = tremida do volante, car.gd _vibracao)
+	for se in [[-1.0, 0.0], [-0.5, 0.0], [-0.2, 0.0], [0.0, 0.0], [0.2, 0.0], [0.5, 0.0], [1.0, 0.0],
+			[1.0, 0.06], [-1.0, -0.06], [0.0, 0.06], [0.7, -0.06]]:
+		var s: float = se[0]
+		car.piloto.pose(s, se[1])
+		var es: Array = car.piloto.erro_maos(s, se[1])
 		for e in es:
 			pior_carro = maxf(pior_carro, e)
 		if es.max() > 0.005:

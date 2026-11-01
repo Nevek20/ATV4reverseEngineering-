@@ -494,9 +494,13 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   banco (grade de raios saindo do meio do banco, ignora até 18 cm) e o
   cotovelo fica a PAREDE_FOLGA 7 cm dela, indo pra dentro se precisar (até
   30°): Fireball 11 cm, Kraken 6.5 (medir_cabine imprime a folga de cada
-  carro ao longo do volante). No volante todo a mão de fora subia até perto
-  do topo e o antebraço cruzava a câmera do piloto: agora ela para a
-  MAO_TOPO 40° do topo e o volante gira por baixo (escorrega no aro).
+  carro ao longo do volante). No volante todo a mão de fora sobe até perto
+  do topo e o antebraço cruza a câmera do piloto (pendente). Testamos a mão
+  de fora PARAR a 40° do topo com o volante girando por baixo (escorregando):
+  como ela pega a 65°, já escorregava com 25° de volante, no teclado (volante
+  todo quase sempre) uma mão ficava parada e não tremia junto com o volante.
+  O Matheus achou bugado: não voltar. teste_volante agora mede a mão contra
+  o aro girando de verdade, com a tremida (erro_maos(s, extra)).
   Trucks (lote 2, out/2026): 9 dos 13 alcançam igual aos buggies (aro a
   54-60 cm do banco, braço até 102%). Chimera (80 cm, 144%) e Lazarus (71 cm,
   128%): o ARSE do jogo fica baixo e pra trás do volante; trazer o volante no
