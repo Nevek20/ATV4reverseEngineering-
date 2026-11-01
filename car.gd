@@ -256,6 +256,12 @@ const COR_K_SRGB := 255.0 / 128.0   # no albedo (sRGB) vira o COR_K do pingu2obj
 const CABINE_FECHADA := ["BUGGY_12", "TRUCK_01", "TRUCK_02", "TRUCK_03", "TRUCK_04", "TRUCK_05",
 	"TRUCK_06", "TRUCK_07", "TRUCK_08", "TRUCK_09", "TRUCK_10", "TRUCK_11", "TRUCK_12", "LAZARUS"]
 const FORRO := Color(0.16, 0.16, 0.17)
+# vidro das janelas (só o Lazarus): alfa da Dakar_window_8 do jogo (0x1B/0x80)
+const VIDRO_ALFA := 27.0 / 128.0
+# estepes NOSSOS (Matheus, nov/2026): o modelo do Lazarus tem SpareWheel01Centre
+# e SpareWheel02Centre lado a lado na caçamba, mas o mapa do Jericho
+# (TruckCompMap_B1) só põe roda no 01 e sobrava o buraco do 2º
+const ESTEPES_NOSSOS := {"LAZARUS": ["SpareWheel01", "SpareWheel02"]}
 
 # O jogo é mão esquerda (x direita, y cima, z frente; esquerda do jogo = x < 0
 # no modelo) e o Godot é mão direita. Tudo que vem do jogo em frame do modelo
@@ -492,7 +498,7 @@ func _ready() -> void:
 		if ResourceLoader.exists(wheel_rear_file):
 			spare_mesh = load(wheel_rear_file) as Mesh
 		susp_vis.build(self, points, points_rot, asset_dir, pecas.get("pecas", {}),
-			pecas.get("rally", false), pecas.get("estepe", []), spare_mesh)
+			pecas.get("rally", false), ESTEPES_NOSSOS.get(chave(), pecas.get("estepe", [])), spare_mesh)
 	_load_sujeira()               # por último: precisa das rodas e das peças
 	_marca("suspensão+sujeira")
 
@@ -1174,6 +1180,14 @@ func _load_model() -> void:
 		if m2.albedo_texture and _tem_alfa(m2.albedo_texture):
 			m2.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 			m2.alpha_scissor_threshold = 0.5
+		# vidro (só o Lazarus tem: Dakar_window_Index): o lote do .pingu vem
+		# marcado transparente (+0x00 = 1, como decalques, sombras e o carro
+		# fantasma), mas a textura _Index tem alfa cheio e o vidro saía uma
+		# placa azul opaca por fora. A mesma imagem na Truck/Textures/Generic
+		# (Dakar_window_8) tem alfa 0x1B = 21%: é o que vale aqui
+		if m2.albedo_texture and m2.albedo_texture.resource_path.get_file().to_lower().contains("window"):
+			m2.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			m2.albedo_color.a = VIDRO_ALFA
 		material_do_jogo(m2)
 		mi.set_surface_override_material(i, m2)
 	var aabb := mesh.get_aabb()

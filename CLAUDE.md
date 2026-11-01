@@ -507,6 +507,12 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   mostravam o chão; agora a chapa e a rede da janela aparecem por dentro).
   Vidro (textura *window*: só o Lazarus tem, os vidros fechados no modelo)
   fica sem face de dentro, senão de dentro a janela virava parede cinza.
+  Por fora (nov/2026) era uma placa azul opaca: o lote do .pingu é marcado
+  transparente (+0x00 = 1; no jogo todo só decalques, sombras, cercas,
+  brilhos e o Ghost_White do carro fantasma têm isso), mas a
+  Dakar_window_Index tem alfa cheio. A mesma imagem em
+  Truck/Textures/Generic/Dakar_window_8 tem alfa 0x1B = 21%: car.gd
+  VIDRO_ALFA.
 - Volantes gerados (melhoria nossa, car.gd VOLANTE_NOSSO, volantes.gd): o
   do jogo tem aro de 6 a 12 lados e raios tortos; 8 carros usam o mesmo X
   furado girado ~20°. No lugar vai um volante redondo e centralizado, no
@@ -775,7 +781,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   real). No remake é o "Lazarus" (nome escolhido pelo Matheus), último do menu (gerar_buggies.py BONUS,
   --so 13; main.gd "bonus"): peças de fábrica, mapa (TruckCompMap_B1) e
   decalques do Jericho, câmera TruckCamSet_04 (o Jericho usa a 11). Não
-  substitui o Jericho. Física PRÓPRIA (nov/2026, números nossos com
+  substitui o Jericho. 2 estepes na caçamba (car.gd ESTEPES_NOSSOS): o
+  modelo tem SpareWheel01Centre e 02 lado a lado, o mapa do Jericho só
+  põe roda no 01. Física PRÓPRIA (nov/2026, números nossos com
   liberdade do Matheus): data/vehicles/lazarus.xml = cópia do Jericho com
   cabine dupla mais pesada (1.85 t, inércia maior), V8 com mais torque
   (1.30, embreagem 0.42), marchas mais longas (14.0/8.6/6.5/5.5/5.0),
