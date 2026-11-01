@@ -832,6 +832,71 @@ nuvens; tools/fx_jogo.py -> assets/fx/poeira.png).
 - Não portado ainda: Dirt (pedrinhas WheelSpinDirt e WheelDirtTrail do
   Effects/#3ffdac18, DirtKickupChance), água, o canto escuro, a sombra.
 
+## Objetos da pista (RX01)
+
+Porta em objetos_rx01.gd + tools/rx01_objetos.py (nov/2026). O RX01 não tem
+modelo no stream: Levels/RX_01/Env/Default/Default/Pingus/pingustream.header
+é o log "Pools Total = 0 bytes. Models Total = 0 bytes" (StreamP e StreamW
+vazios). Tudo vem do evento:
+- Formato de chunks (#def5772a e RALLYCROSS.bin): u32 0x00030000, chunks
+  F00DABCD, u32 tamanho (até o DEADDCBA, incluso), u32 tipo (hash), campos e
+  chunks filhos, DEADDCBA. Campo = chave (hash) + u32, ou chave + u32 n + n
+  bytes de texto preenchido até 4 (o preenchimento às vezes tem lixo: os
+  textos conhecidos são 01ee2ec7 = nome do modelo, 489c80f9 = classe da
+  entidade). Vetor = chunk filho com x/y/z em 484dc9b4, 3f4af922, a643a898.
+- Instâncias (Event/Rallycross/Default/#def5772a, other/12290), raiz
+  4939a99a: 1c85cac0 = pingus (um e9aba222 por modelo: nome + 7db6ffbc =
+  quantas; UM grupo 1b05a8d9 com os 57 registros de 160 bytes na ordem dos
+  modelos: matriz 4x4 com linhas = eixos do modelo no mundo e a 4ª =
+  posição, +0x40 centro, +0x6c flags 0x04100000, +0x70 cor RGBA ~0.6);
+  e0baf2b2 = bantams (um e9aba222 por modelo com 21fdb9c8 grupos 1b05a8d9:
+  7db6ffbc = n, c32f9493 + 40 bytes do jogo em execução + n x 96 bytes:
+  matriz 3x4 com escala, posição + 1.0, +0x40 cor RGBA ~1.0, +0x50 flags
+  0x17000000); 24530fce = quadtree com índice das mesmas instâncias. 651
+  bantams (o cabeçalho 1c85cac0 tem ef8c259e = 651). Posições no mundo do
+  jogo (x 0..1024, z 1024..2048), em cima do relevo do StreamT (moitas a
+  0.00 m de média; cada modelo tem a origem num lugar).
+- Entidades (Event/Rallycross/RALLYCROSS.bin, other/12289): cIntroCamera,
+  8 cStartPosition (posição 1 = (581.3, 201.8, 1564.5), direção (-0.907, 0,
+  -0.421); a largada da RAM é (580.8, 1564.3)), 14 cInstantRespotBox (caixas
+  de reposição), 6 cCrowdEffectBox, 4 cGenTrigger, 2 cLightDirectional, 32
+  cFenceNodeEntity + 26 cFenceLinkEntity (cercas entre nós, com os .clm
+  GEN_Barrier_RallyFence / SAM_Barrier_RallyFence / SAM_Crowd_BarrierTG).
+  Cada uma com pos (3ef310bc), dir (74f784c3), tamanho (44c2fa64).
+- .pingu = o dos carros (pingu2obj). Texturas: o .pfn (nomes por linha,
+  o "raw" antes do bloco). As texturas da pista vêm DEPOIS dos modelos no
+  archive (gob 12324..12402), então o find_png do pingu2obj (o maior índice
+  antes) não serve: o rx01_objetos.py converte os .bog do RX01 direto.
+- .bantam ("TNAB" em 0x44): +0x48 ?, raio, caixa mín/máx (vec4); +0x70 n
+  materiais e onde (0x40 cada), +0x78 n desenhos e onde (16 bytes: slot da
+  textura, ?, ?, início do pacote). Pacote = tag de DMA (qwc nos 16 bits de
+  baixo) + VIF; os vértices vêm num UNPACK V4-32 no endereço 1, 2 qwords por
+  vértice: (x, y, z, flag 0x8000 = ADC) e (u | R, v | G, B, A): UV = float
+  sem o byte de baixo, cor RGBA nos bytes de baixo (0x80 = 1.0). Sem normal
+  (luz assada). Lista de texturas = o #hash logo DEPOIS do bantam no archive
+  (u32 n + n nomes de 128 bytes). Os do GEN_HayBale e GEN_Rock_Group (132
+  bytes) e o .pfn de 13 bytes da WATER_puddle01 não foram extraídos em
+  nenhuma pista: por eliminação são GEN_HayBale, GEN_Rock e water_puddle (as
+  3 texturas do RX01 que sobram sem modelo).
+- Colisão: Models/KDt/#crc32(minúsculo("<modelo>.kdt")) ^ 0xFFFFFFFF. u32 n,
+  12 bytes, n registros de 0x70 = triângulo: plano da face + 3 planos das
+  arestas (n, d com n.p + d = 0), caixa mín/máx com 3 cm de folga, flag
+  (0x10); depois a árvore. Vértices = face com cada par de arestas. 16 têm
+  nome pelo hash; 11 sem nome no dicionário do archive foram casados pela
+  caixa (tools/rx01_objetos.py KDT_POR_CAIXA): chalés 01/02/03, US_Barn_1,
+  cerca de chevron, placas 02/03, arquibancadas GEN_AM e US 02/03, barreira
+  da torcida, alto-falante. Models/HsC/*.hsc ("CSH", o casco dos carros):
+  só a cerca de plástico, a de madeira e o fardo (15 esferas); no jogo eles
+  quebram (bantams *_Particle_*, pontos "particle Hay" no GEN_HayBale.pts):
+  não portado. Moitas sem colisão nenhuma.
+- Mundo do remake: base = colunas das linhas da matriz com x <-> z
+  (Terrain.dir_do_jogo), posição Terrain.do_jogo: determinante -1, o Godot
+  desenha espelhado certo (o "START" do arco sai legível).
+- Não portado: a multidão (RX01_Crowds.wahoo, other/12403, posições próprias
+  dentro), as cercas das entidades (cFenceNode/Link + .clm), quebrar cerca e
+  fardo, LOD (TREE_*_LOD1), cor de luz por instância, cIntroCamera,
+  cInstantRespotBox (reposição), cGenTrigger, cCrowdEffectBox, as 2 luzes.
+
 ## Mão (espelho)
 
 - O jogo é mão esquerda: x direita, y cima, z frente; WHEEL_*_LEFT em x < 0

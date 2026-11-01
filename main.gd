@@ -120,12 +120,14 @@ const SomJogo := preload("res://som_jogo.gd")
 const CameraPiloto := preload("res://camera_piloto.gd")
 const CameraOrbita := preload("res://camera_orbita.gd")
 const Farol := preload("res://farol.gd")
+const ObjetosRX01 := preload("res://objetos_rx01.gd")
 
 var car  # instância de car.gd (sem tipo estático de propósito: métodos próprios do script)
 var cam: Camera3D
 var hud: Label
 var cam_mode := 0                        # 0 perto, 1 longe, 2 capô, 3 para-choque, 4 piloto
 var terrain
+var objetos                              # objetos_rx01.gd (aviso() no HUD se faltar o assets/rx01)
 var cam_piloto                           # camera_piloto.gd: efeitos de velocidade e olhar livre
 # órbita da câmera de corrida pelo analógico direito / mouse (melhoria nossa,
 # o Forza; camera_orbita.gd). false = só a câmera do jogo
@@ -137,6 +139,12 @@ func _ready() -> void:
 	_make_environment()
 	terrain = Terrain.new()
 	add_child(terrain)
+	# casas, arquibancadas, placas, guard-rail, pedras, árvores... do evento
+	# Rallycross do RX01 (porta do jogo, objetos_rx01.gd)
+	objetos = ObjetosRX01.new()
+	objetos.name = "Objetos"
+	add_child(objetos)
+	objetos.montar()
 
 	spawn_vehicle(0, spawn_point(), deg_to_rad(SPAWN_YAW))
 
@@ -403,6 +411,8 @@ func _process(delta: float) -> void:
 	var aviso_som: String = SomJogo.aviso()
 	if aviso_som != "":
 		hud.text += "\n" + aviso_som
+	if objetos and objetos.aviso() != "":
+		hud.text += "\n" + objetos.aviso()
 	hud.text += "\n\nchão: " + _chao()
 
 

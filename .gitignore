@@ -22,3 +22,4 @@ tools/engine_sim_dyno/build/
 *.translation
 som/loops/**/*.import
 assets/escort/
+assets/rx01/

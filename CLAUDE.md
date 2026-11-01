@@ -46,6 +46,7 @@ motor_anima.gd       ventoinhas girando e polias + correia 3D (melhoria nossa) p
 luzes.gd             lanterna de freio e luz de ré acesas (melhoria nossa): lente pelos pixels da cor da luz
 farol.gd             farol aceso (melhoria nossa, no estilo da lanterna de freio) nas lentes de farol do modelo; H liga
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
+objetos_rx01.gd      objetos da pista RX01 (porta do jogo): casas, arquibancadas, arco, placas, guard-rail, pedras, árvores + colisão KDt
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, truck_NN, rodas; sfx (sons) e fx (fumaça) do jogo (fora do git)
 tests/               teste de física sem tela + rodar_testes.py
@@ -114,6 +115,7 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --path . --write-movie motor.avi --fixed-fps 60 -s res://tests/gravar_motor.gd -- 7   :: prévia: lenta, 7000 e volta (CAM_OFF/CAM_ALVO)
 %GODOT% --path . --write-movie fumaca.avi --fixed-fps 60 -s res://tests/gravar_fumaca.gd -- 0  :: câmera presa no cano acelerando (FUMACA_COR=1 vermelha)
 %GODOT% --headless --path . -s res://tests/teste_poeira.gd        :: poeira dos pneus na largada do RX01: parado não, asfalto não, terra sim, rastro no pulo
+%GODOT% --headless --path . -s res://tests/teste_objetos.gd       :: objetos do RX01: 707 instâncias, no chão, largada livre, guard-rail segura o carro
 %GODOT% --path . --write-movie poeira.avi --fixed-fps 30 -s res://tests/gravar_poeira.gd -- 0  :: sai pra terra na câmera de corrida (SEM_POEIRA=1, POEIRA_COR=1)
 :: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem, VENTOINHA_COR=1 as ventoinhas que giram
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
@@ -131,6 +133,8 @@ python tools/casco.py <unpacked>          :: --tabela mostra a caixa de todos os
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
 python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materiais <dados>/unpacked/xml/12280
+:: objetos do RX01 (posições + colisão -> data/rx01_objetos.json; modelos e texturas -> assets/rx01)
+python tools/rx01_objetos.py <unpacked>          :: --so-json só o JSON; depois abrir o editor (importa os .obj)
 
 :: checar um script sem abrir o editor
 %GODOT% --headless --path . --check-only --script res://car.gd
@@ -420,6 +424,23 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   tests/teste_sfx.gd confere os 2 (material x RAM e "som atrás do chão").
   O "grip" do ref_derrapagem.json NÃO é o atrito do material (0.80 até no
   asfalto).
+- Objetos do RX01 (PORTA, nov/2026; objetos_rx01.gd, tools/rx01_objetos.py,
+  docs Objetos da pista): o RX01 não tem modelo no stream (StreamP/StreamW
+  com "Models Total = 0 bytes"); vem tudo do evento: Event/Rallycross/
+  Default/#def5772a (other/12290) = 57 pingus + 651 bantams com a matriz do
+  jogo (linhas = eixos com escala) e RALLYCROSS.bin = 93 entidades (largadas,
+  reposição, cercas, gatilhos). Formato de chunks F00DABCD/DEADDCBA com chave
+  em hash. Bantam ("TNAB") decifrado: VIF com 2 qwords por vértice (posição
+  + ADC; UV com a cor RGBA no byte de baixo), sem normal (luz assada), lista
+  de texturas no #hash DEPOIS dele. Conferido: posições em cima do relevo
+  (moitas 0.00 m), guard-rail, fardos e cercas na borda da pista no mapa de
+  material, "START" do arco legível (espelho certo). Colisão = KDt
+  (triângulos: face + 3 arestas), nome = crc32('<modelo>.kdt'); 11 sem nome
+  casados pela caixa (KDT_POR_CAIXA). Cerca de plástico/madeira e fardo só
+  têm HsC e QUEBRAM no jogo: sem colisão por enquanto. teste_objetos: o
+  Renegade a 60 km/h para no guard-rail (sem os objetos atravessa 29 m).
+  Sem assets/rx01 (rodar o tools/rx01_objetos.py no PC) nada aparece e não
+  entra parede invisível; o HUD avisa.
 - Material do chão: só o atrito (pneu) e o Damping (arrasto do chão,
   0x20e5e8) mexem na física do buggy. Hardness, Sink e Bounciness o jogo
   carrega e não lê (varredura do exe, docs Terreno). Não "portar" eles.
@@ -1014,9 +1035,12 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   NAT_NEW), NAT_WAHOO (pista de teste), NAT_10 e RX_AI incompletas, minigames
   MIN_02/MIN_Target/MIN_RING_OF_FIRE; o relevo delas depende do stream do
   disco (STREAMT).
-- Batida: o RX01 do remake só tem o relevo (sem paredes, cercas e pedras do
-  jogo), então a tremida da batida só aparece quando o casco bate no chão.
-  Trava do 0x380418 (veículo+0xa6c/0xa74/0xa78) não portada.
+- RX01, falta: multidão (RX01_Crowds.wahoo, posições dentro dele), cercas
+  das entidades (cFenceNode/Link + .clm), quebrar cerca e fardo (bantams
+  *_Particle_*, HsC), LOD das árvores, reposição (cInstantRespotBox),
+  câmera de introdução, as 2 luzes direcionais. A tremida da batida
+  (0x380418) agora tem objeto pra bater; trava (veículo+0xa6c/0xa74/0xa78)
+  não portada.
 - Som do motor (melhoria nossa, plano combinado com o Matheus): o jogo só
   tem 3 bancos de motor (02/03/04, XMLs 00002/00004/00005) repetidos nos 12
   buggies (o Mosquito soa igual ao Kraken V8). Plano: o Matheus monta cada
