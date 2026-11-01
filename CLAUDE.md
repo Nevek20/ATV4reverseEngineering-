@@ -37,6 +37,7 @@ volantes.gd          volantes gerados, um estilo por carro (melhoria nossa, no l
 motor_som.gd         som do motor: loops do Engine Simulator por rpm e carga (melhoria nossa)
 sfx_carro.gd         som de pneu, suspensão e pouso do jogo (portado do exe); som_jogo.gd toca os sons 989snd
 fumaca.gd            fumaça do escapamento (melhoria nossa com o efeito ExhaustSmokeTrail que o jogo não usa)
+poeira.gd            poeira dos pneus (porta do jogo: Setup/Dust.xml, DustType/DustColour do chão, 0x225108)
 sujeira.gd           sujeira do jogo na pintura e lama nas rodas, pelo 2º UV (_camada.obj); nível e cor vêm do car.gd
 painel.gd            painel funcional (melhoria nossa): ponteiros, marcha e luz de troca, amador x PRO
 motor_treme.gd       motor e escape tremendo (melhoria nossa): separa as peças do cofre da carroceria
@@ -110,6 +111,8 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 :: + print_tela com FREIO=1/0 e RE=1/0 forçam lanterna e ré acesas/apagadas, COR_VERTICE=0 tira a cor do vértice
 %GODOT% --path . --write-movie motor.avi --fixed-fps 60 -s res://tests/gravar_motor.gd -- 7   :: prévia: lenta, 7000 e volta (CAM_OFF/CAM_ALVO)
 %GODOT% --path . --write-movie fumaca.avi --fixed-fps 60 -s res://tests/gravar_fumaca.gd -- 0  :: câmera presa no cano acelerando (FUMACA_COR=1 vermelha)
+%GODOT% --headless --path . -s res://tests/teste_poeira.gd        :: poeira dos pneus na largada do RX01: parado não, asfalto não, terra sim
+%GODOT% --path . --write-movie poeira.avi --fixed-fps 30 -s res://tests/gravar_poeira.gd -- 0  :: sai pra terra na câmera de corrida (SEM_POEIRA=1, POEIRA_COR=1)
 :: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem, VENTOINHA_COR=1 as ventoinhas que giram
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
@@ -132,7 +135,7 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 
 :: sons de pneu, suspensão e pouso do jogo -> assets/sfx (wav + sons.json com o ADSR de cada tom)
 python tools/sfx_jogo.py <unpacked>
-:: textura da fumaça (Sprites/Particles, caixa Dust0), da sujeira (GEN_DIRT_DIRT) e da lama do pneu (UNI_TyreOverlay) -> assets/fx
+:: textura da fumaça (Sprites/Particles, caixa Dust0), da sujeira (GEN_DIRT_DIRT), da lama do pneu (UNI_TyreOverlay) e da poeira (WorldFXdust) -> assets/fx
 python tools/fx_jogo.py <unpacked>
 :: + print_tela com SUJEIRA=0.8 força o nível da sujeira, PAINEL=6900,137 fixa rpm e km/h no painel,
 ::   SEM_PAINEL=1 esconde o nosso (pra ver o que sobrou do modelo)
@@ -652,6 +655,21 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Kraken, McKenzies, Viper, Hurricane e Storm no "motor"; Sphinx, Mosquito e
   Bulldog a boca não treme). tests/gravar_fumaca.gd (só no Forward+: no
   Compatibility do xvfb as partículas não aparecem).
+- Poeira dos pneus (PORTA do jogo, nov/2026, car.gd POEIRA, poeira.gd;
+  docs/engenharia_reversa.md, Poeira): o material do chão diz o tipo
+  (DustType None/Light/Medium/Heavy) e a cor (DustColour); Setup/Dust.xml
+  (data/dust.xml, conjunto CamSubject, "Rear" = rodas de trás) dá
+  espaçamento, tamanho e vida por tipo. Força (|v| - 0.5)/35, solta acima de
+  0.1; a cada ParticleSpacing metros nasce uma nuvem PARADA no ponto de
+  contato, que cresce de ~0.8 m até 3-10 m e some (alfa x (1 - t²)); cor
+  muda em 1 s quando o material muda (no asfalto, DustType None, apaga).
+  Quirk do jogo mantido: no mesmo quadro cada nuvem nova sai com alfa x
+  força de novo. A cor é a DustColour x textura (RX01 terra: marrom médio,
+  alfa 0.5): é uma névoa marrom baixa atrás das rodas, como no vídeo; o
+  fator de sombra (InShadowAmbientMultiply 0.5) só escurece e não está
+  portado. Sem o fx_jogo.py novo não há assets/fx/poeira.png e não sai
+  poeira. Falta: a "Dirt" (pedrinhas WheelSpinDirt/WheelDirtTrail,
+  DirtKickupChance).
 - Motor e escape tremendo (melhoria nossa, car.gd MOTOR_TREME,
   motor_treme.gd): no jogo são parte da Body e não tremem. Separação pelas
   peças soltas da malha que cabem inteiras no cofre (atrás do banco até o
@@ -1001,5 +1019,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   rodas: cor 0, alfa 0, taxa 30, lido no save state do Hinter Valley) não
   portada: o RX01 não tem água. Reflexo menor com o carro sujo
   (0x22ace8, 1 - nível) não portado. Sujeira do piloto como o jogo.
+- Erro antigo com tela (não é da poeira): "Condition !v.is_finite()" em
+  instance_set_transform quando o carro pula fora da pista (gravar_poeira na
+  terra: 238 vezes em 2 s, com a poeira desligada também); sem tela não
+  aparece. Algum nó visual recebe transformação com NaN.
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).
   Os LIGHTRIG são só modelo (sem halo); o Matheus acha feios.

@@ -1,0 +1,23 @@
+<Root FileVersion="1.0000000">
+   <Dust>
+      <Settings NumParticlesPerGroup="64" NumGroups="32"/>
+      <Vehicle>
+         <Other>
+            <Rear>
+               <Light Texture="\sprites\WorldFXdust" Power="1" PowerRatio="3.0" MaxParticleAge="1.5" CamMinLodDist="30.0" ParticleSpacing="0.2" ParticleSpacingLookAlong="0.4" ParticleSpacingMinLod="2.0" ParticleInitSize="0.8" ParticleInitSizeMinLod="3.0" ParticleInitSizeDelta="0.6" ParticleTargetSize="7.0" ParticleTargetSizeDelta="3.0"/>
+               <Medium Texture="\sprites\WorldFXdust" Power="1" PowerRatio="4.0" MaxParticleAge="3.0" CamMinLodDist="30.0" ParticleSpacing="0.2" ParticleSpacingLookAlong="0.4" ParticleSpacingMinLod="2.0" ParticleInitSize="0.8" ParticleInitSizeMinLod="3.0" ParticleInitSizeDelta="0.6" ParticleTargetSize="7.0" ParticleTargetSizeDelta="3.0"/>
+               <Heavy Texture="\sprites\WorldFXdust" Power="1" PowerRatio="4.0" MaxParticleAge="1.5" CamMinLodDist="30.0" ParticleSpacing="0.3" ParticleSpacingLookAlong="0.6" ParticleSpacingMinLod="2.0" ParticleInitSize="1.5" ParticleInitSizeMinLod="3.5" ParticleInitSizeDelta="0.6" ParticleTargetSize="10.0" ParticleTargetSizeDelta="3.0"/>
+               <Water Texture="\sprites\WorldFXwater_dust" Power="0" PowerRatio="2.0" MaxParticleAge="0.3" CamMinLodDist="30.0" ParticleSpacing="0.2" ParticleSpacingLookAlong="0.3" ParticleSpacingMinLod="0.6" ParticleInitSize="0.5" ParticleInitSizeMinLod="1.0" ParticleInitSizeDelta="0.2" ParticleTargetSize="3.0" ParticleTargetSizeDelta="0.3"/>
+            </Rear>
+         </Other>
+         <CamSubject>
+            <Rear>
+               <Light Texture="\sprites\WorldFXdust" Power="1" PowerRatio="3.0" MaxParticleAge="1.5" CamMinLodDist="30.0" ParticleSpacing="0.15" ParticleSpacingLookAlong="0.1" ParticleSpacingMinLod="0.1" ParticleInitSize="0.8" ParticleInitSizeMinLod="0.8" ParticleInitSizeDelta="0.4" ParticleTargetSize="3.0" ParticleTargetSizeDelta="1.0"/>
+               <Medium Texture="\sprites\WorldFXdust" Power="1" PowerRatio="3.0" MaxParticleAge="0.5" CamMinLodDist="30.0" ParticleSpacing="0.15" ParticleSpacingLookAlong="0.1" ParticleSpacingMinLod="0.1" ParticleInitSize="0.8" ParticleInitSizeMinLod="0.8" ParticleInitSizeDelta="0.4" ParticleTargetSize="3.0" ParticleTargetSizeDelta="1.0"/>
+               <Heavy Texture="\sprites\WorldFXdust" Power="1" PowerRatio="5.0" MaxParticleAge="1.0" CamMinLodDist="30.0" ParticleSpacing="0.15" ParticleSpacingLookAlong="0.15" ParticleSpacingMinLod="0.15" ParticleInitSize="0.8" ParticleInitSizeMinLod="0.8" ParticleInitSizeDelta="0.6" ParticleTargetSize="6.0" ParticleTargetSizeDelta="3.0"/>
+               <Water Texture="\sprites\WorldFXwater_dust" Power="0" PowerRatio="2.0" MaxParticleAge="0.3" CamMinLodDist="30.0" ParticleSpacing="0.2" ParticleSpacingLookAlong="0.2" ParticleSpacingMinLod="0.1" ParticleInitSize="0.5" ParticleInitSizeMinLod="0.5" ParticleInitSizeDelta="0.2" ParticleTargetSize="3.0" ParticleTargetSizeDelta="0.3"/>
+            </Rear>
+         </CamSubject>
+      </Vehicle>
+   </Dust>
+</Root>

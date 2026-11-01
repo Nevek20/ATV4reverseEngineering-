@@ -166,6 +166,10 @@ var sfx: Node = null
 # que o jogo tem no XML e não usa, nos pontos EXHAUST). false = sem fumaça
 const FUMACA := true
 var fumaca: Node3D = null
+# poeira dos pneus (porta do jogo: Setup/Dust.xml, 0x225108; poeira.gd): nuvens
+# da cor do chão (DustColour) atrás das rodas de trás, pelo DustType do material
+const POEIRA := true
+var poeira: Node3D = null
 # melhoria nossa: escapes no lugar dos pontos EXHAUST do jogo (que ele não
 # usa). Storm (BUGGY_12), o único buggy sem ponto: medido no modelo, boca das
 # duas ponteiras cromadas (peças de 46 faces na traseira, embaixo), viradas
@@ -493,6 +497,7 @@ func _ready() -> void:
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
+	_load_poeira()
 	_casco()
 	_marca("som+fumaça+casco")
 	contact_monitor = true            # batida: contatos do casco (_batida_passo)
@@ -1550,6 +1555,17 @@ func _load_fumaca() -> void:
 		fumaca = null
 
 
+func _load_poeira() -> void:
+	if not (POEIRA and _tem("poeira")):
+		return
+	poeira = preload("res://poeira.gd").new()
+	poeira.name = "Poeira"
+	add_child(poeira)
+	if not poeira.montar(self):
+		poeira.queue_free()
+		poeira = null
+
+
 func _load_painel() -> void:
 	if not (PAINEL and _tem("painel")):
 		return
@@ -2169,6 +2185,8 @@ func _physics_process(dt: float) -> void:
 		_vibracao(1.0 / JIT_HZ, v.dot(left), v_f)
 		_sujeira_passo()
 		_roda_suja_passo(1.0 / JIT_HZ)
+		if poeira:
+			poeira.passo(1.0 / JIT_HZ, v)
 		if sfx:
 			sfx.passo(1.0 / JIT_HZ, v.dot(left), v_f)
 	_update_visuals(dt, v_f)

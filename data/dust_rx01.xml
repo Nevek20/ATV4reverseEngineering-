@@ -1,0 +1,8 @@
+<Root FileVersion="1.0000000">
+   <Dust>
+      <Settings NumParticlesPerGroup="32" NumGroups="32"/>
+   </Dust>
+   <Dirt>
+      <Settings NumParticlesPerGroup="32" NumGroups="16"/>
+   </Dirt>
+</Root>
