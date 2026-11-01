@@ -28,14 +28,17 @@ car.gd               física do carro (portada do exe), visual das rodas
 game_camera.gd       câmera de corrida do jogo (componentes do exe, 1/60 s)
 camera_jitter.gd     tremida da câmera (Perlin por velocidade, só na terra, e sorteio na batida)
 camera_piloto.gd     câmera do piloto (melhoria nossa): força G na cabeça, FOV e borrão pela velocidade, olhar pra curva e olhar livre
+camera_orbita.gd     órbita da câmera de corrida (melhoria nossa, o Forza): analógico direito / mouse giram em volta do carro, soltou volta
 suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
-main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V); VEHICLES = buggies, TRUCKS, frota() = os dois
+main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V); VEHICLES = buggies, TRUCKS, EXTRAS (nossos), frota() = os três, configurar(car, v)
+carro_glb.gd         carros extras nossos: junta as malhas do .glb no frame do jogo (carroceria, rodas, volante)
 piloto.gd            piloto do jogo sentado no ARSE, braços pela direção (STEER_LEFT)
 volantes.gd          volantes gerados, um estilo por carro (melhoria nossa, no lugar do do jogo)
 motor_som.gd         som do motor: loops do Engine Simulator por rpm e carga (melhoria nossa)
 sfx_carro.gd         som de pneu, suspensão e pouso do jogo (portado do exe); som_jogo.gd toca os sons 989snd
 fumaca.gd            fumaça do escapamento (melhoria nossa com o efeito ExhaustSmokeTrail que o jogo não usa)
+poeira.gd            poeira dos pneus (porta do jogo: Setup/Dust.xml, DustType/DustColour do chão, 0x225108)
 sujeira.gd           sujeira do jogo na pintura e lama nas rodas, pelo 2º UV (_camada.obj); nível e cor vêm do car.gd
 painel.gd            painel funcional (melhoria nossa): ponteiros, marcha e luz de troca, amador x PRO
 motor_treme.gd       motor e escape tremendo (melhoria nossa): separa as peças do cofre da carroceria
@@ -89,29 +92,39 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --headless --path . -s res://tests/teste_camera_passo.gd  :: câmera de órbita sem vai e volta
 %GODOT% --headless --path . -s res://tests/teste_camera_ram.gd    :: câmera parada x RAM de 6 save states (4 buggies, 2 trucks)
 %GODOT% --headless --path . -s res://tests/teste_camera_piloto.gd :: câmera do piloto: freada, curva, FOV, borrão, mouse (números de projeto)
+%GODOT% --headless --path . -s res://tests/teste_camera_orbita.gd  :: órbita: solto = câmera do jogo, lados, 3 voltas, volta curta, chão, mouse
 %GODOT% --path . --write-movie camera.avi --fixed-fps 60 -s res://tests/gravar_camera.gd -- 0   :: prévia: acelera, freia, curva e olha pro lado (EFEITOS=0 sem efeitos)
 %GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL e save states
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
 %GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda, 1.16 s de derrapagem, sujeira e lama das rodas
-%GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 25 carros (0 cm) e giro do volante
+%GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 25 carros (0 cm), giro do volante, braço (cotovelo, pulso, torção) e pulo por passo (VEHS=25, BANCO=x,y,z, AVANCO=m, PERFIL=1)
+%GODOT% --headless --path . -s res://tests/medir_cabine.gd        :: folga da cabeça até o teto, olho da câmera do piloto x cabeça e cotovelo x porta, por carro
+%GODOT% --path . -s res://tests/print_piloto.gd -- /tmp/pil          :: prints do piloto sem carroceria (VEHS=0,25 VISTAS=lado,frente,cima,maos,maos_cima,maos_lado; CORPO=1)
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
 %GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies, 12 trucks e o bônus
 %GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states; material da FL x RAM
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_ladeira.gd -- 0   :: pneu parado em barranco: som não pode piscar
 %GODOT% --path . --write-movie cascalho.avi --fixed-fps 60 -s res://tests/gravar_cascalho.gd -- 0  :: derrapando no cascalho escuro: trocas Gravel/Dirt e áudio do pneu
-%GODOT% --headless --path . -s res://tests/teste_motor_treme.gd   :: peças e faces do motor que treme nos 12 carros
-%GODOT% --headless --path . -s res://tests/teste_motor_anima.gd   :: ventoinhas, polias e correia nos 12 (nada some, correia encosta)
+%GODOT% --headless --path . -s res://tests/teste_motor_treme.gd   :: peças e faces do motor que treme nos 25 carros (VEHS=13,14 só esses)
+%GODOT% --headless --path . -s res://tests/teste_motor_anima.gd   :: ventoinhas, polias e correia nos 25 (nada some, correia encosta)
 %GODOT% --headless --path . -s res://tests/teste_luzes.gd         :: cor do vértice nos materiais e lanterna de freio e ré nos 25 (acende e apaga)
 %GODOT% --headless --path . -s res://tests/teste_farol.gd         :: farol: lentes achadas (Hurricane 2, Storm 6, 4 trucks e o Lazarus), lente e brilho, acende e apaga
 :: + print_tela com FAROL=1/0 força o farol aceso/apagado
 :: + print_tela com FREIO=1/0 e RE=1/0 forçam lanterna e ré acesas/apagadas, COR_VERTICE=0 tira a cor do vértice
 %GODOT% --path . --write-movie motor.avi --fixed-fps 60 -s res://tests/gravar_motor.gd -- 7   :: prévia: lenta, 7000 e volta (CAM_OFF/CAM_ALVO)
 %GODOT% --path . --write-movie fumaca.avi --fixed-fps 60 -s res://tests/gravar_fumaca.gd -- 0  :: câmera presa no cano acelerando (FUMACA_COR=1 vermelha)
-:: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem
+%GODOT% --headless --path . -s res://tests/teste_poeira.gd        :: poeira dos pneus na largada do RX01: parado não, asfalto não, terra sim, rastro no pulo
+%GODOT% --path . --write-movie poeira.avi --fixed-fps 30 -s res://tests/gravar_poeira.gd -- 0  :: sai pra terra na câmera de corrida (SEM_POEIRA=1, POEIRA_COR=1)
+:: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem, VENTOINHA_COR=1 as ventoinhas que giram
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
 :: + SOLTA=1.3 solta o volante (DEPOIS=-1 contra-esterça, ACEL=0 solta o acelerador), DUR=8 segundos depois de virar
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
+
+:: carro extra NOSSO de um .glb no padrão Assetto Corsa (WHEEL_LF..., STEER_HR) -> assets/<nome> + data/vehicles/<nome>*
+python tools/carro_glb.py <modelo.glb> Escort [--estatico 0.114,0.074] [--escala 1.25] [--massa 0.9] [--base buggy_12]
+%GODOT% --headless --path . -s res://tests/teste_extra.gd   :: extras: curso parado x estático, casco, 0-100 e velocidade
+set TEMPO_CARGA=1& %GODOT% --headless --path . -s res://tests/tempo_carga.gd   :: ms de cada etapa da carga (VEH=26 Escort)
 
 :: casco de colisão de cada carro (esferas do VehicleWorld.hsc pelo id) -> data/vehicles/<id>_casco.json
 python tools/casco.py <unpacked>          :: --tabela mostra a caixa de todos os cascos do archive
@@ -124,7 +137,7 @@ python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materi
 
 :: sons de pneu, suspensão e pouso do jogo -> assets/sfx (wav + sons.json com o ADSR de cada tom)
 python tools/sfx_jogo.py <unpacked>
-:: textura da fumaça (Sprites/Particles, caixa Dust0), da sujeira (GEN_DIRT_DIRT) e da lama do pneu (UNI_TyreOverlay) -> assets/fx
+:: textura da fumaça (Sprites/Particles, caixa Dust0), da sujeira (GEN_DIRT_DIRT), da lama do pneu (UNI_TyreOverlay) e da poeira (WorldFXdust) -> assets/fx
 python tools/fx_jogo.py <unpacked>
 :: + print_tela com SUJEIRA=0.8 força o nível da sujeira, PAINEL=6900,137 fixa rpm e km/h no painel,
 ::   SEM_PAINEL=1 esconde o nosso (pra ver o que sobrou do modelo)
@@ -213,6 +226,19 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   FRENTE (cai quando o carro fica de lado). tests/teste_entrada.tscn.
 - **Gravação PCSX2 do Renegade**: carro ocupa ~27% da largura (em 4:3) a
   122 km/h na câmera perto; bate com a câmera portada.
+- **Buccaneer de fábrica na largada do RX01** (2 vídeos PAL do Matheus,
+  nov/2026; HUD lido em TODOS os quadros por um leitor de dígitos:
+  tests/ref_buccaneer_video.json, tests/teste_truck_video.gd). Reto: 1ª e 2ª
+  batem quase número por número (5..103 km/h a 1-2 km/h; limitador da 1ª 68,
+  da 2ª 103; 2ª aos 3.4 s, 3ª aos 6.2-6.4 s): motor, câmbio, embreagem e
+  tração dos trucks conferidos. Na 3ª o jogo sai da pista e sobe um morro
+  (platô de 111 km/h) e o remake segue no asfalto: caminhos diferentes, não
+  compara. Nesse truck o HUD do jogo mostra a velocidade direto (o "1.06 x"
+  saiu de save states derrapando com o acelerador no fundo). Curva (volante
+  todo pra esquerda a ~102 km/h, acelerador no fundo): o jogo e o remake
+  escorregam, rodam (148° em 2 s no remake; "Wrong Way" no jogo) e caem pra
+  ~20 km/h, mas o HUD do jogo começa a cair ~0.3 s antes. Falta save state
+  na curva pra separar física, HUD e o instante em que virou.
 
 ## Fatos que já custaram caro (não reabrir sem motivo)
 
@@ -410,7 +436,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - O jogo NÃO tem freio de mão. O botão (corpo+0x384/0x388) é a EMBREAGEM:
   segurando abre a embreagem (> 0.1, 0x20c558); um toque virando e
   acelerando faz a "Clutch Turn" (powerslide 0x214610, car.gd
-  _powerslide). O freio só tem o pedal (0x390). No remake é o Espaço.
+  _powerslide). O freio só tem o pedal (0x390). No remake é o Espaço ou o
+  A do controle (escolha do Matheus; no PS2 é o R1). Select troca a câmera.
 - Derrapagem não volta sozinha: o 0x2120c0 (RecoveryTorqueCutting) corta o
   torque que endireita (modos B/C do 0x20efa0) pelo acelerador quando o
   volante está pra dentro da curva ou solto, e sobe a patinada de trás até
@@ -448,6 +475,38 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   o ajuste fica indefinido e o pulso ia 7 cm pra dentro (braço em
   zigue-zague). No volante todo a mão de fora vai perto do topo e o
   antebraço passa na frente da câmera (pendente).
+  Braço natural (nov/2026, "braço quebrado esquisito", Matheus): medido no
+  teste_volante, o pulso dobrava 23° a 115° em relação à animação do jogo
+  (a mão ia com o pulso no eixo do volante e o antebraço do IK chegava por
+  outro ângulo) e torcia até 60°. Agora (piloto.gd) a mão ROLA em volta do
+  aro (até 75°) e INCLINA em volta do raio (até 30°), os giros que mantêm a
+  pegada, e o cotovelo vai pro lado onde o pulso fica reto, preso entre pra
+  baixo e COTOVELO_FORA 55° pra fora; metade da torção vai pro antebraço (o
+  esqueleto não tem osso de torção). Pulso: 0 a 14° na maioria, 31 a 40° no
+  pior (Goliath, Fireball, Hammerhead, Renegade; antes 65 a 86°). Busca
+  solta por quadro trocava de solução e a mão estalava (até 62° e 26 cm por
+  passo de 2% do volante): a solução é uma TABELA por carro (_montar_tabela,
+  41 direções, partindo do volante reto e andando sempre perto da vizinha,
+  ângulo do cotovelo guardado sem o limite pra não pular de 0° pra 55° ao
+  passar por "pra cima", e suavizada), interpolada no jogo: pulo de 0.4 a
+  2.6 cm e 1.3 a 3.4° por passo (antes 0.4 a 1.3 cm). Carga: ~50 ms.
+  teste_volante imprime cotovelo, pulso, torção e pra onde o cotovelo
+  aponta, e o pulo (PERFIL=1 passo a passo); tests/print_piloto.gd tira
+  prints do piloto sem a carroceria (vistas lado, frente, cima, maos;
+  janela com CORPO=1).
+  Porta e tela (nov/2026, "braço do Fireball varando a tela e a porta"): o
+  cotovelo do Fireball entrava 6.4 cm na porta (Kraken encostava). car.gd
+  _paredes_do_piloto mede na carga onde a carroceria fica dos 2 lados do
+  banco (grade de raios saindo do meio do banco, ignora até 18 cm) e o
+  cotovelo fica a PAREDE_FOLGA 7 cm dela, indo pra dentro se precisar (até
+  30°): Fireball 11 cm, Kraken 6.5 (medir_cabine imprime a folga de cada
+  carro ao longo do volante). No volante todo a mão de fora sobe até perto
+  do topo e o antebraço cruza a câmera do piloto (pendente). Testamos a mão
+  de fora PARAR a 40° do topo com o volante girando por baixo (escorregando):
+  como ela pega a 65°, já escorregava com 25° de volante, no teclado (volante
+  todo quase sempre) uma mão ficava parada e não tremia junto com o volante.
+  O Matheus achou bugado: não voltar. teste_volante agora mede a mão contra
+  o aro girando de verdade, com a tremida (erro_maos(s, extra)).
   Trucks (lote 2, out/2026): 9 dos 13 alcançam igual aos buggies (aro a
   54-60 cm do banco, braço até 102%). Chimera (80 cm, 144%) e Lazarus (71 cm,
   128%): o ARSE do jogo fica baixo e pra trás do volante; trazer o volante no
@@ -455,7 +514,16 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   o capacete no teto (75 cm acima do banco no Chimera). Ficou car.gd
   BANCO_NOSSO (só o desenho do piloto: Chimera +4 cm e 20 pra frente, Lazarus
   +6 e 5) + AVANCO_VOLANTE (10 cm nos dois, com coluna nossa até a coluna do
-  modelo): 106% e 101%, erro 0. Shockwave e Punisher não têm interior (o
+  modelo): 106% e 101%, erro 0. Lazarus refeito (nov/2026, "parece um
+  anão", Matheus): o aro ficava 50 cm acima do banco (nos outros 25 carros
+  27 a 39) e o teto 62 cm acima da cabeça (trucks 33 a 56); com o banco
+  +21 cm (e 9 pra frente) fica 35 / 47, braço 89% SEM o AVANCO_VOLANTE e o
+  olho da câmera do piloto volta pra 19 cm acima do osso da cabeça (antes
+  39; os outros 15 a 30). tests/medir_cabine.gd (teto, olho x cabeça).
+  Depois TT, Goliath e Chimera ("baixinhos", mesmo critério): TT +10 cm
+  (teto 56 -> 46), Goliath +8 (aro 46 cm acima do banco; teto 45 -> 37),
+  Chimera +15 e 20 pra frente sem o AVANCO_VOLANTE (aro 50 -> 35, teto 43 ->
+  32, braço 107 -> 92%); AVANCO_VOLANTE ficou vazio. Shockwave e Punisher não têm interior (o
   tools/volante.py não acha aro): VOLANTE_SEM_MODELO põe o nosso onde ele
   fica nos outros trucks (ARSE + 0.37 de altura e 0.46 pra frente, eixo e
   raio típicos) com coluna nossa até o painel (raio no eixo), 103%. O
@@ -475,6 +543,18 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   baixo), volta sozinho; a cabeça gira em volta do pescoço (10 cm atrás do
   olho). Sem efeitos a câmera olha reto (a de antes virava 1/4 do volante;
   o print_tela ainda usa essa, car.first_person_xf).
+- Órbita da câmera de corrida (melhoria nossa, nov/2026, pedido do Matheus:
+  "o analógico direito do Forza, solta e volta pro lugar"; camera_orbita.gd,
+  main.gd ORBITA): nas câmeras perto e longe o ÂNGULO do analógico direito é
+  pra onde a câmera olha (direita = olha pra direita, câmera do lado esquerdo
+  do carro; pra baixo = olha pra trás); girando o analógico a câmera dá
+  quantas voltas quiser. Meia deflexão gira menos (cheio a 75%). Mouse: botão
+  direito arrasta (lados sem limite, -12° a +40° de altura). Soltou: volta
+  pelo caminho curto em ~0.3 s e chega certinho (velocidade mínima no fim).
+  A câmera do jogo roda por baixo sem mudar: a órbita só gira o resultado
+  dela em volta da origem do modelo (o ponto que ela mira) e mantém a folga
+  de 1.45 m do chão do jogo (0x384c80) quando girada. Analógico parado =
+  câmera do jogo (diferença 0, tests/teste_camera_orbita.gd). C, R e T zeram.
 - Cabine fechada (melhoria nossa, car.gd CABINE_FECHADA, _face_de_dentro):
   a casca do jogo só tem a face de fora (ninguém entra no carro no jogo). No
   Storm, o único fechado, a nossa câmera do piloto via a estrada pelas portas,
@@ -488,6 +568,24 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   mostravam o chão; agora a chapa e a rede da janela aparecem por dentro).
   Vidro (textura *window*: só o Lazarus tem, os vidros fechados no modelo)
   fica sem face de dentro, senão de dentro a janela virava parede cinza.
+  Por fora (nov/2026) era uma placa azul opaca: o lote do .pingu é marcado
+  transparente (+0x00 = 1; no jogo todo só decalques, sombras, cercas,
+  brilhos e o Ghost_White do carro fantasma têm isso), mas a
+  Dakar_window_Index tem alfa cheio. A mesma imagem em
+  Truck/Textures/Generic/Dakar_window_8 tem alfa 0x1B = 21%: car.gd
+  VIDRO_ALFA.
+  Painel com os 2 lados cortados diferente (nov/2026, ELF atrás da cabine do
+  Hammerhead piscando): o jogo modela o mesmo quadrado 2 vezes, uma de cada
+  lado, mas pela outra diagonal; o gêmeo só era achado com os 3 vértices
+  iguais, e as cópias de dentro (forro cinza) ficavam no plano da pintura de
+  fora e brigavam com ela. car.gd _com_costas: centro do triângulo dentro de
+  um do outro lado no mesmo plano (3 mm), ou o dele dentro deste = já tem
+  costas (sem cópia); dividindo aresta com um do outro lado = painel de 2
+  lados, a cópia leva a PINTURA (o ELF aparece dos 2 lados, como com CULL=0).
+  Pares brigando (simulação, carroceria + cópias): TT 152 -> 19, Fireball
+  133 -> 14, Storm 187 -> 31, Hammerhead 44 -> 38; os que sobram são
+  decalques do próprio modelo colados a < 1 mm da chapa (faixas "ban" na
+  lateral da caçamba do Hammerhead).
 - Volantes gerados (melhoria nossa, car.gd VOLANTE_NOSSO, volantes.gd): o
   do jogo tem aro de 6 a 12 lados e raios tortos; 8 carros usam o mesmo X
   furado girado ~20°. No lugar vai um volante redondo e centralizado, no
@@ -572,6 +670,34 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Kraken, McKenzies, Viper, Hurricane e Storm no "motor"; Sphinx, Mosquito e
   Bulldog a boca não treme). tests/gravar_fumaca.gd (só no Forward+: no
   Compatibility do xvfb as partículas não aparecem).
+- Poeira dos pneus (PORTA do jogo, nov/2026, car.gd POEIRA, poeira.gd;
+  docs/engenharia_reversa.md, Poeira): o material do chão diz o tipo
+  (DustType None/Light/Medium/Heavy) e a cor (DustColour); Setup/Dust.xml
+  (data/dust.xml, conjunto CamSubject, "Rear" = rodas de trás) dá
+  espaçamento, tamanho e vida por tipo. Força (|v| - 0.5)/35, solta acima de
+  0.1; a cada ParticleSpacing metros nasce uma nuvem PARADA no ponto de
+  contato, que cresce de ~0.8 m até 3-10 m e some (alfa x (1 - t²)); cor
+  muda em 1 s quando o material muda (no asfalto, DustType None, apaga).
+  Quirk do jogo mantido: no mesmo quadro cada nuvem nova sai com alfa x
+  força de novo. Espaçamento: 1 - frente do carro . (câmera -> carro) puxa
+  pro ParticleSpacingLookAlong; na câmera de corrida (atrás) vale o
+  ParticleSpacing (15 cm). Até nov/2026 estava invertido (10 cm, 1.5x mais
+  nuvens; o Matheus achou "denso demais"). A cor é a DustColour x textura (RX01 terra: marrom médio,
+  alfa 0.5): é uma névoa marrom baixa atrás das rodas, como no vídeo; o
+  fator de sombra (InShadowAmbientMultiply 0.5) só escurece e não está
+  portado. Sem o fx_jogo.py novo não há assets/fx/poeira.png e não sai
+  poeira. Falta: a "Dirt" (pedrinhas WheelSpinDirt/WheelDirtTrail,
+  DirtKickupChance).
+  No ar (nov/2026, "um restinho de rastro quando pulava", Matheus): o jogo
+  continua soltando. A força perde 2 x a folga da roda até o chão (até 0.5;
+  objeto de colisão veículo+0x9f0, +0x30 por roda) e com a roda a 25 cm ou
+  mais do chão o material vira "nenhum" (a cor some em 1 s); antes disso
+  fica o último que a roda tocou (0x2017a8 só troca veículo+0xa88 com a roda
+  no chão). Ponto = centro da roda - up x (raio - afundado), recuado
+  velocidade/60 (0x225108 e 0x20ff18). Pulando a 180 km/h no RX01
+  (teste_poeira, 11 s) sai rastro por 0.78 s depois de sair do chão; antes
+  parava na hora. O raio da suspensão só alcança 5 cm abaixo da roda: a folga
+  no ar é um raio a mais (poeira._folga, até 0.3 m).
 - Motor e escape tremendo (melhoria nossa, car.gd MOTOR_TREME,
   motor_treme.gd): no jogo são parte da Body e não tremem. Separação pelas
   peças soltas da malha que cabem inteiras no cofre (atrás do banco até o
@@ -595,6 +721,23 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   zumbido de 1.5 mm na lenta (0.5 no corte) quase por quadro (8 ms), mais na
   vertical, e tranco de 0.8° num coxim firme (7 Hz, 60% do crítico, assenta
   sem quicar). O escape separado (Renegade) só vibra, não gira com o motor.
+  Trucks (lote 4, out/2026; o Matheus: "99% só precisam de um toque no
+  escapamento"): o motor fica embaixo do capô e a regra do cofre dos buggies
+  pegava gaiola, estepe e caçamba (prints MOTOR_COR=2, vista "motor" do
+  print_tela). Só o escape vibra (separar so_escape): peças pequenas soltas
+  que encostam no EXHAUST + as faces a até PONTA 20 cm da boca (o cano quase
+  sempre é a mesma peça da longarina ou da gaiola: Shinto 1.9 m). Pega no
+  Buccaneer, Shockwave, Shinto, Jericho, Panther, Truggy (saída do lado),
+  Hammerhead e Chimera; TT e Goliath têm a boca na pintura "white", Punisher
+  e Fireball não têm ponto, o Lazarus fica com 1 face. Motor animado nos
+  trucks (car.gd ANIMA_TRUCKS): Punisher (os 2 radiadores na caçamba) e,
+  pedido do Matheus (nov/2026), Panther (2), Truggy (2 radiadores, 3 placas),
+  TT (2), Hammerhead (1 deitada em cima) e Lazarus (3 viradas pra trás em cima
+  dos estepes, textura preRunnerTruck_fan inteira = ventoinha, centro 32,32).
+  Nos trucks elas têm raio de 27 a 31 cm e o limite de placa dos buggies (25
+  cm, pra não pegar um painel do Mosquito) barrava: motor_anima
+  RAIO_MAX_TRUCK 35 cm. Conferido com print_tela VENTOINHA_COR=1 (o que gira
+  sai vermelho); de cima as do Lazarus ficam escondidas.
 - Motor animado (melhoria nossa, car.gd MOTOR_ANIMA, motor_anima.gd): no
   jogo nada gira (ventoinha e polia são desenho parado na textura).
   Ventoinhas dos radiadores (textura "black" centro (89, 26) r 23 px; Trident
@@ -714,7 +857,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   ligadas aos poucos, cada uma conferida com print (car.gd PENDENTES_TRUCK =
   as que faltam; main.gd e print_tela põem em car.desligadas). Lote 1
   (out/2026): luzes, farol e fumaça (o som do motor já tinha vindo). Lote 3:
-  painel (ver Painel funcional). Lote 2:
+  painel (ver Painel funcional). Lote 4: motor tremendo (só a ponta do
+  escape) e motor animado (só o Punisher); PENDENTES_TRUCK ficou vazio. Lote 2:
   volante nosso, mãos no aro, volante girando e tremendo; câmera do piloto
   com o olho pelos números do Matheus (main.gd "fp"; padrão dos buggies
   [0.36, 0.47, 0.00] onde ele não mudou). Goliath parado (RAM): massa 1.90 t, marchas
@@ -741,9 +885,72 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   carroceria original do Jericho ("Pre Runner"), que no vehicles.xml ficou
   com a CHASSIS_Truck_11 (sem logo nenhum; nenhum outro carro tem marca
   real). No remake é o "Lazarus" (nome escolhido pelo Matheus), último do menu (gerar_buggies.py BONUS,
-  --so 13; main.gd "bonus"): física, peças de fábrica, mapa
-  (TruckCompMap_B1) e decalques do Jericho, câmera TruckCamSet_04 (o
-  Jericho usa a 11). Não substitui o Jericho.
+  --so 13; main.gd "bonus"): peças de fábrica, mapa (TruckCompMap_B1) e
+  decalques do Jericho, câmera TruckCamSet_04 (o Jericho usa a 11). Não
+  substitui o Jericho. 2 estepes na caçamba (car.gd ESTEPES_NOSSOS): o
+  modelo tem SpareWheel01Centre e 02 lado a lado, o mapa do Jericho só
+  põe roda no 01. Física PRÓPRIA (nov/2026, números nossos com
+  liberdade do Matheus): data/vehicles/lazarus.xml = cópia do Jericho com
+  cabine dupla mais pesada (1.85 t, inércia maior), V8 com mais torque
+  (1.30, embreagem 0.42), marchas mais longas (14.0/8.6/6.5/5.5/5.0),
+  mais curso (0.50/0.68) com mola mais mole (40/27) e amortecedor 7,
+  traseira mais grudada (elipse 12.8), mais subesterço (27) e CoM mais alto
+  e pra frente (0.98, 0.13). O truck_bonus.xml (gerar_buggies) continua a
+  cópia do Jericho. teste_extra com FROTA=16,25: 0-100 em 6.06 s (Jericho
+  5.74), 182 km/h em 20 s (176), curso parado 0.21/0.26 (0.16/0.22);
+  teste_capota a 80 igual (5.0°).
+- Carros extras NOSSOS (nov/2026, main.gd EXTRAS; o Matheus quer alguns,
+  começando pelo Escort): modelo .glb no padrão do Assetto Corsa (o que o
+  Sketchfab tem: WHEEL_LF/RF/LR/RR com a origem no centro da roda, STEER_HR,
+  SUSP_xx = cubo, COCKPIT_HR, ARROW_RPM...). tools/carro_glb.py mede no
+  modelo e gera, no frame do jogo (x = -x do glTF): pecas.json (nós que saem
+  da carroceria, roda e cubo de cada canto, volante centro/eixo/raio pelo
+  PCA do STEER_HR, fonte e licença), _points.json (WHEEL_* = roda do modelo
+  menos o curso parado, ARSE = volante - (0, 0.37, 0.46) como o
+  VOLANTE_SEM_MODELO, EXHAUST na ponta do material de escape mais perto da
+  borda com a direção do cano, BRAKE_LIGHT/HEAD_LIGHT pelos lados das
+  luzes), _casco.json (2 fileiras de esferas de 0.36 + cabine de 0.42) e a
+  física do --base (Storm) com rodas, curso, massa, CoM (53% na frente) e
+  caixa trocados, e a relação final x raio novo / raio base (mesma velocidade
+  por rpm). car.gd: carroceria pela cena importada do .glb (CarroGlb.malha:
+  ordem dos vértices trocada e sinal da tangente virado pelo espelho;
+  materiais PBR como vieram, sem material_do_jogo), roda e cubo de cada canto
+  (não espelha), volante do próprio modelo girando, pontos .json,
+  tuning_id (peças de fábrica de outro carro) e motor_escondido (só a ponta
+  do escape treme, sem ventoinha). main.configurar(car, v) monta o carro igual
+  no main, print_tela e testes. "desligar": volante_nosso, painel (o modelo
+  tem relógios), sujeira (sem 2ª textura), farol (sem textura de farol).
+  Escort RS1600 Mk1 1974 (vecarz, Sketchfab, CC-BY-NC-SA 4.0: dá crédito,
+  sem uso comercial, derivado com a mesma licença; ripado de um mod do AC):
+  200 mil triângulos, mão inglesa (volante na direita), escape saindo do
+  lado esquerdo embaixo da porta. Curso parado medido no teste_extra: 0.114
+  frente / 0.074 trás (o --estatico tem que ser esse, senão a roda parada
+  fica fora do lugar do modelo); 0-100 em 4.0 s e 193 km/h em 20 s com a
+  física do Storm (escolha de partida, falta afinar com o Matheus). Som =
+  loops do Storm (I4) por enquanto. assets/escort/ fica fora do git (o .glb
+  tem 17 MB): no PC, rodar o carro_glb.py com o .glb.
+  "Pequeno e apagado" (Matheus, nov/2026): (1) ESCALA: o jogo desenha os
+  carros ~25% maiores que os de verdade (entre-eixos: Storm = Delta S4 x
+  1.24, Lazarus = Silverado x 1.27); o extra entra x 1.25 (pecas.json
+  "escala", CarroGlb.malha; pontos, rodas, volante, casco, curso e CoM
+  também). (2) MATERIAL: o export do Sketchfab põe metallicFactor 1.0 em
+  pneu, borracha, plástico e banco (metal mostra o céu cinza no lugar da
+  cor) e a pintura tem verniz (clearcoat): CarroGlb.do_jogo deixa metálico só
+  no metal de verdade (METAIS), sem verniz, áspero >= 0.55 (fosco como os do
+  jogo). (3) BRANCO: a textura do AC tem a sombra assada (branco do Escort
+  200 de 255 = 0.58 linear; os do jogo ficam ~1.0 com a cor do vértice): o
+  carro_glb mede o branco da pintura e clareia o material dela (x 1.25 no
+  Escort, pecas.json "pintura"). Medido no mesmo print: 81 -> 116. (4)
+  VIDRO das janelas verde-água a 53% em 2 camadas (a estrada ficava azul na
+  câmera do piloto); neutro a 12% ficou leitoso (reflete o céu): o vidro das
+  janelas SAI da malha (CarroGlb._vidro_janela; os carros do jogo não têm
+  vidro), farol e lanterna ficam. MATERIAL_GLB=1 no print_tela mostra o
+  material e o vidro como vieram do modelo.
+  Carga (TEMPO_CARGA=1, tests/tempo_carga.gd): o motor_treme levava 3.3 s
+  nos 200 mil triângulos (busca de peças em tudo + uma passada por
+  superfície com PackedInt32Array copiado a cada append). Agora o extra só
+  busca a 1 m da boca do escape e a repartição é uma passada só: 0.5 s; a
+  carga toda ~1.2 s (fora a 1ª importação do .glb no editor).
 - Casco de colisão (out/2026, docs Casco de colisão): até então era uma caixa
   de 2.1 x 0.8 x 4.8 m igual pra todos, sem fonte. O jogo carrega
   Vehicles/<Classe>/Collision/<Name>/VehicleWorld.hsc (0x1fed48) pelo ID do
@@ -787,12 +994,13 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 
 ## Pendente / ideias
 
-- Lazarus: vai ganhar valores próprios (o Matheus passa depois) pra não
-  ser igual ao Jericho; hoje usa física, peças, mapa e decalques dele. Não
-  suja: a CHASSIS_Truck_04 do jogo não tem a 2ª textura (sem _camada.obj
+- Lazarus: física própria feita (lazarus.xml); peças, mapa e decalques
+  ainda são os do Jericho. Não suja: a CHASSIS_Truck_04 do jogo não tem a 2ª textura (sem _camada.obj
   mesmo gerando de novo; o aviso do HUD não se aplica).
-- Trucks: conferir física andando (Punisher acelerando e virando).
-  Tração: car.gd REAR_DRIVE vale pra todos (conferir nos trucks).
+- Trucks: FECHADO pelo Matheus (nov/2026). Aceleração conferida (Buccaneer,
+  vídeo); a curva usa o mesmo código de pneu dos buggies (conferido com save
+  states na derrapagem) e no vídeo tem o mesmo comportamento. Só reabrir com
+  save state na curva se algo parecer estranho jogando.
 
 - Pneu e aro comprados (hipótese: troca de textura, ver docs/assets.md).
   Provável resposta: 56 rodas completas sem nome no archive dos buggies (45
@@ -839,5 +1047,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   rodas: cor 0, alfa 0, taxa 30, lido no save state do Hinter Valley) não
   portada: o RX01 não tem água. Reflexo menor com o carro sujo
   (0x22ace8, 1 - nível) não portado. Sujeira do piloto como o jogo.
+- Erro antigo com tela (não é da poeira): "Condition !v.is_finite()" em
+  instance_set_transform quando o carro pula fora da pista (gravar_poeira na
+  terra: 238 vezes em 2 s, com a poeira desligada também); sem tela não
+  aparece. Algum nó visual recebe transformação com NaN.
 - Para-choque e luzes comprados (componentes Bumper/Lighting; de fábrica é NOT_INSTALLED).
   Os LIGHTRIG são só modelo (sem halo); o Matheus acha feios.

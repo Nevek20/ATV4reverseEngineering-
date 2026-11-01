@@ -779,6 +779,59 @@ fora do git); parâmetros em data/sound_database.xml (Audio/SoundDatabase.xml).
   0.431) e remake (0.561, 0.486, 0.386, 0.432). Os save states saem no
   ler_savestate --json ("sujeira", "roda_suja").
 
+## Poeira dos pneus
+
+Porta em poeira.gd (nov/2026). Dados: Setup/Dust.xml (data/dust.xml) e
+Levels/<pista>/Env/Dust.xml (data/dust_rx01.xml: Dust 32 grupos x 32
+partículas, Dirt 16 x 32). Textura Sprites/WorldFXdust (atlas 2 x 3 de
+nuvens; tools/fx_jogo.py -> assets/fx/poeira.png).
+- Material (0x3a9608, registro de 0x60): +0x10 DustColour, +0x20 DirtColour
+  (sem ela = DustColour x 0.7, alfa 1), +0x30 DustType (None = -1, Light 0,
+  Medium 1, Heavy 2; Water 3 = água), +0x34 SkidmarkIndex, +0x38
+  SkidmarkType, +0x58 DirtKickupChance (padrão 0.2), +0x50 WheelDirtAlpha
+  (padrão 0), +0x54 WheelDirtRate (padrão 0.1).
+- Tipo (0x3affb0, registro de 0x80 por tipo, conjunto CamSubject = carro da
+  câmera e Other = os outros, só "Rear"): +0x04 tamanho inicial do quadro,
+  +0x08 InitSizeDelta, +0x0c TargetSize, +0x10 TargetSizeDelta, +0x20 cor do
+  quadro, +0x30 grupo de partículas (0x3b5868: Power, PowerRatio,
+  MaxParticleAge), +0x38 CamMinLodDist, +0x3c/0x40/0x44 ParticleSpacing /
+  LookAlong / MinLod, +0x48/0x4c InitSize / MinLod, +0x5c.. SpeedScale e
+  afins (mph x 0.447; não estão no XML, não lidos na emissão).
+- Emissão 0x225108 (por quadro): sai se |v| (corpo+0xe0) < 0.5. Rodas: o
+  0x1f1ef0 pula as de índice 0 e 2 (as da frente), só as de trás soltam. Força =
+  (|v| - 0.5)/35 menos um termo da roda (2 x a folga, até 0.5; com ele
+  >= 0.5 a roda fica "sem material"), presa em 0..1. Por roda (emissores
+  das rodas de trás): material veículo+0xa88[i] (registro em veículo+0xd0),
+  cor = DustColour; troca de material: cor vai da atual pra nova em 1 s
+  (sem material ou DustType -1: alfa vai a 0 e o tipo fica o de antes).
+  Solta com tipo != -1, força > 0.1 e alfa > 0.1, senão para (0x227968).
+  LOD = dist² da câmera (veículo+0xb0c) / CamMinLodDist², espaçamento =
+  lerp(lerp(Spacing, LookAlong, olhar), MinLod, LOD), olhar = clamp(1 -
+  frente do corpo (corpo+0xd0) . normal(carro - câmera)), tamanho inicial =
+  lerp(InitSize, MinLod, LOD); cor x ((1 - sombra) + sombra x
+  InShadowAmbientMultiply) (veículo+0xc0 e [0x7f48e0]+0x3c0, padrão 0.5:
+  só escurece na sombra).
+- No ar (0x225108, ramo sem água): X = folga da roda, registro do objeto de
+  colisão do carro (veículo+0x9f0, construtor 0x14a9b0: +0x20 + i x 0x20 =
+  normal, +0x10 desse = X; + = roda afundada, - = acima do chão). Termo da
+  força = clamp(-2X, 0, 0.5); com ele >= 0.5 (25 cm) o material vira 0 (a cor
+  vai a alfa 0 em 1 s, tipo de antes), senão é veículo+0xa88[i], que o
+  0x2017a8 só troca com a roda no chão (W+0x10c != 0; W+0x140) e o reset põe
+  -1. Ponto = roda no mundo (corpo+0x500 + i x 0x10) - up (corpo+0xc0) x
+  (raio W+0x30 - max(X, 0)) - velocidade (corpo+0x90) / 60. A marca de pneu
+  (0x20ff18) usa o mesmo ponto.
+- 0x227c50: uma partícula a cada espaçamento no caminho desde a última, com
+  a idade espalhada no quadro. 0x3af170: tamanho inicial ± Delta, final ±
+  Delta (sorteio uniforme), alfa = alfa do registro x força, GRAVADO de
+  volta no registro (no mesmo quadro a 2ª sai com força², a 3ª força³...);
+  cor do vértice 0 x 0.3. Parada no mundo (sem velocidade).
+- 0x3af590: tamanho = ini + (fim - ini)(1 - (1 - idade/MaxParticleAge)^4),
+  alfa = alfa0 (1 - t²), t = idade / vida dela. Vida (0x3b5868): tabela de
+  2^Power valores pela posição no grupo, MaxParticleAge / PowerRatio^nível
+  (Power 1: MaxParticleAge, MaxParticleAge/PowerRatio, alternando).
+- Não portado ainda: Dirt (pedrinhas WheelSpinDirt e WheelDirtTrail do
+  Effects/#3ffdac18, DirtKickupChance), água, o canto escuro, a sombra.
+
 ## Mão (espelho)
 
 - O jogo é mão esquerda: x direita, y cima, z frente; WHEEL_*_LEFT em x < 0

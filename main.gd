@@ -81,11 +81,30 @@ const TRUCKS := [
 	# bônus resgatado: a CHASSIS_Truck_04 está completa no jogo e nenhum carro
 	# usa. É a Chevrolet Silverado pre-runner, carroceria original do Jericho;
 	# no remake o "Lazarus" (nome escolhido pelo Matheus)
-	# (texturas preRunnerTruck_*); física e peças do Jericho, câmera
-	# TruckCamSet_04 (tools/gerar_buggies.py BONUS)
+	# (texturas preRunnerTruck_*); peças de fábrica do Jericho (id TRUCK_04),
+	# câmera TruckCamSet_04 (tools/gerar_buggies.py BONUS). Física NOSSA
+	# (data/vehicles/lazarus.xml, nov/2026): cabine dupla mais pesada, V8 com
+	# mais torque, câmbio mais longo, curso maior e traseira mais presa que o
+	# Jericho (o truck_bonus.xml que o gerar_buggies escreve é a do Jericho)
 	{"name": "Lazarus", "id": "TRUCK_04", "cams": "TruckCamSet_04", "dir": "res://assets/truck_bonus",
-		"data": "res://data/vehicles/truck_bonus.xml", "points": "res://data/vehicles/truck_bonus_points.bin",
+		"data": "res://data/vehicles/lazarus.xml", "points": "res://data/vehicles/truck_bonus_points.bin",
 		"base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00], "bonus": true, "som": "res://som/loops/t13_silverado_chevy_53_vortec"},
+]
+# carros extras NOSSOS (não existem no jogo): modelo .glb no padrão do Assetto
+# Corsa convertido pelo tools/carro_glb.py (pontos, casco e física medidos no
+# modelo). "tune_id" = peças de fábrica de um carro do jogo; "desligar" =
+# melhorias que não servem (o modelo já tem volante e relógios próprios, não
+# tem a 2ª textura da sujeira); "motor_escondido" = só a ponta do escape treme.
+# Escort RS1600 Mk1 1974: modelo de vecarz no Sketchfab (CC-BY-NC-SA 4.0,
+# assets/escort/pecas.json "fonte"); física de partida = a do Storm (o rally
+# do jogo) com rodas, curso, massa, CoM e caixa do Escort. Mão inglesa (o
+# volante fica na direita, como no modelo). Som: o I4 do Storm por enquanto
+const EXTRAS := [
+	{"name": "Escort RS1600", "id": "ESCORT", "tune_id": "BUGGY_12", "cams": "LanciaCam",
+		"dir": "res://assets/escort", "data": "res://data/vehicles/escort.xml",
+		"points": "res://data/vehicles/escort_points.json", "fp": [0.36, 0.50, 0.00], "extra": true,
+		"motor_escondido": true, "desligar": ["volante_nosso", "painel", "sujeira", "farol"],
+		"som": "res://som/loops/12_storm_lancia_delta_s4"},
 ]
 var veh_idx := 0
 # largada do RX_01: centro das 4 rodas e direção do carro nos 6 save states
@@ -99,6 +118,7 @@ const Car := preload("res://car.gd")
 const Terrain := preload("res://terrain.gd")
 const SomJogo := preload("res://som_jogo.gd")
 const CameraPiloto := preload("res://camera_piloto.gd")
+const CameraOrbita := preload("res://camera_orbita.gd")
 const Farol := preload("res://farol.gd")
 
 var car  # instância de car.gd (sem tipo estático de propósito: métodos próprios do script)
@@ -107,6 +127,10 @@ var hud: Label
 var cam_mode := 0                        # 0 perto, 1 longe, 2 capô, 3 para-choque, 4 piloto
 var terrain
 var cam_piloto                           # camera_piloto.gd: efeitos de velocidade e olhar livre
+# órbita da câmera de corrida pelo analógico direito / mouse (melhoria nossa,
+# o Forza; camera_orbita.gd). false = só a câmera do jogo
+const ORBITA := true
+var orbita = CameraOrbita.new()
 
 
 func _ready() -> void:
@@ -141,9 +165,31 @@ func _ready() -> void:
 	cam_piloto.car = car
 
 
-## buggies + trucks (menu, V, print_tela); os testes dos buggies usam só VEHICLES
+## buggies + trucks + extras nossos (menu, V, print_tela); os testes dos
+## buggies usam só VEHICLES
 static func frota() -> Array:
-	return VEHICLES + TRUCKS
+	return VEHICLES + TRUCKS + EXTRAS
+
+
+## carro pronto pra entrar na cena (main, print_tela e testes da frota)
+static func configurar(c, v: Dictionary) -> void:
+	c.asset_dir = v.dir
+	c.data_files = dados(v)
+	c.points_file = v.points
+	c.vehicle_id = v.id
+	c.som_pasta = v.get("som", "")
+	c.tune_override = v.get("tune", {})
+	c.livery_file = v.get("livery", "pintura.png")
+	c.tuning_id = v.get("tune_id", "")
+	c.motor_escondido = v.get("motor_escondido", false)
+	if v.has("fp"):
+		c.FP_UP = v.fp[0]
+		c.FP_BACK = v.fp[1]
+		c.FP_PITCH = v.fp[2]
+	c.vehicle_name = "%s (%s)" % [v.name, v.id]
+	if v.id.begins_with("TRUCK"):
+		c.desligadas = Car.PENDENTES_TRUCK   # trucks: melhorias ligadas aos poucos
+	c.desligadas = c.desligadas + v.get("desligar", [])
 
 
 ## arquivos de física do veículo: base da classe + o dele
@@ -159,20 +205,7 @@ func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
 	veh_idx = i
 	var v: Dictionary = frota()[i]
 	car = Car.new()
-	car.asset_dir = v.dir
-	car.data_files = dados(v)
-	car.points_file = v.points
-	car.vehicle_id = v.id
-	car.som_pasta = v.get("som", "")
-	car.tune_override = v.get("tune", {})
-	car.livery_file = v.get("livery", "pintura.png")
-	if v.has("fp"):
-		car.FP_UP = v.fp[0]
-		car.FP_BACK = v.fp[1]
-		car.FP_PITCH = v.fp[2]
-	car.vehicle_name = "%s (%s)" % [v.name, v.id]
-	if v.id.begins_with("TRUCK"):
-		car.desligadas = Car.PENDENTES_TRUCK   # trucks: melhorias ligadas aos poucos
+	configurar(car, v)
 	car.terrain = terrain
 	add_child(car)
 	car.manual = manual
@@ -229,7 +262,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.physical_keycode:
 			KEY_C:
-				cam_mode = (cam_mode + 1) % 5
+				_troca_camera()
 			KEY_G:
 				cam_piloto.ligado = not cam_piloto.ligado
 			KEY_R:
@@ -262,11 +295,23 @@ func _unhandled_input(event: InputEvent) -> void:
 						KEY_MINUS: Vector2(-0.01, 0), KEY_EQUAL: Vector2(0.01, 0)}[event.physical_keycode])
 			KEY_ESCAPE:
 				get_tree().quit()
-	# olhar livre na câmera do piloto: botão direito do mouse apertado
+	# controle: Select troca a câmera (o A é a embreagem, car.gd)
+	if event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_BACK:
+		_troca_camera()
+	# olhar livre na câmera do piloto e órbita nas de corrida: botão direito
+	# do mouse apertado
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
 		cam_piloto.mouse_botao(event.pressed and cam_mode == 4)
+		orbita.mouse_botao(event.pressed and cam_mode <= 1 and ORBITA)
 	elif event is InputEventMouseMotion and cam_mode == 4:
 		cam_piloto.mouse_arrasto(event.relative)
+	elif event is InputEventMouseMotion and cam_mode <= 1:
+		orbita.mouse_arrasto(event.relative)
+
+
+func _troca_camera() -> void:
+	cam_mode = (cam_mode + 1) % 5
+	orbita.reiniciar()
 
 
 # ------------------------------------------------------------ menu de carros
@@ -287,10 +332,12 @@ func _make_menu(layer: CanvasLayer) -> void:
 	# depois e os bônus no fim
 	var todos := frota()
 	var order := range(todos.size())
-	order.sort_custom(func(a, b): return [int(todos[a].get("bonus", false)), todos[a].id, a] < [int(todos[b].get("bonus", false)), todos[b].id, b])
+	order.sort_custom(func(a, b): return [_grupo(todos[a]), todos[a].id, a] < [_grupo(todos[b]), todos[b].id, b])
 	for i in order:
 		var v: Dictionary = todos[i]
-		if v.get("bonus", false):
+		if v.get("extra", false):
+			menu.add_item("Extra. %s" % v.name)
+		elif v.get("bonus", false):
 			menu.add_item("Bônus. %s" % v.name)
 		else:
 			menu.add_item("%s%d. %s" % ["Truck " if v.id.begins_with("TRUCK") else "", v.id.to_int(), v.name])
@@ -299,6 +346,13 @@ func _make_menu(layer: CanvasLayer) -> void:
 	menu.item_clicked.connect(func(row, _p, _b): _swap_vehicle(menu_idx[row]); _toggle_menu())
 	menu.visible = false
 	layer.add_child(menu)
+
+
+## ordem do menu: jogo, bônus, extras nossos
+static func _grupo(v: Dictionary) -> int:
+	if v.get("extra", false):
+		return 2
+	return 1 if v.get("bonus", false) else 0
 
 
 func _toggle_menu() -> void:
@@ -341,8 +395,9 @@ func _process(delta: float) -> void:
 			car.FP_UP, car.FP_BACK, car.FP_PITCH, car.FP_FOV, "ligados" if cam_piloto.ligado else "desligados"]
 		if car.painel:
 			fp += "\npainel: lado %+.2f (-/=)  altura %+.2f (9/0)" % [car.painel.ajuste.x, car.painel.ajuste.y]
-	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s   sujeira %d%%%s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço: embreagem (toque virando e acelerando = Clutch Turn)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC: câmera (%s)   V: próximo carro   Tab: menu de carros   F: girar o modelo   B: volante (%s)   N: som %s   H: farol %s   Esc: sair" % [
-		int(kmh), int(kmh / 1.609), car.gear_label(), int(car.rpm), "MANUAL" if car.manual else "AUTO", int(car.sujeira_nivel * 100.0), (" (%s)" % car.sujeira.aviso if car.sujeira and car.sujeira.aviso != "" else ("" if car.sujeira else " (sem assets/fx: rode o fx_jogo)")), car.vehicle_name, ("pneus portados do jogo" if car.use_ported else "pneus antigos") + (", lateral do jogo" if car.lateral_game else ", lateral remendo"), CAM_NAMES[cam_mode], car.volante_estilo if car.sw_malha else "do jogo", ("mudo" if AudioServer.is_bus_mute(0) else (car.som.pasta.get_file() if car.som else "sem loops")),
+	hud.text = "%d km/h   %d mph\nmarcha %s   %d rpm   câmbio %s   sujeira %d%%%s\nfísica: %s (%s)\n\nW/S ou setas: acelerar/frear (parado, segurar S = ré)   A/D: virar   Espaço ou A: embreagem (toque virando e acelerando = Clutch Turn)\nP: pneus portados/antigos   L: lateral jogo/remendo   M: câmbio auto/manual   E/Q: sobe/desce marcha   R: desvirar   T: voltar pro início\nC ou Select: câmera (%s)%s   V: próximo carro   Tab: menu de carros   F: girar o modelo   B: volante (%s)   N: som %s   H: farol %s   Esc: sair" % [
+		int(kmh), int(kmh / 1.609), car.gear_label(), int(car.rpm), "MANUAL" if car.manual else "AUTO", int(car.sujeira_nivel * 100.0), (" (%s)" % car.sujeira.aviso if car.sujeira and car.sujeira.aviso != "" else ("" if car.sujeira else " (sem assets/fx: rode o fx_jogo)")), car.vehicle_name, ("pneus portados do jogo" if car.use_ported else "pneus antigos") + (", lateral do jogo" if car.lateral_game else ", lateral remendo"), CAM_NAMES[cam_mode],
+		" (analógico direito ou botão direito do mouse: girar em volta do carro)" if ORBITA and cam_mode <= 1 else "", car.volante_estilo if car.sw_malha else "do jogo", ("mudo" if AudioServer.is_bus_mute(0) else (car.som.pasta.get_file() if car.som else "sem loops")),
 		("ligado" if Farol.ligado else "desligado") if car.farol else "(sem farol no modelo)"]
 	hud.text += fp
 	var aviso_som: String = SomJogo.aviso()
@@ -410,6 +465,7 @@ func reset_camera() -> void:
 	if cam_piloto:
 		cam_piloto.car = car
 		cam_piloto.reiniciar()
+	orbita.reiniciar()
 	if gcams.is_empty():
 		_make_cameras()
 	var s := cam_state()
@@ -440,6 +496,9 @@ func _update_camera(delta: float) -> void:
 
 	if cam_mode <= 1:
 		gcams[cam_mode].apply(cam, s.tp)
+		if ORBITA:
+			orbita.passo(delta)
+			orbita.aplicar(cam, s.tp, terrain)
 		return
 
 	if cam_piloto.car != car:

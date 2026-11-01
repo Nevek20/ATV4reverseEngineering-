@@ -18,6 +18,7 @@ extends RigidBody3D
 ## e desacelerações em mph/s. Tudo é convertido pra SI ao carregar.
 
 const VehicleData := preload("res://vehicle_data.gd")
+const CarroGlb := preload("res://carro_glb.gd")
 const MPH := 0.44704
 const G := 9.81
 const RPM2RAD := TAU / 60.0
@@ -49,6 +50,12 @@ var vehicle_name := "Renegade (Buggy)"
 # conferidos no save state: torque 0.81, final 0.61, massa e embreagem no máximo.
 var vehicle_id := "BUGGY_10"
 var som_pasta := ""            # pasta dos loops do motor, se não for a do id (o bônus)
+# carros extras nossos (main.gd EXTRAS, tools/carro_glb.py): peças de fábrica
+# de outro carro do jogo (o Escort usa as do Storm) e motor que não aparece
+# (só a ponta do escape treme, como nos trucks; nada de ventoinha)
+var tuning_id := ""
+var motor_escondido := false
+var _cena_glb: Node = null     # cena do .glb enquanto monta carroceria, rodas e volante
 var tune_override := {}       # ex.: {"engine": 0.3} pra simular peças compradas
 var TUNE_ENGINE := 0.81       # Internals L3 + Management L2 + Header L2 + Intake L3 + Exhaust L3
 var TUNE_BRAKE := 0.9         # Brake_Level2
@@ -104,8 +111,9 @@ const VOLANTE_NOSSO := true
 # espaçador de cubo), em m, pra mão alcançar: no Chimera o aro fica a 80 cm do
 # banco (braço 144% esticado) e no Lazarus a 71 cm (128%); nos outros 54-62 cm.
 # A câmera do piloto vem junto (o olho é medido do centro do aro). AVANCO=x
-# no ambiente testa um valor
-const AVANCO_VOLANTE := {"TRUCK_12": 0.10, "LAZARUS": 0.10}
+# no ambiente testa um valor. Lazarus e Chimera saíram daqui (nov/2026):
+# resolvidos pelo banco (BANCO_NOSSO)
+const AVANCO_VOLANTE := {}
 # melhoria nossa: piloto mais alto/pra frente que o ponto ARSE do jogo (só o
 # desenho dele; a física não usa). No Chimera o ARSE fica 15 cm mais pra trás
 # e 13 mais baixo que nos outros (em relação ao volante): só trazer o volante
@@ -113,8 +121,19 @@ const AVANCO_VOLANTE := {"TRUCK_12": 0.10, "LAZARUS": 0.10}
 # acima do banco). Com o banco + AVANCO_VOLANTE: Chimera 105%, Lazarus 101%
 # (teste_volante; com o volante inteiro do tools/volante.py o aro do Lazarus
 # ficou 2.4 cm mais alto e o banco foi mais 4 cm pra frente). BANCO=x,y,z no
-# ambiente testa
-const BANCO_NOSSO := {"TRUCK_12": Vector3(0.0, 0.04, 0.20), "LAZARUS": Vector3(0.0, 0.06, 0.09)}
+# ambiente testa.
+# Lazarus (nov/2026, "parece um anão", Matheus): cabine de Silverado, o aro
+# ficava 50 cm acima do banco (ARSE + 6 cm; nos outros 25 carros 27 a 39) e o
+# teto 62 cm acima da cabeça (trucks 33 a 56). Banco +21 cm: aro a 35 cm, teto a 47, braço 89%
+# sem AVANCO_VOLANTE (o volante fica no lugar do modelo) e o olho da câmera do
+# piloto volta pra dentro da cabeça (19 cm acima do osso; antes 39).
+# tests/medir_cabine.gd. Depois (Matheus: "Goliath, Chimera e TT baixinhos"):
+# TT +10 cm (teto 56 -> 46 cm, braço 95%), Goliath +8 (aro 46 cm acima do
+# banco, teto 45 -> 37, braço 73%), Chimera +15 e 20 pra frente sem o
+# AVANCO_VOLANTE (aro 50 -> 35, teto 43 -> 32, braço 107 -> 92%); o olho da
+# câmera do piloto fica 16 a 20 cm acima do osso da cabeça (antes 24 a 34)
+const BANCO_NOSSO := {"TRUCK_12": Vector3(0.0, 0.15, 0.20), "LAZARUS": Vector3(0.0, 0.21, 0.09),
+	"TRUCK_08": Vector3(0.0, 0.10, 0.0), "TRUCK_11": Vector3(0.0, 0.08, 0.0)}
 # melhoria nossa: volante onde o modelo não tem (Shockwave e Punisher não têm
 # interior: o tools/volante.py não acha aro nenhum). Posto onde ele fica nos
 # outros trucks em relação ao banco (ARSE + 0.37 de altura e 0.46 pra frente,
@@ -147,6 +166,10 @@ var sfx: Node = null
 # que o jogo tem no XML e não usa, nos pontos EXHAUST). false = sem fumaça
 const FUMACA := true
 var fumaca: Node3D = null
+# poeira dos pneus (porta do jogo: Setup/Dust.xml, 0x225108; poeira.gd): nuvens
+# da cor do chão (DustColour) atrás das rodas de trás, pelo DustType do material
+const POEIRA := true
+var poeira: Node3D = null
 # melhoria nossa: escapes no lugar dos pontos EXHAUST do jogo (que ele não
 # usa). Storm (BUGGY_12), o único buggy sem ponto: medido no modelo, boca das
 # duas ponteiras cromadas (peças de 46 faces na traseira, embaixo), viradas
@@ -189,6 +212,12 @@ var motor_treme: Node3D = null
 # girando (elétricas) e polias e correia 3D por cima das polias desenhadas
 const MOTOR_ANIMA := true
 var motor_anima: Node = null
+# trucks (lote 4, out/2026): o motor fica embaixo do capô; ventoinhas à mostra
+# no Punisher (os 2 radiadores na caçamba) e (nov/2026, Matheus) no Panther,
+# Truggy, TT, Hammerhead e Lazarus (3 em cima dos estepes, textura
+# preRunnerTruck_fan). Nos trucks elas têm raio de 27 a 31 cm
+# (motor_anima.RAIO_MAX_TRUCK); conferido com print_tela VENTOINHA_COR=1
+const ANIMA_TRUCKS := ["TRUCK_05", "TRUCK_06", "TRUCK_07", "TRUCK_08", "TRUCK_09", "LAZARUS"]
 # lanterna de freio e luz de ré acesas (melhoria nossa, luzes.gd: a lente da
 # cor da luz acende e ganha um halo nosso; o jogo põe só um halo laranja com
 # raios nos pontos BRAKE_LIGHT/REVERSE_LIGHT, VehicleHaloMap.xml)
@@ -244,6 +273,12 @@ const COR_K_SRGB := 255.0 / 128.0   # no albedo (sRGB) vira o COR_K do pingu2obj
 const CABINE_FECHADA := ["BUGGY_12", "TRUCK_01", "TRUCK_02", "TRUCK_03", "TRUCK_04", "TRUCK_05",
 	"TRUCK_06", "TRUCK_07", "TRUCK_08", "TRUCK_09", "TRUCK_10", "TRUCK_11", "TRUCK_12", "LAZARUS"]
 const FORRO := Color(0.16, 0.16, 0.17)
+# vidro das janelas (só o Lazarus): alfa da Dakar_window_8 do jogo (0x1B/0x80)
+const VIDRO_ALFA := 27.0 / 128.0
+# estepes NOSSOS (Matheus, nov/2026): o modelo do Lazarus tem SpareWheel01Centre
+# e SpareWheel02Centre lado a lado na caçamba, mas o mapa do Jericho
+# (TruckCompMap_B1) só põe roda no 01 e sobrava o buraco do 2º
+const ESTEPES_NOSSOS := {"LAZARUS": ["SpareWheel01", "SpareWheel02"]}
 
 # O jogo é mão esquerda (x direita, y cima, z frente; esquerda do jogo = x < 0
 # no modelo) e o Godot é mão direita. Tudo que vem do jogo em frame do modelo
@@ -417,7 +452,17 @@ var melhorias := true
 # conferida neles (lote 1, out/2026: luzes, farol e fumaça; o som do motor
 # veio antes, com os 13 motores dos trucks; lote 2: volante e mãos)
 var desligadas := []
-const PENDENTES_TRUCK := ["motor_treme", "motor_anima"]
+const PENDENTES_TRUCK := []
+
+
+## TEMPO_CARGA=1: quanto cada etapa da carga do carro leva (ms)
+var _t_carga := 0
+func _marca(etapa: String) -> void:
+	if OS.get_environment("TEMPO_CARGA") != "1":
+		return
+	var t := Time.get_ticks_msec()
+	print("  carga %-18s %6d ms" % [etapa, t - _t_carga])
+	_t_carga = t
 
 
 ## melhoria nossa ligada neste carro
@@ -426,6 +471,7 @@ func _tem(nome: String) -> bool:
 
 
 func _ready() -> void:
+	_t_carga = Time.get_ticks_msec()
 	espelho = Node3D.new()
 	espelho.name = "Espelho"
 	espelho.scale = ESPELHO
@@ -434,22 +480,35 @@ func _ready() -> void:
 	espelho.add_child(model_root)
 	_load_pecas()
 	_load_model()                 # antes da física: define model_offset
+	_marca("modelo")
 	_load_physics()
 	_load_piloto()                # depois da física: precisa do ponto ARSE
+	_marca("física+piloto")
 	_load_painel()
+	_marca("painel")
 	_load_motor_treme()
+	_marca("motor_treme")
 	_load_motor_anima()
+	_marca("motor_anima")
 	_load_luzes()
+	_marca("luzes")
 	_load_farol()
+	_marca("farol")
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
+	_load_poeira()
 	_casco()
+	_marca("som+fumaça+casco")
 	contact_monitor = true            # batida: contatos do casco (_batida_passo)
 	max_contacts_reported = 8
 	for w in wheels:
 		_make_wheel_mesh(w)
+	if _cena_glb:
+		_cena_glb.free()               # rodas e volante já saíram dela
+		_cena_glb = null
 	_esferas_das_rodas()
+	_marca("rodas")
 	if suspension and not pecas.is_empty() and not points.is_empty():
 		susp_vis = preload("res://suspension_visual.gd").new()
 		espelho.add_child(susp_vis)
@@ -457,8 +516,9 @@ func _ready() -> void:
 		if ResourceLoader.exists(wheel_rear_file):
 			spare_mesh = load(wheel_rear_file) as Mesh
 		susp_vis.build(self, points, points_rot, asset_dir, pecas.get("pecas", {}),
-			pecas.get("rally", false), pecas.get("estepe", []), spare_mesh)
+			pecas.get("rally", false), ESTEPES_NOSSOS.get(chave(), pecas.get("estepe", [])), spare_mesh)
 	_load_sujeira()               # por último: precisa das rodas e das peças
+	_marca("suspensão+sujeira")
 
 
 ## casco de colisão contra o mundo = as ESFERAS do VehicleWorld.hsc do jogo
@@ -584,7 +644,8 @@ func _load_pecas() -> void:
 func _load_tuning() -> void:
 	if not FileAccess.file_exists("res://data/vehicles.xml"):
 		return
-	var t := VehicleData.factory_tuning("res://data/vehicles.xml", "res://data/upgrades.xml", vehicle_id)
+	var t := VehicleData.factory_tuning("res://data/vehicles.xml", "res://data/upgrades.xml",
+		tuning_id if tuning_id != "" else vehicle_id)
 	TUNE_ENGINE = t.engine
 	pneu = String(t.config.get("Tire", pneu))
 	TUNE_BRAKE = t.brake
@@ -971,6 +1032,15 @@ func _load_points(path: String) -> Dictionary:
 	points_rot = {}
 	if path == "" or not FileAccess.file_exists(path):
 		return out
+	if path.ends_with(".json"):          # carro extra nosso (tools/carro_glb.py)
+		var j = JSON.parse_string(FileAccess.get_file_as_string(path))
+		for nm in j.pontos:
+			var p: Array = j.pontos[nm]
+			out[nm] = Vector3(p[0], p[1], p[2])
+			var r: Array = j.rot.get(nm, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+			points_rot[nm] = Basis(Vector3(r[0][0], r[0][1], r[0][2]), Vector3(r[1][0], r[1][1], r[1][2]),
+				Vector3(r[2][0], r[2][1], r[2][2]))
+		return out
 	var buf := FileAccess.get_file_as_bytes(path)
 	if buf.size() < 0x60 or buf.slice(0, 5).get_string_from_ascii() != "POINT":
 		push_warning("%s não é um arquivo de pontos" % path)
@@ -1027,6 +1097,20 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 	pivot.add_child(spin)
 	w.pivot = pivot
 	w.spin_node = spin
+	var canto: String = ("F" if w.front else "R") + ("L" if w.left else "R")
+	var rg: Dictionary = pecas.get("rodas_glb", {}).get(canto, {})
+	if _cena_glb and not rg.is_empty():
+		# carro extra: a roda de cada canto do modelo (não espelha) e o cubo
+		# dela (SUSP_xx: segue o curso e o esterço, não gira)
+		var c := Vector3(rg.centro[0], rg.centro[1], rg.centro[2])
+		var rmi := MeshInstance3D.new()
+		rmi.mesh = CarroGlb.malha(_cena_glb, [rg.no], [], c, pecas.get("escala", 1.0))
+		spin.add_child(rmi)
+		if not rg.get("cubo", []).is_empty():
+			var cmi := MeshInstance3D.new()
+			cmi.mesh = CarroGlb.malha(_cena_glb, rg.cubo, [], c, pecas.get("escala", 1.0))
+			pivot.add_child(cmi)
+		return
 	var path: String = wheel_front_file if w.front else wheel_rear_file
 	if path != "" and ResourceLoader.exists(path):
 		var mesh: Mesh = load(path) as Mesh
@@ -1073,7 +1157,13 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 func _load_model() -> void:
 	var mi := MeshInstance3D.new()
 	var mesh: Mesh = null
-	if model_path != "" and ResourceLoader.exists(model_path):
+	var glb := model_path.ends_with(".glb")
+	if glb and ResourceLoader.exists(model_path):
+		# carro extra nosso: a cena fica aberta até as rodas e o volante saírem dela
+		_cena_glb = (load(model_path) as PackedScene).instantiate()
+		CarroGlb.configurar(pecas)
+		mesh = CarroGlb.malha(_cena_glb, [], pecas.get("excluir", []), Vector3.ZERO, pecas.get("escala", 1.0))
+	elif model_path != "" and ResourceLoader.exists(model_path):
 		mesh = load(model_path) as Mesh
 	if mesh == null:
 		push_warning("Modelo não encontrado em %s. Copie a pasta renegade pra assets/renegade." % model_path)
@@ -1093,6 +1183,8 @@ func _load_model() -> void:
 		livery = load(lp)
 	for i in mesh.get_surface_count():
 		var m := mesh.surface_get_material(i)
+		if glb:
+			continue                  # materiais do .glb como vieram (PBR, sem cor de vértice)
 		var m2: StandardMaterial3D
 		if m is StandardMaterial3D:
 			m2 = m.duplicate()
@@ -1106,6 +1198,14 @@ func _load_model() -> void:
 		if m2.albedo_texture and _tem_alfa(m2.albedo_texture):
 			m2.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 			m2.alpha_scissor_threshold = 0.5
+		# vidro (só o Lazarus tem: Dakar_window_Index): o lote do .pingu vem
+		# marcado transparente (+0x00 = 1, como decalques, sombras e o carro
+		# fantasma), mas a textura _Index tem alfa cheio e o vidro saía uma
+		# placa azul opaca por fora. A mesma imagem na Truck/Textures/Generic
+		# (Dakar_window_8) tem alfa 0x1B = 21%: é o que vale aqui
+		if m2.albedo_texture and m2.albedo_texture.resource_path.get_file().to_lower().contains("window"):
+			m2.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			m2.albedo_color.a = VIDRO_ALFA
 		material_do_jogo(m2)
 		mi.set_surface_override_material(i, m2)
 	var aabb := mesh.get_aabb()
@@ -1125,7 +1225,9 @@ func _load_motor_treme() -> void:
 		return
 	motor_treme = preload("res://motor_treme.gd").new()
 	motor_treme.name = "MotorTreme"
-	if motor_treme.separar(body_mi, points, vehicle_id):
+	# trucks e extras: só o escape; extra (200 mil triângulos): só busca a 1 m da boca
+	if motor_treme.separar(body_mi, points, vehicle_id, vehicle_id.begins_with("TRUCK") or motor_escondido,
+			1.0 if _cena_glb else 0.0):
 		model_root.add_child(motor_treme)
 	else:
 		motor_treme.free()
@@ -1159,6 +1261,8 @@ func _load_farol() -> void:
 func _load_motor_anima() -> void:
 	if not (MOTOR_ANIMA and _tem("motor_anima")) or body_mi == null:
 		return
+	if (vehicle_id.begins_with("TRUCK") and not (chave() in ANIMA_TRUCKS)) or motor_escondido:
+		return
 	motor_anima = preload("res://motor_anima.gd").new()
 	motor_anima.name = "MotorAnima"
 	if motor_anima.montar(self):
@@ -1188,6 +1292,7 @@ func _face_de_dentro(mi: MeshInstance3D) -> void:
 		for t in range(0, ix.size(), 3):
 			var k: Array = chave.call(vs[ix[t]], vs[ix[t + 1]], vs[ix[t + 2]])
 			existe[k] = existe.get(k, 0) + 1
+	var costas := _com_costas(arrs)
 	var dentro := ArrayMesh.new()
 	var mats: Array = []
 	var forro := StandardMaterial3D.new()
@@ -1206,11 +1311,18 @@ func _face_de_dentro(mi: MeshInstance3D) -> void:
 		if a[Mesh.ARRAY_INDEX] != null:
 			ix = a[Mesh.ARRAY_INDEX]
 		var novo := PackedInt32Array()
+		var painel := PackedInt32Array()     # painel de 2 lados: a cópia leva o material de fora
 		for t in range(0, ix.size(), 3):
 			if existe[chave.call(vs[ix[t]], vs[ix[t + 1]], vs[ix[t + 2]])] > 1:
 				continue                  # chapa de 2 faces: já tem o lado de dentro
+			var ct: int = costas.get(Vector2i(s, t), 0)
+			if ct == 1:
+				continue                  # idem, com os triângulos cortados diferente
+			if ct == 2:
+				painel.append_array([ix[t], ix[t + 2], ix[t + 1]])
+				continue
 			novo.append_array([ix[t], ix[t + 2], ix[t + 1]])
-		if novo.is_empty():
+		if novo.is_empty() and painel.is_empty():
 			continue
 		if a[Mesh.ARRAY_NORMAL] != null:
 			var ns: PackedVector3Array = a[Mesh.ARRAY_NORMAL]
@@ -1218,10 +1330,15 @@ func _face_de_dentro(mi: MeshInstance3D) -> void:
 				ns[i] = -ns[i]
 			a[Mesh.ARRAY_NORMAL] = ns
 		a[Mesh.ARRAY_TANGENT] = null
-		a[Mesh.ARRAY_INDEX] = novo
-		dentro.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
 		var m: Material = mi.get_active_material(s)
-		mats.append(forro if m and m.resource_name.ends_with("_white") else m)
+		if not novo.is_empty():
+			a[Mesh.ARRAY_INDEX] = novo
+			dentro.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
+			mats.append(forro if m and m.resource_name.ends_with("_white") else m)
+		if not painel.is_empty():
+			a[Mesh.ARRAY_INDEX] = painel
+			dentro.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
+			mats.append(m)
 	if dentro.get_surface_count() == 0:
 		return
 	var d := MeshInstance3D.new()
@@ -1230,6 +1347,70 @@ func _face_de_dentro(mi: MeshInstance3D) -> void:
 	for s in mats.size():
 		d.set_surface_override_material(s, mats[s])
 	mi.add_child(d)
+
+
+## triângulos que já têm o lado de trás modelado com outra divisão em
+## triângulos (o mesmo quadrado cortado pela outra diagonal, virado pro outro
+## lado): o centro deles cai num triângulo de sentido oposto no mesmo plano (até
+## 3 mm), ou o centro dele cai neles. No painel do ELF atrás da cabine do Hammerhead a cópia de dentro
+## desses ficava no plano da pintura de fora, com o forro cinza, e piscava
+## (nov/2026). Devolve {Vector2i(superfície, índice do 1º vértice): 1}; e 2
+## quando o triângulo não é coberto mas divide uma aresta com um do outro
+## lado no mesmo plano: o painel é de 2 lados no jogo (o ELF aparece dos 2
+## lados) e a cópia leva a pintura em vez do forro
+static func _com_costas(arrs: Array) -> Dictionary:
+	const CEL := 0.25
+	var tris: Array = []              # [s, t, a, b, c, normal]
+	var grade := {}
+	for s in arrs.size():
+		var a: Array = arrs[s]
+		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
+		var ix := PackedInt32Array(range(vs.size()))
+		if a[Mesh.ARRAY_INDEX] != null:
+			ix = a[Mesh.ARRAY_INDEX]
+		for t in range(0, ix.size(), 3):
+			var p0 := vs[ix[t]]
+			var p1 := vs[ix[t + 1]]
+			var p2 := vs[ix[t + 2]]
+			var n := (p1 - p0).cross(p2 - p0)
+			if n.length_squared() < 1e-14:
+				continue
+			var k := tris.size()
+			tris.append([s, t, p0, p1, p2, n.normalized()])
+			var lo := Vector3i((p0.min(p1).min(p2) / CEL).floor())
+			var hi := Vector3i((p0.max(p1).max(p2) / CEL).floor())
+			if (hi - lo).length_squared() > 64:
+				continue                  # placa enorme: não é desses painéis
+			for x in range(lo.x, hi.x + 1):
+				for y in range(lo.y, hi.y + 1):
+					for z in range(lo.z, hi.z + 1):
+						var c := Vector3i(x, y, z)
+						if not grade.has(c):
+							grade[c] = []
+						grade[c].append(k)
+	var out := {}
+	for tr in tris:
+		var g: Vector3 = (tr[2] + tr[3] + tr[4]) / 3.0
+		var n: Vector3 = tr[5]
+		for k in grade.get(Vector3i((g / CEL).floor()), []):
+			var u: Array = tris[k]
+			var nu: Vector3 = u[5]
+			if nu.dot(n) > -0.99 or absf((g - u[2]).dot(nu)) > 0.003:
+				continue
+			var bc := Geometry3D.get_triangle_barycentric_coords(g, u[2], u[3], u[4])
+			var gu: Vector3 = (u[2] + u[3] + u[4]) / 3.0
+			var bu := Geometry3D.get_triangle_barycentric_coords(gu, tr[2], tr[3], tr[4])
+			if (bc.x > 0.0 and bc.y > 0.0 and bc.z > 0.0) or (bu.x > 0.0 and bu.y > 0.0 and bu.z > 0.0):
+				out[Vector2i(tr[0], tr[1])] = 1
+				break
+			var comum := 0
+			for p in [tr[2], tr[3], tr[4]]:
+				for q in [u[2], u[3], u[4]]:
+					if (p as Vector3).distance_squared_to(q) < 1e-6:
+						comum += 1
+			if comum >= 2:
+				out[Vector2i(tr[0], tr[1])] = 2
+	return out
 
 
 static var _alfa_cache := {}
@@ -1260,10 +1441,80 @@ func _load_piloto() -> void:
 	piloto.name = "Piloto"
 	piloto.position = model_offset + banco() - piloto.root_pos
 	model_root.add_child(piloto)
+	piloto.paredes = _paredes_do_piloto()
 	if MAOS_NO_VOLANTE and VOLANTE_GIRA and _tem("maos") and _tem("volante_gira") and sw_pivot:
 		var vol: Dictionary = pecas.get("volante", {})
 		# aro no frame do esqueleto (o piloto não gira em relação ao modelo)
 		piloto.prender_no_volante(sw_centro() - (banco() - piloto.root_pos), SW_AXIS, vol.get("raio", 0.19))
+
+
+## onde fica a carroceria dos lados do piloto, pros cotovelos não varar a
+## porta (Fireball: 6.4 cm pra dentro dela; piloto.gd PAREDE_FOLGA). Grade em
+## (altura, frente) em volta do banco; em cada ponto um raio sai do meio do
+## banco pros 2 lados e guarda onde bate na carroceria (ignora o que fica a
+## menos de PAREDE_INICIO do meio: banco e o próprio piloto). Frame do
+## esqueleto do piloto. Os triângulos vão numa grade (altura, frente) pra cada
+## raio testar só os dele (~5 ms)
+const PAREDE_INICIO := 0.18
+func _paredes_do_piloto() -> Dictionary:
+	if body_mi == null or not (body_mi.mesh is ArrayMesh):
+		return {}
+	var b := banco()
+	var desl: Vector3 = b - piloto.root_pos      # esqueleto -> frame da carroceria
+	var y0 := b.y + 0.05
+	var z0 := b.z - 0.35
+	var passo := Vector2(0.06, 0.06)
+	var n := Vector2i(13, 18)                   # 0.05..0.77 acima e -0.35..+0.67 do banco
+	var tris: Array = []
+	var cel := {}
+	var m: ArrayMesh = body_mi.mesh
+	for s in m.get_surface_count():
+		var a := m.surface_get_arrays(s)
+		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
+		var ix := PackedInt32Array(range(vs.size()))
+		if a[Mesh.ARRAY_INDEX] != null:
+			ix = a[Mesh.ARRAY_INDEX]
+		for t in range(0, ix.size(), 3):
+			var p0 := vs[ix[t]]
+			var p1 := vs[ix[t + 1]]
+			var p2 := vs[ix[t + 2]]
+			var lo := p0.min(p1).min(p2)
+			var hi := p0.max(p1).max(p2)
+			if hi.x < b.x - 1.2 or lo.x > b.x + 1.2:
+				continue
+			var i0 := floori((lo.y - y0) / passo.x)
+			var i1 := floori((hi.y - y0) / passo.x)
+			var j0 := floori((lo.z - z0) / passo.y)
+			var j1 := floori((hi.z - z0) / passo.y)
+			if i1 < 0 or j1 < 0 or i0 >= n.x or j0 >= n.y:
+				continue
+			var k := tris.size()
+			tris.append([p0, p1, p2])
+			for i in range(maxi(i0, 0), mini(i1, n.x - 1) + 1):
+				for j in range(maxi(j0, 0), mini(j1, n.y - 1) + 1):
+					var c := Vector2i(i, j)
+					if not cel.has(c):
+						cel[c] = []
+					cel[c].append(k)
+	var dist := {1: PackedFloat32Array(), -1: PackedFloat32Array()}
+	for lado in [1, -1]:
+		var d: PackedFloat32Array = dist[lado]
+		d.resize(n.x * n.y)
+		for i in n.x:
+			for j in n.y:
+				var o := Vector3(b.x, y0 + (i + 0.5) * passo.x, z0 + (j + 0.5) * passo.y)
+				var dir := Vector3(lado, 0.0, 0.0)
+				var melhor := 2.0
+				for k in cel.get(Vector2i(i, j), []):
+					var tr: Array = tris[k]
+					var r = Geometry3D.ray_intersects_triangle(o, dir, tr[0], tr[1], tr[2])
+					if r != null:
+						var dd: float = ((r as Vector3) - o).x * lado
+						if dd > PAREDE_INICIO and dd < melhor:
+							melhor = dd
+				d[i * n.y + j] = melhor
+	# no frame do esqueleto: x do meio do banco, y0/z0 deslocados
+	return {"x": b.x - desl.x, "y0": y0 - desl.y, "z0": z0 - desl.z, "passo": passo, "n": n, "dist": dist}
 
 
 ## centro do aro do volante que aparece (o do jogo, ou o gerado avançado)
@@ -1304,6 +1555,17 @@ func _load_fumaca() -> void:
 		fumaca = null
 
 
+func _load_poeira() -> void:
+	if not (POEIRA and _tem("poeira")):
+		return
+	poeira = preload("res://poeira.gd").new()
+	poeira.name = "Poeira"
+	add_child(poeira)
+	if not poeira.montar(self):
+		poeira.queue_free()
+		poeira = null
+
+
 func _load_painel() -> void:
 	if not (PAINEL and _tem("painel")):
 		return
@@ -1317,7 +1579,7 @@ func _load_painel() -> void:
 
 
 func _load_sujeira() -> void:
-	if not SUJEIRA:
+	if not SUJEIRA or not _tem("sujeira"):    # carro extra sem a 2ª textura (main.gd "desligar")
 		return
 	if OS.has_environment("SUJEIRA"):          # prints: nível fixo (e lama de terra nas rodas)
 		sujeira_nivel = clampf(float(OS.get_environment("SUJEIRA")), 0.0, 1.0)
@@ -1380,6 +1642,18 @@ func _process(delta: float) -> void:
 func _load_steering_wheel() -> void:
 	var path := model_path.get_basename() + "_volante.obj"
 	var nosso := VOLANTE_NOSSO and _tem("volante_nosso")
+	var vg: Dictionary = pecas.get("volante", {})
+	if _cena_glb and vg.has("no") and not nosso:
+		# carro extra: o volante do próprio modelo (STEER_HR) gira
+		SW_CENTER = Vector3(vg.centro[0], vg.centro[1], vg.centro[2])
+		SW_AXIS = Vector3(vg.eixo[0], vg.eixo[1], vg.eixo[2])
+		sw_pivot = Node3D.new()
+		sw_pivot.position = model_offset + SW_CENTER
+		model_root.add_child(sw_pivot)
+		var vmi := MeshInstance3D.new()
+		vmi.mesh = CarroGlb.malha(_cena_glb, [vg.no], [], SW_CENTER, pecas.get("escala", 1.0))
+		sw_pivot.add_child(vmi)
+		return
 	if not ResourceLoader.exists(path) and not (nosso and VOLANTE_SEM_MODELO.has(chave())):
 		return
 	var vol: Dictionary = pecas.get("volante", {})
@@ -1686,6 +1960,10 @@ func _physics_process(dt: float) -> void:
 			var ax := -Input.get_joy_axis(0, JOY_AXIS_LEFT_X)
 			if absf(ax) > 0.12:
 				st_raw = ax
+		# botão da embreagem / Clutch Turn no A do controle (no PS2 é o R1;
+		# escolha do Matheus)
+		if Input.is_joy_button_pressed(0, JOY_BUTTON_A):
+			emb_btn = 1.0
 
 	var b := global_transform.basis
 	var up := b.y
@@ -1911,6 +2189,8 @@ func _physics_process(dt: float) -> void:
 		_vibracao(1.0 / JIT_HZ, v.dot(left), v_f)
 		_sujeira_passo()
 		_roda_suja_passo(1.0 / JIT_HZ)
+		if poeira:
+			poeira.passo(1.0 / JIT_HZ, v)
 		if sfx:
 			sfx.passo(1.0 / JIT_HZ, v.dot(left), v_f)
 	_update_visuals(dt, v_f)
