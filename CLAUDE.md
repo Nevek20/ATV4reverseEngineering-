@@ -94,7 +94,8 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL e save states
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
 %GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda, 1.16 s de derrapagem, sujeira e lama das rodas
-%GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 25 carros (0 cm) e giro do volante
+%GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 25 carros (0 cm) e giro do volante (VEHS=25, BANCO=x,y,z, AVANCO=m)
+%GODOT% --headless --path . -s res://tests/medir_cabine.gd        :: folga da cabeça até o teto e olho da câmera do piloto x cabeça, por carro
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
 %GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies, 12 trucks e o bônus
 %GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states; material da FL x RAM
@@ -474,7 +475,12 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   o capacete no teto (75 cm acima do banco no Chimera). Ficou car.gd
   BANCO_NOSSO (só o desenho do piloto: Chimera +4 cm e 20 pra frente, Lazarus
   +6 e 5) + AVANCO_VOLANTE (10 cm nos dois, com coluna nossa até a coluna do
-  modelo): 106% e 101%, erro 0. Shockwave e Punisher não têm interior (o
+  modelo): 106% e 101%, erro 0. Lazarus refeito (nov/2026, "parece um
+  anão", Matheus): o aro ficava 50 cm acima do banco (nos outros 25 carros
+  27 a 39) e o teto 62 cm acima da cabeça (trucks 33 a 56); com o banco
+  +21 cm (e 9 pra frente) fica 35 / 47, braço 89% SEM o AVANCO_VOLANTE e o
+  olho da câmera do piloto volta pra 19 cm acima do osso da cabeça (antes
+  39; os outros 15 a 30). tests/medir_cabine.gd (teto, olho x cabeça). Shockwave e Punisher não têm interior (o
   tools/volante.py não acha aro): VOLANTE_SEM_MODELO põe o nosso onde ele
   fica nos outros trucks (ARSE + 0.37 de altura e 0.46 pra frente, eixo e
   raio típicos) com coluna nossa até o painel (raio no eixo), 103%. O

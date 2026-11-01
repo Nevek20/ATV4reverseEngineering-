@@ -111,8 +111,9 @@ const VOLANTE_NOSSO := true
 # espaçador de cubo), em m, pra mão alcançar: no Chimera o aro fica a 80 cm do
 # banco (braço 144% esticado) e no Lazarus a 71 cm (128%); nos outros 54-62 cm.
 # A câmera do piloto vem junto (o olho é medido do centro do aro). AVANCO=x
-# no ambiente testa um valor
-const AVANCO_VOLANTE := {"TRUCK_12": 0.10, "LAZARUS": 0.10}
+# no ambiente testa um valor. O Lazarus saiu daqui: resolvido pelo banco
+# (BANCO_NOSSO)
+const AVANCO_VOLANTE := {"TRUCK_12": 0.10}
 # melhoria nossa: piloto mais alto/pra frente que o ponto ARSE do jogo (só o
 # desenho dele; a física não usa). No Chimera o ARSE fica 15 cm mais pra trás
 # e 13 mais baixo que nos outros (em relação ao volante): só trazer o volante
@@ -120,8 +121,14 @@ const AVANCO_VOLANTE := {"TRUCK_12": 0.10, "LAZARUS": 0.10}
 # acima do banco). Com o banco + AVANCO_VOLANTE: Chimera 105%, Lazarus 101%
 # (teste_volante; com o volante inteiro do tools/volante.py o aro do Lazarus
 # ficou 2.4 cm mais alto e o banco foi mais 4 cm pra frente). BANCO=x,y,z no
-# ambiente testa
-const BANCO_NOSSO := {"TRUCK_12": Vector3(0.0, 0.04, 0.20), "LAZARUS": Vector3(0.0, 0.06, 0.09)}
+# ambiente testa.
+# Lazarus (nov/2026, "parece um anão", Matheus): cabine de Silverado, o aro
+# ficava 50 cm acima do banco (ARSE + 6 cm; nos outros 25 carros 27 a 39) e o
+# teto 62 cm acima da cabeça (trucks 33 a 56). Banco +21 cm: aro a 35 cm, teto a 47, braço 89%
+# sem AVANCO_VOLANTE (o volante fica no lugar do modelo) e o olho da câmera do
+# piloto volta pra dentro da cabeça (19 cm acima do osso; antes 39).
+# tests/medir_cabine.gd
+const BANCO_NOSSO := {"TRUCK_12": Vector3(0.0, 0.04, 0.20), "LAZARUS": Vector3(0.0, 0.21, 0.09)}
 # melhoria nossa: volante onde o modelo não tem (Shockwave e Punisher não têm
 # interior: o tools/volante.py não acha aro nenhum). Posto onde ele fica nos
 # outros trucks em relação ao banco (ARSE + 0.37 de altura e 0.46 pra frente,

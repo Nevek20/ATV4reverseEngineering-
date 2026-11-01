@@ -4,7 +4,8 @@ extends SceneTree
 ## seu ponto do aro (girado com o volante). Imprime também o giro do volante no
 ## volante todo, que sai da animação STEER_LEFT do jogo.
 ## Buggies e trucks (Main.frota, uma vez por pasta de modelo).
-## Uso: godot --headless --path . -s res://tests/teste_volante.gd
+## Uso: godot --headless --path . -s res://tests/teste_volante.gd   (VEHS=25 só esses;
+## BANCO=x,y,z e AVANCO=m testam o banco e o volante, car.gd BANCO_NOSSO)
 const Car := preload("res://car.gd")
 const Main := preload("res://main.gd")
 
@@ -22,7 +23,8 @@ func _process(_dt: float) -> bool:
 		car = null
 	i += 1
 	while i < Main.frota().size() and (vistos.has(Main.frota()[i].dir)
-			or not FileAccess.file_exists(Main.frota()[i].dir.path_join("pecas.json"))):
+			or not FileAccess.file_exists(Main.frota()[i].dir.path_join("pecas.json"))
+			or (OS.has_environment("VEHS") and not str(i) in OS.get_environment("VEHS").split(","))):
 		i += 1
 	if i >= Main.frota().size():
 		print("teste_volante: %s (%d carros, pior %.1f cm)" % ["ok" if pior < 0.01 and feitos > 0 else "FALHA", feitos, pior * 100.0])
