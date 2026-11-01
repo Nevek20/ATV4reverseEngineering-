@@ -312,8 +312,7 @@ func _make_menu(layer: CanvasLayer) -> void:
 	# depois e os bônus no fim
 	var todos := frota()
 	var order := range(todos.size())
-	var grupo := func(v: Dictionary) -> int: return 2 if v.get("extra", false) else int(v.get("bonus", false))
-	order.sort_custom(func(a, b): return [grupo.call(todos[a]), todos[a].id, a] < [grupo.call(todos[b]), todos[b].id, b])
+	order.sort_custom(func(a, b): return [_grupo(todos[a]), todos[a].id, a] < [_grupo(todos[b]), todos[b].id, b])
 	for i in order:
 		var v: Dictionary = todos[i]
 		if v.get("extra", false):
@@ -327,6 +326,13 @@ func _make_menu(layer: CanvasLayer) -> void:
 	menu.item_clicked.connect(func(row, _p, _b): _swap_vehicle(menu_idx[row]); _toggle_menu())
 	menu.visible = false
 	layer.add_child(menu)
+
+
+## ordem do menu: jogo, bônus, extras nossos
+static func _grupo(v: Dictionary) -> int:
+	if v.get("extra", false):
+		return 2
+	return 1 if v.get("bonus", false) else 0
 
 
 func _toggle_menu() -> void:
