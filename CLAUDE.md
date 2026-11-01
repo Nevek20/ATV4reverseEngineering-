@@ -28,6 +28,7 @@ car.gd               física do carro (portada do exe), visual das rodas
 game_camera.gd       câmera de corrida do jogo (componentes do exe, 1/60 s)
 camera_jitter.gd     tremida da câmera (Perlin por velocidade, só na terra, e sorteio na batida)
 camera_piloto.gd     câmera do piloto (melhoria nossa): força G na cabeça, FOV e borrão pela velocidade, olhar pra curva e olhar livre
+camera_orbita.gd     órbita da câmera de corrida (melhoria nossa, o Forza): analógico direito / mouse giram em volta do carro, soltou volta
 suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
 main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V); VEHICLES = buggies, TRUCKS, EXTRAS (nossos), frota() = os três, configurar(car, v)
@@ -91,6 +92,7 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --headless --path . -s res://tests/teste_camera_passo.gd  :: câmera de órbita sem vai e volta
 %GODOT% --headless --path . -s res://tests/teste_camera_ram.gd    :: câmera parada x RAM de 6 save states (4 buggies, 2 trucks)
 %GODOT% --headless --path . -s res://tests/teste_camera_piloto.gd :: câmera do piloto: freada, curva, FOV, borrão, mouse (números de projeto)
+%GODOT% --headless --path . -s res://tests/teste_camera_orbita.gd  :: órbita: solto = câmera do jogo, lados, 3 voltas, volta curta, chão, mouse
 %GODOT% --path . --write-movie camera.avi --fixed-fps 60 -s res://tests/gravar_camera.gd -- 0   :: prévia: acelera, freia, curva e olha pro lado (EFEITOS=0 sem efeitos)
 %GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL e save states
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
@@ -111,7 +113,7 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 :: + print_tela com FREIO=1/0 e RE=1/0 forçam lanterna e ré acesas/apagadas, COR_VERTICE=0 tira a cor do vértice
 %GODOT% --path . --write-movie motor.avi --fixed-fps 60 -s res://tests/gravar_motor.gd -- 7   :: prévia: lenta, 7000 e volta (CAM_OFF/CAM_ALVO)
 %GODOT% --path . --write-movie fumaca.avi --fixed-fps 60 -s res://tests/gravar_fumaca.gd -- 0  :: câmera presa no cano acelerando (FUMACA_COR=1 vermelha)
-%GODOT% --headless --path . -s res://tests/teste_poeira.gd        :: poeira dos pneus na largada do RX01: parado não, asfalto não, terra sim
+%GODOT% --headless --path . -s res://tests/teste_poeira.gd        :: poeira dos pneus na largada do RX01: parado não, asfalto não, terra sim, rastro no pulo
 %GODOT% --path . --write-movie poeira.avi --fixed-fps 30 -s res://tests/gravar_poeira.gd -- 0  :: sai pra terra na câmera de corrida (SEM_POEIRA=1, POEIRA_COR=1)
 :: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem, VENTOINHA_COR=1 as ventoinhas que giram
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
@@ -540,6 +542,18 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   baixo), volta sozinho; a cabeça gira em volta do pescoço (10 cm atrás do
   olho). Sem efeitos a câmera olha reto (a de antes virava 1/4 do volante;
   o print_tela ainda usa essa, car.first_person_xf).
+- Órbita da câmera de corrida (melhoria nossa, nov/2026, pedido do Matheus:
+  "o analógico direito do Forza, solta e volta pro lugar"; camera_orbita.gd,
+  main.gd ORBITA): nas câmeras perto e longe o ÂNGULO do analógico direito é
+  pra onde a câmera olha (direita = olha pra direita, câmera do lado esquerdo
+  do carro; pra baixo = olha pra trás); girando o analógico a câmera dá
+  quantas voltas quiser. Meia deflexão gira menos (cheio a 75%). Mouse: botão
+  direito arrasta (lados sem limite, -12° a +40° de altura). Soltou: volta
+  pelo caminho curto em ~0.3 s e chega certinho (velocidade mínima no fim).
+  A câmera do jogo roda por baixo sem mudar: a órbita só gira o resultado
+  dela em volta da origem do modelo (o ponto que ela mira) e mantém a folga
+  de 1.45 m do chão do jogo (0x384c80) quando girada. Analógico parado =
+  câmera do jogo (diferença 0, tests/teste_camera_orbita.gd). C, R e T zeram.
 - Cabine fechada (melhoria nossa, car.gd CABINE_FECHADA, _face_de_dentro):
   a casca do jogo só tem a face de fora (ninguém entra no carro no jogo). No
   Storm, o único fechado, a nossa câmera do piloto via a estrada pelas portas,
@@ -673,6 +687,16 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   portado. Sem o fx_jogo.py novo não há assets/fx/poeira.png e não sai
   poeira. Falta: a "Dirt" (pedrinhas WheelSpinDirt/WheelDirtTrail,
   DirtKickupChance).
+  No ar (nov/2026, "um restinho de rastro quando pulava", Matheus): o jogo
+  continua soltando. A força perde 2 x a folga da roda até o chão (até 0.5;
+  objeto de colisão veículo+0x9f0, +0x30 por roda) e com a roda a 25 cm ou
+  mais do chão o material vira "nenhum" (a cor some em 1 s); antes disso
+  fica o último que a roda tocou (0x2017a8 só troca veículo+0xa88 com a roda
+  no chão). Ponto = centro da roda - up x (raio - afundado), recuado
+  velocidade/60 (0x225108 e 0x20ff18). Pulando a 180 km/h no RX01
+  (teste_poeira, 11 s) sai rastro por 0.78 s depois de sair do chão; antes
+  parava na hora. O raio da suspensão só alcança 5 cm abaixo da roda: a folga
+  no ar é um raio a mais (poeira._folga, até 0.3 m).
 - Motor e escape tremendo (melhoria nossa, car.gd MOTOR_TREME,
   motor_treme.gd): no jogo são parte da Body e não tremem. Separação pelas
   peças soltas da malha que cabem inteiras no cofre (atrás do banco até o
