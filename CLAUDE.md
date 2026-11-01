@@ -117,6 +117,7 @@ set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: re
 :: carro extra NOSSO de um .glb no padrão Assetto Corsa (WHEEL_LF..., STEER_HR) -> assets/<nome> + data/vehicles/<nome>*
 python tools/carro_glb.py <modelo.glb> Escort [--estatico 0.114,0.074] [--escala 1.25] [--massa 0.9] [--base buggy_12]
 %GODOT% --headless --path . -s res://tests/teste_extra.gd   :: extras: curso parado x estático, casco, 0-100 e velocidade
+set TEMPO_CARGA=1& %GODOT% --headless --path . -s res://tests/tempo_carga.gd   :: ms de cada etapa da carga (VEH=26 Escort)
 
 :: casco de colisão de cada carro (esferas do VehicleWorld.hsc pelo id) -> data/vehicles/<id>_casco.json
 python tools/casco.py <unpacked>          :: --tabela mostra a caixa de todos os cascos do archive
@@ -805,8 +806,15 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   carro_glb mede o branco da pintura e clareia o material dela (x 1.25 no
   Escort, pecas.json "pintura"). Medido no mesmo print: 81 -> 116. (4)
   VIDRO das janelas verde-água a 53% em 2 camadas (a estrada ficava azul na
-  câmera do piloto): neutro a 12%. MATERIAL_GLB=1 no print_tela mostra o
-  material como veio do modelo.
+  câmera do piloto); neutro a 12% ficou leitoso (reflete o céu): o vidro das
+  janelas SAI da malha (CarroGlb._vidro_janela; os carros do jogo não têm
+  vidro), farol e lanterna ficam. MATERIAL_GLB=1 no print_tela mostra o
+  material e o vidro como vieram do modelo.
+  Carga (TEMPO_CARGA=1, tests/tempo_carga.gd): o motor_treme levava 3.3 s
+  nos 200 mil triângulos (busca de peças em tudo + uma passada por
+  superfície com PackedInt32Array copiado a cada append). Agora o extra só
+  busca a 1 m da boca do escape e a repartição é uma passada só: 0.5 s; a
+  carga toda ~1.2 s (fora a 1ª importação do .glb no editor).
 - Casco de colisão (out/2026, docs Casco de colisão): até então era uma caixa
   de 2.1 x 0.8 x 4.8 m igual pra todos, sem fonte. O jogo carrega
   Vehicles/<Classe>/Collision/<Name>/VehicleWorld.hsc (0x1fed48) pelo ID do

@@ -67,7 +67,7 @@ var _vib := Vector3.ZERO
 
 ## tira as peças do cofre da malha da carroceria (mi) e monta a malha delas
 ## aqui (filho do mesmo pai, mesma posição). false = nada pra tremer
-func separar(mi: MeshInstance3D, pontos: Dictionary, id := "", so_escape := false) -> bool:
+func separar(mi: MeshInstance3D, pontos: Dictionary, id := "", so_escape := false, raio_busca := 0.0) -> bool:
 	if not (mi.mesh is ArrayMesh) or not pontos.has("ARSE") or not pontos.has("WHEEL_REAR_LEFT") \
 			or not pontos.has("EXHAUST"):
 		return false
@@ -96,15 +96,28 @@ func separar(mi: MeshInstance3D, pontos: Dictionary, id := "", so_escape := fals
 		var n := ix.size() if ix.size() > 0 else v.size()
 		for t in range(0, n - 2, 3):
 			var ids := [ix[t], ix[t + 1], ix[t + 2]] if ix.size() > 0 else [t, t + 1, t + 2]
+			if raio_busca > 0.0:
+				# carro extra (200 mil triângulos): só o que fica perto da boca do
+				# escape entra na busca de peças; o resto fica na carroceria
+				var longe := true
+				for e in escapes:
+					if v[ids[0]].distance_squared_to(e) < raio_busca * raio_busca:
+						longe = false
+						break
+				if longe:
+					tri.append([s, ids[0], ids[1], ids[2], Vector3i((v[ids[0]] * 10000.0).round()), true])
+					continue
 			var ks := []
 			for i in ids:
 				ks.append(Vector3i((v[i] * 10000.0).round()))
 			_unir(pai, ks[0], ks[1])
 			_unir(pai, ks[0], ks[2])
-			tri.append([s, ids[0], ids[1], ids[2], ks[0]])
+			tri.append([s, ids[0], ids[1], ids[2], ks[0], false])
 	# peças: caixa, faces e material por peça
 	var info := {}
 	for t in tri:
+		if t[5]:
+			continue
 		var r = _raiz(pai, t[4])
 		if not info.has(r):
 			info[r] = {"lo": Vector3.INF, "hi": -Vector3.INF, "n": 0, "mat": {}, "d_esc": INF, "d_luz": INF}
@@ -183,7 +196,7 @@ func separar(mi: MeshInstance3D, pontos: Dictionary, id := "", so_escape := fals
 			proib[s2] = _proibido(_nome_mat(mesh, mi, s2))
 		for i in tri.size():
 			var t: Array = tri[i]
-			if sai.has(_raiz(pai, t[4])) or proib[t[0]] or info[_raiz(pai, t[4])].d_luz < 0.10:
+			if t[5] or sai.has(_raiz(pai, t[4])) or proib[t[0]] or info[_raiz(pai, t[4])].d_luz < 0.10:
 				continue
 			var v: PackedVector3Array = arrs[t[0]][Mesh.ARRAY_VERTEX]
 			var c3: Vector3 = (v[t[1]] + v[t[2]] + v[t[3]]) / 3.0
@@ -219,16 +232,20 @@ func separar(mi: MeshInstance3D, pontos: Dictionary, id := "", so_escape := fals
 	# duas malhas com as mesmas superfícies e materiais
 	var malhas := [ArrayMesh.new(), ArrayMesh.new(), ArrayMesh.new()]   # fica, motor, escape
 	var mats := [[], [], []]
+	# uma passada só pelos triângulos (antes era uma por superfície, e o
+	# PackedInt32Array copiado a cada append: 2 s no Escort, 200 mil triângulos)
+	var listas := []                  # [superfície][fica, motor, escape] -> índices
 	for s in mesh.get_surface_count():
-		var ixs := [PackedInt32Array(), PackedInt32Array(), PackedInt32Array()]
-		for i in tri.size():
-			var t: Array = tri[i]
-			if t[0] != s:
-				continue
-			var k: int = 2 if ponta.has(i) else sai.get(_raiz(pai, t[4]), 0)
-			var ix: PackedInt32Array = ixs[k]
-			ix.append_array(PackedInt32Array([t[1], t[2], t[3]]))
-			ixs[k] = ix
+		listas.append([[], [], []])
+	for i in tri.size():
+		var t: Array = tri[i]
+		var k: int = 2 if ponta.has(i) else (0 if t[5] else sai.get(_raiz(pai, t[4]), 0))
+		var l: Array = listas[t[0]][k]
+		l.append(t[1])
+		l.append(t[2])
+		l.append(t[3])
+	for s in mesh.get_surface_count():
+		var ixs := [PackedInt32Array(listas[s][0]), PackedInt32Array(listas[s][1]), PackedInt32Array(listas[s][2])]
 		var m: Material = mi.get_surface_override_material(s)
 		if m == null:
 			m = mesh.surface_get_material(s)

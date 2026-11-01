@@ -432,12 +432,23 @@ var desligadas := []
 const PENDENTES_TRUCK := []
 
 
+## TEMPO_CARGA=1: quanto cada etapa da carga do carro leva (ms)
+var _t_carga := 0
+func _marca(etapa: String) -> void:
+	if OS.get_environment("TEMPO_CARGA") != "1":
+		return
+	var t := Time.get_ticks_msec()
+	print("  carga %-18s %6d ms" % [etapa, t - _t_carga])
+	_t_carga = t
+
+
 ## melhoria nossa ligada neste carro
 func _tem(nome: String) -> bool:
 	return melhorias and not (nome in desligadas)
 
 
 func _ready() -> void:
+	_t_carga = Time.get_ticks_msec()
 	espelho = Node3D.new()
 	espelho.name = "Espelho"
 	espelho.scale = ESPELHO
@@ -446,17 +457,25 @@ func _ready() -> void:
 	espelho.add_child(model_root)
 	_load_pecas()
 	_load_model()                 # antes da física: define model_offset
+	_marca("modelo")
 	_load_physics()
 	_load_piloto()                # depois da física: precisa do ponto ARSE
+	_marca("física+piloto")
 	_load_painel()
+	_marca("painel")
 	_load_motor_treme()
+	_marca("motor_treme")
 	_load_motor_anima()
+	_marca("motor_anima")
 	_load_luzes()
+	_marca("luzes")
 	_load_farol()
+	_marca("farol")
 	_load_som()
 	_load_sfx()
 	_load_fumaca()
 	_casco()
+	_marca("som+fumaça+casco")
 	contact_monitor = true            # batida: contatos do casco (_batida_passo)
 	max_contacts_reported = 8
 	for w in wheels:
@@ -465,6 +484,7 @@ func _ready() -> void:
 		_cena_glb.free()               # rodas e volante já saíram dela
 		_cena_glb = null
 	_esferas_das_rodas()
+	_marca("rodas")
 	if suspension and not pecas.is_empty() and not points.is_empty():
 		susp_vis = preload("res://suspension_visual.gd").new()
 		espelho.add_child(susp_vis)
@@ -474,6 +494,7 @@ func _ready() -> void:
 		susp_vis.build(self, points, points_rot, asset_dir, pecas.get("pecas", {}),
 			pecas.get("rally", false), pecas.get("estepe", []), spare_mesh)
 	_load_sujeira()               # por último: precisa das rodas e das peças
+	_marca("suspensão+sujeira")
 
 
 ## casco de colisão contra o mundo = as ESFERAS do VehicleWorld.hsc do jogo
@@ -1172,7 +1193,9 @@ func _load_motor_treme() -> void:
 		return
 	motor_treme = preload("res://motor_treme.gd").new()
 	motor_treme.name = "MotorTreme"
-	if motor_treme.separar(body_mi, points, vehicle_id, vehicle_id.begins_with("TRUCK") or motor_escondido):   # trucks: só o escape
+	# trucks e extras: só o escape; extra (200 mil triângulos): só busca a 1 m da boca
+	if motor_treme.separar(body_mi, points, vehicle_id, vehicle_id.begins_with("TRUCK") or motor_escondido,
+			1.0 if _cena_glb else 0.0):
 		model_root.add_child(motor_treme)
 	else:
 		motor_treme.free()

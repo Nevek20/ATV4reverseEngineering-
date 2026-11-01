@@ -74,6 +74,8 @@ static func _juntar(out: ArrayMesh, mi: MeshInstance3D, xf: Transform3D, origem:
 	var m: Mesh = mi.mesh
 	var nb := xf.basis.inverse().transposed()
 	for s in m.get_surface_count():
+		if _vidro_janela(_material(mi, m, s)):
+			continue
 		var a := m.surface_get_arrays(s)
 		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
 		for i in vs.size():
@@ -107,10 +109,26 @@ static func _juntar(out: ArrayMesh, mi: MeshInstance3D, xf: Transform3D, origem:
 		a[Mesh.ARRAY_BONES] = null
 		a[Mesh.ARRAY_WEIGHTS] = null
 		out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
-		var mat: Material = mi.get_surface_override_material(s)
-		if mat == null:
-			mat = mi.material_override if mi.material_override else m.surface_get_material(s)
-		out.surface_set_material(out.get_surface_count() - 1, do_jogo(mat))
+		out.surface_set_material(out.get_surface_count() - 1, do_jogo(_material(mi, m, s)))
+
+
+static func _material(mi: MeshInstance3D, m: Mesh, s: int) -> Material:
+	var mat: Material = mi.get_surface_override_material(s)
+	if mat == null:
+		mat = mi.material_override if mi.material_override else m.surface_get_material(s)
+	return mat
+
+
+## vidro das janelas sai (pedido do Matheus, nov/2026): o do modelo é
+## verde-água a 53% em 2 camadas (dentro e fora) e deixava a estrada azul na
+## câmera do piloto; neutro a 12% ficava leitoso (reflete o céu). Os carros do
+## jogo não têm vidro. Farol e lanterna ficam (são "glass_headlight/rear").
+## MATERIAL_GLB=1 deixa
+static func _vidro_janela(mat: Material) -> bool:
+	if mat == null or OS.get_environment("MATERIAL_GLB") == "1":
+		return false
+	var n := mat.resource_name.to_lower()
+	return "glass" in n and "window" in n
 
 
 ## material do modelo no jeito dos carros do jogo (foscos): metálico só no
@@ -127,11 +145,7 @@ static func do_jogo(m: Material) -> Material:
 	if "glass" in nome:
 		b.metallic = 0.0
 		b.roughness = 0.05
-		if "window" in nome:
-			# vidro das janelas: o modelo vem verde-água com 53% (e são 2
-			# camadas, de dentro e de fora): na câmera do piloto a estrada
-			# inteira ficava azulada. Quase transparente e neutro
-			b.albedo_color = Color(0.85, 0.9, 0.9, minf(b.albedo_color.a, 0.12))
+		pass
 	elif METAIS.any(func(x): return x in nome):
 		pass
 	else:
