@@ -7,17 +7,20 @@ extends Node3D
 ## diz o tipo (DustType, None = sem poeira) e a cor (DustColour, RGBA).
 ##
 ## Emissão (0x225108, um por quadro do jogo = 50 Hz no PAL): com |v| >= 0.5
-## m/s a força é (|v| - 0.5)/35 (cheia a ~128 km/h), presa em 0..1; a roda
-## solta poeira com força > 0.1 e alfa da cor > 0.1. Quando o material muda, a
-## cor vai da de agora pra DustColour dele em 1 s (sem poeira ou fora do chão:
-## o alfa vai a 0 em 1 s, com o tipo de antes). Espaçamento entre nuvens e
+## m/s a força é (|v| - 0.5)/35 (cheia a ~128 km/h) menos 2 x a folga da roda
+## até o chão (até 0.5), presa em 0..1; a roda solta poeira com força > 0.1 e
+## alfa da cor > 0.1. Quando o material muda, a cor vai da de agora pra
+## DustColour dele em 1 s (sem poeira, ou a roda a 25 cm ou mais do chão: o
+## alfa vai a 0 em 1 s, com o tipo de antes). No ar o material é o último que a
+## roda tocou: saindo da terra ou pulando sobra um rastro que some (~0.8 s). Espaçamento entre nuvens e
 ## tamanho inicial pelo LOD (distância da câmera até CamMinLodDist, 30 m) e
 ## pela direção da câmera: 1 - frente do carro . (câmera -> carro); atrás do
 ## carro vale o ParticleSpacing, de lado ou de frente o ParticleSpacingLookAlong.
 ##
 ## Nuvens (0x227c50): uma a cada ParticleSpacing metros do caminho da roda,
 ## espalhadas no trecho do quadro (a de trás nasce mais velha). PARADAS no
-## mundo (sem velocidade): nascem no ponto de contato com tamanho
+## mundo (sem velocidade): nascem no ponto de contato (no ar, embaixo da roda),
+## recuado velocidade x 1/60, com tamanho
 ## ParticleInitSize ± Delta e crescem até ParticleTargetSize ± Delta com
 ## 1 - (1 - idade/MaxParticleAge)^4 (0x3af590); alfa = força x alfa da cor x
 ## (1 - t²), t = idade / vida dela. Vida (0x3b5868, Power 1): uma nuvem vive
@@ -86,6 +89,7 @@ var n_a0 := PackedFloat32Array()
 var n_cor := PackedColorArray()
 var n_cel := PackedFloat32Array()
 var buf := PackedFloat32Array()   # buffer da MultiMesh (20 floats por nuvem)
+var soltas := 0                   # nuvens soltas desde o começo (testes)
 
 
 func montar(c) -> bool:
@@ -153,23 +157,46 @@ func passo(dt: float, v: Vector3) -> void:
 		# LookAlong atrás do carro: 10 cm em vez de 15, 1.5x mais nuvens)
 		olha = clampf(1.0 - car.forward().dot(dc.normalized()), 0.0, 1.0)
 		lod = dc.length_squared()
+	var xf: Transform3D = car.global_transform
+	var up: Vector3 = xf.basis.y
 	for e in emissores:
 		var w: Dictionary = car.wheels[e.roda]
-		# material embaixo da roda: o tipo e a cor
-		var mat: int = w.mat if w.hit else -1
+		# folga até o chão (0x9f0 + 0x20 + i*0x20, +0x10: + = roda afundada, - =
+		# acima do chão): a força perde 2 x a folga (até 0.5) e com folga >= 0.25
+		# a roda fica sem material (a cor some em 1 s). Material = o último que
+		# a roda tocou (veículo+0xa88 só muda com a roda no chão, 0x2017a8): no ar
+		# continua soltando um rastro que vai sumindo
+		var centro: Vector3 = xf * Vector3(w.px, w.y0 + w.x, w.pz)
+		var folga := 0.0 if w.hit else _folga(centro, up, w.r)
+		var tira := clampf(2.0 * folga, 0.0, 0.5)
+		var mat: int = w.mat if tira < 0.5 else -1
 		if mat != e.mat:
 			_troca_material(e, mat)
 		e.t = minf(e.t + dt, 1.0)
 		e.cor = (e.de as Color).lerp(e.para, e.t)
-		var forca := clampf(forca_vel, 0.0, 1.0)
-		if e.tipo < 0 or forca <= 0.1 or (e.cor as Color).a <= 0.1 or not w.hit:
+		var forca := clampf(forca_vel - tira, 0.0, 1.0)
+		if e.tipo < 0 or forca <= 0.1 or (e.cor as Color).a <= 0.1:
 			e.estado = 0                  # 0x227968: o grupo acaba
 			continue
 		var tp: Dictionary = tipos[e.tipo]
 		var l := clampf(lod / (tp.lod * tp.lod), 0.0, 1.0)
 		var espaco := lerpf(lerpf(tp.espaco, tp.espaco_olha, olha), tp.espaco_lod, l)
 		var ini := lerpf(tp.ini, tp.ini_lod, l)
-		_emitir(e, w.point, maxf(espaco, 0.01), ini, forca, tp, dt)
+		# ponto: centro da roda - up x (raio - afundado) = o contato no chão, a
+		# base da roda no ar; menos a velocidade x 1/60 (0x225108 e 0x20ff18)
+		var ponto: Vector3 = (w.point if w.hit else centro - up * w.r) - v / 60.0
+		_emitir(e, ponto, maxf(espaco, 0.01), ini, forca, tp, dt)
+
+
+## folga da roda no ar até o chão embaixo dela (o raio da física só alcança
+## 5 cm abaixo da roda esticada; aqui até 0.3 m, além da regra dos 0.25)
+func _folga(centro: Vector3, up: Vector3, r: float) -> float:
+	var q := PhysicsRayQueryParameters3D.create(centro, centro - up * (r + 0.3))
+	q.exclude = [car.get_rid()]
+	var hit: Dictionary = car.get_world_3d().direct_space_state.intersect_ray(q)
+	if hit.is_empty():
+		return 1.0
+	return maxf(centro.distance_to(hit.position) - r, 0.0)
 
 
 ## 0x225108: material novo embaixo da roda. Sem material ou DustType None:
@@ -221,6 +248,7 @@ func _nuvem(e: Dictionary, p: Vector3, idade: float, ini: float, alfa: float, co
 		return
 	var idx: int = e.cont
 	e.cont = (idx + 1) % por_grupo
+	soltas += 1
 	n_pos.append(p)
 	n_idade.append(idade)
 	n_vida.append(tp.vidas[idx % tp.vidas.size()])

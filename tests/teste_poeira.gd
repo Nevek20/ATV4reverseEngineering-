@@ -3,7 +3,10 @@ extends SceneTree
 ## acelerador no fundo e o volante reto. A cada segundo imprime a velocidade,
 ## o material das rodas de trás (DustType), a força, as nuvens vivas e o
 ## tamanho e alfa médios delas. Confere: parado não solta, no asfalto
-## (DustType None) a cor some em 1 s e para de soltar, na terra solta.
+## (DustType None) a cor some em 1 s e para de soltar, na terra solta. No
+## reto ele sai da pista a ~180 km/h e pula (11 s): no ar a roda continua com o
+## material da terra até ficar a 25 cm do chão e depois a cor some em 1 s, então
+## sobra um rastro curto (o jogo, 0x225108). Imprime quanto tempo soltou no ar.
 ## Uso: godot --headless --path . -s res://tests/teste_poeira.gd [-- veh]
 
 const Car := preload("res://car.gd")
@@ -17,6 +20,13 @@ var prox := 1.0
 var max_vivas := 0
 var parado_vivas := -1
 var falhas := 0
+var ar_desde := -1.0        # rodas de trás no ar desde
+var ar_ultima := -1.0       # última nuvem solta com elas no ar
+var ar_longe := -1.0        # quando passaram de 25 cm do chão
+var ar_soltas := 0
+var ar_n := 0
+var ar_max := 0.0           # maior rastro no ar (s, depois de sair do chão)
+var ar_tempo := 0.0         # mais tempo no ar
 
 
 func _initialize() -> void:
@@ -47,6 +57,7 @@ func _physics_process(dt: float) -> bool:
 	if t >= 1.4 and parado_vivas < 0:
 		parado_vivas = pq.vivas()
 	max_vivas = maxi(max_vivas, pq.vivas())
+	_mede_ar(pq)
 	if t >= prox:
 		prox += 1.0
 		var tipos := ""
@@ -75,5 +86,45 @@ func _physics_process(dt: float) -> bool:
 	if max_vivas < 20:
 		falhas += 1
 		print("FALHA: andando soltou só %d nuvens" % max_vivas)
+	if ar_tempo > 1.5 and ar_max <= 0.05:
+		falhas += 1
+		print("FALHA: no ar parou de soltar na hora (o jogo deixa um rastro)")
+	if ar_longe >= 0.0 and ar_ultima - ar_longe > 1.05:
+		falhas += 1
+		print("FALHA: longe do chão soltou por %.2f s (a cor some em 1 s)" % (ar_ultima - ar_longe))
 	print("teste_poeira: %s (máximo de nuvens vivas %d de %d)" % ["ok" if falhas == 0 else "FALHA", max_vivas, pq.max_nuvens])
 	return true
+
+
+## rastro no ar: quanto tempo as rodas de trás soltam depois de sair do chão
+func _mede_ar(pq) -> void:
+	var no_ar := true
+	var folga := 0.0
+	for e in pq.emissores:
+		var w: Dictionary = car.wheels[e.roda]
+		if w.hit:
+			no_ar = false
+		else:
+			var xf: Transform3D = car.global_transform
+			folga = maxf(folga, pq._folga(xf * Vector3(w.px, w.y0 + w.x, w.pz), xf.basis.y, w.r))
+	if no_ar and ar_desde < 0.0 and t < 11.99:
+		ar_desde = t
+		ar_ultima = -1.0
+		ar_longe = -1.0
+		ar_soltas = pq.soltas
+		ar_n = 0
+	if no_ar:
+		if folga >= 0.25 and ar_longe < 0.0:
+			ar_longe = t
+		if pq.soltas > ar_soltas:
+			ar_n += pq.soltas - ar_soltas
+			ar_soltas = pq.soltas
+			ar_ultima = t
+	if ar_desde >= 0.0 and (not no_ar or t >= 11.99):
+		var dur := t - ar_desde
+		var rastro := maxf(ar_ultima - ar_desde, 0.0)
+		print("  no ar %.2f s (aos %.1f s): soltou %d nuvens por %.2f s; a 25 cm do chão aos %s" % [
+			dur, ar_desde, ar_n, rastro, "%.2f s" % (ar_longe - ar_desde) if ar_longe >= 0.0 else "nunca"])
+		ar_max = maxf(ar_max, rastro)
+		ar_tempo = maxf(ar_tempo, dur)
+		ar_desde = -1.0

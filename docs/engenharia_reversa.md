@@ -811,6 +811,15 @@ nuvens; tools/fx_jogo.py -> assets/fx/poeira.png).
   lerp(InitSize, MinLod, LOD); cor x ((1 - sombra) + sombra x
   InShadowAmbientMultiply) (veículo+0xc0 e [0x7f48e0]+0x3c0, padrão 0.5:
   só escurece na sombra).
+- No ar (0x225108, ramo sem água): X = folga da roda, registro do objeto de
+  colisão do carro (veículo+0x9f0, construtor 0x14a9b0: +0x20 + i x 0x20 =
+  normal, +0x10 desse = X; + = roda afundada, - = acima do chão). Termo da
+  força = clamp(-2X, 0, 0.5); com ele >= 0.5 (25 cm) o material vira 0 (a cor
+  vai a alfa 0 em 1 s, tipo de antes), senão é veículo+0xa88[i], que o
+  0x2017a8 só troca com a roda no chão (W+0x10c != 0; W+0x140) e o reset põe
+  -1. Ponto = roda no mundo (corpo+0x500 + i x 0x10) - up (corpo+0xc0) x
+  (raio W+0x30 - max(X, 0)) - velocidade (corpo+0x90) / 60. A marca de pneu
+  (0x20ff18) usa o mesmo ponto.
 - 0x227c50: uma partícula a cada espaçamento no caminho desde a última, com
   a idade espalhada no quadro. 0x3af170: tamanho inicial ± Delta, final ±
   Delta (sorteio uniforme), alfa = alfa do registro x força, GRAVADO de
