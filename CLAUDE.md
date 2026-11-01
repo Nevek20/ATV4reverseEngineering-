@@ -875,9 +875,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   ser igual ao Jericho; hoje usa física, peças, mapa e decalques dele. Não
   suja: a CHASSIS_Truck_04 do jogo não tem a 2ª textura (sem _camada.obj
   mesmo gerando de novo; o aviso do HUD não se aplica).
-- Trucks: aceleração conferida (Buccaneer, vídeo); falta a curva com save
-  states (RAM: velocidade, guinada, forças por roda) e um truck pesado.
-  Tração: car.gd REAR_DRIVE vale pra todos (a largada do Buccaneer bate).
+- Trucks: FECHADO pelo Matheus (nov/2026). Aceleração conferida (Buccaneer,
+  vídeo); a curva usa o mesmo código de pneu dos buggies (conferido com save
+  states na derrapagem) e no vídeo tem o mesmo comportamento. Só reabrir com
+  save state na curva se algo parecer estranho jogando.
 
 - Pneu e aro comprados (hipótese: troca de textura, ver docs/assets.md).
   Provável resposta: 56 rodas completas sem nome no archive dos buggies (45
