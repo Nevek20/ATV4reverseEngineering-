@@ -219,6 +219,19 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   FRENTE (cai quando o carro fica de lado). tests/teste_entrada.tscn.
 - **Gravação PCSX2 do Renegade**: carro ocupa ~27% da largura (em 4:3) a
   122 km/h na câmera perto; bate com a câmera portada.
+- **Buccaneer de fábrica na largada do RX01** (2 vídeos PAL do Matheus,
+  nov/2026; HUD lido em TODOS os quadros por um leitor de dígitos:
+  tests/ref_buccaneer_video.json, tests/teste_truck_video.gd). Reto: 1ª e 2ª
+  batem quase número por número (5..103 km/h a 1-2 km/h; limitador da 1ª 68,
+  da 2ª 103; 2ª aos 3.4 s, 3ª aos 6.2-6.4 s): motor, câmbio, embreagem e
+  tração dos trucks conferidos. Na 3ª o jogo sai da pista e sobe um morro
+  (platô de 111 km/h) e o remake segue no asfalto: caminhos diferentes, não
+  compara. Nesse truck o HUD do jogo mostra a velocidade direto (o "1.06 x"
+  saiu de save states derrapando com o acelerador no fundo). Curva (volante
+  todo pra esquerda a ~102 km/h, acelerador no fundo): o jogo e o remake
+  escorregam, rodam (148° em 2 s no remake; "Wrong Way" no jogo) e caem pra
+  ~20 km/h, mas o HUD do jogo começa a cair ~0.3 s antes. Falta save state
+  na curva pra separar física, HUD e o instante em que virou.
 
 ## Fatos que já custaram caro (não reabrir sem motivo)
 
@@ -862,8 +875,9 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   ser igual ao Jericho; hoje usa física, peças, mapa e decalques dele. Não
   suja: a CHASSIS_Truck_04 do jogo não tem a 2ª textura (sem _camada.obj
   mesmo gerando de novo; o aviso do HUD não se aplica).
-- Trucks: conferir física andando (Punisher acelerando e virando).
-  Tração: car.gd REAR_DRIVE vale pra todos (conferir nos trucks).
+- Trucks: aceleração conferida (Buccaneer, vídeo); falta a curva com save
+  states (RAM: velocidade, guinada, forças por roda) e um truck pesado.
+  Tração: car.gd REAR_DRIVE vale pra todos (a largada do Buccaneer bate).
 
 - Pneu e aro comprados (hipótese: troca de textura, ver docs/assets.md).
   Provável resposta: 56 rodas completas sem nome no archive dos buggies (45
