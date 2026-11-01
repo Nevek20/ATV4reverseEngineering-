@@ -13,7 +13,12 @@ const MotorAnima := preload("res://motor_anima.gd")
 const ESPERADO := {"BUGGY_10": [2, 0], "BUGGY_04": [2, 0], "BUGGY_01": [2, 0], "BUGGY_02": [2, 0],
 	"BUGGY_03": [2, 0], "BUGGY_05": [1, 0], "BUGGY_06": [0, 1], "BUGGY_07": [0, 1],
 	"BUGGY_08": [2, 1], "BUGGY_09": [0, 1], "BUGGY_11": [0, 0], "BUGGY_12": [0, 0],
-	"TRUCK_05": [2, 0]}      # trucks: só o Punisher (radiadores na caçamba, car.gd ANIMA_TRUCKS)
+	"TRUCK_05": [2, 0], "TRUCK_06": [2, 0], "TRUCK_07": [3, 0], "TRUCK_08": [2, 0],
+	"TRUCK_09": [1, 0], "LAZARUS": [3, 0]}
+	# trucks (car.gd ANIMA_TRUCKS): Punisher (radiadores na caçamba), Panther,
+	# Truggy (2 radiadores, um em 2 pedaços), TT, Hammerhead (1 deitada em cima)
+	# e Lazarus (3 viradas pra trás em cima dos estepes); conferido com
+	# print_tela VENTOINHA_COR=1 (nov/2026)
 
 var i := -1
 var car = null
@@ -82,7 +87,7 @@ func _conferir() -> void:
 				pior = maxf(pior, _encosta(f))
 	depois += vent_faces
 	var placas: int = ma.n_ventoinhas if ma else 0
-	var esp: Array = ESPERADO.get(v.id, [0, 0])
+	var esp: Array = ESPERADO.get(car.chave(), [0, 0])
 	var ok: bool = antes == depois and placas == esp[0] and pares == esp[1] and pior < 0.001
 	if not ok:
 		falhas += 1

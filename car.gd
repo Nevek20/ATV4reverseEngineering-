@@ -111,9 +111,9 @@ const VOLANTE_NOSSO := true
 # espaçador de cubo), em m, pra mão alcançar: no Chimera o aro fica a 80 cm do
 # banco (braço 144% esticado) e no Lazarus a 71 cm (128%); nos outros 54-62 cm.
 # A câmera do piloto vem junto (o olho é medido do centro do aro). AVANCO=x
-# no ambiente testa um valor. O Lazarus saiu daqui: resolvido pelo banco
-# (BANCO_NOSSO)
-const AVANCO_VOLANTE := {"TRUCK_12": 0.10}
+# no ambiente testa um valor. Lazarus e Chimera saíram daqui (nov/2026):
+# resolvidos pelo banco (BANCO_NOSSO)
+const AVANCO_VOLANTE := {}
 # melhoria nossa: piloto mais alto/pra frente que o ponto ARSE do jogo (só o
 # desenho dele; a física não usa). No Chimera o ARSE fica 15 cm mais pra trás
 # e 13 mais baixo que nos outros (em relação ao volante): só trazer o volante
@@ -127,8 +127,13 @@ const AVANCO_VOLANTE := {"TRUCK_12": 0.10}
 # teto 62 cm acima da cabeça (trucks 33 a 56). Banco +21 cm: aro a 35 cm, teto a 47, braço 89%
 # sem AVANCO_VOLANTE (o volante fica no lugar do modelo) e o olho da câmera do
 # piloto volta pra dentro da cabeça (19 cm acima do osso; antes 39).
-# tests/medir_cabine.gd
-const BANCO_NOSSO := {"TRUCK_12": Vector3(0.0, 0.04, 0.20), "LAZARUS": Vector3(0.0, 0.21, 0.09)}
+# tests/medir_cabine.gd. Depois (Matheus: "Goliath, Chimera e TT baixinhos"):
+# TT +10 cm (teto 56 -> 46 cm, braço 95%), Goliath +8 (aro 46 cm acima do
+# banco, teto 45 -> 37, braço 73%), Chimera +15 e 20 pra frente sem o
+# AVANCO_VOLANTE (aro 50 -> 35, teto 43 -> 32, braço 107 -> 92%); o olho da
+# câmera do piloto fica 16 a 20 cm acima do osso da cabeça (antes 24 a 34)
+const BANCO_NOSSO := {"TRUCK_12": Vector3(0.0, 0.15, 0.20), "LAZARUS": Vector3(0.0, 0.21, 0.09),
+	"TRUCK_08": Vector3(0.0, 0.10, 0.0), "TRUCK_11": Vector3(0.0, 0.08, 0.0)}
 # melhoria nossa: volante onde o modelo não tem (Shockwave e Punisher não têm
 # interior: o tools/volante.py não acha aro nenhum). Posto onde ele fica nos
 # outros trucks em relação ao banco (ARSE + 0.37 de altura e 0.46 pra frente,
@@ -203,11 +208,12 @@ var motor_treme: Node3D = null
 # girando (elétricas) e polias e correia 3D por cima das polias desenhadas
 const MOTOR_ANIMA := true
 var motor_anima: Node = null
-# trucks (lote 4, out/2026): o motor fica embaixo do capô; só o Punisher tem
-# ventoinhas à mostra (os 2 radiadores na caçamba, conferido no print). No TT a
-# textura "black" das ventoinhas também cobre teto e janela da cabine (16 faces
-# espalhadas iam girar)
-const ANIMA_TRUCKS := ["TRUCK_05"]
+# trucks (lote 4, out/2026): o motor fica embaixo do capô; ventoinhas à mostra
+# no Punisher (os 2 radiadores na caçamba) e (nov/2026, Matheus) no Panther,
+# Truggy, TT, Hammerhead e Lazarus (3 em cima dos estepes, textura
+# preRunnerTruck_fan). Nos trucks elas têm raio de 27 a 31 cm
+# (motor_anima.RAIO_MAX_TRUCK); conferido com print_tela VENTOINHA_COR=1
+const ANIMA_TRUCKS := ["TRUCK_05", "TRUCK_06", "TRUCK_07", "TRUCK_08", "TRUCK_09", "LAZARUS"]
 # lanterna de freio e luz de ré acesas (melhoria nossa, luzes.gd: a lente da
 # cor da luz acende e ganha um halo nosso; o jogo põe só um halo laranja com
 # raios nos pontos BRAKE_LIGHT/REVERSE_LIGHT, VehicleHaloMap.xml)
@@ -1281,6 +1287,7 @@ func _face_de_dentro(mi: MeshInstance3D) -> void:
 		for t in range(0, ix.size(), 3):
 			var k: Array = chave.call(vs[ix[t]], vs[ix[t + 1]], vs[ix[t + 2]])
 			existe[k] = existe.get(k, 0) + 1
+	var costas := _com_costas(arrs)
 	var dentro := ArrayMesh.new()
 	var mats: Array = []
 	var forro := StandardMaterial3D.new()
@@ -1299,11 +1306,18 @@ func _face_de_dentro(mi: MeshInstance3D) -> void:
 		if a[Mesh.ARRAY_INDEX] != null:
 			ix = a[Mesh.ARRAY_INDEX]
 		var novo := PackedInt32Array()
+		var painel := PackedInt32Array()     # painel de 2 lados: a cópia leva o material de fora
 		for t in range(0, ix.size(), 3):
 			if existe[chave.call(vs[ix[t]], vs[ix[t + 1]], vs[ix[t + 2]])] > 1:
 				continue                  # chapa de 2 faces: já tem o lado de dentro
+			var ct: int = costas.get(Vector2i(s, t), 0)
+			if ct == 1:
+				continue                  # idem, com os triângulos cortados diferente
+			if ct == 2:
+				painel.append_array([ix[t], ix[t + 2], ix[t + 1]])
+				continue
 			novo.append_array([ix[t], ix[t + 2], ix[t + 1]])
-		if novo.is_empty():
+		if novo.is_empty() and painel.is_empty():
 			continue
 		if a[Mesh.ARRAY_NORMAL] != null:
 			var ns: PackedVector3Array = a[Mesh.ARRAY_NORMAL]
@@ -1311,10 +1325,15 @@ func _face_de_dentro(mi: MeshInstance3D) -> void:
 				ns[i] = -ns[i]
 			a[Mesh.ARRAY_NORMAL] = ns
 		a[Mesh.ARRAY_TANGENT] = null
-		a[Mesh.ARRAY_INDEX] = novo
-		dentro.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
 		var m: Material = mi.get_active_material(s)
-		mats.append(forro if m and m.resource_name.ends_with("_white") else m)
+		if not novo.is_empty():
+			a[Mesh.ARRAY_INDEX] = novo
+			dentro.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
+			mats.append(forro if m and m.resource_name.ends_with("_white") else m)
+		if not painel.is_empty():
+			a[Mesh.ARRAY_INDEX] = painel
+			dentro.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
+			mats.append(m)
 	if dentro.get_surface_count() == 0:
 		return
 	var d := MeshInstance3D.new()
@@ -1323,6 +1342,70 @@ func _face_de_dentro(mi: MeshInstance3D) -> void:
 	for s in mats.size():
 		d.set_surface_override_material(s, mats[s])
 	mi.add_child(d)
+
+
+## triângulos que já têm o lado de trás modelado com outra divisão em
+## triângulos (o mesmo quadrado cortado pela outra diagonal, virado pro outro
+## lado): o centro deles cai num triângulo de sentido oposto no mesmo plano (até
+## 3 mm), ou o centro dele cai neles. No painel do ELF atrás da cabine do Hammerhead a cópia de dentro
+## desses ficava no plano da pintura de fora, com o forro cinza, e piscava
+## (nov/2026). Devolve {Vector2i(superfície, índice do 1º vértice): 1}; e 2
+## quando o triângulo não é coberto mas divide uma aresta com um do outro
+## lado no mesmo plano: o painel é de 2 lados no jogo (o ELF aparece dos 2
+## lados) e a cópia leva a pintura em vez do forro
+static func _com_costas(arrs: Array) -> Dictionary:
+	const CEL := 0.25
+	var tris: Array = []              # [s, t, a, b, c, normal]
+	var grade := {}
+	for s in arrs.size():
+		var a: Array = arrs[s]
+		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
+		var ix := PackedInt32Array(range(vs.size()))
+		if a[Mesh.ARRAY_INDEX] != null:
+			ix = a[Mesh.ARRAY_INDEX]
+		for t in range(0, ix.size(), 3):
+			var p0 := vs[ix[t]]
+			var p1 := vs[ix[t + 1]]
+			var p2 := vs[ix[t + 2]]
+			var n := (p1 - p0).cross(p2 - p0)
+			if n.length_squared() < 1e-14:
+				continue
+			var k := tris.size()
+			tris.append([s, t, p0, p1, p2, n.normalized()])
+			var lo := Vector3i((p0.min(p1).min(p2) / CEL).floor())
+			var hi := Vector3i((p0.max(p1).max(p2) / CEL).floor())
+			if (hi - lo).length_squared() > 64:
+				continue                  # placa enorme: não é desses painéis
+			for x in range(lo.x, hi.x + 1):
+				for y in range(lo.y, hi.y + 1):
+					for z in range(lo.z, hi.z + 1):
+						var c := Vector3i(x, y, z)
+						if not grade.has(c):
+							grade[c] = []
+						grade[c].append(k)
+	var out := {}
+	for tr in tris:
+		var g: Vector3 = (tr[2] + tr[3] + tr[4]) / 3.0
+		var n: Vector3 = tr[5]
+		for k in grade.get(Vector3i((g / CEL).floor()), []):
+			var u: Array = tris[k]
+			var nu: Vector3 = u[5]
+			if nu.dot(n) > -0.99 or absf((g - u[2]).dot(nu)) > 0.003:
+				continue
+			var bc := Geometry3D.get_triangle_barycentric_coords(g, u[2], u[3], u[4])
+			var gu: Vector3 = (u[2] + u[3] + u[4]) / 3.0
+			var bu := Geometry3D.get_triangle_barycentric_coords(gu, tr[2], tr[3], tr[4])
+			if (bc.x > 0.0 and bc.y > 0.0 and bc.z > 0.0) or (bu.x > 0.0 and bu.y > 0.0 and bu.z > 0.0):
+				out[Vector2i(tr[0], tr[1])] = 1
+				break
+			var comum := 0
+			for p in [tr[2], tr[3], tr[4]]:
+				for q in [u[2], u[3], u[4]]:
+					if (p as Vector3).distance_squared_to(q) < 1e-6:
+						comum += 1
+			if comum >= 2:
+				out[Vector2i(tr[0], tr[1])] = 2
+	return out
 
 
 static var _alfa_cache := {}
@@ -1353,10 +1436,80 @@ func _load_piloto() -> void:
 	piloto.name = "Piloto"
 	piloto.position = model_offset + banco() - piloto.root_pos
 	model_root.add_child(piloto)
+	piloto.paredes = _paredes_do_piloto()
 	if MAOS_NO_VOLANTE and VOLANTE_GIRA and _tem("maos") and _tem("volante_gira") and sw_pivot:
 		var vol: Dictionary = pecas.get("volante", {})
 		# aro no frame do esqueleto (o piloto não gira em relação ao modelo)
 		piloto.prender_no_volante(sw_centro() - (banco() - piloto.root_pos), SW_AXIS, vol.get("raio", 0.19))
+
+
+## onde fica a carroceria dos lados do piloto, pros cotovelos não varar a
+## porta (Fireball: 6.4 cm pra dentro dela; piloto.gd PAREDE_FOLGA). Grade em
+## (altura, frente) em volta do banco; em cada ponto um raio sai do meio do
+## banco pros 2 lados e guarda onde bate na carroceria (ignora o que fica a
+## menos de PAREDE_INICIO do meio: banco e o próprio piloto). Frame do
+## esqueleto do piloto. Os triângulos vão numa grade (altura, frente) pra cada
+## raio testar só os dele (~5 ms)
+const PAREDE_INICIO := 0.18
+func _paredes_do_piloto() -> Dictionary:
+	if body_mi == null or not (body_mi.mesh is ArrayMesh):
+		return {}
+	var b := banco()
+	var desl: Vector3 = b - piloto.root_pos      # esqueleto -> frame da carroceria
+	var y0 := b.y + 0.05
+	var z0 := b.z - 0.35
+	var passo := Vector2(0.06, 0.06)
+	var n := Vector2i(13, 18)                   # 0.05..0.77 acima e -0.35..+0.67 do banco
+	var tris: Array = []
+	var cel := {}
+	var m: ArrayMesh = body_mi.mesh
+	for s in m.get_surface_count():
+		var a := m.surface_get_arrays(s)
+		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
+		var ix := PackedInt32Array(range(vs.size()))
+		if a[Mesh.ARRAY_INDEX] != null:
+			ix = a[Mesh.ARRAY_INDEX]
+		for t in range(0, ix.size(), 3):
+			var p0 := vs[ix[t]]
+			var p1 := vs[ix[t + 1]]
+			var p2 := vs[ix[t + 2]]
+			var lo := p0.min(p1).min(p2)
+			var hi := p0.max(p1).max(p2)
+			if hi.x < b.x - 1.2 or lo.x > b.x + 1.2:
+				continue
+			var i0 := floori((lo.y - y0) / passo.x)
+			var i1 := floori((hi.y - y0) / passo.x)
+			var j0 := floori((lo.z - z0) / passo.y)
+			var j1 := floori((hi.z - z0) / passo.y)
+			if i1 < 0 or j1 < 0 or i0 >= n.x or j0 >= n.y:
+				continue
+			var k := tris.size()
+			tris.append([p0, p1, p2])
+			for i in range(maxi(i0, 0), mini(i1, n.x - 1) + 1):
+				for j in range(maxi(j0, 0), mini(j1, n.y - 1) + 1):
+					var c := Vector2i(i, j)
+					if not cel.has(c):
+						cel[c] = []
+					cel[c].append(k)
+	var dist := {1: PackedFloat32Array(), -1: PackedFloat32Array()}
+	for lado in [1, -1]:
+		var d: PackedFloat32Array = dist[lado]
+		d.resize(n.x * n.y)
+		for i in n.x:
+			for j in n.y:
+				var o := Vector3(b.x, y0 + (i + 0.5) * passo.x, z0 + (j + 0.5) * passo.y)
+				var dir := Vector3(lado, 0.0, 0.0)
+				var melhor := 2.0
+				for k in cel.get(Vector2i(i, j), []):
+					var tr: Array = tris[k]
+					var r = Geometry3D.ray_intersects_triangle(o, dir, tr[0], tr[1], tr[2])
+					if r != null:
+						var dd: float = ((r as Vector3) - o).x * lado
+						if dd > PAREDE_INICIO and dd < melhor:
+							melhor = dd
+				d[i * n.y + j] = melhor
+	# no frame do esqueleto: x do meio do banco, y0/z0 deslocados
+	return {"x": b.x - desl.x, "y0": y0 - desl.y, "z0": z0 - desl.z, "passo": passo, "n": n, "dist": dist}
 
 
 ## centro do aro do volante que aparece (o do jogo, ou o gerado avançado)

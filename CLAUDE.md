@@ -95,7 +95,7 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
 %GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda, 1.16 s de derrapagem, sujeira e lama das rodas
 %GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 25 carros (0 cm), giro do volante, braço (cotovelo, pulso, torção) e pulo por passo (VEHS=25, BANCO=x,y,z, AVANCO=m, PERFIL=1)
-%GODOT% --headless --path . -s res://tests/medir_cabine.gd        :: folga da cabeça até o teto e olho da câmera do piloto x cabeça, por carro
+%GODOT% --headless --path . -s res://tests/medir_cabine.gd        :: folga da cabeça até o teto, olho da câmera do piloto x cabeça e cotovelo x porta, por carro
 %GODOT% --path . -s res://tests/print_piloto.gd -- /tmp/pil          :: prints do piloto sem carroceria (VEHS=0,25 VISTAS=lado,frente,cima,maos,maos_cima,maos_lado; CORPO=1)
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
 %GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies, 12 trucks e o bônus
@@ -110,7 +110,7 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 :: + print_tela com FREIO=1/0 e RE=1/0 forçam lanterna e ré acesas/apagadas, COR_VERTICE=0 tira a cor do vértice
 %GODOT% --path . --write-movie motor.avi --fixed-fps 60 -s res://tests/gravar_motor.gd -- 7   :: prévia: lenta, 7000 e volta (CAM_OFF/CAM_ALVO)
 %GODOT% --path . --write-movie fumaca.avi --fixed-fps 60 -s res://tests/gravar_fumaca.gd -- 0  :: câmera presa no cano acelerando (FUMACA_COR=1 vermelha)
-:: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem
+:: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem, VENTOINHA_COR=1 as ventoinhas que giram
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
 :: + SOLTA=1.3 solta o volante (DEPOIS=-1 contra-esterça, ACEL=0 solta o acelerador), DUR=8 segundos depois de virar
@@ -486,7 +486,17 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   2.6 cm e 1.3 a 3.4° por passo (antes 0.4 a 1.3 cm). Carga: ~50 ms.
   teste_volante imprime cotovelo, pulso, torção e pra onde o cotovelo
   aponta, e o pulo (PERFIL=1 passo a passo); tests/print_piloto.gd tira
-  prints do piloto sem a carroceria (vistas lado, frente, cima, maos).
+  prints do piloto sem a carroceria (vistas lado, frente, cima, maos;
+  janela com CORPO=1).
+  Porta e tela (nov/2026, "braço do Fireball varando a tela e a porta"): o
+  cotovelo do Fireball entrava 6.4 cm na porta (Kraken encostava). car.gd
+  _paredes_do_piloto mede na carga onde a carroceria fica dos 2 lados do
+  banco (grade de raios saindo do meio do banco, ignora até 18 cm) e o
+  cotovelo fica a PAREDE_FOLGA 7 cm dela, indo pra dentro se precisar (até
+  30°): Fireball 11 cm, Kraken 6.5 (medir_cabine imprime a folga de cada
+  carro ao longo do volante). No volante todo a mão de fora subia até perto
+  do topo e o antebraço cruzava a câmera do piloto: agora ela para a
+  MAO_TOPO 40° do topo e o volante gira por baixo (escorrega no aro).
   Trucks (lote 2, out/2026): 9 dos 13 alcançam igual aos buggies (aro a
   54-60 cm do banco, braço até 102%). Chimera (80 cm, 144%) e Lazarus (71 cm,
   128%): o ARSE do jogo fica baixo e pra trás do volante; trazer o volante no
@@ -499,7 +509,11 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   27 a 39) e o teto 62 cm acima da cabeça (trucks 33 a 56); com o banco
   +21 cm (e 9 pra frente) fica 35 / 47, braço 89% SEM o AVANCO_VOLANTE e o
   olho da câmera do piloto volta pra 19 cm acima do osso da cabeça (antes
-  39; os outros 15 a 30). tests/medir_cabine.gd (teto, olho x cabeça). Shockwave e Punisher não têm interior (o
+  39; os outros 15 a 30). tests/medir_cabine.gd (teto, olho x cabeça).
+  Depois TT, Goliath e Chimera ("baixinhos", mesmo critério): TT +10 cm
+  (teto 56 -> 46), Goliath +8 (aro 46 cm acima do banco; teto 45 -> 37),
+  Chimera +15 e 20 pra frente sem o AVANCO_VOLANTE (aro 50 -> 35, teto 43 ->
+  32, braço 107 -> 92%); AVANCO_VOLANTE ficou vazio. Shockwave e Punisher não têm interior (o
   tools/volante.py não acha aro): VOLANTE_SEM_MODELO põe o nosso onde ele
   fica nos outros trucks (ARSE + 0.37 de altura e 0.46 pra frente, eixo e
   raio típicos) com coluna nossa até o painel (raio no eixo), 103%. O
@@ -538,6 +552,18 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Dakar_window_Index tem alfa cheio. A mesma imagem em
   Truck/Textures/Generic/Dakar_window_8 tem alfa 0x1B = 21%: car.gd
   VIDRO_ALFA.
+  Painel com os 2 lados cortados diferente (nov/2026, ELF atrás da cabine do
+  Hammerhead piscando): o jogo modela o mesmo quadrado 2 vezes, uma de cada
+  lado, mas pela outra diagonal; o gêmeo só era achado com os 3 vértices
+  iguais, e as cópias de dentro (forro cinza) ficavam no plano da pintura de
+  fora e brigavam com ela. car.gd _com_costas: centro do triângulo dentro de
+  um do outro lado no mesmo plano (3 mm), ou o dele dentro deste = já tem
+  costas (sem cópia); dividindo aresta com um do outro lado = painel de 2
+  lados, a cópia leva a PINTURA (o ELF aparece dos 2 lados, como com CULL=0).
+  Pares brigando (simulação, carroceria + cópias): TT 152 -> 19, Fireball
+  133 -> 14, Storm 187 -> 31, Hammerhead 44 -> 38; os que sobram são
+  decalques do próprio modelo colados a < 1 mm da chapa (faixas "ban" na
+  lateral da caçamba do Hammerhead).
 - Volantes gerados (melhoria nossa, car.gd VOLANTE_NOSSO, volantes.gd): o
   do jogo tem aro de 6 a 12 lados e raios tortos; 8 carros usam o mesmo X
   furado girado ~20°. No lugar vai um volante redondo e centralizado, no
@@ -654,9 +680,14 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Buccaneer, Shockwave, Shinto, Jericho, Panther, Truggy (saída do lado),
   Hammerhead e Chimera; TT e Goliath têm a boca na pintura "white", Punisher
   e Fireball não têm ponto, o Lazarus fica com 1 face. Motor animado nos
-  trucks só no Punisher (car.gd ANIMA_TRUCKS: os 2 radiadores com ventoinha
-  na caçamba, conferido no print); no TT a textura "black" das ventoinhas
-  também cobre teto e janela da cabine.
+  trucks (car.gd ANIMA_TRUCKS): Punisher (os 2 radiadores na caçamba) e,
+  pedido do Matheus (nov/2026), Panther (2), Truggy (2 radiadores, 3 placas),
+  TT (2), Hammerhead (1 deitada em cima) e Lazarus (3 viradas pra trás em cima
+  dos estepes, textura preRunnerTruck_fan inteira = ventoinha, centro 32,32).
+  Nos trucks elas têm raio de 27 a 31 cm e o limite de placa dos buggies (25
+  cm, pra não pegar um painel do Mosquito) barrava: motor_anima
+  RAIO_MAX_TRUCK 35 cm. Conferido com print_tela VENTOINHA_COR=1 (o que gira
+  sai vermelho); de cima as do Lazarus ficam escondidas.
 - Motor animado (melhoria nossa, car.gd MOTOR_ANIMA, motor_anima.gd): no
   jogo nada gira (ventoinha e polia são desenho parado na textura).
   Ventoinhas dos radiadores (textura "black" centro (89, 26) r 23 px; Trident

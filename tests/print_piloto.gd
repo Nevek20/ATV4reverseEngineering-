@@ -3,7 +3,7 @@ extends SceneTree
 ## mão no volante. Cada carro sai em <saida>_<n>_<vista>.png.
 ## Uso (precisa de tela; na nuvem xvfb-run -a ... --rendering-driver opengl3):
 ##   godot --path . -s res://tests/print_piloto.gd -- /tmp/pil    (VEHS=0,25 só esses;
-##   VISTAS=lado,frente,cima,olho,maos,maos_cima,maos_lado; VIRA=0.5 volante virado, + = esquerda;
+##   VISTAS=lado,janela,frente,cima,olho,maos,maos_cima,maos_lado; VIRA=0.5 volante virado, + = esquerda;
 ##   CORPO=1 deixa a carroceria)
 
 const Car := preload("res://car.gd")
@@ -13,6 +13,7 @@ const Main := preload("res://main.gd")
 # esquerda, o lado do piloto), [posição, alvo]
 const VISTAS := {
 	"lado": [Vector3(-2.3, 0.45, 0.3), Vector3(0.0, 0.4, 0.3)],
+	"janela": [Vector3(-3.2, 0.75, 0.3), Vector3(0.0, 0.55, 0.3)],    # de fora, com a carroceria (CORPO=1)
 	"frente": [Vector3(-0.8, 0.85, 1.9), Vector3(0.0, 0.4, 0.25)],
 	"cima": [Vector3(-0.3, 1.9, 0.7), Vector3(0.0, 0.35, 0.3)],
 	"olho": [Vector3(0.0, 0.0, 0.0), Vector3(0.0, 0.0, 0.0)],   # câmera do piloto (car.first_person_xf)

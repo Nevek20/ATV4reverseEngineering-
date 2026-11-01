@@ -31,10 +31,12 @@ extends Node
 const VENTOINHAS := [            # [parte do nome da textura, centro (px), raio (px)]
 	["_black", Vector2(89, 26), 23.0],
 	["tube02", Vector2(48, 48), 15.0],
+	["preRunnerTruck_fan", Vector2(32, 32), 31.0],     # Lazarus: a textura é a ventoinha inteira
 ]
 const VENTOINHA_VOLTAS := 3.0     # voltas/s (elétrica, fixa)
 const VENTOINHA_SOBE := 0.7       # s: constante da partida
 const RAIO_MAX := 0.25            # m: placa maior que isso não é ventoinha
+const RAIO_MAX_TRUCK := 0.35      # m: nos trucks elas têm 27 a 31 cm (Panther, Truggy, Hammerhead)
 const POLIA_TEX := "chassis_tri02"
 const POLIAS := [[Vector2(99, 23), 9.0], [Vector2(100, 51), 8.0]]   # desenho (px)
 const POLIA_CARROS := ["BUGGY_06", "BUGGY_07", "BUGGY_08", "BUGGY_09"]
@@ -57,6 +59,7 @@ uniform float raio;                      // px
 uniform float ang = 0.0;                 // rad
 uniform float rastro = 0.0;              // rad que andou no quadro (borrão)
 uniform float cor_k = 0.0;        // cor do vértice do jogo (car.gd cor_k; 0 = sem)
+uniform bool diag = false;        // VENTOINHA_COR=1: vermelho
 
 vec3 cor_v(vec3 c) {
 	if (cor_k <= 0.0) {
@@ -85,6 +88,9 @@ void fragment() {
 		ALBEDO = textureGrad(tex, UV, gx, gy).rgb;
 	}
 	ALBEDO *= cor_v(COLOR.rgb);
+	if (diag) {
+		ALBEDO = vec3(1.0, 0.0, 0.0);
+	}
 }
 """
 
@@ -193,7 +199,8 @@ func _ventoinhas(mi: MeshInstance3D) -> void:
 		var gira := PackedInt32Array()
 		var cand := {}
 		for t in range(0, ix.size(), 3):
-			if _na_ventoinha(vs, uvs, [ix[t], ix[t + 1], ix[t + 2]], tam, def[1], def[2]):
+			if _na_ventoinha(vs, uvs, [ix[t], ix[t + 1], ix[t + 2]], tam, def[1], def[2],
+					RAIO_MAX_TRUCK if car.vehicle_id.begins_with("TRUCK") else RAIO_MAX):
 				cand[t] = true
 		var placa := _placas_ventoinha(vs, uvs, ix, cand, tam, def[1], def[2])
 		for t in range(0, ix.size(), 3):
@@ -231,7 +238,7 @@ func _ventoinhas(mi: MeshInstance3D) -> void:
 ## triângulo degenerado (um texel só, como as peças pretas do Renegade) e a
 ## placa não é grande demais
 static func _na_ventoinha(vs: PackedVector3Array, uvs: PackedVector2Array, tri: Array,
-		tam: Vector2, centro: Vector2, raio: float) -> bool:
+		tam: Vector2, centro: Vector2, raio: float, raio_max := RAIO_MAX) -> bool:
 	var p0: Vector2 = uvs[tri[0]] * tam
 	var p1: Vector2 = uvs[tri[1]] * tam
 	var p2: Vector2 = uvs[tri[2]] * tam
@@ -250,7 +257,7 @@ static func _na_ventoinha(vs: PackedVector3Array, uvs: PackedVector2Array, tri: 
 		var dp := (uvs[a] * tam).distance_to(uvs[b] * tam)
 		if dp > 1.0:
 			escala = maxf(escala, vs[a].distance_to(vs[b]) / dp)
-	return escala * raio <= RAIO_MAX
+	return escala * raio <= raio_max
 
 
 ## dos triângulos candidatos, os das placas (pedaços ligados) cuja caixa de
@@ -314,6 +321,9 @@ func _rotor(tex: Texture2D, centro: Vector2, raio: float) -> ShaderMaterial:
 	m.set_shader_parameter("centro", centro)
 	m.set_shader_parameter("raio", raio)
 	m.set_shader_parameter("cor_k", car.cor_k())
+	if OS.get_environment("VENTOINHA_COR") == "1":     # print_tela: o que gira sai vermelho
+		m.set_shader_parameter("cor_k", 0.0)
+		m.set_shader_parameter("diag", true)
 	return m
 
 
