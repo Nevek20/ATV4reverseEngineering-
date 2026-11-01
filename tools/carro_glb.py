@@ -42,6 +42,10 @@ RODAS = {"FL": "WHEEL_LF", "FR": "WHEEL_RF", "RL": "WHEEL_LR", "RR": "WHEEL_RR"}
 PONTO_RODA = {"FL": "WHEEL_FRONT_LEFT", "FR": "WHEEL_FRONT_RIGHT", "RL": "WHEEL_REAR_LEFT", "RR": "WHEEL_REAR_RIGHT"}
 CUBOS = {"FL": ["SUSP_LF", "steerL"], "FR": ["SUSP_RF", "steerR"], "RL": ["SUSP_LR"], "RR": ["SUSP_RR"]}
 ESPELHO = np.array([-1.0, 1.0, 1.0])
+# o jogo desenha os carros ~25% maiores que os de verdade (entre-eixos: Storm
+# = Delta S4 x 1.24, Lazarus = Silverado x 1.27): o extra entra na mesma escala
+ESCALA_JOGO = 1.25
+ESC = 1.0
 
 TIPOS = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT4": 16}
 COMP = {5120: np.int8, 5121: np.uint8, 5122: np.int16, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}
@@ -137,7 +141,13 @@ class Glb:
 
 
 def jogo(v):
-    return np.asarray(v) * ESPELHO
+    """ponto do glTF -> frame do jogo (x virado e na escala do jogo)"""
+    return np.asarray(v) * ESPELHO * ESC
+
+
+def direcao(v):
+    d = np.asarray(v) * ESPELHO
+    return d / np.linalg.norm(d)
 
 
 def r5(v):
@@ -171,7 +181,7 @@ def casco(v, rodas_y_chao):
     cada ~0.55 m e a da cabine onde o teto é alto. Frame do jogo."""
     zmin, zmax = v[:, 2].min(), v[:, 2].max()
     esf = []
-    r = 0.36
+    r = 0.36 * ESC
     zs = np.linspace(zmin + r, zmax - r, max(2, int(round((zmax - zmin - 2 * r) / 0.55)) + 1))
     for z in zs:
         fatia = v[np.abs(v[:, 2] - z) < 0.2]
@@ -179,11 +189,11 @@ def casco(v, rodas_y_chao):
             continue
         meia = min(-fatia[:, 0].min(), fatia[:, 0].max())
         baixo = np.percentile(fatia[:, 1], 2)
-        y = max(baixo, rodas_y_chao + 0.06) + r
+        y = max(baixo, rodas_y_chao + 0.06 * ESC) + r
         for x in (-(meia - r), meia - r):
             esf.append([x, y, z, r])
     # cabine: só onde o teto passa de 0.5 m acima da fileira de baixo
-    rc = 0.42
+    rc = 0.42 * ESC
     alto = v[v[:, 1] > np.percentile(v[:, 1], 90)]
     zc = np.linspace(alto[:, 2].min() + rc * 0.6, alto[:, 2].max() - rc * 0.6, 3)
     teto = alto[:, 1].max()
@@ -227,17 +237,53 @@ def fisica(base, saida, rodas, massa, curso, com, dims):
     open(saida, "w", encoding="utf-8", newline="\n").write(x)
 
 
+def pintura(g):
+    """material da pintura (nome com "paint", o maior textura) e quanto clarear
+    pro branco dele virar o branco do jogo: os modelos do Assetto Corsa trazem
+    a sombra assada na textura (branco do Escort = 200 de 255; em luz linear
+    0.58 contra 1.0 dos carros do jogo, que ficam neutros com a cor do vértice)"""
+    import io
+    try:
+        from PIL import Image
+    except ImportError:
+        return None, 1.0
+    melhor = None
+    for i, m in enumerate(g.j.get("materials", [])):
+        if "paint" not in m.get("name", "").lower() or "int_" in m.get("name", "").lower():
+            continue
+        t = m.get("pbrMetallicRoughness", {}).get("baseColorTexture")
+        if t is None:
+            continue
+        im = g.j["images"][g.j["textures"][t["index"]]["source"]]
+        bv = g.j["bufferViews"][im["bufferView"]]
+        img = Image.open(io.BytesIO(g.bin[bv.get("byteOffset", 0):bv.get("byteOffset", 0) + bv["byteLength"]]))
+        if melhor is None or img.size[0] * img.size[1] > melhor[2]:
+            melhor = (m["name"], img.convert("RGB"), img.size[0] * img.size[1])
+    if melhor is None:
+        return None, 1.0
+    px = np.asarray(melhor[1]).reshape(-1, 3).astype(float)
+    claros = px[(px.min(1) > 150) & (px.max(1) - px.min(1) < 25)]    # brancos/cinzas claros
+    if len(claros) < 1000:
+        return melhor[0], 1.0
+    branco = float(np.median(claros.mean(1)))
+    return melhor[0], round(min(1.4, 250.0 / branco), 3)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("glb")
     ap.add_argument("nome")
     ap.add_argument("--base", default="buggy_12", help="física de partida (data/vehicles/<base>.xml)")
     ap.add_argument("--massa", type=float, default=0.9, help="toneladas")
-    ap.add_argument("--curso", type=float, default=0.25, help="curso máximo da suspensão (m)")
-    ap.add_argument("--estatico", default="0.105,0.068",
+    ap.add_argument("--curso", type=float, default=0.25, help="curso máximo da suspensão (m, tamanho real)")
+    ap.add_argument("--escala", type=float, default=ESCALA_JOGO,
+                    help="tamanho do modelo no jogo (padrão 1.25 = a escala dos carros do jogo; 1 = real)")
+    ap.add_argument("--estatico", default="0.114,0.074",
                     help="frente,trás: quanto a suspensão desce parado (m); o ponto WHEEL fica isso abaixo "
                          "da roda do modelo. Rode o tests/teste_extra.gd e passe o curso parado que ele mede")
     a = ap.parse_args()
+    global ESC
+    ESC = a.escala
     est = [float(x) for x in a.estatico.split(",")]
     est = est if len(est) == 2 else [est[0], est[0]]
     g = Glb(a.glb)
@@ -256,8 +302,8 @@ def main():
         v = g.vertices(g.descendentes(n))
         c = jogo(g.mundo[n][:3, 3])
         rodas[canto] = {"no": g.j["nodes"][n]["name"], "centro": r5(c),
-                        "raio": round(float((v[:, 1].max() - v[:, 1].min()) / 2), 4),
-                        "largura": round(float(v[:, 0].max() - v[:, 0].min()), 4), "cubo": []}
+                        "raio": round(float((v[:, 1].max() - v[:, 1].min()) / 2 * ESC), 4),
+                        "largura": round(float((v[:, 0].max() - v[:, 0].min()) * ESC), 4), "cubo": []}
         excluir.append(g.j["nodes"][n]["name"])
         for cb in CUBOS[canto]:
             k = g.no(cb)
@@ -272,7 +318,7 @@ def main():
     n = g.no("STEER_HR")
     if n is not None:
         c, eixo, raio = volante(g, n)
-        vol = {"centro": r5(jogo(c)), "eixo": r5(jogo(eixo)), "raio": round(raio, 4),
+        vol = {"centro": r5(jogo(c)), "eixo": r5(direcao(eixo)), "raio": round(raio * ESC, 4),
                "no": g.j["nodes"][n]["name"]}
         excluir.append(g.j["nodes"][n]["name"])
         # banco: o ponto ARSE dos carros do jogo fica 0.37 abaixo e 0.46 atrás
@@ -327,10 +373,12 @@ def main():
     fz = rodas["FL"]["centro"][2]
     tz = rodas["RL"]["centro"][2]
     # CoM: motor na frente, 53% na frente; altura de carro de rua baixo
-    com = [0.0, chao + 0.48, tz + 0.53 * (fz - tz)]
+    com = [0.0, chao + 0.48 * ESC, tz + 0.53 * (fz - tz)]
 
     asset = g.j.get("asset", {}).get("extras", {})
-    pecas = {"carro": a.nome, "glb": nome + ".glb", "excluir": excluir, "estatico": est,
+    pint, brilho = pintura(g)
+    pecas = {"carro": a.nome, "glb": nome + ".glb", "excluir": excluir, "estatico": est, "escala": ESC,
+             "pintura": {"material": pint, "brilho": brilho},
              "rodas_glb": rodas, "volante": vol, "pecas": {"Body": nome + ".glb"}, "cor_vertice": 0,
              "fonte": {k: asset.get(k, "") for k in ("title", "author", "license", "source")}}
     json.dump(pecas, open(os.path.join(pasta, "pecas.json"), "w", encoding="utf-8", newline="\n"),
@@ -339,7 +387,7 @@ def main():
     json.dump({"pontos": pontos, "rot": rot}, open(os.path.join(dv, nome + "_points.json"), "w", newline="\n"), indent=1)
     json.dump({"fonte": "tools/carro_glb.py (nosso)", "esferas": esferas, "planos": [], "vertices": []},
               open(os.path.join(dv, nome + "_casco.json"), "w", newline="\n"), separators=(",", ":"))
-    fisica(os.path.join(dv, a.base + ".xml"), os.path.join(dv, nome + ".xml"), rodas, a.massa, a.curso, com,
+    fisica(os.path.join(dv, a.base + ".xml"), os.path.join(dv, nome + ".xml"), rodas, a.massa, a.curso * ESC, com,
            [float(dims[0]), float(dims[1]), float(dims[2])])
 
     print("%s: %d nós com malha na carroceria, %.2f x %.2f x %.2f m" % (a.nome, len(corpo), *dims))
@@ -349,6 +397,7 @@ def main():
     for k, p in pontos.items():
         print("  %-18s %s%s" % (k, p, "  saída %s" % r5(saidas[k]) if k in saidas else ""))
     print("  casco: %d esferas; CoM %s; chão em y %.3f" % (len(esferas), r5(com), chao))
+    print("  pintura %s: branco clareado x %.3f" % (pint, brilho))
     print("  licença: %s (%s)" % (pecas["fonte"]["license"], pecas["fonte"]["author"]))
 
 

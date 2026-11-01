@@ -1059,11 +1059,11 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 		# dela (SUSP_xx: segue o curso e o esterço, não gira)
 		var c := Vector3(rg.centro[0], rg.centro[1], rg.centro[2])
 		var rmi := MeshInstance3D.new()
-		rmi.mesh = CarroGlb.malha(_cena_glb, [rg.no], [], c)
+		rmi.mesh = CarroGlb.malha(_cena_glb, [rg.no], [], c, pecas.get("escala", 1.0))
 		spin.add_child(rmi)
 		if not rg.get("cubo", []).is_empty():
 			var cmi := MeshInstance3D.new()
-			cmi.mesh = CarroGlb.malha(_cena_glb, rg.cubo, [], c)
+			cmi.mesh = CarroGlb.malha(_cena_glb, rg.cubo, [], c, pecas.get("escala", 1.0))
 			pivot.add_child(cmi)
 		return
 	var path: String = wheel_front_file if w.front else wheel_rear_file
@@ -1116,7 +1116,8 @@ func _load_model() -> void:
 	if glb and ResourceLoader.exists(model_path):
 		# carro extra nosso: a cena fica aberta até as rodas e o volante saírem dela
 		_cena_glb = (load(model_path) as PackedScene).instantiate()
-		mesh = CarroGlb.malha(_cena_glb, [], pecas.get("excluir", []))
+		CarroGlb.configurar(pecas)
+		mesh = CarroGlb.malha(_cena_glb, [], pecas.get("excluir", []), Vector3.ZERO, pecas.get("escala", 1.0))
 	elif model_path != "" and ResourceLoader.exists(model_path):
 		mesh = load(model_path) as Mesh
 	if mesh == null:
@@ -1437,7 +1438,7 @@ func _load_steering_wheel() -> void:
 		sw_pivot.position = model_offset + SW_CENTER
 		model_root.add_child(sw_pivot)
 		var vmi := MeshInstance3D.new()
-		vmi.mesh = CarroGlb.malha(_cena_glb, [vg.no], [], SW_CENTER)
+		vmi.mesh = CarroGlb.malha(_cena_glb, [vg.no], [], SW_CENTER, pecas.get("escala", 1.0))
 		sw_pivot.add_child(vmi)
 		return
 	if not ResourceLoader.exists(path) and not (nosso and VOLANTE_SEM_MODELO.has(chave())):

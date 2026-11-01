@@ -115,7 +115,7 @@ set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: re
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
 
 :: carro extra NOSSO de um .glb no padrão Assetto Corsa (WHEEL_LF..., STEER_HR) -> assets/<nome> + data/vehicles/<nome>*
-python tools/carro_glb.py <modelo.glb> Escort [--estatico 0.105,0.068] [--massa 0.9] [--base buggy_12]
+python tools/carro_glb.py <modelo.glb> Escort [--estatico 0.114,0.074] [--escala 1.25] [--massa 0.9] [--base buggy_12]
 %GODOT% --headless --path . -s res://tests/teste_extra.gd   :: extras: curso parado x estático, casco, 0-100 e velocidade
 
 :: casco de colisão de cada carro (esferas do VehicleWorld.hsc pelo id) -> data/vehicles/<id>_casco.json
@@ -786,12 +786,27 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Escort RS1600 Mk1 1974 (vecarz, Sketchfab, CC-BY-NC-SA 4.0: dá crédito,
   sem uso comercial, derivado com a mesma licença; ripado de um mod do AC):
   200 mil triângulos, mão inglesa (volante na direita), escape saindo do
-  lado esquerdo embaixo da porta. Curso parado medido no teste_extra: 0.105
-  frente / 0.068 trás (o --estatico tem que ser esse, senão a roda parada
+  lado esquerdo embaixo da porta. Curso parado medido no teste_extra: 0.114
+  frente / 0.074 trás (o --estatico tem que ser esse, senão a roda parada
   fica fora do lugar do modelo); 0-100 em 4.0 s e 193 km/h em 20 s com a
   física do Storm (escolha de partida, falta afinar com o Matheus). Som =
   loops do Storm (I4) por enquanto. assets/escort/ fica fora do git (o .glb
   tem 17 MB): no PC, rodar o carro_glb.py com o .glb.
+  "Pequeno e apagado" (Matheus, nov/2026): (1) ESCALA: o jogo desenha os
+  carros ~25% maiores que os de verdade (entre-eixos: Storm = Delta S4 x
+  1.24, Lazarus = Silverado x 1.27); o extra entra x 1.25 (pecas.json
+  "escala", CarroGlb.malha; pontos, rodas, volante, casco, curso e CoM
+  também). (2) MATERIAL: o export do Sketchfab põe metallicFactor 1.0 em
+  pneu, borracha, plástico e banco (metal mostra o céu cinza no lugar da
+  cor) e a pintura tem verniz (clearcoat): CarroGlb.do_jogo deixa metálico só
+  no metal de verdade (METAIS), sem verniz, áspero >= 0.55 (fosco como os do
+  jogo). (3) BRANCO: a textura do AC tem a sombra assada (branco do Escort
+  200 de 255 = 0.58 linear; os do jogo ficam ~1.0 com a cor do vértice): o
+  carro_glb mede o branco da pintura e clareia o material dela (x 1.25 no
+  Escort, pecas.json "pintura"). Medido no mesmo print: 81 -> 116. (4)
+  VIDRO das janelas verde-água a 53% em 2 camadas (a estrada ficava azul na
+  câmera do piloto): neutro a 12%. MATERIAL_GLB=1 no print_tela mostra o
+  material como veio do modelo.
 - Casco de colisão (out/2026, docs Casco de colisão): até então era uma caixa
   de 2.1 x 0.8 x 4.8 m igual pra todos, sem fonte. O jogo carrega
   Vehicles/<Classe>/Collision/<Name>/VehicleWorld.hsc (0x1fed48) pelo ID do

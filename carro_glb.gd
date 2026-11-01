@@ -9,12 +9,30 @@ extends RefCounted
 ## aos outros carros.
 
 const ESPELHO := Vector3(-1, 1, 1)
+# metal de verdade (nome do material, minúsculo): o resto perde o metálico.
+# O export do Sketchfab põe metallicFactor 1.0 em quase tudo (pneu, borracha,
+# plástico, banco): metal mostra o reflexo do céu cinza no lugar da cor e o
+# carro inteiro ficava "apagado" do lado dos do jogo (Matheus, nov/2026)
+const METAIS := ["chrome", "metal_shiny", "mirror", "mirrror", "rim", "disk", "caliper", "exhaust", "nuts_bolt"]
+static var _materiais := {}
+static var _pintura := ""        # material da pintura (pecas.json "pintura") e quanto clarear
+static var _brilho := 1.0
+
+
+## antes de juntar as malhas de um carro: a pintura dele (tools/carro_glb.py)
+static func configurar(pecas: Dictionary) -> void:
+	var p: Dictionary = pecas.get("pintura", {})
+	_pintura = String(p.get("material", "")) if p.get("material") != null else ""
+	_brilho = float(p.get("brilho", 1.0))
+	_materiais.clear()
 
 
 ## junta as malhas: raizes = nomes dos nós (com os filhos; vazio = a cena
 ## toda), fora = nós que não entram (com os filhos), origem = ponto do frame
-## do jogo que vira o zero da malha (centro da roda, do volante)
-static func malha(cena: Node, raizes: Array, fora: Array, origem := Vector3.ZERO) -> ArrayMesh:
+## do jogo que vira o zero da malha (centro da roda, do volante), escala =
+## tamanho no jogo (pecas.json "escala": os carros do jogo são ~25% maiores
+## que os de verdade)
+static func malha(cena: Node, raizes: Array, fora: Array, origem := Vector3.ZERO, escala := 1.0) -> ArrayMesh:
 	var nos: Array = []
 	if raizes.is_empty():
 		nos = [cena]
@@ -30,7 +48,7 @@ static func malha(cena: Node, raizes: Array, fora: Array, origem := Vector3.ZERO
 		if String(n.name) in fora:
 			continue
 		if n is MeshInstance3D and n.mesh:
-			_juntar(out, n, _rel(n, cena), origem)
+			_juntar(out, n, _rel(n, cena), origem, escala)
 		fila.append_array(n.get_children())
 	return out
 
@@ -52,14 +70,14 @@ static func _rel(n: Node, raiz: Node) -> Transform3D:
 	return t
 
 
-static func _juntar(out: ArrayMesh, mi: MeshInstance3D, xf: Transform3D, origem: Vector3) -> void:
+static func _juntar(out: ArrayMesh, mi: MeshInstance3D, xf: Transform3D, origem: Vector3, escala: float) -> void:
 	var m: Mesh = mi.mesh
 	var nb := xf.basis.inverse().transposed()
 	for s in m.get_surface_count():
 		var a := m.surface_get_arrays(s)
 		var vs: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
 		for i in vs.size():
-			vs[i] = (xf * vs[i]) * ESPELHO - origem
+			vs[i] = (xf * vs[i]) * ESPELHO * escala - origem
 		a[Mesh.ARRAY_VERTEX] = vs
 		if a[Mesh.ARRAY_NORMAL] != null:
 			var ns: PackedVector3Array = a[Mesh.ARRAY_NORMAL]
@@ -92,4 +110,36 @@ static func _juntar(out: ArrayMesh, mi: MeshInstance3D, xf: Transform3D, origem:
 		var mat: Material = mi.get_surface_override_material(s)
 		if mat == null:
 			mat = mi.material_override if mi.material_override else m.surface_get_material(s)
-		out.surface_set_material(out.get_surface_count() - 1, mat)
+		out.surface_set_material(out.get_surface_count() - 1, do_jogo(mat))
+
+
+## material do modelo no jeito dos carros do jogo (foscos): metálico só no
+## metal de verdade, sem verniz (clearcoat) na pintura, vidro liso. Uma cópia
+## por material. MATERIAL_GLB=1 deixa como veio do modelo (pra comparar)
+static func do_jogo(m: Material) -> Material:
+	if not (m is BaseMaterial3D) or OS.get_environment("MATERIAL_GLB") == "1":
+		return m
+	if _materiais.has(m):
+		return _materiais[m]
+	var b: BaseMaterial3D = m.duplicate()
+	var nome := m.resource_name.to_lower()
+	b.clearcoat_enabled = false
+	if "glass" in nome:
+		b.metallic = 0.0
+		b.roughness = 0.05
+		if "window" in nome:
+			# vidro das janelas: o modelo vem verde-água com 53% (e são 2
+			# camadas, de dentro e de fora): na câmera do piloto a estrada
+			# inteira ficava azulada. Quase transparente e neutro
+			b.albedo_color = Color(0.85, 0.9, 0.9, minf(b.albedo_color.a, 0.12))
+	elif METAIS.any(func(x): return x in nome):
+		pass
+	else:
+		b.metallic = 0.0
+		b.roughness = maxf(b.roughness, 0.55)
+	if _pintura != "" and m.resource_name == _pintura:
+		# o branco da textura vira o branco do jogo (ver tools/carro_glb.py pintura)
+		var c := b.albedo_color
+		b.albedo_color = Color(c.r * _brilho, c.g * _brilho, c.b * _brilho, c.a)
+	_materiais[m] = b
+	return b
