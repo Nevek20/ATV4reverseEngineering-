@@ -94,8 +94,9 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --headless --path . -s res://tests/teste_largada.gd       :: largada do Renegade no RX01 x vídeo PAL e save states
 %GODOT% --headless --path . -s res://tests/teste_pedais.gd        :: freio parado, ré pelo freio, corte no ar (0x202df0)
 %GODOT% --headless --path . -s res://tests/teste_derrapagem.gd    :: remake no estado da RAM: força por roda, 1.16 s de derrapagem, sujeira e lama das rodas
-%GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 25 carros (0 cm) e giro do volante (VEHS=25, BANCO=x,y,z, AVANCO=m)
+%GODOT% --headless --path . -s res://tests/teste_volante.gd       :: punhos do piloto no aro nos 25 carros (0 cm), giro do volante, braço (cotovelo, pulso, torção) e pulo por passo (VEHS=25, BANCO=x,y,z, AVANCO=m, PERFIL=1)
 %GODOT% --headless --path . -s res://tests/medir_cabine.gd        :: folga da cabeça até o teto e olho da câmera do piloto x cabeça, por carro
+%GODOT% --path . -s res://tests/print_piloto.gd -- /tmp/pil          :: prints do piloto sem carroceria (VEHS=0,25 VISTAS=lado,frente,cima,maos,maos_cima,maos_lado; CORPO=1)
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_treme.gd -- 0   :: volante tremendo: parado, reto, derrapando, solto
 %GODOT% --headless --path . -s res://tests/teste_som.gd           :: som do motor: loops, tom e crossfade nos 12 buggies, 12 trucks e o bônus
 %GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states; material da FL x RAM
@@ -468,6 +469,24 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   o ajuste fica indefinido e o pulso ia 7 cm pra dentro (braço em
   zigue-zague). No volante todo a mão de fora vai perto do topo e o
   antebraço passa na frente da câmera (pendente).
+  Braço natural (nov/2026, "braço quebrado esquisito", Matheus): medido no
+  teste_volante, o pulso dobrava 23° a 115° em relação à animação do jogo
+  (a mão ia com o pulso no eixo do volante e o antebraço do IK chegava por
+  outro ângulo) e torcia até 60°. Agora (piloto.gd) a mão ROLA em volta do
+  aro (até 75°) e INCLINA em volta do raio (até 30°), os giros que mantêm a
+  pegada, e o cotovelo vai pro lado onde o pulso fica reto, preso entre pra
+  baixo e COTOVELO_FORA 55° pra fora; metade da torção vai pro antebraço (o
+  esqueleto não tem osso de torção). Pulso: 0 a 14° na maioria, 31 a 40° no
+  pior (Goliath, Fireball, Hammerhead, Renegade; antes 65 a 86°). Busca
+  solta por quadro trocava de solução e a mão estalava (até 62° e 26 cm por
+  passo de 2% do volante): a solução é uma TABELA por carro (_montar_tabela,
+  41 direções, partindo do volante reto e andando sempre perto da vizinha,
+  ângulo do cotovelo guardado sem o limite pra não pular de 0° pra 55° ao
+  passar por "pra cima", e suavizada), interpolada no jogo: pulo de 0.4 a
+  2.6 cm e 1.3 a 3.4° por passo (antes 0.4 a 1.3 cm). Carga: ~50 ms.
+  teste_volante imprime cotovelo, pulso, torção e pra onde o cotovelo
+  aponta, e o pulo (PERFIL=1 passo a passo); tests/print_piloto.gd tira
+  prints do piloto sem a carroceria (vistas lado, frente, cima, maos).
   Trucks (lote 2, out/2026): 9 dos 13 alcançam igual aos buggies (aro a
   54-60 cm do banco, braço até 102%). Chimera (80 cm, 144%) e Lazarus (71 cm,
   128%): o ARSE do jogo fica baixo e pra trás do volante; trazer o volante no

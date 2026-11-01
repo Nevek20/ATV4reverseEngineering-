@@ -43,6 +43,30 @@ var alcance := 0.0                # conferência: distância até o alvo / braç
 # onde as mãos pegam o aro, em graus a partir do topo (melhoria nossa; ~9h30
 # e 2h30 como no vídeo de referência do Matheus). O quadro 0 do jogo dá 44°
 const PEGA_GRAUS := 65.0
+# braço natural (melhoria nossa, nov/2026: "braço quebrado", Matheus). Medido
+# no teste_volante: o pulso dobrava 23° a 115° em relação à animação do jogo
+# (a mão ia sempre com o pulso no eixo do volante e o antebraço do IK chegava
+# por outro ângulo) e torcia até 60°.
+# ROLA_MAX: quanto a mão pode rolar em volta do aro (o único giro que mantém a
+# pegada) pro pulso seguir o antebraço; ROLA_PESO = custo de rolar (rad de
+# dobra por rad de giro: sem ele, com o antebraço na linha do aro, o giro
+# fica solto e pula de um quadro pro outro)
+const ROLA_MAX := 75.0
+const ROLA_PESO := 0.12
+# e inclinar (em volta do raio do aro: o aro atravessa o punho meio de
+# diagonal), até INCLINA_MAX graus; mais caro que rolar
+const INCLINA_MAX := 30.0
+const INCLINA_PESO := 0.35
+# metade da torção da mão vai pro antebraço (sem osso de torção no esqueleto:
+# toda no pulso vira "pano torcido")
+const TORCAO_ANTEBRACO := 0.5
+# cotovelo: entre pra baixo (0°) e COTOVELO_FORA graus pra fora do corpo (a
+# animação deixava até 76°, braço de galinha no volante todo). Dentro da faixa
+# ele vai onde o antebraço chega na direção que a mão pede (pulso reto)
+const COTOVELO_FORA := 55.0
+# a solução (giro da mão e cotovelo) é tabelada em TAB_N direções do volante
+const TAB_N := 41
+const SUAVIZA := 6          # passadas de [1 2 1]/4 na tabela (~1.7 casa)
 
 
 ## monta tudo a partir de dir/piloto.json; false se o asset não existe
@@ -241,8 +265,15 @@ func prender_no_volante(centro: Vector3, eixo: Vector3, raio: float) -> void:
 	var pega_dir := Transform3D(S * pega_esq.basis * Basis.FLIP_X, reflexo * pega_esq.origin)
 	pega_dir = pega_dir.translated(reflexo * no_aro - pega_dir * _punho[dir_])
 	for lado in [["right_upper_arm", "right_lower_arm", dir_, pega_dir], ["left_upper_arm", "left_lower_arm", esq, pega_esq]]:
-		_maos.append({"sup": skel.find_bone(lado[0]), "inf": skel.find_bone(lado[1]), "mao": lado[2],
-			"cent": _punho[lado[2]], "pega": lado[3]})
+		var bi := skel.find_bone(lado[1])
+		var bm: int = lado[2]
+		# rel0 = mão no frame do antebraço na animação; ax = direção do
+		# antebraço (cotovelo -> pulso) no frame da mão: com o pulso reto, a
+		# mão no mundo leva ax pra direção do antebraço
+		var rel0: Basis = g0[bi].basis.inverse() * g0[bm].basis
+		var ax: Vector3 = (g0[bm].basis.inverse() * (g0[bm].origin - g0[bi].origin)).normalized()
+		_maos.append({"sup": skel.find_bone(lado[0]), "inf": bi, "mao": bm,
+			"cent": _punho[bm], "pega": lado[3], "rel0": rel0, "ax": ax})
 	_giro.clear()
 	for k in _tempos.size():
 		var gk := _globais_quadro(k)
@@ -253,6 +284,7 @@ func prender_no_volante(centro: Vector3, eixo: Vector3, raio: float) -> void:
 			soma += (a0 - _ve * a0.dot(_ve)).signed_angle_to(a1 - _ve * a1.dot(_ve), _ve)
 		_giro.append(soma / _maos.size())
 	_vol = true
+	_montar_tabela()
 
 
 func no_volante() -> bool:
@@ -288,6 +320,18 @@ func _textura(caminho: String) -> Texture2D:
 func pose(s: float, extra := 0.0) -> void:
 	if skel == null:
 		return
+	_anima(s)
+	if _vol:
+		_segura_volante(giro_volante(s) + extra, s)
+	for b in skel.get_bone_count():
+		skel.set_bone_pose_position(b, _lp[b])
+		skel.set_bone_pose_rotation(b, _lr[b])
+	if _cabeca >= 0:
+		skel.set_bone_pose_scale(_cabeca, Vector3.ONE * (0.001 if sem_cabeca else 1.0))
+
+
+## pose da animação STEER_LEFT do jogo pra direção s em _lp/_lr
+func _anima(s: float) -> void:
 	var s_jogo := -s
 	var esp := s_jogo > 0.0
 	var kf := _quadro(absf(s_jogo) * _dur)
@@ -302,19 +346,16 @@ func pose(s: float, extra := 0.0) -> void:
 			r = Quaternion(r.x, -r.y, -r.z, r.w)
 		_lp[b] = p
 		_lr[b] = r
-	if _vol:
-		_segura_volante(giro_volante(s) + extra)
-	for b in skel.get_bone_count():
-		skel.set_bone_pose_position(b, _lp[b])
-		skel.set_bone_pose_rotation(b, _lr[b])
-	if _cabeca >= 0:
-		skel.set_bone_pose_scale(_cabeca, Vector3.ONE * (0.001 if sem_cabeca else 1.0))
 
 
 ## cada punho no seu ponto do aro, girado com o volante; o braço (ombro ->
-## cotovelo -> pulso) chega lá por IK de dois ossos com o cotovelo no plano
-## que a animação dá, e a mão gira junto com o volante
-func _segura_volante(giro: float) -> void:
+## cotovelo -> pulso) chega lá por IK de dois ossos e a mão gira junto com o
+## volante. Por cima (braço natural): a mão rola e inclina no aro e o cotovelo
+## vai pro lado onde o pulso fica reto; esses 3 ângulos saem da tabela do
+## carro (_montar_tabela) interpolada em s. busca = montando a tabela: a
+## solução vizinha de cada mão (Vector3: rola, inclina, cotovelo); devolve as
+## escolhidas
+func _segura_volante(giro: float, s: float, busca: Array = []) -> Array:
 	var g: Array = []
 	g.resize(_pais.size())
 	for b in _pais.size():
@@ -322,7 +363,9 @@ func _segura_volante(giro: float) -> void:
 		g[b] = t if _pais[b] < 0 else g[_pais[b]] * t
 	var rot := Basis(_ve, giro)
 	var gira := Transform3D(rot, _vc - rot * _vc)
-	for m in _maos:
+	var escolhas: Array = []
+	for hi in _maos.size():
+		var m: Dictionary = _maos[hi]
 		var alvo: Transform3D = gira * m.pega
 		var sup: int = m.sup
 		var inf: int = m.inf
@@ -342,37 +385,187 @@ func _segura_volante(giro: float) -> void:
 		if (alvo.origin - a).length() > alc and eixo.length_squared() > 1e-10:
 			eixo = eixo.normalized()
 			var lo := 0.0
-			var hi := deg_to_rad(35.0)
+			var hi_ := deg_to_rad(35.0)
 			for it in 12:
-				var meio := (lo + hi) * 0.5
+				var meio := (lo + hi_) * 0.5
 				if (alvo.origin - (s0 + Basis(eixo, meio) * (a - s0))).length() > alc:
 					lo = meio
 				else:
-					hi = meio
-			var q := Basis(eixo, hi)
+					hi_ = meio
+			var q := Basis(eixo, hi_)
 			_lr[omb] = (g[_pais[omb]].basis.inverse() * (q * g[omb].basis)).get_rotation_quaternion()
 			for o in [omb, sup, inf, mao]:
 				g[o] = Transform3D(q * g[o].basis, s0 + q * (g[o].origin - s0))
 			a = g[sup].origin
 			b0 = g[inf].origin
 			w0 = g[mao].origin
+		var fora := Vector3(signf(a.x - g[_pais[omb]].origin.x), 0.0, 0.0)
+		var punho: Vector3 = alvo * m.cent
+		var raio_p := punho - _vc
+		raio_p = (raio_p - _ve * raio_p.dot(_ve)).normalized()
+		var tg := _ve.cross(raio_p).normalized()
+		var ax_m: Vector3 = m.ax
+		var sol := Vector3.ZERO
+		if busca.size() > hi:
+			sol = _busca_mao(a, l1, l2, alvo, punho, raio_p, tg, ax_m, fora, b0 - a, busca[hi])
+		elif m.has("tab"):
+			var tab: PackedVector3Array = m.tab
+			var x := clampf((s + 1.0) * 0.5, 0.0, 1.0) * (tab.size() - 1)
+			var k0 := mini(int(x), tab.size() - 2)
+			sol = tab[k0].lerp(tab[k0 + 1], x - k0)
+		escolhas.append(sol)
+		var rr := Basis(raio_p, sol.y) * Basis(tg, sol.x)
+		alvo = Transform3D(rr * alvo.basis, punho + rr * (alvo.origin - punho))
 		var para := alvo.origin - a
 		var d := clampf(para.length(), absf(l1 - l2) + 1e-4, l1 + l2 - 1e-4)
 		var dir := para.normalized()
-		var polo := (b0 - a) - dir * (b0 - a).dot(dir)
-		if polo.length_squared() < 1e-10:
-			polo = dir.cross(_ve)
-		polo = polo.normalized()
-		var x := (l1 * l1 - l2 * l2 + d * d) / (2.0 * d)
-		var cot := a + dir * x + polo * sqrt(maxf(l1 * l1 - x * x, 0.0))
+		var cot: Vector3
+		if m.has("tab") or busca.size() > hi:
+			cot = _cotovelo_ang(a, alvo.origin, l1, l2, sol.z, fora, b0 - a)
+		else:
+			cot = _cotovelo_ang(a, alvo.origin, l1, l2, _angulo_polo(a, alvo.origin, b0 - a, fora, 0.0), fora, b0 - a)
 		var r1 := Quaternion((b0 - a).normalized(), (cot - a).normalized())
 		var w1: Vector3 = cot + r1 * (w0 - b0)
 		var r2 := Quaternion((w1 - cot).normalized(), (a + dir * d - cot).normalized())
 		var b_sup: Basis = Basis(r1) * g[sup].basis
 		var b_inf: Basis = Basis(r2 * r1) * g[inf].basis
+		# parte da torção da mão (em volta do antebraço) vai pro antebraço
+		var f := (a + dir * d - cot).normalized()
+		var rel0_m: Basis = m.rel0
+		var q: Quaternion = (alvo.basis * (b_inf * rel0_m).inverse()).get_rotation_quaternion()
+		var tor := wrapf(2.0 * atan2(Vector3(q.x, q.y, q.z).dot(f), q.w), -PI, PI)
+		b_inf = Basis(f, tor * TORCAO_ANTEBRACO) * b_inf
 		_lr[sup] = (g[_pais[sup]].basis.inverse() * b_sup).get_rotation_quaternion()
 		_lr[inf] = (b_sup.inverse() * b_inf).get_rotation_quaternion()
 		_lr[mao] = (b_inf.inverse() * alvo.basis).get_rotation_quaternion()
+	return escolhas
+
+
+## melhor (rola, inclina, cotovelo) de uma mão perto da solução vizinha (viz;
+## em s = 0 a grade inteira): a mão rola em volta do aro (tg) e inclina em volta
+## do raio (raio_p) no punho, e o cotovelo vai onde o antebraço chega na
+## direção que a mão pede (preso na faixa do COTOVELO_FORA, contínuo com o do
+## vizinho). Custo = dobra do pulso + ROLA_PESO/INCLINA_PESO
+func _busca_mao(a: Vector3, l1: float, l2: float, alvo: Transform3D, punho: Vector3, raio_p: Vector3,
+		tg: Vector3, ax_m: Vector3, fora: Vector3, ref: Vector3, viz) -> Vector3:
+	var lim := Vector2(deg_to_rad(ROLA_MAX), deg_to_rad(INCLINA_MAX))
+	var best := Vector3.ZERO
+	var custo_min := INF
+	var centro := Vector2.ZERO
+	var passo := Vector2(deg_to_rad(ROLA_MAX) / 6.0, deg_to_rad(INCLINA_MAX) / 2.0)
+	var nk := Vector2i(6, 2)
+	var polo_viz := _angulo_polo(a, alvo.origin, ref, fora, 0.0)
+	if viz != null:
+		centro = Vector2(viz.x, viz.y)
+		passo = Vector2(deg_to_rad(2.0), deg_to_rad(1.5))
+		nk = Vector2i(3, 2)
+		polo_viz = viz.z
+	for fase in 3:
+		var c0 := centro
+		for kp in range(-nk.x, nk.x + 1):
+			for ki in range(-nk.y, nk.y + 1):
+				var ang := (c0 + Vector2(kp * passo.x, ki * passo.y)).clamp(-lim, lim)
+				var r := Basis(raio_p, ang.y) * Basis(tg, ang.x)
+				var w := punho + r * (alvo.origin - punho)
+				var u := (r * alvo.basis) * ax_m
+				var th := _angulo_polo(a, w, (w - u * l2) - a, fora, polo_viz)
+				var e := _cotovelo_ang(a, w, l1, l2, th, fora, ref)
+				var custo: float = u.angle_to(w - e) + ROLA_PESO * absf(ang.x) + INCLINA_PESO * absf(ang.y)
+				if custo < custo_min:
+					custo_min = custo
+					best = Vector3(ang.x, ang.y, th)
+					centro = ang
+		passo /= 4.0
+		nk = Vector2i(3, 2)
+	return best
+
+
+## tabela do braço natural: a solução de cada mão em TAB_N direções do volante
+## (-1..1), partindo do volante reto (grade inteira) e andando pros dois lados
+## sempre perto da vizinha: os ângulos variam liso com o volante (busca solta
+## por quadro trocava de solução e a mão estalava: até 62° e 26 cm por passo
+## de 2% do volante)
+func _montar_tabela() -> void:
+	var n := TAB_N
+	var tabs: Array = []
+	for m in _maos:
+		var t := PackedVector3Array()
+		t.resize(n)
+		tabs.append(t)
+		m.erase("tab")
+	var meio := n / 2
+	var ordem: Array = [meio]
+	for k in range(meio + 1, n):
+		ordem.append(k)
+	for k in range(meio - 1, -1, -1):
+		ordem.append(k)
+	for k in ordem:
+		var s: float = -1.0 + 2.0 * k / (n - 1)
+		var viz: Array = []
+		for t in tabs:
+			viz.append(null if k == meio else (t[k - 1] if k > meio else t[k + 1]))
+		_anima(s)
+		var sol: Array = _segura_volante(giro_volante(s), s, viz)
+		for h in tabs.size():
+			tabs[h][k] = sol[h]
+	# cotovelo já preso na faixa e tudo suavizado ao longo do volante: perto do
+	# volante todo o braço fica quase esticado, a direção do cotovelo fica mal
+	# definida e mudava 70° numa casa da tabela (Fireball)
+	var lim := deg_to_rad(COTOVELO_FORA)
+	for h in _maos.size():
+		var t: PackedVector3Array = tabs[h]
+		for k in n:
+			t[k].z = clampf(t[k].z, 0.0, lim)
+		for passada in SUAVIZA:
+			var u := t.duplicate()
+			for k in range(1, n - 1):
+				u[k] = t[k - 1] * 0.25 + t[k] * 0.5 + t[k + 1] * 0.25
+			t = u
+		_maos[h]["tab"] = t
+
+
+## ângulo do cotovelo (0 = pra baixo, + = pra fora) pro cotovelo ir na
+## direção de ref (em volta da linha ombro -> pulso), contínuo com o perto
+## (sem pular de +180° pra -180°). SEM o limite: a tabela guarda esse e o
+## limite (0..COTOVELO_FORA) entra no _cotovelo_ang; preso antes, passar por
+## "pra cima" virava um pulo de 0° pra 55° (9 cm no Fireball)
+func _angulo_polo(a: Vector3, w: Vector3, ref: Vector3, fora: Vector3, perto: float) -> float:
+	var dir := (w - a).normalized()
+	var baixo := Vector3.DOWN - dir * Vector3.DOWN.dot(dir)
+	if baixo.length_squared() < 1e-8:
+		return perto
+	baixo = baixo.normalized()
+	var lado := dir.cross(baixo)
+	if lado.dot(fora) < 0.0:
+		lado = -lado
+	var polo := ref - dir * ref.dot(dir)
+	var ang := atan2(polo.dot(lado), polo.dot(baixo))
+	return perto + wrapf(ang - perto, -PI, PI)
+
+
+## cotovelo do IK de dois ossos (ombro a, pulso w) com a direção dada pelo
+## ângulo th (0 = pra baixo, + = pra fora do corpo, fora = lado do braço),
+## preso em 0..COTOVELO_FORA
+func _cotovelo_ang(a: Vector3, w: Vector3, l1: float, l2: float, th: float, fora: Vector3, ref: Vector3) -> Vector3:
+	var para := w - a
+	var d := clampf(para.length(), absf(l1 - l2) + 1e-4, l1 + l2 - 1e-4)
+	var dir := para.normalized()
+	var baixo := Vector3.DOWN - dir * Vector3.DOWN.dot(dir)
+	var polo: Vector3
+	if baixo.length_squared() > 1e-8:
+		baixo = baixo.normalized()
+		var lado := dir.cross(baixo)
+		if lado.dot(fora) < 0.0:
+			lado = -lado
+		var t := clampf(th, 0.0, deg_to_rad(COTOVELO_FORA))
+		polo = baixo * cos(t) + lado * sin(t)
+	else:
+		polo = ref - dir * ref.dot(dir)
+		if polo.length_squared() < 1e-10:
+			polo = dir.cross(_ve)
+		polo = polo.normalized()
+	var x := (l1 * l1 - l2 * l2 + d * d) / (2.0 * d)
+	return a + dir * x + polo * sqrt(maxf(l1 * l1 - x * x, 0.0))
 
 
 ## conferência (tests/teste_volante.gd): distância de cada punho até o seu
@@ -389,6 +582,53 @@ func erro_maos(s: float) -> Array:
 	for m in _maos:
 		var alvo: Vector3 = (gira * m.pega) * m.cent
 		out.append((g[m.mao] * m.cent).distance_to(alvo))
+	return out
+
+
+## conferência (tests/teste_volante.gd), na pose de agora, por braço
+## (direito, esquerdo): ângulo do cotovelo (180 = esticado), dobra e torção do
+## pulso em relação à animação do jogo (quadro 0, graus) e pra onde o cotovelo
+## aponta (0 = pra baixo, + = pra fora do corpo, - = pra dentro, 180 = pra cima)
+func medidas_bracos() -> Array:
+	var g: Array = []
+	g.resize(_pais.size())
+	for b in _pais.size():
+		var t := Transform3D(Basis(_lr[b]), _lp[b])
+		g[b] = t if _pais[b] < 0 else g[_pais[b]] * t
+	var g0 := _globais_quadro(0)
+	var meio: Vector3 = g[skel.find_bone("upper_back")].origin
+	var out: Array = []
+	for m in _maos:
+		var a: Vector3 = g[m.sup].origin
+		var c: Vector3 = g[m.inf].origin
+		var w: Vector3 = g[m.mao].origin
+		var rel: Basis = g[m.inf].basis.inverse() * g[m.mao].basis
+		var rel0: Basis = g0[m.inf].basis.inverse() * g0[m.mao].basis
+		var d: Quaternion = (rel0.inverse() * rel).get_rotation_quaternion()
+		var ax: Vector3 = (rel0.inverse() * (g0[m.inf].basis.inverse() * (g0[m.mao].origin - g0[m.inf].origin))).normalized()
+		var tw := ax * Vector3(d.x, d.y, d.z).dot(ax)
+		var twist := Quaternion(tw.x, tw.y, tw.z, d.w).normalized()
+		var swing := d * twist.inverse()
+		var polo := (c - a) - (w - a).normalized() * (c - a).dot((w - a).normalized())
+		var fora := Vector3(signf(a.x - meio.x), 0.0, 0.0)
+		out.append({"cotovelo": rad_to_deg((a - c).angle_to(w - c)),
+			"pulso": rad_to_deg(2.0 * acos(clampf(absf(swing.w), 0.0, 1.0))),
+			"torcao": rad_to_deg(2.0 * acos(clampf(absf(twist.w), 0.0, 1.0))),
+			"aponta": rad_to_deg(atan2(polo.dot(fora), polo.dot(Vector3.DOWN)))})
+	return out
+
+
+## conferência: cotovelo e mão de cada braço na pose de agora (frame do
+## esqueleto), pra medir pulos de um quadro pro outro
+func juntas_bracos() -> Array:
+	var g: Array = []
+	g.resize(_pais.size())
+	for b in _pais.size():
+		var t := Transform3D(Basis(_lr[b]), _lp[b])
+		g[b] = t if _pais[b] < 0 else g[_pais[b]] * t
+	var out: Array = []
+	for m in _maos:
+		out.append([g[m.inf].origin, g[m.mao].basis.get_rotation_quaternion()])
 	return out
 
 
