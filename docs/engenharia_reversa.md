@@ -797,7 +797,8 @@ nuvens; tools/fx_jogo.py -> assets/fx/poeira.png).
   MaxParticleAge), +0x38 CamMinLodDist, +0x3c/0x40/0x44 ParticleSpacing /
   LookAlong / MinLod, +0x48/0x4c InitSize / MinLod, +0x5c.. SpeedScale e
   afins (mph x 0.447; não estão no XML, não lidos na emissão).
-- Emissão 0x225108 (por quadro): sai se |v| (corpo+0xe0) < 0.5. Força =
+- Emissão 0x225108 (por quadro): sai se |v| (corpo+0xe0) < 0.5. Rodas: o
+  0x1f1ef0 pula as de índice 0 e 2 (as da frente), só as de trás soltam. Força =
   (|v| - 0.5)/35 menos um termo da roda (2 x a folga, até 0.5; com ele
   >= 0.5 a roda fica "sem material"), presa em 0..1. Por roda (emissores
   das rodas de trás): material veículo+0xa88[i] (registro em veículo+0xd0),
@@ -805,7 +806,8 @@ nuvens; tools/fx_jogo.py -> assets/fx/poeira.png).
   (sem material ou DustType -1: alfa vai a 0 e o tipo fica o de antes).
   Solta com tipo != -1, força > 0.1 e alfa > 0.1, senão para (0x227968).
   LOD = dist² da câmera (veículo+0xb0c) / CamMinLodDist², espaçamento =
-  lerp(lerp(Spacing, LookAlong, olhar), MinLod, LOD), tamanho inicial =
+  lerp(lerp(Spacing, LookAlong, olhar), MinLod, LOD), olhar = clamp(1 -
+  frente do corpo (corpo+0xd0) . normal(carro - câmera)), tamanho inicial =
   lerp(InitSize, MinLod, LOD); cor x ((1 - sombra) + sombra x
   InShadowAmbientMultiply) (veículo+0xc0 e [0x7f48e0]+0x3c0, padrão 0.5:
   só escurece na sombra).

@@ -12,7 +12,8 @@ extends Node3D
 ## cor vai da de agora pra DustColour dele em 1 s (sem poeira ou fora do chão:
 ## o alfa vai a 0 em 1 s, com o tipo de antes). Espaçamento entre nuvens e
 ## tamanho inicial pelo LOD (distância da câmera até CamMinLodDist, 30 m) e
-## pelo quanto a câmera olha ao longo do movimento (ParticleSpacingLookAlong).
+## pela direção da câmera: 1 - frente do carro . (câmera -> carro); atrás do
+## carro vale o ParticleSpacing, de lado ou de frente o ParticleSpacingLookAlong.
 ##
 ## Nuvens (0x227c50): uma a cada ParticleSpacing metros do caminho da roda,
 ## espalhadas no trecho do quadro (a de trás nasce mais velha). PARADAS no
@@ -146,7 +147,11 @@ func passo(dt: float, v: Vector3) -> void:
 	var olha := 0.0
 	if cam:
 		var dc: Vector3 = car.global_position - cam.global_position
-		olha = clampf((-cam.global_transform.basis.z).dot(v / vel), 0.0, 1.0)
+		# 0x225108: 1 - frente do corpo (corpo+0xd0) . direção câmera -> carro;
+		# câmera de corrida atrás do carro = ~0 (vale o ParticleSpacing), de lado
+		# ou de frente = 1 (o LookAlong). Até nov/2026 estava invertido (usava o
+		# LookAlong atrás do carro: 10 cm em vez de 15, 1.5x mais nuvens)
+		olha = clampf(1.0 - car.forward().dot(dc.normalized()), 0.0, 1.0)
 		lod = dc.length_squared()
 	for e in emissores:
 		var w: Dictionary = car.wheels[e.roda]

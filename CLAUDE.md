@@ -664,7 +664,10 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   contato, que cresce de ~0.8 m até 3-10 m e some (alfa x (1 - t²)); cor
   muda em 1 s quando o material muda (no asfalto, DustType None, apaga).
   Quirk do jogo mantido: no mesmo quadro cada nuvem nova sai com alfa x
-  força de novo. A cor é a DustColour x textura (RX01 terra: marrom médio,
+  força de novo. Espaçamento: 1 - frente do carro . (câmera -> carro) puxa
+  pro ParticleSpacingLookAlong; na câmera de corrida (atrás) vale o
+  ParticleSpacing (15 cm). Até nov/2026 estava invertido (10 cm, 1.5x mais
+  nuvens; o Matheus achou "denso demais"). A cor é a DustColour x textura (RX01 terra: marrom médio,
   alfa 0.5): é uma névoa marrom baixa atrás das rodas, como no vídeo; o
   fator de sombra (InShadowAmbientMultiply 0.5) só escurece e não está
   portado. Sem o fx_jogo.py novo não há assets/fx/poeira.png e não sai
