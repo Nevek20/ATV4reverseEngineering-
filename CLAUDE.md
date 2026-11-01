@@ -436,7 +436,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 - O jogo NÃO tem freio de mão. O botão (corpo+0x384/0x388) é a EMBREAGEM:
   segurando abre a embreagem (> 0.1, 0x20c558); um toque virando e
   acelerando faz a "Clutch Turn" (powerslide 0x214610, car.gd
-  _powerslide). O freio só tem o pedal (0x390). No remake é o Espaço.
+  _powerslide). O freio só tem o pedal (0x390). No remake é o Espaço ou o
+  A do controle (escolha do Matheus; no PS2 é o R1). Select troca a câmera.
 - Derrapagem não volta sozinha: o 0x2120c0 (RecoveryTorqueCutting) corta o
   torque que endireita (modos B/C do 0x20efa0) pelo acelerador quando o
   volante está pra dentro da curva ou solto, e sobe a patinada de trás até

@@ -1960,6 +1960,10 @@ func _physics_process(dt: float) -> void:
 			var ax := -Input.get_joy_axis(0, JOY_AXIS_LEFT_X)
 			if absf(ax) > 0.12:
 				st_raw = ax
+		# botão da embreagem / Clutch Turn no A do controle (no PS2 é o R1;
+		# escolha do Matheus)
+		if Input.is_joy_button_pressed(0, JOY_BUTTON_A):
+			emb_btn = 1.0
 
 	var b := global_transform.basis
 	var up := b.y
