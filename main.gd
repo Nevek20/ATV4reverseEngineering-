@@ -81,10 +81,13 @@ const TRUCKS := [
 	# bônus resgatado: a CHASSIS_Truck_04 está completa no jogo e nenhum carro
 	# usa. É a Chevrolet Silverado pre-runner, carroceria original do Jericho;
 	# no remake o "Lazarus" (nome escolhido pelo Matheus)
-	# (texturas preRunnerTruck_*); física e peças do Jericho, câmera
-	# TruckCamSet_04 (tools/gerar_buggies.py BONUS)
+	# (texturas preRunnerTruck_*); peças de fábrica do Jericho (id TRUCK_04),
+	# câmera TruckCamSet_04 (tools/gerar_buggies.py BONUS). Física NOSSA
+	# (data/vehicles/lazarus.xml, nov/2026): cabine dupla mais pesada, V8 com
+	# mais torque, câmbio mais longo, curso maior e traseira mais presa que o
+	# Jericho (o truck_bonus.xml que o gerar_buggies escreve é a do Jericho)
 	{"name": "Lazarus", "id": "TRUCK_04", "cams": "TruckCamSet_04", "dir": "res://assets/truck_bonus",
-		"data": "res://data/vehicles/truck_bonus.xml", "points": "res://data/vehicles/truck_bonus_points.bin",
+		"data": "res://data/vehicles/lazarus.xml", "points": "res://data/vehicles/truck_bonus_points.bin",
 		"base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00], "bonus": true, "som": "res://som/loops/t13_silverado_chevy_53_vortec"},
 ]
 # carros extras NOSSOS (não existem no jogo): modelo .glb no padrão do Assetto

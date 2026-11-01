@@ -773,9 +773,18 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   carroceria original do Jericho ("Pre Runner"), que no vehicles.xml ficou
   com a CHASSIS_Truck_11 (sem logo nenhum; nenhum outro carro tem marca
   real). No remake é o "Lazarus" (nome escolhido pelo Matheus), último do menu (gerar_buggies.py BONUS,
-  --so 13; main.gd "bonus"): física, peças de fábrica, mapa
-  (TruckCompMap_B1) e decalques do Jericho, câmera TruckCamSet_04 (o
-  Jericho usa a 11). Não substitui o Jericho.
+  --so 13; main.gd "bonus"): peças de fábrica, mapa (TruckCompMap_B1) e
+  decalques do Jericho, câmera TruckCamSet_04 (o Jericho usa a 11). Não
+  substitui o Jericho. Física PRÓPRIA (nov/2026, números nossos com
+  liberdade do Matheus): data/vehicles/lazarus.xml = cópia do Jericho com
+  cabine dupla mais pesada (1.85 t, inércia maior), V8 com mais torque
+  (1.30, embreagem 0.42), marchas mais longas (14.0/8.6/6.5/5.5/5.0),
+  mais curso (0.50/0.68) com mola mais mole (40/27) e amortecedor 7,
+  traseira mais grudada (elipse 12.8), mais subesterço (27) e CoM mais alto
+  e pra frente (0.98, 0.13). O truck_bonus.xml (gerar_buggies) continua a
+  cópia do Jericho. teste_extra com FROTA=16,25: 0-100 em 6.06 s (Jericho
+  5.74), 182 km/h em 20 s (176), curso parado 0.21/0.26 (0.16/0.22);
+  teste_capota a 80 igual (5.0°).
 - Carros extras NOSSOS (nov/2026, main.gd EXTRAS; o Matheus quer alguns,
   começando pelo Escort): modelo .glb no padrão do Assetto Corsa (o que o
   Sketchfab tem: WHEEL_LF/RF/LR/RR com a origem no centro da roda, STEER_HR,
@@ -871,9 +880,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
 
 ## Pendente / ideias
 
-- Lazarus: vai ganhar valores próprios (o Matheus passa depois) pra não
-  ser igual ao Jericho; hoje usa física, peças, mapa e decalques dele. Não
-  suja: a CHASSIS_Truck_04 do jogo não tem a 2ª textura (sem _camada.obj
+- Lazarus: física própria feita (lazarus.xml); peças, mapa e decalques
+  ainda são os do Jericho. Não suja: a CHASSIS_Truck_04 do jogo não tem a 2ª textura (sem _camada.obj
   mesmo gerando de novo; o aviso do HUD não se aplica).
 - Trucks: FECHADO pelo Matheus (nov/2026). Aceleração conferida (Buccaneer,
   vídeo); a curva usa o mesmo código de pneu dos buggies (conferido com save

@@ -4,7 +4,8 @@ extends SceneTree
 ##    fica isso abaixo da roda do modelo; se bater, a roda desenhada parada cai
 ##    no lugar dela no modelo) e a folga do casco até o chão;
 ## 2) acelerando reto: tempo de 0 a 100 km/h, velocidade em 20 s e a marcha.
-## Uso: godot --headless --path . -s res://tests/teste_extra.gd   (EXTRA=0 só o 1º)
+## Uso: godot --headless --path . -s res://tests/teste_extra.gd   (EXTRA=0 só o 1º;
+## FROTA=16,25 compara carros da frota, ex. Jericho x Lazarus)
 
 const Car := preload("res://car.gd")
 const Main := preload("res://main.gd")
@@ -31,10 +32,15 @@ func _initialize() -> void:
 	chao.add_child(cs)
 	root.add_child(chao)
 	var so := int(OS.get_environment("EXTRA")) if OS.has_environment("EXTRA") else -1
-	for i in Main.EXTRAS.size():
+	var lista: Array = Main.EXTRAS
+	if OS.has_environment("FROTA"):           # FROTA=16,25: esses carros da frota (Jericho x Lazarus)
+		lista = []
+		for x in OS.get_environment("FROTA").split(","):
+			lista.append(Main.frota()[int(x)])
+	for i in lista.size():
 		if so >= 0 and i != so:
 			continue
-		var v: Dictionary = Main.EXTRAS[i]
+		var v: Dictionary = lista[i]
 		var c = Car.new()
 		Main.configurar(c, v)
 		c.suspension = false
@@ -73,7 +79,7 @@ func _physics_process(dt: float) -> bool:
 		var v: Dictionary = e[1]
 		var s: Estado = e[2]
 		var p = JSON.parse_string(FileAccess.get_file_as_string(v.dir.path_join("pecas.json")))
-		var est = p.get("estatico", []) if p else []
+		var est = p.get("estatico", []) if p is Dictionary else []
 		print("%s: curso parado %s (estático do carro_glb frente, trás %s), casco a %.1f cm do chão" % [
 			v.name, str(s.curso.map(func(x): return snappedf(x, 0.001))), str(est), s.folga * 100.0])
 		print("   0-100 km/h em %.2f s, %.0f km/h em 20 s (marcha %d)" % [s.t100, s.v20, s.marcha])
