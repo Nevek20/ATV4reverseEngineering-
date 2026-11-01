@@ -20,7 +20,7 @@ extends Node3D
 ## A gêmea espelhada de uma peça que treme também treme. AJUSTES por carro
 ## corrigem o que a regra erra (achado nos prints com MOTOR_COR=2).
 ## Carro sem ponto EXHAUST não treme (o Storm ganhou um, car.gd ESCAPE_NOSSO:
-## motor escondido, só as ponteiras tremem).
+## motor escondido, só as ponteiras tremem). Trucks: só o escape (_tipo_escape).
 ## Movimento (escolha nossa): vibração sorteada, curta e rápida, mais forte
 ## na lenta (coxim de borracha) e menor no giro alto, quase só na vertical, e
 ## o balanço do torque: o motor gira em volta do virabrequim (eixo z) puxado
@@ -38,6 +38,7 @@ const VIB_LENTA := 0.0015         # m na marcha lenta
 const VIB_ALTO := 0.0005          # m no corte
 const VIB_SUAVE := 0.008          # s: o motor segue o sorteio com essa constante
 const VIB_EIXOS := Vector3(0.4, 1.0, 0.15)   # mais na vertical (o pistão sobe e desce)
+const PONTA := 0.20               # m: trucks, faces em volta da boca do escape que vibram
 const BALANCO_GRAUS := 0.8        # inclinação com carga cheia
 const BALANCO_HZ := 7.0           # frequência da mola do coxim
 const BALANCO_AMORT := 0.6        # amortecimento (fração do crítico)
@@ -66,7 +67,7 @@ var _vib := Vector3.ZERO
 
 ## tira as peças do cofre da malha da carroceria (mi) e monta a malha delas
 ## aqui (filho do mesmo pai, mesma posição). false = nada pra tremer
-func separar(mi: MeshInstance3D, pontos: Dictionary, id := "") -> bool:
+func separar(mi: MeshInstance3D, pontos: Dictionary, id := "", so_escape := false) -> bool:
 	if not (mi.mesh is ArrayMesh) or not pontos.has("ARSE") or not pontos.has("WHEEL_REAR_LEFT") \
 			or not pontos.has("EXHAUST"):
 		return false
@@ -128,7 +129,7 @@ func separar(mi: MeshInstance3D, pontos: Dictionary, id := "") -> bool:
 	var ajuste: Dictionary = AJUSTES.get(id, {})
 	for r in info:
 		var p: Dictionary = info[r]
-		var tipo := _tipo(p, lo, hi)
+		var tipo := _tipo_escape(p) if so_escape else _tipo(p, lo, hi)
 		var c: Vector3 = (p.lo + p.hi) * 0.5
 		for q in ajuste.get("motor", []):
 			if c.distance_to(q) < 0.03:
@@ -137,6 +138,11 @@ func separar(mi: MeshInstance3D, pontos: Dictionary, id := "") -> bool:
 			if c.distance_to(q) < 0.03:
 				tipo = 0
 		if tipo == 0:
+			if OS.has_environment("MOTOR_LISTA") and p.d_esc < 0.3:     # perto do escape e ficou
+				var d0: Vector3 = p.hi - p.lo
+				print("  fica   %3d faces %-26s tam %.2f %.2f %.2f centro (%.2f, %.2f, %.2f) esc %.2f luz %.2f" % [
+					p.n, _material(p), d0.x, d0.y, d0.z, (p.lo.x + p.hi.x) / 2, (p.lo.y + p.hi.y) / 2,
+					(p.lo.z + p.hi.z) / 2, p.d_esc, p.d_luz])
 			continue
 		sai[r] = tipo
 		pecas += 1
@@ -167,6 +173,27 @@ func separar(mi: MeshInstance3D, pontos: Dictionary, id := "") -> bool:
 				sai[r] = sai[r2]
 				pecas += 1
 				break
+	# trucks: a ponta do cano (faces a até PONTA da boca), que quase sempre é a
+	# mesma peça da longarina, do para-choque ou da gaiola (Shinto: cano de
+	# 1.9 m; Jericho: tubos cromados da caçamba)
+	var ponta := {}                   # índice do triângulo -> true
+	if so_escape:
+		var proib := {}
+		for s2 in mesh.get_surface_count():
+			proib[s2] = _proibido(_nome_mat(mesh, mi, s2))
+		for i in tri.size():
+			var t: Array = tri[i]
+			if sai.has(_raiz(pai, t[4])) or proib[t[0]] or info[_raiz(pai, t[4])].d_luz < 0.10:
+				continue
+			var v: PackedVector3Array = arrs[t[0]][Mesh.ARRAY_VERTEX]
+			var c3: Vector3 = (v[t[1]] + v[t[2]] + v[t[3]]) / 3.0
+			for e in escapes:
+				if c3.distance_to(e) < PONTA:
+					ponta[i] = true
+					for k in 3:
+						e_lo = e_lo.min(v[t[1 + k]])
+						e_hi = e_hi.max(v[t[1 + k]])
+					break
 	if not c_lo.is_finite():
 		if not e_lo.is_finite():
 			return false
@@ -181,22 +208,24 @@ func separar(mi: MeshInstance3D, pontos: Dictionary, id := "") -> bool:
 		var pe: Vector3 = pontos[nome]
 		var perto := INF
 		var k := 0
-		for t in tri:
+		for i in tri.size():
+			var t: Array = tri[i]
 			var v: PackedVector3Array = arrs[t[0]][Mesh.ARRAY_VERTEX]
 			var d := ((v[t[1]] + v[t[2]] + v[t[3]]) / 3.0).distance_to(pe)
 			if d < perto:
 				perto = d
-				k = sai.get(_raiz(pai, t[4]), 0)
+				k = 2 if ponta.has(i) else sai.get(_raiz(pai, t[4]), 0)
 		bocas[String(nome)] = k if perto < 0.15 else 0
 	# duas malhas com as mesmas superfícies e materiais
 	var malhas := [ArrayMesh.new(), ArrayMesh.new(), ArrayMesh.new()]   # fica, motor, escape
 	var mats := [[], [], []]
 	for s in mesh.get_surface_count():
 		var ixs := [PackedInt32Array(), PackedInt32Array(), PackedInt32Array()]
-		for t in tri:
+		for i in tri.size():
+			var t: Array = tri[i]
 			if t[0] != s:
 				continue
-			var k: int = sai.get(_raiz(pai, t[4]), 0)
+			var k: int = 2 if ponta.has(i) else sai.get(_raiz(pai, t[4]), 0)
 			var ix: PackedInt32Array = ixs[k]
 			ix.append_array(PackedInt32Array([t[1], t[2], t[3]]))
 			ixs[k] = ix
@@ -318,6 +347,21 @@ static func _tipo(p: Dictionary, lo: Vector3, hi: Vector3) -> int:
 	if p.d_esc < 0.12 and dims[2] < 2.2 and p.hi.z <= hi.z and p.lo.x >= lo.x and p.hi.x <= hi.x:
 		return 2
 	return 0
+
+
+## trucks (pedido do Matheus, out/2026: "99% só precisam de um toque no
+## escapamento"): o motor fica embaixo do capô e a regra do cofre dos buggies
+## (atrás do banco) pegava gaiola, estepe e caçamba. Só os canos que encostam
+## no ponto EXHAUST, em qualquer lugar do carro (saem do lado ou atrás)
+static func _tipo_escape(p: Dictionary) -> int:
+	if p.n >= 300 or _proibido(_material(p)) or p.d_luz < 0.10 or p.d_esc >= 0.12:
+		return 0
+	var d: Vector3 = p.hi - p.lo
+	var dims := [d.x, d.y, d.z]
+	dims.sort()
+	if dims[2] >= 1.2 or (d.y < 0.25 and d.x * d.z > 0.3):    # chassi, para-choque, chapa
+		return 0
+	return 2
 
 
 static func _material(p: Dictionary) -> String:

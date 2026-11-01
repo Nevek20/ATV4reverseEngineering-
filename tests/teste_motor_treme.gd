@@ -1,5 +1,6 @@
 extends SceneTree
-## Motor tremendo (motor_treme.gd, melhoria nossa): em cada buggy conta as
+## Motor tremendo (motor_treme.gd, melhoria nossa): em cada carro (buggies,
+## trucks e o bônus; VEHS=13,14 só esses índices da frota) conta as
 ## peças e faces que saem da carroceria pro motor, o centro do motor e confere
 ## que a carroceria + motor têm as mesmas faces de antes (nada some).
 ## Uso: godot --headless --path . -s res://tests/teste_motor_treme.gd
@@ -18,16 +19,21 @@ func _process(_dt: float) -> bool:
 		car.free()
 		car = null
 	i += 1
-	while i < Main.VEHICLES.size() and vistos.has(Main.VEHICLES[i].id):
+	var frota: Array = Main.frota()
+	var so := []
+	if OS.has_environment("VEHS"):
+		for x in OS.get_environment("VEHS").split(","):
+			so.append(int(x))
+	while i < frota.size() and (vistos.has(frota[i].dir) or (not so.is_empty() and not (i in so))):
 		i += 1
-	if i >= Main.VEHICLES.size():
+	if i >= frota.size():
 		print("teste_motor_treme: %s" % ("ok" if falhas == 0 else "FALHA"))
 		return true
-	var v: Dictionary = Main.VEHICLES[i]
-	vistos[v.id] = true
+	var v: Dictionary = frota[i]
+	vistos[v.dir] = true
 	car = Car.new()
 	car.asset_dir = v.dir
-	car.data_files = ["res://data/vehicles/buggy_base.xml", v.data]
+	car.data_files = Main.dados(v)
 	car.points_file = v.points
 	car.vehicle_id = v.id
 	car.suspension = false
@@ -47,7 +53,7 @@ func _faces(m: Mesh) -> int:
 
 
 func _conferir() -> void:
-	var v: Dictionary = Main.VEHICLES[i]
+	var v: Dictionary = Main.frota()[i]
 	var mt = car.motor_treme
 	if mt == null:
 		print("%-12s sem motor separado (sem ponto EXHAUST)" % v.name)

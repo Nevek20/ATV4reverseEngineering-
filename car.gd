@@ -189,6 +189,11 @@ var motor_treme: Node3D = null
 # girando (elétricas) e polias e correia 3D por cima das polias desenhadas
 const MOTOR_ANIMA := true
 var motor_anima: Node = null
+# trucks (lote 4, out/2026): o motor fica embaixo do capô; só o Punisher tem
+# ventoinhas à mostra (os 2 radiadores na caçamba, conferido no print). No TT a
+# textura "black" das ventoinhas também cobre teto e janela da cabine (16 faces
+# espalhadas iam girar)
+const ANIMA_TRUCKS := ["TRUCK_05"]
 # lanterna de freio e luz de ré acesas (melhoria nossa, luzes.gd: a lente da
 # cor da luz acende e ganha um halo nosso; o jogo põe só um halo laranja com
 # raios nos pontos BRAKE_LIGHT/REVERSE_LIGHT, VehicleHaloMap.xml)
@@ -417,7 +422,7 @@ var melhorias := true
 # conferida neles (lote 1, out/2026: luzes, farol e fumaça; o som do motor
 # veio antes, com os 13 motores dos trucks; lote 2: volante e mãos)
 var desligadas := []
-const PENDENTES_TRUCK := ["motor_treme", "motor_anima"]
+const PENDENTES_TRUCK := []
 
 
 ## melhoria nossa ligada neste carro
@@ -1125,7 +1130,7 @@ func _load_motor_treme() -> void:
 		return
 	motor_treme = preload("res://motor_treme.gd").new()
 	motor_treme.name = "MotorTreme"
-	if motor_treme.separar(body_mi, points, vehicle_id):
+	if motor_treme.separar(body_mi, points, vehicle_id, vehicle_id.begins_with("TRUCK")):   # trucks: só o escape
 		model_root.add_child(motor_treme)
 	else:
 		motor_treme.free()
@@ -1158,6 +1163,8 @@ func _load_farol() -> void:
 
 func _load_motor_anima() -> void:
 	if not (MOTOR_ANIMA and _tem("motor_anima")) or body_mi == null:
+		return
+	if vehicle_id.begins_with("TRUCK") and not (chave() in ANIMA_TRUCKS):
 		return
 	motor_anima = preload("res://motor_anima.gd").new()
 	motor_anima.name = "MotorAnima"

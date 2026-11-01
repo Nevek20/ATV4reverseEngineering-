@@ -99,8 +99,8 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --headless --path . -s res://tests/teste_sfx.gd           :: tom do pneu x pitch das vozes do SPU em 7 save states; material da FL x RAM
 %GODOT% --headless --path . --fixed-fps 50 -s res://tests/teste_ladeira.gd -- 0   :: pneu parado em barranco: som não pode piscar
 %GODOT% --path . --write-movie cascalho.avi --fixed-fps 60 -s res://tests/gravar_cascalho.gd -- 0  :: derrapando no cascalho escuro: trocas Gravel/Dirt e áudio do pneu
-%GODOT% --headless --path . -s res://tests/teste_motor_treme.gd   :: peças e faces do motor que treme nos 12 carros
-%GODOT% --headless --path . -s res://tests/teste_motor_anima.gd   :: ventoinhas, polias e correia nos 12 (nada some, correia encosta)
+%GODOT% --headless --path . -s res://tests/teste_motor_treme.gd   :: peças e faces do motor que treme nos 25 carros (VEHS=13,14 só esses)
+%GODOT% --headless --path . -s res://tests/teste_motor_anima.gd   :: ventoinhas, polias e correia nos 25 (nada some, correia encosta)
 %GODOT% --headless --path . -s res://tests/teste_luzes.gd         :: cor do vértice nos materiais e lanterna de freio e ré nos 25 (acende e apaga)
 %GODOT% --headless --path . -s res://tests/teste_farol.gd         :: farol: lentes achadas (Hurricane 2, Storm 6, 4 trucks e o Lazarus), lente e brilho, acende e apaga
 :: + print_tela com FAROL=1/0 força o farol aceso/apagado
@@ -595,6 +595,18 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   zumbido de 1.5 mm na lenta (0.5 no corte) quase por quadro (8 ms), mais na
   vertical, e tranco de 0.8° num coxim firme (7 Hz, 60% do crítico, assenta
   sem quicar). O escape separado (Renegade) só vibra, não gira com o motor.
+  Trucks (lote 4, out/2026; o Matheus: "99% só precisam de um toque no
+  escapamento"): o motor fica embaixo do capô e a regra do cofre dos buggies
+  pegava gaiola, estepe e caçamba (prints MOTOR_COR=2, vista "motor" do
+  print_tela). Só o escape vibra (separar so_escape): peças pequenas soltas
+  que encostam no EXHAUST + as faces a até PONTA 20 cm da boca (o cano quase
+  sempre é a mesma peça da longarina ou da gaiola: Shinto 1.9 m). Pega no
+  Buccaneer, Shockwave, Shinto, Jericho, Panther, Truggy (saída do lado),
+  Hammerhead e Chimera; TT e Goliath têm a boca na pintura "white", Punisher
+  e Fireball não têm ponto, o Lazarus fica com 1 face. Motor animado nos
+  trucks só no Punisher (car.gd ANIMA_TRUCKS: os 2 radiadores com ventoinha
+  na caçamba, conferido no print); no TT a textura "black" das ventoinhas
+  também cobre teto e janela da cabine.
 - Motor animado (melhoria nossa, car.gd MOTOR_ANIMA, motor_anima.gd): no
   jogo nada gira (ventoinha e polia são desenho parado na textura).
   Ventoinhas dos radiadores (textura "black" centro (89, 26) r 23 px; Trident
@@ -714,7 +726,8 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   ligadas aos poucos, cada uma conferida com print (car.gd PENDENTES_TRUCK =
   as que faltam; main.gd e print_tela põem em car.desligadas). Lote 1
   (out/2026): luzes, farol e fumaça (o som do motor já tinha vindo). Lote 3:
-  painel (ver Painel funcional). Lote 2:
+  painel (ver Painel funcional). Lote 4: motor tremendo (só a ponta do
+  escape) e motor animado (só o Punisher); PENDENTES_TRUCK ficou vazio. Lote 2:
   volante nosso, mãos no aro, volante girando e tremendo; câmera do piloto
   com o olho pelos números do Matheus (main.gd "fp"; padrão dos buggies
   [0.36, 0.47, 0.00] onde ele não mudou). Goliath parado (RAM): massa 1.90 t, marchas

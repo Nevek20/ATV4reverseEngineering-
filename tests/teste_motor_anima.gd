@@ -12,7 +12,8 @@ const MotorAnima := preload("res://motor_anima.gd")
 # esperado (levantamento das texturas, out/2026): placas de ventoinha e pares de polias
 const ESPERADO := {"BUGGY_10": [2, 0], "BUGGY_04": [2, 0], "BUGGY_01": [2, 0], "BUGGY_02": [2, 0],
 	"BUGGY_03": [2, 0], "BUGGY_05": [1, 0], "BUGGY_06": [0, 1], "BUGGY_07": [0, 1],
-	"BUGGY_08": [2, 1], "BUGGY_09": [0, 1], "BUGGY_11": [0, 0], "BUGGY_12": [0, 0]}
+	"BUGGY_08": [2, 1], "BUGGY_09": [0, 1], "BUGGY_11": [0, 0], "BUGGY_12": [0, 0],
+	"TRUCK_05": [2, 0]}      # trucks: só o Punisher (radiadores na caçamba, car.gd ANIMA_TRUCKS)
 
 var i := -1
 var car = null
@@ -26,16 +27,21 @@ func _process(_dt: float) -> bool:
 		car.free()
 		car = null
 	i += 1
-	while i < Main.VEHICLES.size() and vistos.has(Main.VEHICLES[i].id):
+	var frota: Array = Main.frota()
+	var so := []
+	if OS.has_environment("VEHS"):        # VEHS=13,14: só esses índices da frota
+		for x in OS.get_environment("VEHS").split(","):
+			so.append(int(x))
+	while i < frota.size() and (vistos.has(frota[i].dir) or (not so.is_empty() and not (i in so))):
 		i += 1
-	if i >= Main.VEHICLES.size():
+	if i >= frota.size():
 		print("teste_motor_anima: %s" % ("ok" if falhas == 0 else "FALHA"))
 		return true
-	var v: Dictionary = Main.VEHICLES[i]
-	vistos[v.id] = true
+	var v: Dictionary = frota[i]
+	vistos[v.dir] = true
 	car = Car.new()
 	car.asset_dir = v.dir
-	car.data_files = ["res://data/vehicles/buggy_base.xml", v.data]
+	car.data_files = Main.dados(v)
 	car.points_file = v.points
 	car.vehicle_id = v.id
 	car.suspension = false
@@ -55,7 +61,7 @@ static func _faces(m: Mesh) -> int:
 
 
 func _conferir() -> void:
-	var v: Dictionary = Main.VEHICLES[i]
+	var v: Dictionary = Main.frota()[i]
 	var ma = car.motor_anima
 	var malhas: Array = [car.body_mi]
 	if car.motor_treme:
