@@ -29,13 +29,8 @@ func _process(_dt: float) -> bool:
 	var v: Dictionary = Main.frota()[i]
 	vistos[v.dir] = true   # pela pasta: a variação do Sphinx sai, o bônus (id do Jericho) entra
 	car = Car.new()
-	car.asset_dir = v.dir
-	car.data_files = Main.dados(v)
-	car.points_file = v.points
-	car.vehicle_id = v.id
+	Main.configurar(car, v)
 	car.suspension = false
-	if v.id.begins_with("TRUCK"):
-		car.desligadas = Car.PENDENTES_TRUCK
 	root.add_child(car)
 	car.set_physics_process(false)
 	car.set_process(false)
@@ -54,6 +49,8 @@ func _conferir() -> void:
 			mats += 1
 			com_cor += 1 if m.vertex_color_use_as_albedo else 0
 	var ok_cor: bool = com_cor == mats and car.cor_k() > 4.0
+	if v.get("extra", false):
+		ok_cor = com_cor == 0          # carro extra (.glb): materiais PBR do modelo, sem cor de vértice
 	var linha := "%-9s %-10s cor do vértice %d/%d (k %.2f)" % [v.id, v.name, com_cor, mats, car.cor_k()]
 	if lz == null:
 		print(linha + "  sem lente achada  %s" % ("ok" if ok_cor else "FALHA"))

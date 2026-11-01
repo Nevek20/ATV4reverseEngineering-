@@ -21,3 +21,4 @@ tools/engine_sim_dyno/build/
 *.gd.uid
 *.translation
 som/loops/**/*.import
+assets/escort/

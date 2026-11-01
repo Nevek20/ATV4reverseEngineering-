@@ -32,7 +32,8 @@ func _process(_dt: float) -> bool:
 	if OS.has_environment("VEHS"):        # VEHS=13,14: só esses índices da frota
 		for x in OS.get_environment("VEHS").split(","):
 			so.append(int(x))
-	while i < frota.size() and (vistos.has(frota[i].dir) or (not so.is_empty() and not (i in so))):
+	while i < frota.size() and (vistos.has(frota[i].dir) or frota[i].get("extra", false) \
+			or (not so.is_empty() and not (i in so))):
 		i += 1
 	if i >= frota.size():
 		print("teste_motor_anima: %s" % ("ok" if falhas == 0 else "FALHA"))
@@ -40,10 +41,8 @@ func _process(_dt: float) -> bool:
 	var v: Dictionary = frota[i]
 	vistos[v.dir] = true
 	car = Car.new()
-	car.asset_dir = v.dir
-	car.data_files = Main.dados(v)
-	car.points_file = v.points
-	car.vehicle_id = v.id
+	Main.configurar(car, v)
+	car.desligadas = []             # todas as melhorias (o teste confere as faces com o painel junto)
 	car.suspension = false
 	root.add_child(car)
 	car.set_physics_process(false)

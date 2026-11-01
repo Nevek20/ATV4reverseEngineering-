@@ -30,7 +30,8 @@ camera_jitter.gd     tremida da câmera (Perlin por velocidade, só na terra, e 
 camera_piloto.gd     câmera do piloto (melhoria nossa): força G na cabeça, FOV e borrão pela velocidade, olhar pra curva e olhar livre
 suspension_visual.gd balanças, amortecedores e freios do jogo se mexendo
 vehicle_data.gd      leitor dos XMLs (base + veículo) e peças de fábrica
-main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V); VEHICLES = buggies, TRUCKS, frota() = os dois
+main.gd              cena: terreno, carro, câmera, HUD, menu de carros (Tab, V); VEHICLES = buggies, TRUCKS, EXTRAS (nossos), frota() = os três, configurar(car, v)
+carro_glb.gd         carros extras nossos: junta as malhas do .glb no frame do jogo (carroceria, rodas, volante)
 piloto.gd            piloto do jogo sentado no ARSE, braços pela direção (STEER_LEFT)
 volantes.gd          volantes gerados, um estilo por carro (melhoria nossa, no lugar do do jogo)
 motor_som.gd         som do motor: loops do Engine Simulator por rpm e carga (melhoria nossa)
@@ -112,6 +113,10 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 set VEL=110 & %GODOT% --headless --path . res://tests/teste_entrada.tscn   :: reto até VEL e vira tudo: quando passa de 20° (jogo: 110 não derrapa)
 :: + SOLTA=1.3 solta o volante (DEPOIS=-1 contra-esterça, ACEL=0 solta o acelerador), DUR=8 segundos depois de virar
 %GODOT% --headless --path . -s res://tests/medir_tremor.gd -- 60 tremor.csv  :: distância câmera-carro por quadro
+
+:: carro extra NOSSO de um .glb no padrão Assetto Corsa (WHEEL_LF..., STEER_HR) -> assets/<nome> + data/vehicles/<nome>*
+python tools/carro_glb.py <modelo.glb> Escort [--estatico 0.105,0.068] [--massa 0.9] [--base buggy_12]
+%GODOT% --headless --path . -s res://tests/teste_extra.gd   :: extras: curso parado x estático, casco, 0-100 e velocidade
 
 :: casco de colisão de cada carro (esferas do VehicleWorld.hsc pelo id) -> data/vehicles/<id>_casco.json
 python tools/casco.py <unpacked>          :: --tabela mostra a caixa de todos os cascos do archive
@@ -757,6 +762,36 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   --so 13; main.gd "bonus"): física, peças de fábrica, mapa
   (TruckCompMap_B1) e decalques do Jericho, câmera TruckCamSet_04 (o
   Jericho usa a 11). Não substitui o Jericho.
+- Carros extras NOSSOS (nov/2026, main.gd EXTRAS; o Matheus quer alguns,
+  começando pelo Escort): modelo .glb no padrão do Assetto Corsa (o que o
+  Sketchfab tem: WHEEL_LF/RF/LR/RR com a origem no centro da roda, STEER_HR,
+  SUSP_xx = cubo, COCKPIT_HR, ARROW_RPM...). tools/carro_glb.py mede no
+  modelo e gera, no frame do jogo (x = -x do glTF): pecas.json (nós que saem
+  da carroceria, roda e cubo de cada canto, volante centro/eixo/raio pelo
+  PCA do STEER_HR, fonte e licença), _points.json (WHEEL_* = roda do modelo
+  menos o curso parado, ARSE = volante - (0, 0.37, 0.46) como o
+  VOLANTE_SEM_MODELO, EXHAUST na ponta do material de escape mais perto da
+  borda com a direção do cano, BRAKE_LIGHT/HEAD_LIGHT pelos lados das
+  luzes), _casco.json (2 fileiras de esferas de 0.36 + cabine de 0.42) e a
+  física do --base (Storm) com rodas, curso, massa, CoM (53% na frente) e
+  caixa trocados, e a relação final x raio novo / raio base (mesma velocidade
+  por rpm). car.gd: carroceria pela cena importada do .glb (CarroGlb.malha:
+  ordem dos vértices trocada e sinal da tangente virado pelo espelho;
+  materiais PBR como vieram, sem material_do_jogo), roda e cubo de cada canto
+  (não espelha), volante do próprio modelo girando, pontos .json,
+  tuning_id (peças de fábrica de outro carro) e motor_escondido (só a ponta
+  do escape treme, sem ventoinha). main.configurar(car, v) monta o carro igual
+  no main, print_tela e testes. "desligar": volante_nosso, painel (o modelo
+  tem relógios), sujeira (sem 2ª textura), farol (sem textura de farol).
+  Escort RS1600 Mk1 1974 (vecarz, Sketchfab, CC-BY-NC-SA 4.0: dá crédito,
+  sem uso comercial, derivado com a mesma licença; ripado de um mod do AC):
+  200 mil triângulos, mão inglesa (volante na direita), escape saindo do
+  lado esquerdo embaixo da porta. Curso parado medido no teste_extra: 0.105
+  frente / 0.068 trás (o --estatico tem que ser esse, senão a roda parada
+  fica fora do lugar do modelo); 0-100 em 4.0 s e 193 km/h em 20 s com a
+  física do Storm (escolha de partida, falta afinar com o Matheus). Som =
+  loops do Storm (I4) por enquanto. assets/escort/ fica fora do git (o .glb
+  tem 17 MB): no PC, rodar o carro_glb.py com o .glb.
 - Casco de colisão (out/2026, docs Casco de colisão): até então era uma caixa
   de 2.1 x 0.8 x 4.8 m igual pra todos, sem fonte. O jogo carrega
   Vehicles/<Classe>/Collision/<Name>/VehicleWorld.hsc (0x1fed48) pelo ID do

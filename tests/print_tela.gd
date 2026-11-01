@@ -121,23 +121,15 @@ func _spawn(i: int) -> void:
 	main.car.queue_free()
 	main.veh_idx = i
 	var c = Car.new()
-	c.asset_dir = OS.get_environment("PASTA") if OS.has_environment("PASTA") else v.dir
-	c.data_files = main.dados(v)
-	c.points_file = OS.get_environment("PONTOS") if OS.has_environment("PONTOS") else v.points
-	c.vehicle_id = v.id
-	c.tune_override = v.get("tune", {})
-	c.livery_file = v.get("livery", "pintura.png")
+	main.configurar(c, v)
+	if OS.has_environment("PASTA"):
+		c.asset_dir = OS.get_environment("PASTA")
+	if OS.has_environment("PONTOS"):
+		c.points_file = OS.get_environment("PONTOS")
 	if OS.has_environment("RODA_F"):
 		c.wheel_front_file = OS.get_environment("RODA_F")
 	if OS.has_environment("RODA_T"):
 		c.wheel_rear_file = OS.get_environment("RODA_T")
-	if v.has("fp"):
-		c.FP_UP = v.fp[0]
-		c.FP_BACK = v.fp[1]
-		c.FP_PITCH = v.fp[2]
-	c.vehicle_name = "%s (%s)" % [v.name, v.id]
-	if v.id.begins_with("TRUCK"):
-		c.desligadas = Car.PENDENTES_TRUCK
 	if OS.has_environment("DESLIGAR"):          # DESLIGAR=volante_nosso,luzes: melhorias fora só neste print
 		c.desligadas = c.desligadas + Array(OS.get_environment("DESLIGAR").split(","))
 	c.terrain = main.terrain

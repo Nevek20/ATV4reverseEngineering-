@@ -87,6 +87,22 @@ const TRUCKS := [
 		"data": "res://data/vehicles/truck_bonus.xml", "points": "res://data/vehicles/truck_bonus_points.bin",
 		"base": BASE_TRUCK, "fp": [0.36, 0.47, 0.00], "bonus": true, "som": "res://som/loops/t13_silverado_chevy_53_vortec"},
 ]
+# carros extras NOSSOS (não existem no jogo): modelo .glb no padrão do Assetto
+# Corsa convertido pelo tools/carro_glb.py (pontos, casco e física medidos no
+# modelo). "tune_id" = peças de fábrica de um carro do jogo; "desligar" =
+# melhorias que não servem (o modelo já tem volante e relógios próprios, não
+# tem a 2ª textura da sujeira); "motor_escondido" = só a ponta do escape treme.
+# Escort RS1600 Mk1 1974: modelo de vecarz no Sketchfab (CC-BY-NC-SA 4.0,
+# assets/escort/pecas.json "fonte"); física de partida = a do Storm (o rally
+# do jogo) com rodas, curso, massa, CoM e caixa do Escort. Mão inglesa (o
+# volante fica na direita, como no modelo). Som: o I4 do Storm por enquanto
+const EXTRAS := [
+	{"name": "Escort RS1600", "id": "ESCORT", "tune_id": "BUGGY_12", "cams": "LanciaCam",
+		"dir": "res://assets/escort", "data": "res://data/vehicles/escort.xml",
+		"points": "res://data/vehicles/escort_points.json", "fp": [0.36, 0.50, 0.00], "extra": true,
+		"motor_escondido": true, "desligar": ["volante_nosso", "painel", "sujeira", "farol"],
+		"som": "res://som/loops/12_storm_lancia_delta_s4"},
+]
 var veh_idx := 0
 # largada do RX_01: centro das 4 rodas e direção do carro nos 6 save states
 # parados na largada (tests/ref_ram_chao.json), passados pro remake por
@@ -141,9 +157,31 @@ func _ready() -> void:
 	cam_piloto.car = car
 
 
-## buggies + trucks (menu, V, print_tela); os testes dos buggies usam só VEHICLES
+## buggies + trucks + extras nossos (menu, V, print_tela); os testes dos
+## buggies usam só VEHICLES
 static func frota() -> Array:
-	return VEHICLES + TRUCKS
+	return VEHICLES + TRUCKS + EXTRAS
+
+
+## carro pronto pra entrar na cena (main, print_tela e testes da frota)
+static func configurar(c, v: Dictionary) -> void:
+	c.asset_dir = v.dir
+	c.data_files = dados(v)
+	c.points_file = v.points
+	c.vehicle_id = v.id
+	c.som_pasta = v.get("som", "")
+	c.tune_override = v.get("tune", {})
+	c.livery_file = v.get("livery", "pintura.png")
+	c.tuning_id = v.get("tune_id", "")
+	c.motor_escondido = v.get("motor_escondido", false)
+	if v.has("fp"):
+		c.FP_UP = v.fp[0]
+		c.FP_BACK = v.fp[1]
+		c.FP_PITCH = v.fp[2]
+	c.vehicle_name = "%s (%s)" % [v.name, v.id]
+	if v.id.begins_with("TRUCK"):
+		c.desligadas = Car.PENDENTES_TRUCK   # trucks: melhorias ligadas aos poucos
+	c.desligadas = c.desligadas + v.get("desligar", [])
 
 
 ## arquivos de física do veículo: base da classe + o dele
@@ -159,20 +197,7 @@ func spawn_vehicle(i: int, pos: Vector3, yaw: float) -> void:
 	veh_idx = i
 	var v: Dictionary = frota()[i]
 	car = Car.new()
-	car.asset_dir = v.dir
-	car.data_files = dados(v)
-	car.points_file = v.points
-	car.vehicle_id = v.id
-	car.som_pasta = v.get("som", "")
-	car.tune_override = v.get("tune", {})
-	car.livery_file = v.get("livery", "pintura.png")
-	if v.has("fp"):
-		car.FP_UP = v.fp[0]
-		car.FP_BACK = v.fp[1]
-		car.FP_PITCH = v.fp[2]
-	car.vehicle_name = "%s (%s)" % [v.name, v.id]
-	if v.id.begins_with("TRUCK"):
-		car.desligadas = Car.PENDENTES_TRUCK   # trucks: melhorias ligadas aos poucos
+	configurar(car, v)
 	car.terrain = terrain
 	add_child(car)
 	car.manual = manual
@@ -287,10 +312,13 @@ func _make_menu(layer: CanvasLayer) -> void:
 	# depois e os bônus no fim
 	var todos := frota()
 	var order := range(todos.size())
-	order.sort_custom(func(a, b): return [int(todos[a].get("bonus", false)), todos[a].id, a] < [int(todos[b].get("bonus", false)), todos[b].id, b])
+	var grupo := func(v: Dictionary) -> int: return 2 if v.get("extra", false) else int(v.get("bonus", false))
+	order.sort_custom(func(a, b): return [grupo.call(todos[a]), todos[a].id, a] < [grupo.call(todos[b]), todos[b].id, b])
 	for i in order:
 		var v: Dictionary = todos[i]
-		if v.get("bonus", false):
+		if v.get("extra", false):
+			menu.add_item("Extra. %s" % v.name)
+		elif v.get("bonus", false):
 			menu.add_item("Bônus. %s" % v.name)
 		else:
 			menu.add_item("%s%d. %s" % ["Truck " if v.id.begins_with("TRUCK") else "", v.id.to_int(), v.name])

@@ -18,6 +18,7 @@ extends RigidBody3D
 ## e desacelerações em mph/s. Tudo é convertido pra SI ao carregar.
 
 const VehicleData := preload("res://vehicle_data.gd")
+const CarroGlb := preload("res://carro_glb.gd")
 const MPH := 0.44704
 const G := 9.81
 const RPM2RAD := TAU / 60.0
@@ -49,6 +50,12 @@ var vehicle_name := "Renegade (Buggy)"
 # conferidos no save state: torque 0.81, final 0.61, massa e embreagem no máximo.
 var vehicle_id := "BUGGY_10"
 var som_pasta := ""            # pasta dos loops do motor, se não for a do id (o bônus)
+# carros extras nossos (main.gd EXTRAS, tools/carro_glb.py): peças de fábrica
+# de outro carro do jogo (o Escort usa as do Storm) e motor que não aparece
+# (só a ponta do escape treme, como nos trucks; nada de ventoinha)
+var tuning_id := ""
+var motor_escondido := false
+var _cena_glb: Node = null     # cena do .glb enquanto monta carroceria, rodas e volante
 var tune_override := {}       # ex.: {"engine": 0.3} pra simular peças compradas
 var TUNE_ENGINE := 0.81       # Internals L3 + Management L2 + Header L2 + Intake L3 + Exhaust L3
 var TUNE_BRAKE := 0.9         # Brake_Level2
@@ -454,6 +461,9 @@ func _ready() -> void:
 	max_contacts_reported = 8
 	for w in wheels:
 		_make_wheel_mesh(w)
+	if _cena_glb:
+		_cena_glb.free()               # rodas e volante já saíram dela
+		_cena_glb = null
 	_esferas_das_rodas()
 	if suspension and not pecas.is_empty() and not points.is_empty():
 		susp_vis = preload("res://suspension_visual.gd").new()
@@ -589,7 +599,8 @@ func _load_pecas() -> void:
 func _load_tuning() -> void:
 	if not FileAccess.file_exists("res://data/vehicles.xml"):
 		return
-	var t := VehicleData.factory_tuning("res://data/vehicles.xml", "res://data/upgrades.xml", vehicle_id)
+	var t := VehicleData.factory_tuning("res://data/vehicles.xml", "res://data/upgrades.xml",
+		tuning_id if tuning_id != "" else vehicle_id)
 	TUNE_ENGINE = t.engine
 	pneu = String(t.config.get("Tire", pneu))
 	TUNE_BRAKE = t.brake
@@ -976,6 +987,15 @@ func _load_points(path: String) -> Dictionary:
 	points_rot = {}
 	if path == "" or not FileAccess.file_exists(path):
 		return out
+	if path.ends_with(".json"):          # carro extra nosso (tools/carro_glb.py)
+		var j = JSON.parse_string(FileAccess.get_file_as_string(path))
+		for nm in j.pontos:
+			var p: Array = j.pontos[nm]
+			out[nm] = Vector3(p[0], p[1], p[2])
+			var r: Array = j.rot.get(nm, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+			points_rot[nm] = Basis(Vector3(r[0][0], r[0][1], r[0][2]), Vector3(r[1][0], r[1][1], r[1][2]),
+				Vector3(r[2][0], r[2][1], r[2][2]))
+		return out
 	var buf := FileAccess.get_file_as_bytes(path)
 	if buf.size() < 0x60 or buf.slice(0, 5).get_string_from_ascii() != "POINT":
 		push_warning("%s não é um arquivo de pontos" % path)
@@ -1032,6 +1052,20 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 	pivot.add_child(spin)
 	w.pivot = pivot
 	w.spin_node = spin
+	var canto: String = ("F" if w.front else "R") + ("L" if w.left else "R")
+	var rg: Dictionary = pecas.get("rodas_glb", {}).get(canto, {})
+	if _cena_glb and not rg.is_empty():
+		# carro extra: a roda de cada canto do modelo (não espelha) e o cubo
+		# dela (SUSP_xx: segue o curso e o esterço, não gira)
+		var c := Vector3(rg.centro[0], rg.centro[1], rg.centro[2])
+		var rmi := MeshInstance3D.new()
+		rmi.mesh = CarroGlb.malha(_cena_glb, [rg.no], [], c)
+		spin.add_child(rmi)
+		if not rg.get("cubo", []).is_empty():
+			var cmi := MeshInstance3D.new()
+			cmi.mesh = CarroGlb.malha(_cena_glb, rg.cubo, [], c)
+			pivot.add_child(cmi)
+		return
 	var path: String = wheel_front_file if w.front else wheel_rear_file
 	if path != "" and ResourceLoader.exists(path):
 		var mesh: Mesh = load(path) as Mesh
@@ -1078,7 +1112,12 @@ func _make_wheel_mesh(w: Dictionary) -> void:
 func _load_model() -> void:
 	var mi := MeshInstance3D.new()
 	var mesh: Mesh = null
-	if model_path != "" and ResourceLoader.exists(model_path):
+	var glb := model_path.ends_with(".glb")
+	if glb and ResourceLoader.exists(model_path):
+		# carro extra nosso: a cena fica aberta até as rodas e o volante saírem dela
+		_cena_glb = (load(model_path) as PackedScene).instantiate()
+		mesh = CarroGlb.malha(_cena_glb, [], pecas.get("excluir", []))
+	elif model_path != "" and ResourceLoader.exists(model_path):
 		mesh = load(model_path) as Mesh
 	if mesh == null:
 		push_warning("Modelo não encontrado em %s. Copie a pasta renegade pra assets/renegade." % model_path)
@@ -1098,6 +1137,8 @@ func _load_model() -> void:
 		livery = load(lp)
 	for i in mesh.get_surface_count():
 		var m := mesh.surface_get_material(i)
+		if glb:
+			continue                  # materiais do .glb como vieram (PBR, sem cor de vértice)
 		var m2: StandardMaterial3D
 		if m is StandardMaterial3D:
 			m2 = m.duplicate()
@@ -1130,7 +1171,7 @@ func _load_motor_treme() -> void:
 		return
 	motor_treme = preload("res://motor_treme.gd").new()
 	motor_treme.name = "MotorTreme"
-	if motor_treme.separar(body_mi, points, vehicle_id, vehicle_id.begins_with("TRUCK")):   # trucks: só o escape
+	if motor_treme.separar(body_mi, points, vehicle_id, vehicle_id.begins_with("TRUCK") or motor_escondido):   # trucks: só o escape
 		model_root.add_child(motor_treme)
 	else:
 		motor_treme.free()
@@ -1164,7 +1205,7 @@ func _load_farol() -> void:
 func _load_motor_anima() -> void:
 	if not (MOTOR_ANIMA and _tem("motor_anima")) or body_mi == null:
 		return
-	if vehicle_id.begins_with("TRUCK") and not (chave() in ANIMA_TRUCKS):
+	if (vehicle_id.begins_with("TRUCK") and not (chave() in ANIMA_TRUCKS)) or motor_escondido:
 		return
 	motor_anima = preload("res://motor_anima.gd").new()
 	motor_anima.name = "MotorAnima"
@@ -1324,7 +1365,7 @@ func _load_painel() -> void:
 
 
 func _load_sujeira() -> void:
-	if not SUJEIRA:
+	if not SUJEIRA or not _tem("sujeira"):    # carro extra sem a 2ª textura (main.gd "desligar")
 		return
 	if OS.has_environment("SUJEIRA"):          # prints: nível fixo (e lama de terra nas rodas)
 		sujeira_nivel = clampf(float(OS.get_environment("SUJEIRA")), 0.0, 1.0)
@@ -1387,6 +1428,18 @@ func _process(delta: float) -> void:
 func _load_steering_wheel() -> void:
 	var path := model_path.get_basename() + "_volante.obj"
 	var nosso := VOLANTE_NOSSO and _tem("volante_nosso")
+	var vg: Dictionary = pecas.get("volante", {})
+	if _cena_glb and vg.has("no") and not nosso:
+		# carro extra: o volante do próprio modelo (STEER_HR) gira
+		SW_CENTER = Vector3(vg.centro[0], vg.centro[1], vg.centro[2])
+		SW_AXIS = Vector3(vg.eixo[0], vg.eixo[1], vg.eixo[2])
+		sw_pivot = Node3D.new()
+		sw_pivot.position = model_offset + SW_CENTER
+		model_root.add_child(sw_pivot)
+		var vmi := MeshInstance3D.new()
+		vmi.mesh = CarroGlb.malha(_cena_glb, [vg.no], [], SW_CENTER)
+		sw_pivot.add_child(vmi)
+		return
 	if not ResourceLoader.exists(path) and not (nosso and VOLANTE_SEM_MODELO.has(chave())):
 		return
 	var vol: Dictionary = pecas.get("volante", {})
