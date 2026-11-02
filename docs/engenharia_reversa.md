@@ -892,10 +892,40 @@ vazios). Tudo vem do evento:
 - Mundo do remake: base = colunas das linhas da matriz com x <-> z
   (Terrain.dir_do_jogo), posição Terrain.do_jogo: determinante -1, o Godot
   desenha espelhado certo (o "START" do arco sai legível).
+- Bantam é pré-iluminado (sem normal): desenhado SEM luz, textura x cor
+  do vértice x a cor de luz da instância (a luz "Bantam" do Environment.xml
+  é 1.0 no sol). Com o sol do Godot as placas de folha de costas pro sol
+  ficavam pretas e as de frente amareladas (prints do Matheus, nov/2026).
+  Folhagem (Alder, pinheiro, moita): material do bantam +0x38 = 5 (0 em
+  todo o resto); cada folha é uma placa TRIANGULAR com UV de ~-0.3 a 1.4 em
+  volta do quadrado da textura, de borda transparente: textura presa na
+  borda (repetindo, os cantos do triângulo mostravam pedaços cortados da
+  textura, "placas soltas" no céu). O bit exato não foi conferido no exe.
 - Não portado: a multidão (RX01_Crowds.wahoo, other/12403, posições próprias
   dentro), as cercas das entidades (cFenceNode/Link + .clm), quebrar cerca e
   fardo, LOD (TREE_*_LOD1), cor de luz por instância, cIntroCamera,
   cInstantRespotBox (reposição), cGenTrigger, cCrowdEffectBox, as 2 luzes.
+
+## Céu (SkyDome)
+
+Porta em ceu.gd (nov/2026). Environment.xml da pista (Levels/RX_01/Env/
+Default/Environment.xml = xml/12282, data/environment_rx01.xml): SkyDome com
+Outer (SKY_Bright_LowCloud, yOffset 12.5, rotation 234.8) e Inner
+(BACKDROP_Asia_1, 23.4, 154.5), alpha 1, fog 0. O XML diz .clm; o loader
+(0x1d62b8, FUN_00287f50) abre o .pingu de Levels/SkyDomes (textura pela
+.pfn: SKY_Bright_LowCloud, BACKDROP_ASIA_1e). Leitura 0x1d5c40, registro de
+0x40: +0 modelo, +4 yOffset, +8 rotation, +0xc rotationSpeed, +0x10 alpha
+(1.0), +0x14 fog, +0x18 lightning, +0x20 tint (vec4, 0..2). Desenho
+0x1d6500: pula alpha < 0.01; cor do modelo = tint com o alpha (fog = 0), ou
+0.5 x cor do ambiente x tint; matriz = giro em Y (0x61e2a0 com
+0x6891f8 = cos e 0x6893f0 = sin do fdlibm: linhas (c, 0, -s), (0, 1, 0),
+(s, 0, c)) na posição da câmera + (0, yOffset, 0), escala 1; ZBUF com ZMSK
+(registradores 0x4e/0x4f), Outer e depois Inner. As cúpulas têm raio ~43 m
+(céu, y -27.5..18.7) e ~39 m (montanhas, y -26.5..-1.3, alfa em 4 níveis);
+cor do vértice 1.0 no céu e 0.71 nas montanhas. No remake: ESCALA 70 em
+volta da câmera (mesmos ângulos; relevo e objetos ficam na frente pelo teste
+de profundidade), sem luz e sem névoa. Não portado: SunHalo, rotationSpeed
+(0 no RX01), lightning.
 
 ## Mão (espelho)
 

@@ -6,7 +6,9 @@ extends SceneTree
 ##     embaixo dele, de -3 a +1 m (o jogo põe cacto a 0.57 m e árvore 2.5 m
 ##     enterrada; eixo trocado na conversão daria dezenas de metros);
 ##  3. a largada livre (nenhum triângulo de colisão a 3 m das 8 largadas);
-##  4. o Renegade a 60 km/h de frente num guard-rail (Armco): com os objetos
+##  4. o céu (2 cúpulas do SkyDome) dentro do far da câmera, montanhas na
+##     frente das nuvens;
+##  5. o Renegade a 60 km/h de frente num guard-rail (Armco): com os objetos
 ##     ele para antes do plano da barreira; sem, ele atravessa.
 ## Uso: godot --headless --path . -s res://tests/teste_objetos.gd
 
@@ -14,6 +16,7 @@ const Car := preload("res://car.gd")
 const Main := preload("res://main.gd")
 const Terrain := preload("res://terrain.gd")
 const Objetos := preload("res://objetos_rx01.gd")
+const Ceu := preload("res://ceu.gd")
 
 var terrain
 var objetos
@@ -52,6 +55,7 @@ func _physics_process(dt: float) -> bool:
 		_checa(objetos.instancias == 707 and objetos.modelos == 34,
 			"%d instâncias de %d modelos (707 de 34; falta: %s)" % [objetos.instancias, objetos.modelos, ", ".join(objetos.faltando)])
 		_checa(objetos.triangulos > 5000, "%d triângulos de colisão (KDt)" % objetos.triangulos)
+		_ceu()
 		# no chão: o vértice mais baixo do modelo fica no chão ou enterrado,
 		# nunca voando
 		var por := {}
@@ -145,6 +149,31 @@ func _physics_process(dt: float) -> bool:
 		print("teste_objetos: %s" % ("ok" if falhas == 0 else "%d falhas" % falhas))
 		return true
 	return false
+
+
+## céu (ceu.gd): as 2 cúpulas do Environment.xml carregam, cabem no far da
+## câmera do main (4 km) e as montanhas (Inner) ficam na frente do céu (Outer)
+func _ceu() -> void:
+	var ceu = Ceu.new()
+	root.add_child(ceu)
+	if not ceu.montar():
+		_checa(false, "céu: sem data/environment_rx01.xml ou assets/rx01/ceu (rode tools/rx01_objetos.py)")
+		return
+	var longe := 0.0
+	var raios := []
+	for c in ceu.cupulas:
+		var x: Transform3D = Ceu.xf(Vector3.ZERO, c.y, c.rot)
+		var r := 0.0
+		for k in (c.no as MeshInstance3D).mesh.get_surface_count():
+			for v in (c.no as MeshInstance3D).mesh.surface_get_arrays(k)[Mesh.ARRAY_VERTEX]:
+				var w: Vector3 = x * v
+				longe = maxf(longe, w.length())
+				r = maxf(r, Vector2(w.x, w.z).length())
+		raios.append(r)
+	_checa(ceu.cupulas.size() == 2 and longe < 4000.0 and raios[1] < raios[0],
+		"céu: %d cúpulas, ponto mais longe %.0f m (far 4000), raio do céu %.0f m e das montanhas %.0f m" % [
+			ceu.cupulas.size(), longe, raios[0], raios[1] if raios.size() > 1 else 0.0])
+	ceu.queue_free()
 
 
 var _cache_v := {}

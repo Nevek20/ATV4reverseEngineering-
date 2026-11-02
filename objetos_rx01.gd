@@ -14,8 +14,9 @@ extends Node3D
 ## Desenho: .obj do tools/rx01_objetos.py em assets/rx01 (pingu pelo
 ## pingu2obj, bantam pelo decodificador de lá), cor do vértice x textura como
 ## os carros (car.gd material_do_jogo: 0x80 = 1.0, até 2.0). Bantam não tem
-## normal no jogo (luz assada na cor) e é desenhado dos 2 lados; os repetidos
-## vão numa MultiMesh por modelo.
+## normal no jogo (luz assada na cor): SEM luz do Godot, sem sombra dinâmica,
+## dos 2 lados, numa MultiMesh por modelo com a cor de luz da instância.
+## Pingu (casas, arco...) tem normal e recebe o sol.
 ##
 ## Colisão: os triângulos do KDt de cada modelo (Models/KDt, nome =
 ## crc32('<modelo>.kdt')), levados pro mundo e juntos num
@@ -35,6 +36,7 @@ var faltando: PackedStringArray = []
 var corpo: StaticBody3D = null
 var carregados := {}                     # modelo -> true (só eles ganham colisão)
 var _mats := {}                          # material do .mtl -> nosso (cache)
+var _presas := {}                        # materiais com a textura presa na borda (modelos.json)
 
 
 func montar() -> bool:
@@ -43,6 +45,12 @@ func montar() -> bool:
 	var j = JSON.parse_string(FileAccess.get_file_as_string(ARQ))
 	if j == null:
 		return false
+	if FileAccess.file_exists(PASTA + "modelos.json"):
+		var info = JSON.parse_string(FileAccess.get_file_as_string(PASTA + "modelos.json"))
+		if info is Dictionary:
+			for m in info:
+				for nome in info[m].get("textura_presa", []):
+					_presas[nome] = true
 	var por := {}
 	for it in j.instancias:
 		if not por.has(it.modelo):
@@ -58,11 +66,29 @@ func montar() -> bool:
 			faltando.append(modelo)
 			continue
 		carregados[modelo] = true
-		var dois_lados: bool = String(modelo).ends_with(".bantam")
+		var bantam: bool = String(modelo).ends_with(".bantam")
 		var lista: Array = por[modelo]
-		_materiais(malha, dois_lados)
+		_materiais(malha, bantam)
 		modelos += 1
-		if lista.size() == 1:
+		if bantam:
+			# bantam = pré-iluminado (sem normal no jogo): MultiMesh com a cor de
+			# luz de cada instância (registro +0x40, ~1.0) e sem sombra dinâmica
+			var mb := MultiMesh.new()
+			mb.transform_format = MultiMesh.TRANSFORM_3D
+			mb.use_colors = true
+			mb.mesh = malha
+			mb.instance_count = lista.size()
+			for k in lista.size():
+				mb.set_instance_transform(k, xf(lista[k]))
+				var c: Array = lista[k].get("cor", [1, 1, 1, 1])
+				mb.set_instance_color(k, Color(c[0], c[1], c[2], 1.0))
+			var mbi := MultiMeshInstance3D.new()
+			mbi.name = String(modelo).get_basename()
+			mbi.multimesh = mb
+			mbi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			add_child(mbi)
+			mbi.global_transform = Transform3D.IDENTITY
+		elif lista.size() == 1:
 			var mi := MeshInstance3D.new()
 			mi.name = String(modelo).get_basename()
 			mi.mesh = malha
@@ -98,19 +124,29 @@ static func _v(a: Array) -> Vector3:
 
 ## materiais do .obj como os do carro: cor do vértice (até 2.0) x textura;
 ## textura com furo (alfa do jogo) vira recorte
-func _materiais(malha: Mesh, dois_lados: bool) -> void:
+func _materiais(malha: Mesh, bantam: bool) -> void:
 	for s in malha.get_surface_count():
 		var m0 := malha.surface_get_material(s) as StandardMaterial3D
 		if m0 == null:
 			continue
-		var chave := "%d:%s" % [m0.get_instance_id(), dois_lados]
+		var chave := "%d:%s" % [m0.get_instance_id(), bantam]
 		if not _mats.has(chave):
 			var m := m0.duplicate() as StandardMaterial3D
 			m.vertex_color_use_as_albedo = true
 			m.vertex_color_is_srgb = true
 			var c := m.albedo_color
 			m.albedo_color = Color(c.r * COR_K_SRGB, c.g * COR_K_SRGB, c.b * COR_K_SRGB, c.a)
-			m.cull_mode = BaseMaterial3D.CULL_DISABLED if dois_lados else BaseMaterial3D.CULL_BACK
+			m.cull_mode = BaseMaterial3D.CULL_DISABLED if bantam else BaseMaterial3D.CULL_BACK
+			if bantam:
+				# o PS2 não acende bantam: textura x cor do vértice (luz assada) x
+				# a luz "Bantam" do Environment.xml (1.0 no sol). Com o sol do
+				# Godot as placas de folha de costas pro sol ficavam pretas e as
+				# de frente amareladas (prints do Matheus, nov/2026)
+				m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+				# folhagem: placa triangular em volta do quadrado da textura,
+				# borda transparente; presa na borda (material +0x38 = 5)
+				if _presas.has(m0.resource_name):
+					m.texture_repeat = false
 			m.roughness = 1.0
 			m.metallic = 0.0
 			m.specular_mode = BaseMaterial3D.SPECULAR_DISABLED

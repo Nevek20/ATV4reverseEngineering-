@@ -42,7 +42,9 @@ Uso:
         [--so-json]   só o data/rx01_objetos.json (posições), sem modelos
 Sai:
     data/rx01_objetos.json   instâncias (modelo, matriz do jogo, cor) e entidades
+    data/environment_rx01.xml  o Environment.xml da pista (luz, céu, névoa)
     assets/rx01/<modelo>.obj/.mtl + texturas (fora do git, como os carros)
+    assets/rx01/ceu/<cúpula>.obj  as cúpulas do céu (SkyDome do Environment.xml)
 """
 
 import argparse
@@ -268,6 +270,18 @@ def bantam(d):
     return out
 
 
+def materiais_bantam(d):
+    """flag +0x38 de cada material do bantam (registros de 0x40 em +0x74, n em
+    +0x70; o índice é o slot da textura). Vale 5 só nas folhagens (Alder,
+    pinheiro, moita), que usam placa TRIANGULAR com UV de ~-0.3 a 1.4 em volta
+    do quadrado da textura (borda transparente): textura PRESA na borda, senão
+    os cantos do triângulo mostram pedaços repetidos (as "placas soltas" no
+    céu). 0 no resto (fardo, guard-rail, pedras, placas repetem de verdade).
+    Qual bit é o "prende" não foi conferido no exe (inferido pelo uso)."""
+    n, o = u32(d, 0x70), u32(d, 0x74)
+    return [u32(d, o + 0x40 * k + 0x38) for k in range(n)]
+
+
 def texturas_bantam(d):
     """lista de texturas (#hash depois do bantam): u32 n + n nomes de 128 bytes"""
     n = u32(d, 0)
@@ -353,13 +367,13 @@ def hsc(d):
 
 
 # ------------------------------------------------------------------ texturas
-def textura(unpacked, ind, nome, pasta, feitas):
-    """Levels/RX_01/Models/Textures/<nome>.bog -> pasta/<nome>.png (com alfa
-    se o jogo tem furo: > 1% dos pixels com alfa < 20, como o alfa_texturas)"""
+def textura(unpacked, ind, nome, pasta, feitas, pasta_jogo="Levels/RX_01/Models/Textures"):
+    """<pasta_jogo>/<nome>.bog -> pasta/<nome>.png (com alfa se o jogo tem
+    furo: > 1% dos pixels com alfa < 20, como o alfa_texturas)"""
     if nome in feitas:
         return feitas[nome]
     feitas[nome] = None
-    cam = "Levels/RX_01/Models/Textures/%s.bog" % nome
+    cam = "%s/%s.bog" % (pasta_jogo, nome)
     if cam not in ind:
         return None
     onde = ind[cam][3]
@@ -476,8 +490,10 @@ def modelos(unpacked, ind, out, nomes):
             txt_mtl = mtl(mats, texs)
             txt, nf = obj_bantam(tiras, base, mats)
             txt = "# mtl %s\n" % hashlib.md5(txt_mtl.encode()).hexdigest()[:12] + txt
+            flags = materiais_bantam(d)
             info[nome] = {"tipo": "bantam", "faces": nf, "texturas": [t[0] for t in texs.values()],
-                          "alfa": any(t[1] for t in texs.values())}
+                          "alfa": any(t[1] for t in texs.values()),
+                          "textura_presa": [m for s_, m in mats.items() if 0 <= s_ < len(flags) and flags[s_]]}
         else:
             continue
         open(os.path.join(out, base + ".obj"), "w").write(txt)
@@ -506,6 +522,55 @@ KDT_POR_CAIXA = {
     "d1878b1e": ["US_Bleacher_Wood_02.pingu"], "ece7a2ae": ["US_Bleacher_Wood_03.pingu"],
     "d46b21f2": ["US_Building_Cabin02.pingu"], "b93bc618": ["GEN_Loudspeaker.pingu"],
 }
+
+
+ARQ_AMBIENTE = "Levels/RX_01/Env/Default/Environment.xml"
+
+
+def ceu(unpacked, ind, out):
+    """céu do RX01 (Environment.xml, SkyDome): cada Outer/Inner é um .pingu de
+    Levels/SkyDomes (o XML diz .clm; o loader 0x1d62b8 troca pela extensão
+    do modelo) com a textura do .pfn ao lado. Sai assets/rx01/ceu/<nome>.obj
+    e copia o Environment.xml pra data/environment_rx01.xml"""
+    import re
+    import hashlib
+    import pingu2obj
+    xml = bloco(unpacked, ind, ARQ_AMBIENTE)
+    open(os.path.join(PROJ, "data", "environment_rx01.xml"), "wb").write(xml)
+    pasta = os.path.join(out, "ceu")
+    os.makedirs(os.path.join(pasta, "tex"), exist_ok=True)
+    feitas = {}
+    feitos = []
+    for nome in re.findall(rb'Filename="Levels\\SkyDomes\\([^".]+)\.clm"', xml):
+        nome = nome.decode()
+        cam = "Levels/SkyDomes/%s.pingu" % nome
+        if cam not in ind:
+            print("  céu: %s não está no archive" % nome)
+            continue
+        d = bloco(unpacked, ind, cam)
+        strips = pingu2obj.parse(d)
+        lotes = pingu2obj.read_batches(d)
+        slots = pingu2obj.assign_batches(strips, lotes) if lotes else [-1] * len(strips)
+        pfn = "Levels/SkyDomes/%s.pfn" % nome
+        tnomes = [n.strip() for n in bloco(unpacked, ind, pfn).decode("latin-1").split("\n") if n.strip()] \
+            if _extraido(ind, pfn) else []
+        mats, texs = {}, {}
+        for s_ in sorted(set(slots)):
+            if s_ is None or s_ < 0 or s_ >= len(tnomes):
+                mats[s_] = "sem_textura"
+                continue
+            mats[s_] = "s%d_%s" % (s_, pingu2obj.safe_name(tnomes[s_]))
+            t = textura(unpacked, ind, tnomes[s_], os.path.join(pasta, "tex"), feitas, "Levels/SkyDomes")
+            if t:
+                texs[mats[s_]] = t
+        txt_mtl = mtl(mats, texs)
+        txt, nv, nf = pingu2obj.to_obj(strips, nome, slots, nome + ".mtl", mats)
+        txt = "# mtl %s\n" % hashlib.md5(txt_mtl.encode()).hexdigest()[:12] + txt
+        open(os.path.join(pasta, nome + ".obj"), "w").write(txt)
+        open(os.path.join(pasta, nome + ".mtl"), "w").write(txt_mtl)
+        feitos.append(nome)
+        print("  céu %-28s %4d faces  %s" % (nome, nf, ", ".join(t[0] for t in texs.values()) or "SEM TEXTURA"))
+    return feitos
 
 
 def colisao(unpacked, ind, nomes):
@@ -562,6 +627,7 @@ def main():
     info = modelos(a.unpacked, ind, a.out, nomes)
     json.dump(info, open(os.path.join(a.out, "modelos.json"), "w"), indent=1)
     print("modelos em %s: %d" % (a.out, len(info)))
+    print("céu: %s" % ", ".join(ceu(a.unpacked, ind, a.out)))
 
 
 if __name__ == "__main__":

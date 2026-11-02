@@ -121,6 +121,7 @@ const CameraPiloto := preload("res://camera_piloto.gd")
 const CameraOrbita := preload("res://camera_orbita.gd")
 const Farol := preload("res://farol.gd")
 const ObjetosRX01 := preload("res://objetos_rx01.gd")
+const Ceu := preload("res://ceu.gd")
 
 var car  # instância de car.gd (sem tipo estático de propósito: métodos próprios do script)
 var cam: Camera3D
@@ -128,6 +129,7 @@ var hud: Label
 var cam_mode := 0                        # 0 perto, 1 longe, 2 capô, 3 para-choque, 4 piloto
 var terrain
 var objetos                              # objetos_rx01.gd (aviso() no HUD se faltar o assets/rx01)
+var ceu                                  # ceu.gd (null sem assets/rx01/ceu)
 var cam_piloto                           # camera_piloto.gd: efeitos de velocidade e olhar livre
 # órbita da câmera de corrida pelo analógico direito / mouse (melhoria nossa,
 # o Forza; camera_orbita.gd). false = só a câmera do jogo
@@ -145,6 +147,13 @@ func _ready() -> void:
 	objetos.name = "Objetos"
 	add_child(objetos)
 	objetos.montar()
+	# céu do jogo (SkyDome do Environment.xml: nuvens + montanhas, ceu.gd)
+	ceu = Ceu.new()
+	ceu.name = "Ceu"
+	add_child(ceu)
+	if not ceu.montar():
+		ceu.queue_free()
+		ceu = null
 
 	spawn_vehicle(0, spawn_point(), deg_to_rad(SPAWN_YAW))
 
@@ -396,6 +405,8 @@ func _process(delta: float) -> void:
 	if car == null:
 		return
 	_update_camera(delta)
+	if ceu:
+		ceu.seguir(cam, delta)
 	var kmh: float = car.linear_velocity.length() * 3.6
 	var fp := ""
 	if cam_mode == 4:

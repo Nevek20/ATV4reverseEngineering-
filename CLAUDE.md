@@ -47,6 +47,7 @@ luzes.gd             lanterna de freio e luz de ré acesas (melhoria nossa): len
 farol.gd             farol aceso (melhoria nossa, no estilo da lanterna de freio) nas lentes de farol do modelo; H liga
 terrain.gd           relevo e material do chão da pista RX01 (do stream do jogo)
 objetos_rx01.gd      objetos da pista RX01 (porta do jogo): casas, arquibancadas, arco, placas, guard-rail, pedras, árvores + colisão KDt
+ceu.gd               céu da pista (porta do jogo): cúpulas do SkyDome do Environment.xml (nuvens + montanhas) presas na câmera
 data/                XMLs do jogo (física buggy_NN.xml, pontos, câmeras, peças)
 assets/              modelos do pingu2obj: renegade, sphinx, buggy_NN, truck_NN, rodas; sfx (sons) e fx (fumaça) do jogo (fora do git)
 tests/               teste de física sem tela + rodar_testes.py
@@ -115,7 +116,7 @@ set VEL=20 & %GODOT% --headless --path . -s res://tests/teste_batida.gd   :: Sto
 %GODOT% --path . --write-movie motor.avi --fixed-fps 60 -s res://tests/gravar_motor.gd -- 7   :: prévia: lenta, 7000 e volta (CAM_OFF/CAM_ALVO)
 %GODOT% --path . --write-movie fumaca.avi --fixed-fps 60 -s res://tests/gravar_fumaca.gd -- 0  :: câmera presa no cano acelerando (FUMACA_COR=1 vermelha)
 %GODOT% --headless --path . -s res://tests/teste_poeira.gd        :: poeira dos pneus na largada do RX01: parado não, asfalto não, terra sim, rastro no pulo
-%GODOT% --headless --path . -s res://tests/teste_objetos.gd       :: objetos do RX01: 707 instâncias, no chão, largada livre, guard-rail segura o carro
+%GODOT% --headless --path . -s res://tests/teste_objetos.gd       :: objetos do RX01: 707 instâncias, no chão, céu, largada livre, guard-rail segura o carro
 %GODOT% --path . --write-movie poeira.avi --fixed-fps 30 -s res://tests/gravar_poeira.gd -- 0  :: sai pra terra na câmera de corrida (SEM_POEIRA=1, POEIRA_COR=1)
 :: + print_tela com MOTOR_COR=1 pinta de vermelho as peças que tremem, VENTOINHA_COR=1 as ventoinhas que giram
 %GODOT% --path . --write-movie previa.avi --fixed-fps 60 -s res://tests/gravar_som.gd -- 8   :: prévia com áudio (acelera e solta; VIRA=5 derrapa, SEM_MOTOR=1)
@@ -133,7 +134,8 @@ python tools/casco.py <unpacked>          :: --tabela mostra a caixa de todos os
 
 :: terreno do RX01 (alturas + material) a partir do stream do jogo
 python tools/extrair_material.py <dados>/stream/RX01.000 assets/terrain --materiais <dados>/unpacked/xml/12280
-:: objetos do RX01 (posições + colisão -> data/rx01_objetos.json; modelos e texturas -> assets/rx01)
+:: objetos e céu do RX01 (posições + colisão -> data/rx01_objetos.json, Environment.xml -> data/environment_rx01.xml;
+:: modelos, texturas e cúpulas do céu -> assets/rx01)
 python tools/rx01_objetos.py <unpacked>          :: --so-json só o JSON; depois abrir o editor (importa os .obj)
 
 :: checar um script sem abrir o editor
@@ -441,6 +443,21 @@ Matheus: `C:\Users\Guida\Desktop\Estudo de programação\ATV 4 Engenharia revers
   Renegade a 60 km/h para no guard-rail (sem os objetos atravessa 29 m).
   Sem assets/rx01 (rodar o tools/rx01_objetos.py no PC) nada aparece e não
   entra parede invisível; o HUD avisa.
+  Árvores "meio diferentes" (prints do jogo do Matheus, nov/2026): bantam é
+  PRÉ-ILUMINADO (sem normal): sem luz do Godot (as placas de folha de costas
+  pro sol ficavam pretas, as de frente amareladas), textura x cor do vértice
+  (Alder: folha oliva x 0.70 = oliva escuro como no jogo), sem sombra
+  dinâmica. Folha = placa TRIANGULAR em volta do quadrado da textura (UV
+  -0.3..1.4, borda transparente): textura PRESA na borda nos materiais com
+  +0x38 = 5 (só Alder, pinheiro e moita); repetindo, os cantos mostravam
+  pedaços cortados ("placas soltas" no céu).
+- Céu (PORTA, nov/2026; ceu.gd, docs Céu): "a skybox tá faltando" (Matheus).
+  SkyDome do Environment.xml: SKY_Bright_LowCloud (nuvens) +
+  BACKDROP_Asia_1 (montanhas azuis), .pingu de Levels/SkyDomes (o XML diz
+  .clm). 0x1d6500: na posição da câmera + yOffset, giro em Y pela rotation,
+  cor = tint (1.0) com o alpha, sem gravar profundidade, céu e depois
+  montanhas. No remake x70 em volta da câmera (cabe no far de 4 km, relevo e
+  objetos na frente pelo teste de profundidade), sem luz nem névoa.
 - Material do chão: só o atrito (pneu) e o Damping (arrasto do chão,
   0x20e5e8) mexem na física do buggy. Hardness, Sink e Bounciness o jogo
   carrega e não lê (varredura do exe, docs Terreno). Não "portar" eles.
